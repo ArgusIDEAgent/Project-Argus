@@ -1,0 +1,137 @@
+{
+  "directed": true,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "type": "module",
+      "name": "auth_service",
+      "file_path": "auth_service.py",
+      "lineno": 1,
+      "end_lineno": null,
+      "docstring": "",
+      "id": "auth_service"
+    },
+    {
+      "type": "function",
+      "name": "generate_token",
+      "file_path": "auth_service.py",
+      "lineno": 6,
+      "end_lineno": 12,
+      "docstring": "Generates a signed JWT authentication token valid for 1 hour.",
+      "id": "auth_service.generate_token"
+    },
+    {
+      "type": "function",
+      "name": "verify_token",
+      "file_path": "auth_service.py",
+      "lineno": 14,
+      "end_lineno": 22,
+      "docstring": "Decodes and verifies an incoming JWT token.",
+      "id": "auth_service.verify_token"
+    },
+    {
+      "type": "function",
+      "name": "login_user",
+      "file_path": "auth_service.py",
+      "lineno": 24,
+      "end_lineno": 29,
+      "docstring": "Validates user credentials and returns a JWT token upon success.",
+      "id": "auth_service.login_user"
+    },
+    {
+      "id": "jwt"
+    },
+    {
+      "id": "datetime.datetime"
+    },
+    {
+      "id": "datetime.timedelta"
+    },
+    {
+      "id": "jwt.encode"
+    },
+    {
+      "id": "datetime.utcnow"
+    },
+    {
+      "id": "timedelta"
+    },
+    {
+      "id": "jwt.decode"
+    },
+    {
+      "id": "ValueError"
+    },
+    {
+      "id": "generate_token"
+    }
+  ],
+  "links": [
+    {
+      "type": "imports",
+      "source": "auth_service",
+      "target": "jwt"
+    },
+    {
+      "type": "imports",
+      "source": "auth_service",
+      "target": "datetime.datetime"
+    },
+    {
+      "type": "imports",
+      "source": "auth_service",
+      "target": "datetime.timedelta"
+    },
+    {
+      "type": "contains",
+      "source": "auth_service",
+      "target": "auth_service.generate_token"
+    },
+    {
+      "type": "contains",
+      "source": "auth_service",
+      "target": "auth_service.verify_token"
+    },
+    {
+      "type": "contains",
+      "source": "auth_service",
+      "target": "auth_service.login_user"
+    },
+    {
+      "type": "calls",
+      "source": "auth_service.generate_token",
+      "target": "jwt.encode"
+    },
+    {
+      "type": "calls",
+      "source": "auth_service.generate_token",
+      "target": "datetime.utcnow"
+    },
+    {
+      "type": "calls",
+      "source": "auth_service.generate_token",
+      "target": "timedelta"
+    },
+    {
+      "type": "calls",
+      "source": "auth_service.verify_token",
+      "target": "jwt.decode"
+    },
+    {
+      "type": "calls",
+      "source": "auth_service.verify_token",
+      "target": "ValueError"
+    },
+    {
+      "type": "calls",
+      "source": "auth_service.login_user",
+      "target": "ValueError"
+    },
+    {
+      "type": "calls",
+      "source": "auth_service.login_user",
+      "target": "generate_token"
+    }
+  ]
+}
