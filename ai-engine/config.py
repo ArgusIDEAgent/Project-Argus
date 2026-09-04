@@ -25,6 +25,7 @@ DEFAULT_CHUNK_SIZE = 300
 DEFAULT_CHUNK_OVERLAP = 50
 DEFAULT_TOP_K = 5
 INDEX_STATE_FILENAME = ".codemind_index_state.json"
+GRAPH_FILENAME = ".codemind_graph.json"
 
 # ──────────────────────────────────────────────
 # Directories to skip during recursive walk

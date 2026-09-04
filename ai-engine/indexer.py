@@ -3,6 +3,8 @@ indexer.py — Full-repo, incremental code indexer for CodeMind (Argus).
 
 Recursively walks a target directory, chunks source files using language-aware
 splitters, embeds the chunks via FastEmbed, and upserts them into Qdrant.
+Also builds a NetworkX knowledge graph of code structure (functions, classes,
+call relationships) via AST parsing for structural/impact queries.
 
 Incremental indexing:
   - On each run, computes SHA-256 hashes of all eligible files.
@@ -13,6 +15,7 @@ Incremental indexing:
 Usage:
   python indexer.py --dir ../my-repo
   python indexer.py --dir ./sample_code --full-reindex
+  python indexer.py --dir ./my-repo --no-graph
 """
 
 import argparse
@@ -32,10 +35,12 @@ from config import (
     DEFAULT_CHUNK_OVERLAP,
     IGNORE_DIRS,
     INDEX_STATE_FILENAME,
+    GRAPH_FILENAME,
     get_language_for_file,
     get_qdrant_client,
     get_embedding_model,
 )
+import graph_builder
 
 
 # ─────────────────────────────────────────────────────────────
@@ -109,6 +114,7 @@ def index_directory(
     chunk_size: int = DEFAULT_CHUNK_SIZE,
     chunk_overlap: int = DEFAULT_CHUNK_OVERLAP,
     state_file: str | None = None,
+    build_graph: bool = True,
 ) -> None:
     """Walk *target_dir*, embed new/modified files, and upsert into Qdrant."""
 
@@ -118,6 +124,13 @@ def index_directory(
         sys.exit(1)
 
     state_path = state_file or os.path.join(target_dir, INDEX_STATE_FILENAME)
+    graph_path = os.path.join(target_dir, GRAPH_FILENAME)
+
+    # --- Load or create knowledge graph ---
+    if build_graph:
+        kg = graph_builder.load_graph(graph_path) if not full_reindex else __import__('networkx').DiGraph()
+    else:
+        kg = None
 
     # --- Clients ---
     client = get_qdrant_client()
@@ -162,7 +175,7 @@ def index_directory(
         f"{len(deleted_rel_paths)} deleted"
     )
 
-    # --- Prune deleted files from Qdrant ---
+    # --- Prune deleted files from Qdrant and graph ---
     for rel_path in deleted_rel_paths:
         client.delete(
             collection_name=collection,
@@ -172,11 +185,14 @@ def index_directory(
                 )
             ),
         )
+        if kg is not None and rel_path.endswith(".py"):
+            graph_builder.remove_file_from_graph(kg, rel_path)
     if deleted_rel_paths:
         print(f"🗑️  Pruned vectors for {len(deleted_rel_paths)} deleted file(s)")
 
     # --- Process new / modified files ---
     total_points = 0
+    graph_nodes_added = 0
 
     for abs_path in files_to_index:
         rel_path = os.path.relpath(abs_path, target_dir)
@@ -239,10 +255,24 @@ def index_directory(
 
         client.upsert(collection_name=collection, points=points)
         total_points += len(points)
-        print(f"   ✔ {rel_path}  ({len(chunks)} chunks)")
 
-    # --- Persist state ---
+        # --- Build knowledge graph for .py files ---
+        if kg is not None and rel_path.endswith(".py"):
+            n_added = graph_builder.update_graph_for_file(kg, rel_path, abs_path)
+            graph_nodes_added += n_added
+
+        graph_tag = f", {graph_nodes_added} graph nodes" if kg is not None and rel_path.endswith(".py") else ""
+        print(f"   ✔ {rel_path}  ({len(chunks)} chunks{graph_tag})")
+
+    # --- Persist state and graph ---
     _save_state(state_path, new_state)
+
+    if kg is not None:
+        graph_builder.save_graph(kg, graph_path)
+        summary = graph_builder.get_graph_summary(kg)
+        print(f"\n🔗 Knowledge graph: {summary['total_nodes']} nodes, {summary['total_edges']} edges")
+        for ntype, count in sorted(summary['nodes'].items()):
+            print(f"   {ntype}: {count}")
 
     print(f"\n🚀 Indexing complete — {total_points} point(s) upserted, "
           f"{skipped} file(s) unchanged, "
@@ -290,6 +320,12 @@ def main() -> None:
         default=DEFAULT_CHUNK_OVERLAP,
         help=f"Overlap between adjacent chunks (default: {DEFAULT_CHUNK_OVERLAP}).",
     )
+    parser.add_argument(
+        "--no-graph",
+        action="store_true",
+        default=False,
+        help="Skip building the knowledge graph (useful for non-Python repos).",
+    )
 
     args = parser.parse_args()
 
@@ -300,6 +336,7 @@ def main() -> None:
         chunk_size=args.chunk_size,
         chunk_overlap=args.chunk_overlap,
         state_file=args.state_file,
+        build_graph=not args.no_graph,
     )
 
 
