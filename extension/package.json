@@ -1,24 +1,29 @@
 {
   "name": "codemind-extension",
   "displayName": "CodeMind",
+  "publisher": "codemind-local",
   "description": "Evidence-backed VS Code Assistant",
   "version": "0.1.0",
   "private": true,
-  "extensionKind": ["ui"],
+  "extensionKind": [
+    "workspace",
+    "ui"
+  ],
   "engines": {
     "vscode": "^1.93.0"
   },
   "capabilities": {
     "untrustedWorkspaces": {
-      "supported": false,
-      "description": "CodeMind indexes workspace code and may inspect terminal executions after the workspace is trusted."
+      "supported": "limited",
+      "description": "Chat is available. Repository scanning requires Workspace Trust."
     }
   },
   "main": "./out/extension.js",
   "activationEvents": [
     "onStartupFinished",
     "onCommand:codemind.openChat",
-    "onCommand:codemind.checkConnection"
+    "onCommand:codemind.checkConnection",
+    "onCommand:codemind.selectRepository"
   ],
   "contributes": {
     "commands": [
@@ -29,6 +34,10 @@
       {
         "command": "codemind.checkConnection",
         "title": "CodeMind: Check Connection"
+      },
+      {
+        "command": "codemind.selectRepository",
+        "title": "CodeMind: Select Repository"
       }
     ]
   },
@@ -36,12 +45,17 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./ && node scripts/copy-service.js",
     "watch": "tsc -watch -p ./",
-    "test:integration": "npm run compile && node test/runTest.js"
+    "test:integration": "npm run compile && node test/runTest.js",
+    "package:vsix": "vsce package --out ../codemind-extension-0.1.0.vsix"
+  },
+  "dependencies": {
+    "sql.js": "^1.13.0"
   },
   "devDependencies": {
     "@types/node": "^20.19.0",
     "@types/vscode": "^1.93.0",
     "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "^4.0.0",
     "typescript": "^5.9.0"
   }
 }

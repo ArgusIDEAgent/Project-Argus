@@ -5,6 +5,8 @@ import * as path from 'node:path';
 import * as vscode from 'vscode';
 
 type HelloResponse = { reply: string };
+export type Repository = { id: string; rootPath: string; defaultBranch: string };
+export type Job = { id: string; state: 'queued' | 'running' | 'completed' | 'failed'; error: string | null; result: { fileCount: number } | null };
 
 export class ServerManager implements vscode.Disposable {
   private child: ChildProcessWithoutNullStreams | undefined;
@@ -15,6 +17,7 @@ export class ServerManager implements vscode.Disposable {
 
   constructor(
     private readonly extensionPath: string,
+    private readonly dataDir: string,
     private readonly output: vscode.OutputChannel,
   ) {}
 
@@ -36,6 +39,7 @@ export class ServerManager implements vscode.Disposable {
           ...process.env,
           ELECTRON_RUN_AS_NODE: '1',
           CODEMIND_SESSION_TOKEN: this.token,
+          CODEMIND_DATA_DIR: this.dataDir,
         },
         stdio: ['pipe', 'pipe', 'pipe'],
       });
@@ -102,20 +106,39 @@ export class ServerManager implements vscode.Disposable {
   }
 
   async hello(message: string): Promise<string> {
+    const result = await this.request<HelloResponse>('POST', '/hello', { message });
+    return result.reply;
+  }
+
+  async registerRepository(rootPath: string): Promise<Repository> {
+    const result = await this.request<{ repository: Repository }>('POST', '/repos/register', { rootPath });
+    return result.repository;
+  }
+
+  async indexRepository(id: string): Promise<string> {
+    const result = await this.request<{ jobId: string }>('POST', `/repos/${id}/index`);
+    return result.jobId;
+  }
+
+  async getJob(id: string): Promise<Job> {
+    return this.request<Job>('GET', `/jobs/${id}`);
+  }
+
+  private async request<T>(method: 'GET' | 'POST', requestPath: string, payload?: unknown): Promise<T> {
     await this.start();
     if (!this.port) throw new Error('Local server is unavailable.');
 
-    const body = JSON.stringify({ message });
+    const body = payload === undefined ? undefined : JSON.stringify(payload);
     const port = this.port;
-    return new Promise<string>((resolve, reject) => {
+    return new Promise<T>((resolve, reject) => {
       const request = http.request({
         hostname: '127.0.0.1',
         port,
-        path: '/hello',
-        method: 'POST',
+        path: requestPath,
+        method,
         headers: {
           'content-type': 'application/json',
-          'content-length': Buffer.byteLength(body),
+          ...(body === undefined ? {} : { 'content-length': Buffer.byteLength(body) }),
           'x-codemind-session': this.token,
         },
       }, (response) => {
@@ -123,12 +146,12 @@ export class ServerManager implements vscode.Disposable {
         response.on('data', (chunk: Buffer) => chunks.push(chunk));
         response.on('end', () => {
           try {
-            const result = JSON.parse(Buffer.concat(chunks).toString()) as HelloResponse & { error?: string };
-            if (response.statusCode !== 200 || typeof result.reply !== 'string') {
+            const result = JSON.parse(Buffer.concat(chunks).toString()) as T & { error?: string };
+            if (!response.statusCode || response.statusCode < 200 || response.statusCode >= 300) {
               reject(new Error(result.error ?? `Server returned ${response.statusCode}.`));
               return;
             }
-            resolve(result.reply);
+            resolve(result);
           } catch {
             reject(new Error('Local server returned an invalid response.'));
           }

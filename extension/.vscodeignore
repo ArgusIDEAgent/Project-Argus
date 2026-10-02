@@ -1,0 +1,8 @@
+.venv/**
+.vscode-test/**
+src/**
+test/**
+scripts/**
+tsconfig.json
+**/*.map
+**/.DS_Store
