@@ -1,0 +1,47 @@
+{
+  "name": "codemind-extension",
+  "displayName": "CodeMind",
+  "description": "Evidence-backed VS Code Assistant",
+  "version": "0.1.0",
+  "private": true,
+  "extensionKind": ["ui"],
+  "engines": {
+    "vscode": "^1.93.0"
+  },
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false,
+      "description": "CodeMind indexes workspace code and may inspect terminal executions after the workspace is trusted."
+    }
+  },
+  "main": "./out/extension.js",
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:codemind.openChat",
+    "onCommand:codemind.checkConnection"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "codemind.openChat",
+        "title": "CodeMind: Open Chat"
+      },
+      {
+        "command": "codemind.checkConnection",
+        "title": "CodeMind: Check Connection"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./ && node scripts/copy-service.js",
+    "watch": "tsc -watch -p ./",
+    "test:integration": "npm run compile && node test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0",
+    "@types/vscode": "^1.93.0",
+    "@vscode/test-electron": "^2.5.2",
+    "typescript": "^5.9.0"
+  }
+}

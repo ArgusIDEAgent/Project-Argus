@@ -1,0 +1,8 @@
+.DS_Store
+extension/node_modules/
+extension/out/
+extension/server/
+extension/.vscode-test/
+service/node_modules/
+service/dist/
+*.log

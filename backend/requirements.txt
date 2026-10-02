@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+celery
+redis
+tree-sitter
+tree-sitter-python
+cognee
+qdrant-client
+kuzu
