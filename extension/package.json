@@ -3,7 +3,7 @@
   "displayName": "CodeMind",
   "publisher": "codemind-local",
   "description": "Evidence-backed VS Code Assistant",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "extensionKind": [
     "workspace",
@@ -46,7 +46,7 @@
     "compile": "tsc -p ./ && node scripts/copy-service.js",
     "watch": "tsc -watch -p ./",
     "test:integration": "npm run compile && node test/runTest.js",
-    "package:vsix": "vsce package --out ../codemind-extension-0.1.0.vsix"
+    "package:vsix": "vsce package --out ../codemind-extension-0.2.0.vsix"
   },
   "dependencies": {
     "sql.js": "^1.13.0"
