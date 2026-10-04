@@ -11,7 +11,7 @@ async function main() {
   const vscodeExecutablePath = process.env.CODEMIND_VSCODE_EXECUTABLE ||
     (process.platform === 'darwin' ? '/Applications/Visual Studio Code.app/Contents/MacOS/Code' : undefined);
 
-  const testProfile = fs.mkdtempSync(path.join(os.tmpdir(), 'codemind-vscode-'));
+  const testProfile = fs.mkdtempSync(path.join(process.platform === 'darwin' ? '/tmp' : os.tmpdir(), 'cm-vscode-'));
   try {
     await runTests({
       vscodeExecutablePath,

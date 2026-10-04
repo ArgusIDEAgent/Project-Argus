@@ -1,0 +1,7 @@
+[
+  { "question": "What does this project contain?", "kind": "system_overview", "sourcePath": "api/login.ts" },
+  { "question": "What is the purpose of the API module?", "kind": "module_purpose", "sourcePath": "api/login.ts" },
+  { "question": "How does the login API route connect to its handler?", "kind": "api_flow", "sourcePath": "api/login.ts" },
+  { "question": "Where is the user data entity defined?", "kind": "data_flow", "sourcePath": "data/models.py" },
+  { "question": "How do I set up this project?", "kind": "setup", "sourcePath": "README.md" }
+]

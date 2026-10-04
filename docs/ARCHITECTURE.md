@@ -1,6 +1,6 @@
 # CodeMind architecture
 
-**Status:** target design. Phase 1 now implements the chat panel, local service lifecycle, and Hello exchange; the remaining components specify the TypeScript/JavaScript VS Code investor release in [BUILD_PLAN.md](BUILD_PLAN.md).
+**Status:** target design with Phases 0-3 implemented. The extension and service provide Git-aware indexing, an AST graph, local semantic retrieval, and duplicate/reuse suggestions. SQLite stores graph and vector records; Ollama supplies local embeddings. Source-cited generative answers and later investor-release components remain planned in [BUILD_PLAN.md](BUILD_PLAN.md). See [PHASE_3_CONTRACT.md](PHASE_3_CONTRACT.md) for implemented behavior and limits.
 
 ## Product boundary
 

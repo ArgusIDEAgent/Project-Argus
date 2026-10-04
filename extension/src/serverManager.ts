@@ -6,7 +6,21 @@ import * as vscode from 'vscode';
 
 type HelloResponse = { reply: string };
 export type Repository = { id: string; rootPath: string; defaultBranch: string };
-export type Job = { id: string; state: 'queued' | 'running' | 'completed' | 'failed'; error: string | null; result: { fileCount: number } | null };
+export type Job = { id: string; state: 'queued' | 'running' | 'completed' | 'failed'; error: string | null;
+  result: { fileCount: number; commitHash: string; branch: string; dirtyFingerprint: string;
+    semantic?: { state: string; error: string | null; chunkCount: number };
+    docs?: DocsStatus } | null };
+export type CodeResult = { entityId: string; path: string; name: string; startLine: number; endLine: number;
+  reason: string; classification?: string; confidence?: number; revision: string; sourceHash: string;
+  callers: { name: string }[]; tests: { name: string }[]; docSectionId?: string; docKind?: string };
+export type SearchResult = { results: CodeResult[]; mode: string; warning: string | null; queryHash?: string };
+export type DocsStatus = { sectionCount: number; currentCount: number; staleCount: number; affectedCount: number; generatedCount: number };
+export type DocEvidence = { entityId: string; type: string; path: string; name: string; kind: string;
+  relation: string; startLine: number; endLine: number; sourceHash: string | null };
+export type DocSection = { repoId: string; sectionId: string; title: string; kind: string;
+  contentMarkdown: string; sourceCommit: string | null; generationReason: string; freshness: string;
+  generated: boolean; proposedMarkdown: string | null; affectedBy: string[]; evidence: DocEvidence[] };
+export type DocList = { repoId: string; sections: { sectionId: string; title: string; kind: string; freshness: string }[]; status: DocsStatus };
 
 export class ServerManager implements vscode.Disposable {
   private child: ChildProcessWithoutNullStreams | undefined;
@@ -40,6 +54,10 @@ export class ServerManager implements vscode.Disposable {
           ELECTRON_RUN_AS_NODE: '1',
           CODEMIND_SESSION_TOKEN: this.token,
           CODEMIND_DATA_DIR: this.dataDir,
+          CODEMIND_EMBEDDING_URL: vscode.workspace.getConfiguration('codemind').get('embeddingUrl', 'http://127.0.0.1:11434'),
+          CODEMIND_EMBEDDING_MODEL: vscode.workspace.getConfiguration('codemind').get('embeddingModel', 'nomic-embed-text'),
+          CODEMIND_MODEL_URL: vscode.workspace.getConfiguration('codemind').get('modelUrl', 'http://127.0.0.1:11434'),
+          CODEMIND_MODEL_NAME: vscode.workspace.getConfiguration('codemind').get('modelName', 'llama3.2'),
         },
         stdio: ['pipe', 'pipe', 'pipe'],
       });
@@ -120,11 +138,57 @@ export class ServerManager implements vscode.Disposable {
     return result.jobId;
   }
 
+  async refreshRepository(id: string): Promise<string> {
+    const result = await this.request<{ jobId: string }>('POST', `/repos/${id}/refresh`);
+    return result.jobId;
+  }
+
   async getJob(id: string): Promise<Job> {
     return this.request<Job>('GET', `/jobs/${id}`);
   }
 
-  private async request<T>(method: 'GET' | 'POST', requestPath: string, payload?: unknown): Promise<T> {
+  async liveState(id: string): Promise<{ commitHash: string; branch: string }> {
+    return this.request('GET', `/repos/${id}/live-state`);
+  }
+
+  async search(repoId: string, query: string): Promise<SearchResult> {
+    return this.request('POST', '/search/code', { repoId, query, limit: 5 });
+  }
+
+  async reuse(repoId: string, input: { query: string } | { entityId: string }): Promise<SearchResult> {
+    return this.request('POST', '/analysis/reuse', { repoId, ...input, limit: 3 });
+  }
+
+  async graphFile(repoId: string, filePath: string): Promise<{ nodes: { id: string; type: string; kind: string; startLine: number; endLine: number }[] }> {
+    return this.request('GET', `/graph/file/${encodeURIComponent(filePath)}?repoId=${repoId}`);
+  }
+
+  async feedback(repoId: string, queryHash: string, entityId: string, decision: 'use' | 'ignore'): Promise<void> {
+    await this.request('POST', '/analysis/reuse/feedback', { repoId, queryHash, entityId, decision });
+  }
+
+  async docsOverview(repoId: string): Promise<DocSection | null> {
+    try { return await this.request('GET', `/docs/overview?repoId=${repoId}`); }
+    catch (error) { if (error instanceof Error && /Documentation not found/.test(error.message)) return null; throw error; }
+  }
+
+  async docSection(repoId: string, sectionId: string): Promise<DocSection> {
+    return this.request('GET', `/docs/section/${sectionId}?repoId=${repoId}`);
+  }
+
+  async docSections(repoId: string): Promise<DocList> {
+    return this.request('GET', `/docs/sections?repoId=${repoId}`);
+  }
+
+  async staleDocs(repoId: string): Promise<{ repoId: string; sections: DocSection[]; status: DocsStatus }> {
+    return this.request('GET', `/docs/stale?repoId=${repoId}`);
+  }
+
+  async syncDocs(repoId: string, mode: 'baseline' | 'incremental'): Promise<{ updated: string[]; affected: string[]; status: DocsStatus; overview: DocSection | null }> {
+    return this.request('POST', '/docs/sync', { repoId, mode }, 600000);
+  }
+
+  private async request<T>(method: 'GET' | 'POST', requestPath: string, payload?: unknown, timeoutMs = 90000): Promise<T> {
     await this.start();
     if (!this.port) throw new Error('Local server is unavailable.');
 
@@ -157,7 +221,7 @@ export class ServerManager implements vscode.Disposable {
           }
         });
       });
-      request.setTimeout(5000, () => request.destroy(new Error('Local server did not respond.')));
+      request.setTimeout(timeoutMs, () => request.destroy(new Error('Local server did not respond.')));
       request.on('error', reject);
       request.end(body);
     });

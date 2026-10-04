@@ -2,7 +2,7 @@
 
 CodeMind is a planned VS Code assistant that explains how a codebase works, traces dependencies, and investigates development failures using source-linked evidence from code, Git history, and related records.
 
-**Status:** Phase 1 working slice. The VS Code extension opens a chat panel, starts a local Node.js server, and exchanges a Hello message. Code indexing, retrieval, history, and model answers are planned next. See the [technical architecture](docs/ARCHITECTURE.md), [build plan](docs/BUILD_PLAN.md), and [investor demo brief](docs/INVESTOR_DEMO.md).
+**Status:** Phases 0-4 of the PDF blueprint are implemented. The extension opens chat from any VS Code window, indexes a selected Git repository, and provides AST graph traversal, local semantic search, duplicate/reuse suggestions, and graph-linked documentation sync. Search and source navigation are active; generative repository answers remain planned. Semantic search requires a local Ollama embedding model and falls back visibly to lexical search when unavailable. See the [Phase 4 contract](docs/PHASE_4_CONTRACT.md), [Phase 3 contract](docs/PHASE_3_CONTRACT.md), [Phase 0 contract](docs/PHASE_0_CONTRACT.md), [Phase 1 contract](docs/PHASE_1_CONTRACT.md), [Phase 2 contract](docs/PHASE_2_CONTRACT.md), and [technical architecture](docs/ARCHITECTURE.md).
 
 ## Product promise
 
@@ -26,16 +26,16 @@ The first investor release is a **working, local-first vertical slice**, not a c
 - `evals/`: fixed questions and scoring harness for retrieval, answers, citations, and latency.
 - `docs/`: architecture, build gates, setup, demo, and operations notes.
 
-The extension and service now contain the Phase 1 implementation; the fixture and evaluation directories remain scaffolds.
+The extension and service contain the Phase 0-4 implementation. Semantic fixtures and the real-model evaluation runner live under `service/test/fixtures/phase3` and `service/scripts`; Phase 4 onboarding questions live in `evals/phase4-questions.json`.
 
-## Run the Phase 1 demo
+## Run the local service
 
 1. Run `npm install` in `extension/`.
 2. Open this project folder in VS Code and press **F5** to launch **Run CodeMind Extension**.
 3. In the Extension Development Host, run **CodeMind: Open Chat** from the Command Palette.
-4. The panel sends `Hello` automatically and displays the local server's reply. Send another message to repeat the round trip.
+4. Open a trusted Git repository in the Development Host or use **Select Repository** in chat. The header shows the number of source files scanned. Send `Hello` to verify the local reply. Indexing also builds the graph; inspect it through the [Phase 2 graph API](docs/PHASE_2_CONTRACT.md).
 
-The server uses an ephemeral `127.0.0.1` port and a per-session token. It starts with extension activation and stops when the extension host shuts down. See [extension/README.md](extension/README.md) for troubleshooting.
+For chat in normal VS Code windows and other repositories, [install the packaged extension](extension/README.md) into your VS Code profile and reload VS Code. The server uses an ephemeral `127.0.0.1` port and a per-session token. It starts on the first request and stops when the extension host shuts down.
 
 ## Delivery target
 

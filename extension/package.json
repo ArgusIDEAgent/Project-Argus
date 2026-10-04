@@ -3,7 +3,7 @@
   "displayName": "CodeMind",
   "publisher": "codemind-local",
   "description": "Evidence-backed VS Code Assistant",
-  "version": "0.2.0",
+  "version": "0.4.0",
   "private": true,
   "extensionKind": [
     "workspace",
@@ -23,7 +23,9 @@
     "onStartupFinished",
     "onCommand:codemind.openChat",
     "onCommand:codemind.checkConnection",
-    "onCommand:codemind.selectRepository"
+    "onCommand:codemind.selectRepository",
+    "onCommand:codemind.openDocsOverview",
+    "onCommand:codemind.syncDocs"
   ],
   "contributes": {
     "commands": [
@@ -38,18 +40,61 @@
       {
         "command": "codemind.selectRepository",
         "title": "CodeMind: Select Repository"
+      },
+      {
+        "command": "codemind.searchCode",
+        "title": "CodeMind: Search Code"
+      },
+      {
+        "command": "codemind.checkReuse",
+        "title": "CodeMind: Check for Reusable Code"
+      },
+      {
+        "command": "codemind.openDocsOverview",
+        "title": "CodeMind: Open Documentation Overview"
+      },
+      {
+        "command": "codemind.syncDocs",
+        "title": "CodeMind: Sync Documentation"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "CodeMind",
+      "properties": {
+        "codemind.embeddingUrl": {
+          "type": "string", "default": "http://127.0.0.1:11434", "scope": "application",
+          "description": "Local Ollama URL. Reload the window after changing."
+        },
+        "codemind.embeddingModel": {
+          "type": "string", "default": "nomic-embed-text", "scope": "application",
+          "description": "Installed local embedding model. Reload the window after changing."
+        },
+        "codemind.modelUrl": {
+          "type": "string", "default": "http://127.0.0.1:11434", "scope": "application",
+          "description": "Local Ollama URL for documentation generation. Reload the window after changing."
+        },
+        "codemind.modelName": {
+          "type": "string", "default": "llama3.2", "scope": "application",
+          "description": "Installed local text model for documentation generation. Reload the window after changing."
+        },
+        "codemind.checkReuseOnSave": {
+          "type": "boolean", "default": true,
+          "description": "Check newly indexed symbols for reusable implementations after saving."
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./ && node scripts/copy-service.js",
     "watch": "tsc -watch -p ./",
     "test:integration": "npm run compile && node test/runTest.js",
-    "package:vsix": "vsce package --out ../codemind-extension-0.2.0.vsix"
+    "package:vsix": "vsce package --out ../codemind-extension-0.4.0.vsix"
   },
   "dependencies": {
-    "sql.js": "^1.13.0"
+    "@vscode/tree-sitter-wasm": "^0.3.1",
+    "sql.js": "^1.13.0",
+    "web-tree-sitter": "^0.27.0"
   },
   "devDependencies": {
     "@types/node": "^20.19.0",
