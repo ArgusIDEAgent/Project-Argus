@@ -19,13 +19,19 @@ QDRANT_HOST = "localhost"
 QDRANT_PORT = 6333
 
 # ──────────────────────────────────────────────
+# Data directory (stores index state & graph outside target repos)
+# ──────────────────────────────────────────────
+import os as _os
+DEFAULT_DATA_DIR = _os.path.expanduser(_os.environ.get("CODEMIND_DATA_DIR", "~/.codemind/data"))
+
+# ──────────────────────────────────────────────
 # Indexer defaults
 # ──────────────────────────────────────────────
 DEFAULT_CHUNK_SIZE = 300
 DEFAULT_CHUNK_OVERLAP = 50
 DEFAULT_TOP_K = 5
-INDEX_STATE_FILENAME = ".codemind_index_state.json"
-GRAPH_FILENAME = ".codemind_graph.json"
+INDEX_STATE_FILENAME = "index_state.json"
+GRAPH_FILENAME = "graph.json"
 
 # ──────────────────────────────────────────────
 # Directories to skip during recursive walk

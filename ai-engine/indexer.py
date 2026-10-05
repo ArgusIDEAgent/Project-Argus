@@ -8,7 +8,8 @@ call relationships) via AST parsing for structural/impact queries.
 
 Incremental indexing:
   - On each run, computes SHA-256 hashes of all eligible files.
-  - Compares against a saved state file (.codemind_index_state.json).
+  - Compares against a saved state file (index_state.json) stored in a
+    separate data directory (NOT inside the target repo).
   - Only re-embeds files that are new or modified; prunes deleted files.
   - Pass --full-reindex to force a clean re-index of every file.
 
@@ -16,15 +17,17 @@ Usage:
   python indexer.py --dir ../my-repo
   python indexer.py --dir ./sample_code --full-reindex
   python indexer.py --dir ./my-repo --no-graph
+  python indexer.py --dir ./my-repo --data-dir /tmp/codemind_data
 """
 
 import argparse
 import hashlib
 import json
+import logging
 import networkx as nx
 import os
-import sys
 import uuid
+from typing import Callable
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from qdrant_client.models import Distance, VectorParams, PointStruct, FilterSelector, Filter, FieldCondition, MatchValue
@@ -34,6 +37,7 @@ from config import (
     VECTOR_SIZE,
     DEFAULT_CHUNK_SIZE,
     DEFAULT_CHUNK_OVERLAP,
+    DEFAULT_DATA_DIR,
     IGNORE_DIRS,
     INDEX_STATE_FILENAME,
     GRAPH_FILENAME,
@@ -42,6 +46,20 @@ from config import (
     get_embedding_model,
 )
 import graph_builder
+
+logger = logging.getLogger(__name__)
+
+
+# ─────────────────────────────────────────────────────────────
+# Exceptions
+# ─────────────────────────────────────────────────────────────
+
+class IndexingError(Exception):
+    """Raised when an indexing operation cannot proceed.
+
+    Replaces former sys.exit(1) calls so callers (such as the FastAPI server)
+    can catch and surface the error cleanly.
+    """
 
 
 # ─────────────────────────────────────────────────────────────
@@ -61,14 +79,27 @@ def _sha256(file_path: str) -> str:
     return h.hexdigest()
 
 
-def _point_id(file_rel_path: str, chunk_index: int) -> str:
-    """Generate a deterministic UUID-string for a (file, chunk_index) pair.
+def _make_repo_id(target_dir: str) -> str:
+    """Derive a stable repo_id from the absolute target directory path."""
+    return hashlib.sha256(os.path.abspath(target_dir).encode()).hexdigest()[:24]
 
-    Using uuid5 means re-indexing the same file produces the same IDs,
-    making upserts idempotent.
+
+def _point_id(repo_id: str, file_rel_path: str, chunk_index: int) -> str:
+    """Generate a deterministic UUID-string for a (repo, file, chunk_index) triple.
+
+    Including repo_id prevents collisions when multiple repos share a
+    Qdrant collection — e.g. src/app.py in Repo A won't overwrite
+    src/app.py in Repo B.
     """
-    name = f"{file_rel_path}::{chunk_index}"
+    name = f"{repo_id}::{file_rel_path}::{chunk_index}"
     return str(uuid.uuid5(_NAMESPACE_UUID, name))
+
+
+def _data_dir_for_repo(repo_id: str, base_data_dir: str) -> str:
+    """Return the per-repo data directory, creating it if needed."""
+    repo_data_dir = os.path.join(base_data_dir, repo_id)
+    os.makedirs(repo_data_dir, exist_ok=True)
+    return repo_data_dir
 
 
 def _load_state(state_path: str) -> dict[str, str]:
@@ -110,22 +141,59 @@ def _discover_files(root_dir: str) -> list[str]:
 def index_directory(
     target_dir: str,
     *,
+    repo_id: str | None = None,
+    data_dir: str | None = None,
     collection: str = COLLECTION_NAME,
     full_reindex: bool = False,
     chunk_size: int = DEFAULT_CHUNK_SIZE,
     chunk_overlap: int = DEFAULT_CHUNK_OVERLAP,
-    state_file: str | None = None,
     build_graph: bool = True,
-) -> None:
-    """Walk *target_dir*, embed new/modified files, and upsert into Qdrant."""
+    on_progress: Callable[[str], None] | None = None,
+) -> dict:
+    """Walk *target_dir*, embed new/modified files, and upsert into Qdrant.
+
+    Args:
+        target_dir:   Root of the codebase to index.
+        repo_id:      Unique repository identifier. Auto-derived from
+                      target_dir if not supplied.
+        data_dir:     Base directory for index state and graph files.
+                      Defaults to ~/.codemind/data/.  State is stored at
+                      <data_dir>/<repo_id>/index_state.json, keeping the
+                      target repo clean (no VS Code file-watcher loops).
+        collection:   Qdrant collection name.
+        full_reindex: When True, ignores saved state and re-indexes every file.
+        chunk_size:   Maximum chunk size in characters.
+        chunk_overlap: Overlap between adjacent chunks.
+        build_graph:  Whether to build the NetworkX knowledge graph.
+        on_progress:  Optional callback invoked with status messages.
+
+    Returns:
+        Summary dict with keys: files_indexed, files_skipped,
+        files_pruned, points_upserted, graph_nodes.
+
+    Raises:
+        IndexingError: If target_dir does not exist or another
+                       unrecoverable issue occurs.
+    """
+
+    def _log(msg: str) -> None:
+        logger.info(msg)
+        if on_progress:
+            on_progress(msg)
 
     target_dir = os.path.abspath(target_dir)
     if not os.path.isdir(target_dir):
-        print(f"❌ Target directory does not exist: {target_dir}")
-        sys.exit(1)
+        raise IndexingError(f"Target directory does not exist: {target_dir}")
 
-    state_path = state_file or os.path.join(target_dir, INDEX_STATE_FILENAME)
-    graph_path = os.path.join(target_dir, GRAPH_FILENAME)
+    # --- Resolve repo_id and data paths ---
+    if repo_id is None:
+        repo_id = _make_repo_id(target_dir)
+
+    base_data_dir = data_dir or DEFAULT_DATA_DIR
+    repo_data_dir = _data_dir_for_repo(repo_id, base_data_dir)
+
+    state_path = os.path.join(repo_data_dir, INDEX_STATE_FILENAME)
+    graph_path = os.path.join(repo_data_dir, GRAPH_FILENAME)
 
     # --- Load or create knowledge graph ---
     if build_graph:
@@ -134,7 +202,11 @@ def index_directory(
         kg = None
 
     # --- Clients ---
-    client = get_qdrant_client()
+    try:
+        client = get_qdrant_client()
+    except Exception as exc:
+        raise IndexingError(f"Cannot connect to Qdrant: {exc}") from exc
+
     embedding_model = get_embedding_model()
 
     # --- Ensure collection exists ---
@@ -143,11 +215,11 @@ def index_directory(
             collection_name=collection,
             vectors_config=VectorParams(size=VECTOR_SIZE, distance=Distance.COSINE),
         )
-        print(f"✅ Created Qdrant collection: '{collection}'")
+        _log(f"✅ Created Qdrant collection: '{collection}'")
 
     # --- Discover files ---
     all_files = _discover_files(target_dir)
-    print(f"📂 Found {len(all_files)} indexable file(s) under {target_dir}")
+    _log(f"📂 Found {len(all_files)} indexable file(s) under {target_dir}")
 
     # --- Load previous state ---
     prev_state = {} if full_reindex else _load_state(state_path)
@@ -170,7 +242,7 @@ def index_directory(
     # Detect deletions (files in prev_state that are no longer on disk)
     deleted_rel_paths = set(prev_state.keys()) - set(new_state.keys())
 
-    print(
+    _log(
         f"   ↳ {len(files_to_index)} to index, "
         f"{skipped} unchanged (skipped), "
         f"{len(deleted_rel_paths)} deleted"
@@ -182,14 +254,17 @@ def index_directory(
             collection_name=collection,
             points_selector=FilterSelector(
                 filter=Filter(
-                    must=[FieldCondition(key="file_path", match=MatchValue(value=rel_path))]
+                    must=[
+                        FieldCondition(key="repo_id", match=MatchValue(value=repo_id)),
+                        FieldCondition(key="file_path", match=MatchValue(value=rel_path)),
+                    ]
                 )
             ),
         )
         if kg is not None and rel_path.endswith(".py"):
             graph_builder.remove_file_from_graph(kg, rel_path)
     if deleted_rel_paths:
-        print(f"🗑️  Pruned vectors for {len(deleted_rel_paths)} deleted file(s)")
+        _log(f"🗑️  Pruned vectors for {len(deleted_rel_paths)} deleted file(s)")
 
     # --- Process new / modified files ---
     total_points = 0
@@ -204,15 +279,19 @@ def index_directory(
             with open(abs_path, "r", encoding="utf-8", errors="replace") as f:
                 raw_code = f.read()
         except Exception as exc:
-            print(f"⚠️  Skipping {rel_path}: {exc}")
+            _log(f"⚠️  Skipping {rel_path}: {exc}")
             continue
 
         # Delete any previous vectors for this file (handles modifications)
+        # Scoped to repo_id to prevent cross-repo interference.
         client.delete(
             collection_name=collection,
             points_selector=FilterSelector(
                 filter=Filter(
-                    must=[FieldCondition(key="file_path", match=MatchValue(value=rel_path))]
+                    must=[
+                        FieldCondition(key="repo_id", match=MatchValue(value=repo_id)),
+                        FieldCondition(key="file_path", match=MatchValue(value=rel_path)),
+                    ]
                 )
             ),
         )
@@ -242,7 +321,8 @@ def index_directory(
         # Embed
         embeddings = list(embedding_model.embed(chunks))
 
-        # Build points
+        # Build points — repo_id is included in both the deterministic ID
+        # and the payload so queries can filter by repo.
         points = []
         for idx, (doc, vector) in enumerate(zip(documents, embeddings)):
             chunk = doc.page_content
@@ -251,9 +331,10 @@ def index_directory(
             end_line = start_line + chunk.count("\n")
             points.append(
                 PointStruct(
-                    id=_point_id(rel_path, idx),
+                    id=_point_id(repo_id, rel_path, idx),
                     vector=vector.tolist(),
                     payload={
+                        "repo_id": repo_id,
                         "file_path": rel_path,
                         "code_snippet": chunk,
                         "language": language.value if language else "text",
@@ -273,7 +354,7 @@ def index_directory(
             graph_nodes_added += n_added
 
         graph_tag = f", {graph_nodes_added} graph nodes" if kg is not None and rel_path.endswith(".py") else ""
-        print(f"   ✔ {rel_path}  ({len(chunks)} chunks{graph_tag})")
+        _log(f"   ✔ {rel_path}  ({len(chunks)} chunks{graph_tag})")
 
     # --- Persist state and graph ---
     _save_state(state_path, new_state)
@@ -281,13 +362,21 @@ def index_directory(
     if kg is not None:
         graph_builder.save_graph(kg, graph_path)
         summary = graph_builder.get_graph_summary(kg)
-        print(f"\n🔗 Knowledge graph: {summary['total_nodes']} nodes, {summary['total_edges']} edges")
+        _log(f"\n🔗 Knowledge graph: {summary['total_nodes']} nodes, {summary['total_edges']} edges")
         for ntype, count in sorted(summary['nodes'].items()):
-            print(f"   {ntype}: {count}")
+            _log(f"   {ntype}: {count}")
 
-    print(f"\n🚀 Indexing complete — {total_points} point(s) upserted, "
-          f"{skipped} file(s) unchanged, "
-          f"{len(deleted_rel_paths)} file(s) pruned.")
+    _log(f"\n🚀 Indexing complete — {total_points} point(s) upserted, "
+         f"{skipped} file(s) unchanged, "
+         f"{len(deleted_rel_paths)} file(s) pruned.")
+
+    return {
+        "files_indexed": len(files_to_index),
+        "files_skipped": skipped,
+        "files_pruned": len(deleted_rel_paths),
+        "points_upserted": total_points,
+        "graph_nodes": graph_nodes_added,
+    }
 
 
 # ─────────────────────────────────────────────────────────────
@@ -304,6 +393,16 @@ def main() -> None:
         help="Root directory of the codebase to index.",
     )
     parser.add_argument(
+        "--data-dir",
+        default=None,
+        help=f"Directory to store index state and graph files (default: {DEFAULT_DATA_DIR}/<repo_hash>/).",
+    )
+    parser.add_argument(
+        "--repo-id",
+        default=None,
+        help="Explicit repo identifier. Defaults to a SHA-256 hash of the target directory.",
+    )
+    parser.add_argument(
         "--full-reindex",
         action="store_true",
         default=False,
@@ -313,11 +412,6 @@ def main() -> None:
         "--collection",
         default=COLLECTION_NAME,
         help=f"Qdrant collection name (default: {COLLECTION_NAME}).",
-    )
-    parser.add_argument(
-        "--state-file",
-        default=None,
-        help="Path to the index state JSON file (default: <dir>/.codemind_index_state.json).",
     )
     parser.add_argument(
         "--chunk-size",
@@ -340,15 +434,22 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    index_directory(
-        target_dir=args.dir,
-        collection=args.collection,
-        full_reindex=args.full_reindex,
-        chunk_size=args.chunk_size,
-        chunk_overlap=args.chunk_overlap,
-        state_file=args.state_file,
-        build_graph=not args.no_graph,
-    )
+    try:
+        result = index_directory(
+            target_dir=args.dir,
+            repo_id=args.repo_id,
+            data_dir=args.data_dir,
+            collection=args.collection,
+            full_reindex=args.full_reindex,
+            chunk_size=args.chunk_size,
+            chunk_overlap=args.chunk_overlap,
+            build_graph=not args.no_graph,
+            on_progress=lambda msg: print(msg),
+        )
+        print(f"\nSummary: {json.dumps(result, indent=2)}")
+    except IndexingError as exc:
+        print(f"❌ {exc}")
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":

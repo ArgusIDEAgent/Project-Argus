@@ -22,6 +22,7 @@ import os
 import re
 import sys
 
+import networkx as nx
 from dotenv import load_dotenv
 from litellm import completion
 
@@ -59,8 +60,18 @@ _STRUCTURAL_PATTERNS: list[tuple[str, str]] = [
 ]
 
 
-def _detect_structural_query(question: str) -> tuple[bool, str, str]:
+def _detect_structural_query(
+    question: str,
+    knowledge_graph: "nx.DiGraph | None" = None,
+) -> tuple[bool, str, str]:
     """Detect whether a question is asking about code structure.
+
+    Args:
+        question:        The user's original question (preserving case).
+        knowledge_graph: Optional loaded NetworkX graph.  When provided,
+                         the extracted symbol is validated against the graph
+                         to avoid false positives (e.g. treating the common
+                         word "the" as a code symbol).
 
     Returns:
         (is_structural, target_symbol, query_type)
@@ -71,8 +82,18 @@ def _detect_structural_query(question: str) -> tuple[bool, str, str]:
     for pattern, query_type in _STRUCTURAL_PATTERNS:
         match = re.search(pattern, q_lower)
         if match:
-            # Extract the symbol name from the first capture group
-            symbol = match.group(1).strip("\"'`")
+            # Extract the symbol from the *original* text at the same
+            # position so we preserve its casing (e.g. "GenerateToken"
+            # instead of "generatetoken").
+            start, end = match.start(1), match.end(1)
+            symbol = question[start:end].strip("\"'`")
+
+            # If a knowledge graph was supplied, verify the symbol
+            # actually exists before committing to a structural query.
+            if knowledge_graph is not None:
+                if graph_builder.find_node(knowledge_graph, symbol) is None:
+                    continue  # not a real symbol — try next pattern
+
             return True, symbol, query_type
 
     # Fallback: check for backtick-quoted symbols with structural keywords
@@ -85,6 +106,11 @@ def _detect_structural_query(question: str) -> tuple[bool, str, str]:
         backtick_match = re.search(r"`(\w+)`", question)
         if backtick_match:
             symbol = backtick_match.group(1)
+
+            if knowledge_graph is not None:
+                if graph_builder.find_node(knowledge_graph, symbol) is None:
+                    return False, "", ""
+
             # Default to "callers" for generic structural queries
             if any(kw in q_lower for kw in ("impact", "affect", "break", "change", "modify")):
                 return True, symbol, "impact"
@@ -218,51 +244,56 @@ def ask_codemind(
     """
     print(f"\n👤 Developer: {question}")
 
-    # 1. DETECT structural intent
-    is_structural, target_symbol, query_type = _detect_structural_query(question)
+    # Load graph early so _detect_structural_query can validate symbols
+    kg: nx.DiGraph | None = None
+    if graph_path:
+        kg = graph_builder.load_graph(graph_path)
+        if kg.number_of_nodes() == 0:
+            kg = None
+
+    # 1. DETECT structural intent (passing the graph for symbol validation)
+    is_structural, target_symbol, query_type = _detect_structural_query(question, kg)
 
     graph_context_text = ""
     graph_file_chunks: list[dict] = []
 
-    if is_structural and graph_path:
-        kg = graph_builder.load_graph(graph_path)
-        if kg.number_of_nodes() > 0:
-            print(f"🔗 Structural query detected: {query_type}('{target_symbol}')")
+    if is_structural and kg is not None:
+        print(f"🔗 Structural query detected: {query_type}('{target_symbol}')")
 
-            # Query the knowledge graph
-            if query_type == "callers":
-                relationships = graph_builder.get_callers(kg, target_symbol)
-            elif query_type == "callees":
-                relationships = graph_builder.get_callees(kg, target_symbol)
-            elif query_type == "impact":
-                relationships = graph_builder.get_impact_chain(kg, target_symbol, depth=3)
-            elif query_type == "members":
-                relationships = graph_builder.get_class_members(kg, target_symbol)
-            else:
-                relationships = []
+        # Query the knowledge graph
+        if query_type == "callers":
+            relationships = graph_builder.get_callers(kg, target_symbol)
+        elif query_type == "callees":
+            relationships = graph_builder.get_callees(kg, target_symbol)
+        elif query_type == "impact":
+            relationships = graph_builder.get_impact_chain(kg, target_symbol, depth=3)
+        elif query_type == "members":
+            relationships = graph_builder.get_class_members(kg, target_symbol)
+        else:
+            relationships = []
 
-            if relationships:
-                graph_context_text = graph_builder.format_graph_context(
-                    target_symbol, relationships, query_type
-                )
-                # Also fetch code chunks for files involved in the relationships
-                related_files = list({
-                    r.get("file_path", "")
-                    for r in relationships
-                    if r.get("file_path")
-                })
-                # Add the target symbol's own file
-                target_node = graph_builder.find_node(kg, target_symbol)
-                if target_node:
-                    target_file = kg.nodes[target_node].get("file_path", "")
-                    if target_file and target_file not in related_files:
-                        related_files.append(target_file)
+        if relationships:
+            graph_context_text = graph_builder.format_graph_context(
+                target_symbol, relationships, query_type
+            )
+            # Also fetch code chunks for files involved in the relationships
+            related_files = list({
+                r.get("file_path", "")
+                for r in relationships
+                if r.get("file_path")
+            })
+            # Add the target symbol's own file
+            target_node = graph_builder.find_node(kg, target_symbol)
+            if target_node:
+                target_file = kg.nodes[target_node].get("file_path", "")
+                if target_file and target_file not in related_files:
+                    related_files.append(target_file)
 
-                graph_file_chunks = _retrieve_chunks_by_file(
-                    related_files, collection=collection
-                )
-                print(f"   ↳ Found {len(relationships)} relationship(s), "
-                      f"fetched {len(graph_file_chunks)} chunk(s) from related files")
+            graph_file_chunks = _retrieve_chunks_by_file(
+                related_files, collection=collection
+            )
+            print(f"   ↳ Found {len(relationships)} relationship(s), "
+                  f"fetched {len(graph_file_chunks)} chunk(s) from related files")
 
     # 2. RETRIEVE — standard vector search
     semantic_chunks = _retrieve_context(question, top_k=top_k, collection=collection)
