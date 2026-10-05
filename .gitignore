@@ -1,7 +1,18 @@
 # Python Virtual Environments & Cache
 venv/
+.venv/
 ai-engine/venv/
 __pycache__/
+*.pyc
 
 # Environment Variables (Secrets)
 .env
+
+# Node / VS Code extension build artifacts
+node_modules/
+extension/out/
+extension/server/
+
+# Generated index & knowledge-graph state
+.codemind_index_state.json
+.codemind_graph.json

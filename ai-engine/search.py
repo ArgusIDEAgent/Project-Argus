@@ -63,6 +63,8 @@ def search_codebase(
             "code_snippet": payload.get("code_snippet", ""),
             "language": payload.get("language", "text"),
             "score": score,
+            "start_line": payload.get("start_line", 1),
+            "end_line": payload.get("end_line", 1),
         }
         results.append(result)
 

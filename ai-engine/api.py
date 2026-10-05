@@ -1,10 +1,41 @@
 import os
 import hashlib
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 import search
 
 app = FastAPI(title="Argus Python AI Engine")
+
+# Repos registered during this session (repoId -> metadata). Used to resolve the
+# on-disk location of indexed files so their hashes can be verified.
+_REGISTERED_REPOS: dict[str, dict] = {}
+
+
+def _resolve_source(repo_id: str, rel_path: str) -> str | None:
+    """Resolve a repo-relative indexed path to an absolute on-disk path."""
+    if not rel_path:
+        return None
+    candidates: list[str] = []
+    entry = _REGISTERED_REPOS.get(repo_id)
+    if entry:
+        candidates.append(os.path.join(entry["rootPath"], rel_path))
+    candidates.append(os.path.abspath(rel_path))
+    candidates.append(os.path.abspath(os.path.join("sample_code", os.path.basename(rel_path))))
+    for candidate in candidates:
+        if os.path.isfile(candidate):
+            return os.path.abspath(candidate)
+    return None
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    # The extension reads a top-level "error" field, unlike FastAPI's "detail".
+    detail = exc.detail
+    if isinstance(detail, dict) and "error" in detail:
+        detail = detail["error"]
+    return JSONResponse(status_code=exc.status_code, content={"error": detail})
+
 
 class HelloRequest(BaseModel):
     message: str
@@ -26,6 +57,7 @@ def hello(req: HelloRequest):
 @app.post("/repos/register")
 def register_repo(req: RegisterRequest):
     repo_id = hashlib.sha256(req.rootPath.encode()).hexdigest()[:24]
+    _REGISTERED_REPOS[repo_id] = {"rootPath": req.rootPath, "config": req.config}
     return {
         "repository": {
             "id": repo_id,
@@ -97,20 +129,31 @@ def search_code(req: SearchRequest):
         results = search.search_codebase(query=req.query, top_k=req.limit)
         formatted_results = []
         for res in results:
-            file_path = res.get("file_path", "unknown")
+            # Indexed paths are repo-relative; the extension resolves them against
+            # the selected rootPath and rejects absolute paths.
+            rel_path = res.get("file_path", "unknown")
+            abs_path = _resolve_source(req.repoId, rel_path)
+
+            # Hash the on-disk file so the extension can verify it hasn't changed.
+            file_hash = ""
+            if abs_path:
+                with open(abs_path, "rb") as f:
+                    file_hash = hashlib.sha256(f.read()).hexdigest()
+
             formatted_results.append({
-                "entityId": hashlib.sha256(file_path.encode()).hexdigest()[:40],
-                "path": file_path,
-                "name": os.path.basename(file_path),
-                "startLine": 1,
-                "endLine": 10,
+                "entityId": hashlib.sha256((abs_path or rel_path).encode()).hexdigest()[:40],
+                "path": rel_path,
+                "name": os.path.basename(rel_path),
+                "startLine": res.get("start_line", 1),
+                "endLine": res.get("end_line", 1),
                 "reason": f"Semantic similarity score: {res.get('score', 0):.4f}",
                 "confidence": float(res.get("score", 0.0)),
                 "revision": "latest",
-                "sourceHash": "",
+                "sourceHash": file_hash,
                 "callers": [],
                 "tests": []
             })
+
         return {
             "mode": "semantic",
             "warning": None,
@@ -118,3 +161,9 @@ def search_code(req: SearchRequest):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run("api:app", host="127.0.0.1", port=8000)

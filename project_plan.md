@@ -2,7 +2,7 @@
 
 **An AI-powered engineering assistant that understands your organization's own codebase — not just code in general.**
 
-> **Status: Early MVP.** This README describes what's actually built today and how it maps to the long-term vision below. For the full phased build-out plan, see [`PROJECT_PLAN.md`](./PROJECT_PLAN.md).
+> **Status: Early MVP.** This README describes what's actually built today and how it maps to the long-term vision below. For the full phased build-out plan, see the [Roadmap](#roadmap) below.
 
 ## Table of Contents
 - [Project Vision](#project-vision)
@@ -113,7 +113,7 @@ LiteLLM picks this up automatically when routing to `openrouter/...` models.
 ```
 argusideagent-project-argus/
 ├── README.md
-├── PROJECT_PLAN.md
+├── project_plan.md
 ├── requirements.txt
 └── ai-engine/
     ├── indexer.py         # Chunk → embed → store in Qdrant
@@ -126,7 +126,7 @@ argusideagent-project-argus/
 
 ## Roadmap
 
-The path from this MVP to the full vision is laid out in four phases in [`PROJECT_PLAN.md`](./PROJECT_PLAN.md):
+The path from this MVP to the full vision is laid out in four phases below:
 
 1. **MVP Hardening** — full-repo indexing, incremental updates, better retrieval, config/CLI/testing
 2. **Advanced Code Understanding** — AST parsing + a knowledge graph for call/dependency analysis

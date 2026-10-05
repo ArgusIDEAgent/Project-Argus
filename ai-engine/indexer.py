@@ -21,6 +21,7 @@ Usage:
 import argparse
 import hashlib
 import json
+import networkx as nx
 import os
 import sys
 import uuid
@@ -128,7 +129,7 @@ def index_directory(
 
     # --- Load or create knowledge graph ---
     if build_graph:
-        kg = graph_builder.load_graph(graph_path) if not full_reindex else __import__('networkx').DiGraph()
+        kg = graph_builder.load_graph(graph_path) if not full_reindex else nx.DiGraph()
     else:
         kg = None
 
@@ -222,24 +223,32 @@ def index_directory(
                 language=language,
                 chunk_size=chunk_size,
                 chunk_overlap=chunk_overlap,
+                add_start_index=True,
             )
         else:
             # Fallback: generic text splitter
             splitter = RecursiveCharacterTextSplitter(
                 chunk_size=chunk_size,
                 chunk_overlap=chunk_overlap,
+                add_start_index=True,
             )
 
-        chunks = splitter.split_text(raw_code)
-        if not chunks:
+        documents = splitter.create_documents([raw_code])
+        if not documents:
             continue
+
+        chunks = [doc.page_content for doc in documents]
 
         # Embed
         embeddings = list(embedding_model.embed(chunks))
 
         # Build points
         points = []
-        for idx, (chunk, vector) in enumerate(zip(chunks, embeddings)):
+        for idx, (doc, vector) in enumerate(zip(documents, embeddings)):
+            chunk = doc.page_content
+            start_index = doc.metadata.get("start_index", 0)
+            start_line = raw_code.count("\n", 0, start_index) + 1
+            end_line = start_line + chunk.count("\n")
             points.append(
                 PointStruct(
                     id=_point_id(rel_path, idx),
@@ -249,6 +258,8 @@ def index_directory(
                         "code_snippet": chunk,
                         "language": language.value if language else "text",
                         "chunk_index": idx,
+                        "start_line": start_line,
+                        "end_line": end_line,
                     },
                 )
             )
