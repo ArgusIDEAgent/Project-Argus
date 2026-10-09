@@ -2,7 +2,7 @@ import { randomBytes } from 'node:crypto';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
-import { ServerManager, SearchResult, CodeResult, DocSection, DocsStatus } from './serverManager';
+import { ServerManager, SearchResult, CodeResult, DocSection, DocsStatus, Job } from './serverManager';
 import { verifiedSourcePath } from './sourceNavigation';
 
 let server: ServerManager | undefined;
@@ -36,6 +36,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   let lastGitState: string | undefined;
   let refreshing = false;
   let refreshAgain = false;
+  let refreshFailures = 0;
+  let autoRefreshPaused = false;
   const pendingSymbols = new Map<string, Set<string>>();
   const resultActions = new Map<string, { result: CodeResult; repoId: string; queryHash?: string }>();
   const docSourceActions = new Map<string, { repoId: string; path: string; sourceHash: string; startLine: number; endLine: number }>();
@@ -111,6 +113,24 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     docSourceActions.clear();
   }
 
+  async function waitForJob(jobId: string, isCurrent: () => boolean, timeoutMs = 15 * 60_000): Promise<Job | undefined> {
+    const started = Date.now();
+    let delay = 300;
+    while (isCurrent()) {
+      const job = await server!.getJob(jobId);
+      if (job.state === 'completed' || job.state === 'failed') return job;
+      if (Date.now() - started > timeoutMs) throw new Error('Indexing timed out.');
+      await new Promise(resolve => setTimeout(resolve, delay));
+      delay = Math.min(Math.round(delay * 1.5), 2000);
+    }
+    return undefined;   // selection or panel changed
+  }
+  const IGNORED = /(^|\/)(node_modules|build|dist|out|target|coverage|vendor|\.next|\.venv|venv|__pycache__|\.pytest_cache|\.mypy_cache|\.idea|\.vscode-test)(\/|$)|\.egg-info(\/|$)/;
+  function isInside(root: string, file: string): boolean {
+    const rel = path.relative(root, file);
+    return rel !== '' && rel !== '..' && !rel.startsWith('..' + path.sep) && !path.isAbsolute(rel);
+  }
+
   async function runRefresh(): Promise<void> {
     const selected = selectedRepository;
     if (!selected || !server || !vscode.workspace.isTrusted) return;
@@ -118,32 +138,30 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     refreshing = true;
     try {
       const jobId = await server.refreshRepository(selected.id);
-      for (;;) {
-        const job = await server.getJob(jobId);
-        if (job.state === 'completed') {
-          if (selectedRepository === selected && job.result) lastGitState = `${job.result.commitHash}:${job.result.branch}`;
-          if (selectedRepository === selected && panel) {
-            await panel.webview.postMessage({ type: 'repository',
-              text: indexedLabel(selected.rootPath, job.result) + (job.result?.semantic?.state === 'degraded' ? ' - lexical search' : ' - semantic search') });
-            await updateDocsStatus(selected, job.result?.docs);
-            const checks = [...pendingSymbols];
-            pendingSymbols.clear();
-            for (const [filePath, previous] of checks) {
-              if (selectedRepository !== selected) break;
-              const graph = await server.graphFile(selected.id, filePath);
-              for (const node of graph.nodes.filter(node => node.type === 'symbol' &&
-                  ['function', 'method', 'class', 'component', 'ml_entry'].includes(node.kind) && !previous.has(node.id)).slice(0, 3)) {
-                const result = await server.reuse(selected.id, { entityId: node.id });
-                if (selectedRepository === selected && result.results.length) await showResults(result, 'Reuse suggestions');
-              }
-            }
+      const job = await waitForJob(jobId, () => selectedRepository === selected);
+      if (!job) return;
+      if (job.state === 'failed') throw new Error(job.error || 'Repository refresh failed.');
+      if (selectedRepository === selected && job.result) lastGitState = `${job.result.commitHash}:${job.result.branch}`;
+      if (selectedRepository === selected && panel) {
+        await panel.webview.postMessage({ type: 'repository',
+          text: indexedLabel(selected.rootPath, job.result) + (job.result?.semantic?.state === 'degraded' ? ' - lexical search' : ' - semantic search') });
+        await updateDocsStatus(selected, job.result?.docs);
+        const checks = [...pendingSymbols];
+        pendingSymbols.clear();
+        for (const [filePath, previous] of checks) {
+          if (selectedRepository !== selected) break;
+          const graph = await server.graphFile(selected.id, filePath);
+          for (const node of graph.nodes.filter(node => node.type === 'symbol' &&
+              ['function', 'method', 'class', 'component', 'ml_entry'].includes(node.kind) && !previous.has(node.id)).slice(0, 3)) {
+            const result = await server.reuse(selected.id, { entityId: node.id });
+            if (selectedRepository === selected && result.results.length) await showResults(result, 'Reuse suggestions');
           }
-          break;
         }
-        if (job.state === 'failed') throw new Error(job.error || 'Repository refresh failed.');
-        await new Promise(resolve => setTimeout(resolve, 300));
       }
+      refreshFailures = 0;
     } catch (error) {
+      refreshFailures++;
+      if (refreshFailures >= 5) { autoRefreshPaused = true; output.appendLine('Auto-refresh paused after repeated failures; reselect the repository to resume.'); }
       output.appendLine(`Repository refresh failed: ${error instanceof Error ? error.message : error}`);
     } finally {
       refreshing = false;
@@ -152,17 +170,17 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   }
 
   function scheduleRefresh(): void {
-    if (!selectedRepository) return;
+    if (!selectedRepository || autoRefreshPaused) return;
     if (refreshTimer) clearTimeout(refreshTimer);
-    refreshTimer = setTimeout(() => { refreshTimer = undefined; void runRefresh(); }, 450);
+    refreshTimer = setTimeout(() => { refreshTimer = undefined; void runRefresh(); }, 450 * 2 ** Math.min(refreshFailures, 5));
   }
 
   function startVscodeWatcher(rootPath: string): void {
     try {
       vscodeWatcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(rootPath, '**/*'));
-      vscodeWatcher.onDidChange(scheduleRefresh);
-      vscodeWatcher.onDidCreate(scheduleRefresh);
-      vscodeWatcher.onDidDelete(scheduleRefresh);
+      vscodeWatcher.onDidChange(uri => { if (!IGNORED.test(path.relative(rootPath, uri.fsPath).split(path.sep).join('/'))) scheduleRefresh(); });
+      vscodeWatcher.onDidCreate(uri => { if (!IGNORED.test(path.relative(rootPath, uri.fsPath).split(path.sep).join('/'))) scheduleRefresh(); });
+      vscodeWatcher.onDidDelete(uri => { if (!IGNORED.test(path.relative(rootPath, uri.fsPath).split(path.sep).join('/'))) scheduleRefresh(); });
     } catch (error) {
       output.appendLine(`Repository file watcher unavailable: ${error instanceof Error ? error.message : error}`);
     }
@@ -170,13 +188,15 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
   function watchRepository(repository: { id: string; rootPath: string }, commitHash: string, branch: string): void {
     stopWatching();
+    refreshFailures = 0;
+    autoRefreshPaused = false;
     selectedRepository = repository;
     lastGitState = `${commitHash}:${branch}`;
     try {
       repositoryWatcher = fs.watch(repository.rootPath, { recursive: true }, (_event, filename) => {
         const changed = filename?.toString().split(path.sep).join('/') || '';
         if (changed.startsWith('.git/') && !/^(\.git\/(HEAD|index|packed-refs|refs\/|logs\/HEAD))/.test(changed)) return;
-        if (/(^|\/)(node_modules|build|dist|\.venv|venv|__pycache__)(\/|$)/.test(changed)) return;
+        if (IGNORED.test(changed)) return;
         scheduleRefresh();
       });
       repositoryWatcher.on('error', error => {
@@ -202,7 +222,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   context.subscriptions.push(vscode.workspace.onDidSaveTextDocument(async document => {
     const selected = selectedRepository;
     if (selected && document.uri.scheme === 'file' &&
-        document.uri.fsPath.startsWith(selected.rootPath + path.sep)) {
+        isInside(selected.rootPath, document.uri.fsPath)) {
       if (vscode.workspace.getConfiguration('codemind').get('checkReuseOnSave', true)) {
         const filePath = path.relative(selected.rootPath, document.uri.fsPath).split(path.sep).join('/');
         const previous = await server!.graphFile(selected.id, filePath).catch(() => ({ nodes: [] }));
@@ -229,20 +249,14 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       if (panel !== currentPanel || version !== selectionVersion) return;
       await currentPanel.webview.postMessage({ type: 'repository', text: `${path.basename(repository.rootPath)} - scanning...` });
       const jobId = await server!.indexRepository(repository.id);
-      while (panel === currentPanel && version === selectionVersion) {
-        const job = await server!.getJob(jobId);
-        if (panel !== currentPanel || version !== selectionVersion) break;
-        if (job.state === 'completed') {
-          await currentPanel.webview.postMessage({ type: 'repository', text: indexedLabel(repository.rootPath, job.result) +
-            (job.result?.semantic?.state === 'degraded' ? ' - lexical search' : ' - semantic search') });
-          watchRepository(repository, job.result?.commitHash || 'unborn', job.result?.branch || 'HEAD');
-          await updateDocsStatus(repository, job.result?.docs);
-          scheduleRefresh();
-          break;
-        }
-        if (job.state === 'failed') throw new Error(job.error || 'Repository scan failed.');
-        await new Promise(resolve => setTimeout(resolve, 300));
-      }
+      const job = await waitForJob(jobId, () => panel === currentPanel && version === selectionVersion);
+      if (!job) return;
+      if (job.state === 'failed') throw new Error(job.error || 'Repository scan failed.');
+      await currentPanel.webview.postMessage({ type: 'repository', text: indexedLabel(repository.rootPath, job.result) +
+        (job.result?.semantic?.state === 'degraded' ? ' - lexical search' : ' - semantic search') });
+      watchRepository(repository, job.result?.commitHash || 'unborn', job.result?.branch || 'HEAD');
+      await updateDocsStatus(repository, job.result?.docs);
+      scheduleRefresh();
     } catch (error) {
       const detail = error instanceof Error ? error.message : 'Repository could not be opened.';
       output.appendLine(`Repository registration failed: ${detail}`);
@@ -272,15 +286,18 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
   context.subscriptions.push(vscode.commands.registerCommand('codemind.selectRepository', selectRepository));
   async function runSearch(reuse: boolean, suppliedQuery?: string): Promise<void> {
-    if (!panel) await vscode.commands.executeCommand('codemind.openChat');
-    const selected = selectedRepository;
-    if (!selected || !vscode.workspace.isTrusted) {
-      void vscode.window.showInformationMessage('Select a trusted repository and wait for indexing to finish.');
-      return;
-    }
-    const query = suppliedQuery || await vscode.window.showInputBox({ prompt: reuse ? 'Describe the code you intend to write' : 'Search repository code' });
-    if (!query?.trim()) return;
     try {
+      if (!panel) await vscode.commands.executeCommand('codemind.openChat');
+      const selected = selectedRepository;
+      if (!selected || !vscode.workspace.isTrusted) {
+        const text = 'Select a trusted repository and wait for indexing to finish before searching.';
+        if (panel) await panel.webview.postMessage({ type: 'error', text });
+        else void vscode.window.showInformationMessage(text);
+        return;
+      }
+      const query = suppliedQuery || await vscode.window.showInputBox({
+        prompt: reuse ? 'Describe the code you intend to write' : 'Search repository code' });
+      if (!query?.trim()) return;
       const result = reuse ? await server!.reuse(selected.id, { query }) : await server!.search(selected.id, query);
       if (selectedRepository === selected) await showResults(result, reuse ? 'Reuse suggestions' : 'Code search');
     } catch (error) {
@@ -406,7 +423,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     const activeFolder = vscode.window.activeTextEditor &&
       vscode.workspace.getWorkspaceFolder(vscode.window.activeTextEditor.document.uri);
     const folder = activeFolder ?? (vscode.workspace.workspaceFolders?.length === 1 ? vscode.workspace.workspaceFolders[0] : undefined);
-    if (!skipAutoSelect && folder) void registerFolder(folder.uri.fsPath, panel);
+    if (!skipAutoSelect && folder) registerFolder(folder.uri.fsPath, panel).catch(error => output.appendLine(`Repository registration failed: ${error instanceof Error ? error.message : error}`));
   }));
 }
 
@@ -699,16 +716,20 @@ export function chatHtml(webview: vscode.Webview): string {
       content.textContent = text;
       
       wrapper.append(content);
+      while (messages.children.length > 200) messages.firstElementChild.remove();
       messages.append(wrapper);
       messages.scrollTop = messages.scrollHeight;
     }
 
+    let pendingTimer;
     function send(text) {
       const trimmed = text.trim();
       if (!trimmed) return;
       addMessage('You', trimmed, 'user');
       input.value = '';
       button.disabled = true;
+      clearTimeout(pendingTimer);
+      pendingTimer = setTimeout(() => { button.disabled = false; }, 120000);   // never stay locked
       vscode.postMessage({ type: 'search', text: trimmed });
     }
 
@@ -763,6 +784,7 @@ export function chatHtml(webview: vscode.Webview): string {
       }
       if (message.type === 'reply') addMessage('CodeMind server', message.text, 'server');
       if (message.type === 'error') addMessage('Error', message.text, 'error');
+      clearTimeout(pendingTimer);
       button.disabled = false;
       input.focus();
     });

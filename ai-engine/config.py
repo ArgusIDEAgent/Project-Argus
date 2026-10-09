@@ -135,7 +135,10 @@ def get_qdrant_client() -> QdrantClient:
     url = os.environ.get("QDRANT_URL")
     if url:
         return QdrantClient(url=url, api_key=api_key, timeout=30)
-    return QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT, api_key=api_key, timeout=30)
+    # https=False is required: qdrant-client defaults to https whenever an api_key
+    # is supplied, which breaks the plain-HTTP loopback deployment.  A remote
+    # deployment must go through QDRANT_URL (scheme-aware) instead.
+    return QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT, api_key=api_key, timeout=30, https=False)
 
 
 @lru_cache(maxsize=1)

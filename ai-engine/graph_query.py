@@ -12,13 +12,15 @@ Usage:
   python graph_query.py --symbol AuthService --mode members
   python graph_query.py --list-all
   python graph_query.py --stats
+  python graph_query.py --symbol generate_token --repo-id <repo_id>
+  python graph_query.py --symbol generate_token --repo-dir /path/to/repo
 """
 
 import argparse
 import os
 import sys
 
-from config import GRAPH_FILENAME
+from config import find_graph_file, make_repo_id, sanitize_text
 from graph_builder import (
     load_graph,
     find_node,
@@ -34,10 +36,10 @@ from graph_builder import (
 def _print_results(symbol: str, results: list[dict], mode: str) -> None:
     """Pretty-print query results."""
     if not results:
-        print(f"\n❌ No {mode} found for '{symbol}'.")
+        print(f"\n❌ No {mode} found for '{sanitize_text(symbol)}'.")
         return
 
-    formatted = format_graph_context(symbol, results, mode)
+    formatted = sanitize_text(format_graph_context(symbol, results, mode))
     print(f"\n{formatted}")
     print(f"\n  Total: {len(results)} relationship(s)")
 
@@ -81,41 +83,47 @@ def main() -> None:
     parser.add_argument(
         "--graph-file",
         default=None,
-        help="Path to the graph JSON file (default: auto-detect in current or parent dir).",
+        help="Path to the graph JSON file (default: resolve from --repo-id/--repo-dir).",
+    )
+    parser.add_argument(
+        "--repo-id",
+        default=None,
+        help="Repository id whose graph to load (default: most recently indexed repo).",
+    )
+    parser.add_argument(
+        "--repo-dir",
+        default=None,
+        help="Repository directory; converted to a repo id (ignored if --repo-id is given).",
     )
 
     args = parser.parse_args()
 
     # --- Locate the graph file ---
-    graph_path = args.graph_file
-    if graph_path is None:
-        # Try current directory, then common locations
-        candidates = [
-            GRAPH_FILENAME,
-            os.path.join("sample_code", GRAPH_FILENAME),
-            os.path.join("..", GRAPH_FILENAME),
-        ]
-        for candidate in candidates:
-            if os.path.exists(candidate):
-                graph_path = candidate
-                break
+    repo_id = args.repo_id
+    if repo_id is None and args.repo_dir:
+        repo_id = make_repo_id(os.path.abspath(args.repo_dir))
+
+    graph_path = args.graph_file or find_graph_file(repo_id)
 
     if graph_path is None or not os.path.exists(graph_path):
-        print(f"❌ Knowledge graph not found. Run `python indexer.py --dir <path>` first.")
+        print(
+            "❌ Knowledge graph not found. Run `python indexer.py --dir <path>` first, "
+            "or pass --repo-id / --repo-dir to select an indexed repository."
+        )
         sys.exit(1)
 
     graph = load_graph(graph_path)
-    print(f"📊 Loaded graph from {graph_path} ({graph.number_of_nodes()} nodes, {graph.number_of_edges()} edges)")
+    print(f"📊 Loaded graph from {sanitize_text(graph_path)} ({graph.number_of_nodes()} nodes, {graph.number_of_edges()} edges)")
 
     # --- Handle --stats ---
     if args.stats:
         summary = get_graph_summary(graph)
         print(f"\n  Node types:")
         for ntype, count in sorted(summary["nodes"].items()):
-            print(f"    {ntype}: {count}")
+            print(f"    {sanitize_text(str(ntype))}: {count}")
         print(f"\n  Edge types:")
         for etype, count in sorted(summary["edges"].items()):
-            print(f"    {etype}: {count}")
+            print(f"    {sanitize_text(str(etype))}: {count}")
         print(f"\n  Total: {summary['total_nodes']} nodes, {summary['total_edges']} edges")
         return
 
@@ -129,11 +137,11 @@ def main() -> None:
             by_file.setdefault(fp, []).append((nid, data))
 
         for filepath, nodes in sorted(by_file.items()):
-            print(f"  📄 {filepath}")
+            print(f"  📄 {sanitize_text(filepath)}")
             for nid, data in sorted(nodes, key=lambda x: x[1].get("lineno", 0)):
                 ntype = data.get("type", "?")
                 lineno = data.get("lineno", "?")
-                print(f"     {ntype:10s}  {nid}  (line {lineno})")
+                print(f"     {sanitize_text(str(ntype)):10s}  {sanitize_text(str(nid))}  (line {lineno})")
             print()
         return
 
@@ -142,7 +150,7 @@ def main() -> None:
     node_id = find_node(graph, symbol)
 
     if node_id is None:
-        print(f"\n❌ Symbol '{symbol}' not found in the graph.")
+        print(f"\n❌ Symbol '{sanitize_text(symbol)}' not found in the graph.")
         # Suggest similar names
         suggestions = [
             data.get("name", nid)
@@ -150,11 +158,15 @@ def main() -> None:
             if symbol.lower() in nid.lower() or symbol.lower() in data.get("name", "").lower()
         ]
         if suggestions:
-            print(f"   Did you mean: {', '.join(suggestions[:5])}?")
+            print(f"   Did you mean: {', '.join(sanitize_text(str(s)) for s in suggestions[:5])}?")
         sys.exit(1)
 
     node_data = graph.nodes[node_id]
-    print(f"\n🔎 Found: {node_id} ({node_data.get('type', '?')} in {node_data.get('file_path', '?')}:{node_data.get('lineno', '?')})")
+    print(
+        f"\n🔎 Found: {sanitize_text(str(node_id))} "
+        f"({sanitize_text(str(node_data.get('type', '?')))} in "
+        f"{sanitize_text(str(node_data.get('file_path', '?')))}:{node_data.get('lineno', '?')})"
+    )
 
     if args.mode == "callers":
         results = get_callers(graph, symbol)

@@ -61,22 +61,6 @@
     "configuration": {
       "title": "CodeMind",
       "properties": {
-        "codemind.embeddingUrl": {
-          "type": "string", "default": "http://127.0.0.1:11434", "scope": "application",
-          "description": "Local Ollama URL. Reload the window after changing."
-        },
-        "codemind.embeddingModel": {
-          "type": "string", "default": "nomic-embed-text", "scope": "application",
-          "description": "Installed local embedding model. Reload the window after changing."
-        },
-        "codemind.modelUrl": {
-          "type": "string", "default": "http://127.0.0.1:11434", "scope": "application",
-          "description": "Local Ollama URL for documentation generation. Reload the window after changing."
-        },
-        "codemind.modelName": {
-          "type": "string", "default": "llama3.2", "scope": "application",
-          "description": "Installed local text model for documentation generation. Reload the window after changing."
-        },
         "codemind.checkReuseOnSave": {
           "type": "boolean", "default": true,
           "description": "Check newly indexed symbols for reusable implementations after saving."
@@ -91,11 +75,7 @@
     "test:integration": "npm run compile && node test/runTest.js",
     "package:vsix": "vsce package --out ../codemind-extension-0.4.0.vsix"
   },
-  "dependencies": {
-    "@vscode/tree-sitter-wasm": "^0.3.1",
-    "sql.js": "^1.13.0",
-    "web-tree-sitter": "^0.27.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/node": "^20.19.0",
     "@types/vscode": "^1.93.0",
