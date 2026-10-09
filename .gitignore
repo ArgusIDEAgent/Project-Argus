@@ -7,12 +7,20 @@ __pycache__/
 
 # Environment Variables (Secrets)
 .env
+.env.*
+!.env.example
 
 # Node / VS Code extension build artifacts
 node_modules/
 extension/out/
 extension/server/
+extension/.vscode-test/
+*.vsix
 
 # Generated index & knowledge-graph state
+.codemind/
 .codemind_index_state.json
 .codemind_graph.json
+
+# Local tooling / agent metadata
+.qwen/

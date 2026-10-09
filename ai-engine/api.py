@@ -3,54 +3,93 @@ api.py — FastAPI server for the CodeMind (Argus) AI engine.
 
 Exposes REST endpoints consumed by the VS Code extension for repository
 registration, background indexing, semantic code search, and documentation.
+
+Security model:
+  - Every route (current and future) requires a session token via the
+    app-level dependency below.  The token is generated at startup, stored
+    with owner-only permissions at ~/.codemind/data/session_token, and the
+    extension reads it from that file.
+  - Swagger/OpenAPI are disabled and the Host header is pinned to loopback,
+    which (together with the token) blocks DNS-rebinding attacks.
+  - The server binds 127.0.0.1 only.
 """
 
 import hashlib
+import hmac
+import json
 import logging
 import os
+import secrets
+import subprocess
+import threading
 import time
 import uuid
+from contextlib import asynccontextmanager
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any
 
 from fastapi import BackgroundTasks, Depends, FastAPI, Header, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from qdrant_client.models import Filter, FieldCondition, MatchValue
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 
-import search
-from config import COLLECTION_NAME, get_qdrant_client
+from config import (
+    COLLECTION_NAME,
+    DEFAULT_DATA_DIR,
+    REPO_ID_RE,
+    SESSION_TOKEN_FILENAME,
+    atomic_write_text,
+    embed_texts,
+    ensure_private_dir,
+    get_qdrant_client,
+    make_repo_id,
+)
 from indexer import IndexingError, index_directory
 
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Argus Python AI Engine")
 
 # ─────────────────────────────────────────────────────────────
 # Session token validation
 # ─────────────────────────────────────────────────────────────
 
-# Tokens issued during this server lifetime.  The extension sends the
-# token it received at /hello in every subsequent request via the
-# x-codemind-session header.
-_VALID_SESSION_TOKENS: set[str] = set()
+_SESSION_TOKEN = ""   # set at startup by lifespan(); empty => every request is rejected (fail closed)
 
 
-async def _require_session(
-    x_codemind_session: str | None = Header(default=None),
-) -> str:
-    """FastAPI dependency that validates the x-codemind-session header.
+def _issue_session_token() -> str:
+    token = os.environ.get("CODEMIND_SESSION_TOKEN", "").strip() or secrets.token_hex(32)
+    ensure_private_dir(DEFAULT_DATA_DIR)
+    path = os.path.join(DEFAULT_DATA_DIR, SESSION_TOKEN_FILENAME)
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w", encoding="utf-8") as fh:
+        fh.write(token)
+    os.chmod(path, 0o600)
+    return token
 
-    Skips validation when no tokens have been issued yet (first-run /
-    dev convenience).  Returns the validated token string.
-    """
-    if not _VALID_SESSION_TOKENS:
-        # No tokens issued yet — allow unauthenticated access so the
-        # extension can call /hello to obtain a token.
-        return x_codemind_session or ""
-    if not x_codemind_session or x_codemind_session not in _VALID_SESSION_TOKENS:
+
+async def _require_session(x_codemind_session: str | None = Header(default=None)) -> None:
+    supplied = (x_codemind_session or "").encode("utf-8")
+    if not _SESSION_TOKEN or not hmac.compare_digest(supplied, _SESSION_TOKEN.encode("utf-8")):
         raise HTTPException(status_code=401, detail="Invalid or missing session token")
-    return x_codemind_session
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    global _SESSION_TOKEN
+    _SESSION_TOKEN = _issue_session_token()
+    _load_registry()
+    yield
+
+
+app = FastAPI(title="Argus Python AI Engine", lifespan=lifespan,
+              dependencies=[Depends(_require_session)],        # guards EVERY route, including future ones
+              docs_url=None, redoc_url=None, openapi_url=None)
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost"])   # anti DNS-rebinding
+
 
 # ─────────────────────────────────────────────────────────────
 # In-memory state
@@ -58,6 +97,11 @@ async def _require_session(
 
 # Repos registered during this session (repoId → metadata).
 _REGISTERED_REPOS: dict[str, dict] = {}
+
+_REPOS_LOCK = threading.Lock()
+_REGISTRY_FILE = os.path.join(DEFAULT_DATA_DIR, "repos.json")
+_MAX_REPOS = 64
+_FORBIDDEN_COMPONENTS = {".ssh", ".aws", ".gnupg", ".kube", ".docker"}
 
 
 class JobState(str, Enum):
@@ -70,79 +114,150 @@ class JobState(str, Enum):
 # Running / completed jobs (jobId → job record).
 _JOBS: dict[str, dict[str, Any]] = {}
 
+_JOBS_LOCK = threading.Lock()
+_INDEX_RUN_LOCK = threading.Lock()      # one heavy indexing run at a time (local, single user)
+_MAX_JOBS = 50
+
+_EMPTY_DOCS_STATUS = {"sectionCount": 0, "currentCount": 0, "staleCount": 0, "affectedCount": 0, "generatedCount": 0}
+
 
 # ─────────────────────────────────────────────────────────────
-# Helpers
+# Repository registry
 # ─────────────────────────────────────────────────────────────
 
-def _resolve_source(repo_id: str, rel_path: str) -> str | None:
-    """Resolve a repo-relative indexed path to an absolute on-disk path."""
-    if not rel_path:
+def _utc_now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
+
+
+def _validate_root(raw: str) -> tuple[str, str]:
+    if not raw.strip() or "\x00" in raw:
+        raise HTTPException(status_code=400, detail="Invalid rootPath.")
+    abs_root = os.path.abspath(os.path.expanduser(raw))
+    real_root = os.path.realpath(abs_root)
+    if not os.path.isdir(real_root):
+        raise HTTPException(status_code=400, detail="rootPath is not an existing directory.")
+    parts = {p.lower() for p in real_root.replace("\\", "/").split("/")}
+    if (real_root == os.path.dirname(real_root) or real_root == os.path.realpath(os.path.expanduser("~"))
+            or parts & _FORBIDDEN_COMPONENTS):
+        raise HTTPException(status_code=400,
+                            detail="Refusing to index a filesystem root, a home directory or a credentials directory.")
+    return abs_root, make_repo_id(real_root)
+
+
+def _save_registry() -> None:                      # caller holds _REPOS_LOCK
+    atomic_write_text(_REGISTRY_FILE, json.dumps(_REGISTERED_REPOS, indent=2))
+
+
+def _load_registry() -> None:
+    try:
+        with open(_REGISTRY_FILE, "r", encoding="utf-8") as fh:
+            data = json.load(fh)
+    except (OSError, ValueError):
+        return
+    for repo_id, entry in (data.items() if isinstance(data, dict) else []):
+        root = entry.get("rootPath") if isinstance(entry, dict) else None
+        if REPO_ID_RE.fullmatch(str(repo_id)) and isinstance(root, str) and os.path.isdir(root):
+            _REGISTERED_REPOS[repo_id] = {"rootPath": root, "createdAt": str(entry.get("createdAt") or _utc_now_iso())}
+
+
+# ─────────────────────────────────────────────────────────────
+# Git helpers
+# ─────────────────────────────────────────────────────────────
+
+def _git(root: str, *args: str) -> str | None:
+    """Read-only git: no shell, 5 s timeout, fsmonitor disabled (a hostile repo's core.fsmonitor can execute code),
+    no optional locks (otherwise `status` rewrites .git/index and re-triggers the extension's file watcher)."""
+    try:
+        proc = subprocess.run(
+            ["git", "--no-optional-locks", "-c", "core.fsmonitor=false", *args],
+            cwd=root, capture_output=True, text=True, timeout=5, check=False,
+            env={**os.environ, "GIT_OPTIONAL_LOCKS": "0", "GIT_TERMINAL_PROMPT": "0"})
+    except (OSError, subprocess.SubprocessError):
         return None
-    candidates: list[str] = []
+    return proc.stdout.strip() if proc.returncode == 0 else None
+
+
+def _git_head(root: str) -> dict:
+    return {"commitHash": _git(root, "rev-parse", "HEAD") or "unborn",
+            "branch": _git(root, "rev-parse", "--abbrev-ref", "HEAD") or "HEAD"}
+
+
+def _git_state(root: str) -> dict:
+    porcelain = _git(root, "status", "--porcelain=v1", "--untracked-files=normal")
+    dirty = hashlib.sha256(porcelain.encode()).hexdigest()[:12] if porcelain else "clean"
+    return {**_git_head(root), "dirtyFingerprint": dirty}
+
+
+# ─────────────────────────────────────────────────────────────
+# Job management
+# ─────────────────────────────────────────────────────────────
+
+def _enqueue_job(repo_id: str, full: bool, background_tasks: BackgroundTasks) -> dict:
     entry = _REGISTERED_REPOS.get(repo_id)
-    if entry:
-        candidates.append(os.path.join(entry["rootPath"], rel_path))
-    candidates.append(os.path.abspath(rel_path))
-    candidates.append(os.path.abspath(os.path.join("sample_code", os.path.basename(rel_path))))
-    for candidate in candidates:
-        if os.path.isfile(candidate):
-            return os.path.abspath(candidate)
-    return None
+    if not entry:
+        raise HTTPException(status_code=404, detail=f"Repo '{repo_id}' not registered")
+    with _JOBS_LOCK:
+        for job in _JOBS.values():
+            if job["repoId"] == repo_id and job["state"] in (JobState.QUEUED, JobState.RUNNING):
+                return {"jobId": job["id"], "state": job["state"].value}      # coalesce duplicates
+        job_id = uuid.uuid4().hex
+        _JOBS[job_id] = {"id": job_id, "repoId": repo_id, "state": JobState.QUEUED,
+                         "error": None, "result": None, "createdAt": time.time()}
+        finished = sorted((j for j in _JOBS.values() if j["state"] in (JobState.COMPLETED, JobState.FAILED)),
+                          key=lambda j: j["createdAt"])
+        for old in finished[:max(0, len(_JOBS) - _MAX_JOBS)]:
+            _JOBS.pop(old["id"], None)
+    background_tasks.add_task(_run_index_job, job_id, repo_id, entry["rootPath"], full)
+    return {"jobId": job_id, "state": "queued"}
 
 
 def _run_index_job(job_id: str, repo_id: str, root_path: str, full_reindex: bool = False) -> None:
-    """Background task: run index_directory and update the job record."""
-    job = _JOBS[job_id]
-    job["state"] = JobState.RUNNING
-    job["startedAt"] = time.time()
-
-    try:
-        result = index_directory(
-            target_dir=root_path,
-            repo_id=repo_id,
-            full_reindex=full_reindex,
-            on_progress=lambda msg: logger.info("[job %s] %s", job_id[:8], msg),
-        )
-        job["state"] = JobState.COMPLETED
-        job["result"] = {
-            "fileCount": result["files_indexed"] + result["files_skipped"],
-            "commitHash": "latest",
-            "branch": "main",
-            "dirtyFingerprint": "clean",
-            "semantic": {
-                "state": "ready",
-                "error": None,
-                "chunkCount": result["points_upserted"],
-            },
-            "docs": {
-                "sectionCount": 0,
-                "currentCount": 0,
-                "staleCount": 0,
-                "affectedCount": 0,
-                "generatedCount": 0,
-            },
-        }
-        job["error"] = None
-    except (IndexingError, Exception) as exc:
-        job["state"] = JobState.FAILED
-        job["error"] = str(exc)
-        logger.exception("Indexing job %s failed", job_id[:8])
-    finally:
-        job["completedAt"] = time.time()
+    with _INDEX_RUN_LOCK:
+        job = _JOBS[job_id]
+        job["state"], job["startedAt"] = JobState.RUNNING, time.time()
+        try:
+            result = index_directory(target_dir=root_path, repo_id=repo_id, full_reindex=full_reindex,
+                                     on_progress=lambda msg: logger.info("[job %s] %s", job_id[:8], msg))
+            chunk_count = get_qdrant_client().count(
+                COLLECTION_NAME, exact=True,
+                count_filter=Filter(must=[FieldCondition(key="repo_id", match=MatchValue(value=repo_id))])).count
+            job["result"] = {
+                "fileCount": result["files_indexed"] + result["files_skipped"],
+                **_git_state(root_path),
+                "semantic": {"state": "ready", "error": None, "chunkCount": chunk_count},
+                "docs": dict(_EMPTY_DOCS_STATUS),
+            }
+            job["state"] = JobState.COMPLETED
+        except IndexingError as exc:
+            job["error"], job["state"] = str(exc), JobState.FAILED
+        except Exception:
+            logger.exception("Indexing job %s failed", job_id[:8])
+            job["error"], job["state"] = "Indexing failed unexpectedly; see the engine log.", JobState.FAILED
+        finally:
+            job["completedAt"] = time.time()
 
 
 # ─────────────────────────────────────────────────────────────
-# Exception handler
+# Exception handlers
 # ─────────────────────────────────────────────────────────────
 
-@app.exception_handler(HTTPException)
-async def http_exception_handler(request: Request, exc: HTTPException):
-    # The extension reads a top-level "error" field, unlike FastAPI's "detail".
+@app.exception_handler(StarletteHTTPException)          # replaces the FastAPI-HTTPException handler
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
     detail = exc.detail
     if isinstance(detail, dict) and "error" in detail:
         detail = detail["error"]
-    return JSONResponse(status_code=exc.status_code, content={"error": detail})
+    return JSONResponse(status_code=exc.status_code, content={"error": str(detail)})
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(status_code=422, content={"error": "Invalid request parameters."})
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    logger.exception("Unhandled error on %s", request.url.path)
+    return JSONResponse(status_code=500, content={"error": "Internal engine error."})
 
 
 # ─────────────────────────────────────────────────────────────
@@ -150,16 +265,16 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 # ─────────────────────────────────────────────────────────────
 
 class HelloRequest(BaseModel):
-    message: str
+    message: str = ""
 
 class RegisterRequest(BaseModel):
-    rootPath: str
-    config: dict = {}
+    rootPath: str = Field(min_length=1, max_length=4096)
+    config: dict = Field(default_factory=dict)     # accepted for compatibility, intentionally ignored
 
 class SearchRequest(BaseModel):
-    repoId: str
-    query: str
-    limit: int = 5
+    repoId: str = Field(pattern=r"^[a-f0-9]{24}$")
+    query: str = Field(min_length=1, max_length=2000)
+    limit: int = Field(default=5, ge=1, le=25)
 
 
 # ─────────────────────────────────────────────────────────────
@@ -167,96 +282,44 @@ class SearchRequest(BaseModel):
 # ─────────────────────────────────────────────────────────────
 
 @app.post("/hello")
-def hello(req: HelloRequest):
-    """Handshake endpoint.  Issues a session token on first contact."""
-    token = uuid.uuid4().hex
-    _VALID_SESSION_TOKENS.add(token)
-    return {
-        "reply": "Python AI Engine connected. Ready to analyze code.",
-        "sessionToken": token,
-    }
+def hello(req: HelloRequest | None = None):
+    """Handshake endpoint.  Requires the shared session token (app-level dependency)."""
+    return {"reply": "Python AI Engine connected. Ready to analyze code."}
 
 
 # ── Repository registration & indexing lifecycle ─────────────
 
 @app.post("/repos/register")
-def register_repo(req: RegisterRequest, _token: str = Depends(_require_session)):
-    repo_id = hashlib.sha256(req.rootPath.encode()).hexdigest()[:24]
-    _REGISTERED_REPOS[repo_id] = {"rootPath": req.rootPath, "config": req.config}
-    return {
-        "repository": {
-            "id": repo_id,
-            "rootPath": req.rootPath,
-            "defaultBranch": "main",
-            "createdAt": "2026-10-05T00:00:00.000Z",
-            "config": {}
-        }
-    }
+def register_repo(req: RegisterRequest):
+    abs_root, repo_id = _validate_root(req.rootPath)
+    with _REPOS_LOCK:
+        if repo_id not in _REGISTERED_REPOS and len(_REGISTERED_REPOS) >= _MAX_REPOS:
+            raise HTTPException(status_code=429, detail="Too many registered repositories.")
+        entry = _REGISTERED_REPOS.get(repo_id) or {"createdAt": _utc_now_iso()}
+        entry["rootPath"] = abs_root               # NOT realpath: the extension compares paths by prefix
+        _REGISTERED_REPOS[repo_id] = entry
+        _save_registry()
+    return {"repository": {"id": repo_id, "rootPath": abs_root, "defaultBranch": "main",
+                           "createdAt": entry["createdAt"], "config": {}}}
 
 
 @app.post("/repos/{repo_id}/index")
-def index_repo(repo_id: str, background_tasks: BackgroundTasks, _token: str = Depends(_require_session)):
-    """Queue a full indexing job for the registered repo."""
-    entry = _REGISTERED_REPOS.get(repo_id)
-    if not entry:
-        raise HTTPException(status_code=404, detail=f"Repo '{repo_id}' not registered")
-
-    job_id = uuid.uuid4().hex
-    _JOBS[job_id] = {
-        "id": job_id,
-        "repoId": repo_id,
-        "state": JobState.QUEUED,
-        "error": None,
-        "result": None,
-        "createdAt": time.time(),
-    }
-    background_tasks.add_task(_run_index_job, job_id, repo_id, entry["rootPath"], True)
-    return {"jobId": job_id, "state": "queued"}
+def index_repo(repo_id: str, background_tasks: BackgroundTasks, full: bool = False):
+    return _enqueue_job(repo_id, full, background_tasks)   # incremental unless ?full=true (fingerprint forces full when needed)
 
 
 @app.post("/repos/{repo_id}/refresh")
-def refresh_repo(repo_id: str, background_tasks: BackgroundTasks, _token: str = Depends(_require_session)):
-    """Queue an incremental (refresh) indexing job for the registered repo."""
-    entry = _REGISTERED_REPOS.get(repo_id)
-    if not entry:
-        raise HTTPException(status_code=404, detail=f"Repo '{repo_id}' not registered")
-
-    job_id = uuid.uuid4().hex
-    _JOBS[job_id] = {
-        "id": job_id,
-        "repoId": repo_id,
-        "state": JobState.QUEUED,
-        "error": None,
-        "result": None,
-        "createdAt": time.time(),
-    }
-    background_tasks.add_task(_run_index_job, job_id, repo_id, entry["rootPath"], False)
-    return {"jobId": job_id, "state": "queued"}
+def refresh_repo(repo_id: str, background_tasks: BackgroundTasks):
+    return _enqueue_job(repo_id, False, background_tasks)
 
 
 @app.get("/jobs/{job_id}")
 def get_job(job_id: str):
     """Return the current state of an indexing job."""
-    job = _JOBS.get(job_id)
+    with _JOBS_LOCK:
+        job = _JOBS.get(job_id)
     if not job:
-        # Backwards-compatible: return a synthetic completed record for
-        # unknown job IDs so the extension doesn't hard-fail on stale IDs.
-        return {
-            "id": job_id,
-            "state": "completed",
-            "error": None,
-            "result": {
-                "fileCount": 0,
-                "commitHash": "latest",
-                "branch": "main",
-                "dirtyFingerprint": "clean",
-                "semantic": {"state": "ready", "error": None, "chunkCount": 0},
-                "docs": {
-                    "sectionCount": 0, "currentCount": 0,
-                    "staleCount": 0, "affectedCount": 0, "generatedCount": 0,
-                },
-            },
-        }
+        raise HTTPException(status_code=404, detail="Job not found")
     return {
         "id": job["id"],
         "state": job["state"].value if isinstance(job["state"], JobState) else job["state"],
@@ -267,27 +330,25 @@ def get_job(job_id: str):
             "branch": "main",
             "dirtyFingerprint": "clean",
             "semantic": {"state": "pending", "error": None, "chunkCount": 0},
-            "docs": {
-                "sectionCount": 0, "currentCount": 0,
-                "staleCount": 0, "affectedCount": 0, "generatedCount": 0,
-            },
+            "docs": dict(_EMPTY_DOCS_STATUS),
         },
     }
 
 
 @app.get("/repos/{repo_id}/live-state")
 def live_state(repo_id: str):
-    """Return the latest known state for a repo.
+    """Return the latest known state for a repo (git HEAD + most recent job).
 
-    Checks if any job is running for this repo and surfaces that.
+    Never runs `git status` here — this endpoint is polled every 3 s.
     """
-    # Find the most recent job for this repo
-    repo_jobs = [
-        j for j in _JOBS.values() if j.get("repoId") == repo_id
-    ]
+    entry = _REGISTERED_REPOS.get(repo_id)
+    if not entry:
+        raise HTTPException(status_code=404, detail=f"Repo '{repo_id}' not registered")
+    with _JOBS_LOCK:
+        repo_jobs = [j for j in list(_JOBS.values()) if j.get("repoId") == repo_id]
     latest_job = max(repo_jobs, key=lambda j: j.get("createdAt", 0)) if repo_jobs else None
 
-    result: dict[str, Any] = {"commitHash": "latest", "branch": "main"}
+    result: dict[str, Any] = {**_git_head(entry["rootPath"]), "indexState": None, "jobId": None}
     if latest_job:
         result["indexState"] = (
             latest_job["state"].value
@@ -305,45 +366,37 @@ def doc_sections(repoId: str = "0" * 24):
     return {
         "repoId": repoId,
         "sections": [],
-        "status": {
-            "sectionCount": 0,
-            "currentCount": 0,
-            "staleCount": 0,
-            "affectedCount": 0,
-            "generatedCount": 0
-        }
+        "status": dict(_EMPTY_DOCS_STATUS),
     }
 
 
 @app.get("/docs/overview")
-def doc_overview(repoId: str = "0" * 24, _token: str = Depends(_require_session)):
+def doc_overview(repoId: str = "0" * 24):
     # The extension expects a 404 with {"error": ...} when no docs exist.
     # Returning 200 with empty sections causes a misleading "up to date" state.
     raise HTTPException(status_code=404, detail="Documentation not found")
 
 
 @app.get("/docs/section/{section_id}")
-def doc_section(section_id: str, _token: str = Depends(_require_session)):
+def doc_section(section_id: str):
     """Return a single documentation section by ID.  Stub."""
     raise HTTPException(status_code=404, detail="Section not found")
 
 
 @app.post("/docs/sync")
-def doc_sync(_token: str = Depends(_require_session)):
-    """Trigger documentation synchronisation.  Stub."""
-    return {"status": "ok", "synced": 0}
+def doc_sync():
+    return {"updated": [], "affected": [], "status": dict(_EMPTY_DOCS_STATUS), "overview": None}
 
 
 # ── Analysis / Reuse ─────────────────────────────────────────
 
 @app.post("/analysis/reuse")
-def analysis_reuse(_token: str = Depends(_require_session)):
-    """Identify reusable code patterns.  Stub."""
-    return {"patterns": [], "status": "not_implemented"}
+def analysis_reuse():
+    return {"mode": "not_implemented", "warning": "Reuse analysis is not implemented yet.", "results": []}
 
 
 @app.post("/analysis/reuse/feedback")
-def analysis_reuse_feedback(_token: str = Depends(_require_session)):
+def analysis_reuse_feedback():
     """Submit feedback on a reuse suggestion.  Stub."""
     return {"status": "ok"}
 
@@ -358,58 +411,49 @@ def graph_file(file_path: str, repoId: str = ""):
 # ── Semantic code search ─────────────────────────────────────
 
 @app.post("/search/code")
-def search_code(req: SearchRequest, _token: str = Depends(_require_session)):
+def search_code(req: SearchRequest):
+    if req.repoId not in _REGISTERED_REPOS:
+        raise HTTPException(status_code=404, detail="Repository is not registered.")
     try:
-        # Perform search scoped to the specific repo_id via Qdrant filter
         client = get_qdrant_client()
-        embedding_model = search.get_embedding_model()
-        query_vector = list(embedding_model.embed([req.query]))[0].tolist()
-
-        search_results = client.query_points(
+        if not client.collection_exists(COLLECTION_NAME):
+            return {"mode": "semantic", "warning": "Repository has not been indexed yet.", "results": []}
+        points = client.query_points(
             collection_name=COLLECTION_NAME,
-            query=query_vector,
-            query_filter=Filter(
-                must=[FieldCondition(key="repo_id", match=MatchValue(value=req.repoId))]
-            ),
+            query=embed_texts([req.query])[0],
+            query_filter=Filter(must=[FieldCondition(key="repo_id", match=MatchValue(value=req.repoId))]),
             limit=req.limit,
         ).points
+    except HTTPException:
+        raise
+    except Exception:
+        logger.exception("Semantic search failed")
+        raise HTTPException(status_code=500, detail="Search failed; see the engine log.")
 
-        formatted_results = []
-        for res in search_results:
-            payload = res.payload or {}
-            rel_path = payload.get("file_path", "unknown")
-            abs_path = _resolve_source(req.repoId, rel_path)
-
-            # Hash the on-disk file so the extension can verify it hasn't changed.
-            file_hash = ""
-            if abs_path:
-                with open(abs_path, "rb") as f:
-                    file_hash = hashlib.sha256(f.read()).hexdigest()
-
-            formatted_results.append({
-                "entityId": hashlib.sha256((abs_path or rel_path).encode()).hexdigest()[:40],
-                "path": rel_path,
-                "name": os.path.basename(rel_path),
-                "startLine": payload.get("start_line", 1),
-                "endLine": payload.get("end_line", 1),
-                "reason": f"Semantic similarity score: {res.score:.4f}",
-                "confidence": float(res.score),
-                "revision": "latest",
-                "sourceHash": file_hash,
-                "callers": [],
-                "tests": []
-            })
-
-        return {
-            "mode": "semantic",
-            "warning": None,
-            "results": formatted_results
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    results = []
+    for pt in points:
+        payload = pt.payload or {}
+        rel_path = str(payload.get("file_path") or "")
+        if not rel_path or os.path.isabs(rel_path) or ".." in rel_path.replace("\\", "/").split("/"):
+            continue                                # malformed or poisoned payload
+        chunk_index = int(payload.get("chunk_index", 0))
+        results.append({
+            "entityId": hashlib.sha256(f"{req.repoId}:{rel_path}:{chunk_index}".encode()).hexdigest()[:40],
+            "path": rel_path,
+            "name": os.path.basename(rel_path),
+            "startLine": int(payload.get("start_line", 1)),
+            "endLine": int(payload.get("end_line", 1)),
+            "reason": f"Semantic similarity score: {pt.score:.4f}",
+            "confidence": float(pt.score),
+            "revision": "latest",
+            "sourceHash": str(payload.get("file_hash", "")),   # hash AT INDEX TIME
+            "callers": [], "tests": [],
+        })
+    return {"mode": "semantic", "warning": None, "results": results}
 
 
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("api:app", host="127.0.0.1", port=8000)
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+    uvicorn.run("api:app", host="127.0.0.1", port=int(os.environ.get("CODEMIND_PORT", "8000")))

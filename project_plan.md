@@ -37,9 +37,6 @@ Today, CodeMind is a **local, single-file RAG pipeline** — the foundation the 
 4. Turn a natural-language question into a vector, retrieve the closest matching code chunk, and pass it to an LLM to generate a grounded answer
 
 **MVP constraints worth being upfront about:**
-- The indexer currently points at a single hardcoded file (`sample_code/auth_service.py`), not a full repository — walking an entire directory tree is a Phase 1 item.
-- Retrieval always returns just the single closest chunk (`limit=1`); there's no re-ranking or multi-chunk context yet.
-- There's no incremental indexing — re-running `indexer.py` re-embeds everything from scratch.
 - Generation uses a free-tier OpenRouter model, which is great for $0 experimentation but not yet meant for reliability-sensitive use.
 - None of the AST parsing, knowledge graph, Git awareness, Jira integration, or VS Code extension described in the vision exist yet — the MVP is semantic retrieval over raw text chunks, and nothing more.
 
@@ -85,29 +82,36 @@ pip install -r requirements.txt
 ```
 
 ### 2. Start Qdrant
+Qdrant is bound to loopback and protected by an API key, so no one else on the
+network can read your indexed code or inject poisoned points:
 ```bash
-docker run -p 6333:6333 -p 6334:6334 qdrant/qdrant
+export QDRANT_API_KEY="$(python -c 'import secrets;print(secrets.token_urlsafe(32))')"
+docker run -d --name qdrant \
+  -p 127.0.0.1:6333:6333 -p 127.0.0.1:6334:6334 \
+  -e QDRANT__SERVICE__API_KEY="$QDRANT_API_KEY" \
+  -v qdrant_storage:/qdrant/storage \
+  qdrant/qdrant
 ```
-Confirm it's running by visiting `http://localhost:6333/dashboard`.
+Add the same value as `QDRANT_API_KEY=` in `ai-engine/.env` so the engine can
+authenticate. The named volume keeps the vectors across container restarts.
 
 ### 3. Set environment variables
-Create a `.env` file inside `ai-engine/`:
+Create a `.env` file inside `ai-engine/` (see `ai-engine/.env.example`):
 ```env
 OPENROUTER_API_KEY=your_key_here
+QDRANT_API_KEY=your_qdrant_api_key_here
 ```
 LiteLLM picks this up automatically when routing to `openrouter/...` models.
 
-### 4. Run the scripts — in this order
-
-| Step | Command | What it does |
-|---|---|---|
-| 1 | `cd ai-engine` | Move into the engine directory |
-| 2 | `python indexer.py` | Chunks `sample_code/auth_service.py`, embeds it, and pushes vectors into the `codemind_codebase` Qdrant collection. **Must run first**, and must be re-run whenever the source file changes. |
-| 3 | `python search.py` | Retrieval-only sanity check — runs a sample semantic search query, no LLM call |
-| 4 | `python rag_pipeline.py` | Full RAG: retrieves the relevant chunk and asks the LLM a question grounded in it |
-| Optional | `python test_ai.py` | Standalone check that your LiteLLM/OpenRouter connection is working |
-
-> ⚠️ `indexer.py` must complete successfully before `search.py` or `rag_pipeline.py` — both query a Qdrant collection that only exists after indexing has run.
+### 4. Run the scripts
+```bash
+cd ai-engine
+python indexer.py --dir ./sample_code          # add --full-reindex to rebuild from scratch
+python search.py --query "How does authentication work?"
+python rag_pipeline.py --query "Where is JWT authentication implemented?"
+python graph_query.py --stats
+python api.py                                  # engine for the VS Code extension (127.0.0.1:8000)
+```
 
 ## Project Structure
 ```
@@ -116,7 +120,11 @@ argusideagent-project-argus/
 ├── project_plan.md
 ├── requirements.txt
 └── ai-engine/
-    ├── indexer.py         # Chunk → embed → store in Qdrant
+    ├── api.py             # FastAPI engine for the VS Code extension
+    ├── config.py          # Shared settings, Qdrant/FastEmbed clients, helpers
+    ├── indexer.py         # Walk → chunk → embed → store in Qdrant
+    ├── graph_builder.py   # AST → NetworkX knowledge graph
+    ├── graph_query.py     # CLI for structural graph queries
     ├── rag_pipeline.py    # Retrieve → augment → generate (full RAG)
     ├── search.py          # Retrieval-only sanity check
     ├── test_ai.py         # LLM connectivity check
