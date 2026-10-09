@@ -25,11 +25,18 @@ from __future__ import annotations
 
 import ast
 import json
+import logging
 import os
 from typing import Any
 
 import networkx as nx
 
+from config import MAX_FILE_BYTES, atomic_write_text, sanitize_text
+
+logger = logging.getLogger(__name__)
+
+# Maximum results returned by query functions.
+_MAX_RESULTS = 500
 
 # ─────────────────────────────────────────────────────────────
 # AST Visitor — extracts structure from a single Python file
@@ -41,7 +48,7 @@ class _CodeStructureVisitor(ast.NodeVisitor):
     def __init__(self, rel_path: str) -> None:
         self.rel_path = rel_path
         # module_prefix is used to build qualified names, e.g. "auth_service"
-        self.module_name = os.path.splitext(rel_path.replace(os.sep, "."))[0]
+        self.module_name = f"{rel_path}::{os.path.splitext(rel_path.replace(os.sep, '.'))[0]}"
 
         self.nodes: list[dict[str, Any]] = []
         self.edges: list[dict[str, Any]] = []
@@ -212,13 +219,21 @@ def parse_file_structure(file_path: str, rel_path: str) -> tuple[list[dict], lis
         (nodes, edges) where each node/edge is a dict with the attributes
         described in the module docstring.
     """
-    with open(file_path, "r", encoding="utf-8", errors="replace") as f:
-        source = f.read()
+    try:
+        with open(file_path, "r", encoding="utf-8", errors="replace") as f:
+            source = f.read(MAX_FILE_BYTES + 1)
+    except OSError as exc:
+        logger.warning("Cannot read %s: %s", rel_path, exc)
+        return [], []
+
+    if len(source) > MAX_FILE_BYTES or "\x00" in source[:8192]:
+        logger.warning("Skipping %s: binary or too large", rel_path)
+        return [], []
 
     try:
         tree = ast.parse(source, filename=rel_path)
-    except SyntaxError as exc:
-        print(f"⚠️  AST parse failed for {rel_path}: {exc}")
+    except (SyntaxError, ValueError, RecursionError, MemoryError) as exc:
+        logger.warning("AST parse failed for %s: %s", rel_path, exc)
         return [], []
 
     visitor = _CodeStructureVisitor(rel_path)
@@ -245,7 +260,7 @@ def _resolve_call_edges(graph: nx.DiGraph) -> None:
         # The caller's module prefix
         caller_data = graph.nodes.get(u, {})
         caller_file = caller_data.get("file_path", "")
-        module_prefix = os.path.splitext(caller_file.replace(os.sep, "."))[0]
+        module_prefix = f"{caller_file}::{os.path.splitext(caller_file.replace(os.sep, '.'))[0]}" if caller_file else ""
 
         # Try: module_prefix.short_name (sibling in same file)
         candidate = f"{module_prefix}.{v}"
@@ -279,9 +294,13 @@ def update_graph_for_file(
     if not rel_path.endswith(".py"):
         return 0
 
+    # Always remove old nodes first so renamed/deleted functions don't linger.
     remove_file_from_graph(graph, rel_path)
 
     nodes, edges = parse_file_structure(file_path, rel_path)
+
+    if not nodes:
+        return 0
 
     for node in nodes:
         node_id = node.pop("id")
@@ -315,18 +334,24 @@ def remove_file_from_graph(graph: nx.DiGraph, rel_path: str) -> int:
 
 def load_graph(path: str) -> nx.DiGraph:
     """Load a knowledge graph from a JSON node-link file, or return empty."""
-    if os.path.exists(path):
+    if not os.path.exists(path):
+        return nx.DiGraph()
+    try:
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
-        return nx.node_link_graph(data, directed=True)
-    return nx.DiGraph()
+        if not isinstance(data, dict):
+            logger.warning("Graph file is not a JSON object: %s", path)
+            return nx.DiGraph()
+        return nx.node_link_graph(data, directed=True, edges="links")
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        logger.warning("Cannot load graph from %s: %s", path, exc)
+        return nx.DiGraph()
 
 
 def save_graph(graph: nx.DiGraph, path: str) -> None:
     """Persist the knowledge graph as a JSON node-link file."""
-    data = nx.node_link_data(graph)
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, default=str)
+    data = nx.node_link_data(graph, edges="links")
+    atomic_write_text(path, json.dumps(data, indent=2, default=str))
 
 
 # ─────────────────────────────────────────────────────────────
@@ -336,27 +361,37 @@ def save_graph(graph: nx.DiGraph, path: str) -> None:
 def find_node(graph: nx.DiGraph, symbol_name: str) -> str | None:
     """Find a node ID by exact qualified name or by unqualified short name.
 
-    Returns the node ID, or None if not found.
+    Returns the node ID, or None if not found.  Never raises.
     """
-    # Exact match first
-    if symbol_name in graph.nodes:
-        return symbol_name
+    try:
+        # Exact match first
+        if symbol_name in graph.nodes:
+            return symbol_name
 
-    # Short-name match (e.g., "generate_token" → "auth_service.generate_token")
-    matches = [
-        nid for nid, data in graph.nodes(data=True)
-        if data.get("name") == symbol_name
-    ]
-    if len(matches) == 1:
-        return matches[0]
-    if len(matches) > 1:
-        # Ambiguous — prefer functions/methods over modules
-        non_module = [m for m in matches if graph.nodes[m].get("type") != "module"]
-        if len(non_module) == 1:
-            return non_module[0]
-        # Still ambiguous — return first match
-        return matches[0]
-    return None
+        # Short-name match (e.g., "generate_token" → "auth_service.generate_token")
+        matches = [
+            nid for nid, data in graph.nodes(data=True)
+            if data.get("name") == symbol_name
+        ]
+        if len(matches) == 1:
+            return matches[0]
+        if len(matches) > 1:
+            # Ambiguous — prefer functions/methods over modules
+            non_module = [m for m in matches if graph.nodes[m].get("type") != "module"]
+            if len(non_module) == 1:
+                return non_module[0]
+            # Still ambiguous — return first match
+            return matches[0]
+        # Try unique substring match
+        substring_matches = [
+            nid for nid in graph.nodes
+            if symbol_name in nid
+        ]
+        if len(substring_matches) == 1:
+            return substring_matches[0]
+        return None
+    except Exception:
+        return None
 
 
 def get_callers(graph: nx.DiGraph, symbol_name: str) -> list[dict]:
@@ -365,8 +400,12 @@ def get_callers(graph: nx.DiGraph, symbol_name: str) -> list[dict]:
     if node_id is None:
         return []
 
+    visited: set[str] = {node_id}
     callers = []
     for pred in graph.predecessors(node_id):
+        if pred in visited:
+            continue
+        visited.add(pred)
         edge_data = graph.edges[pred, node_id]
         if edge_data.get("type") == "calls":
             callers.append({
@@ -375,6 +414,8 @@ def get_callers(graph: nx.DiGraph, symbol_name: str) -> list[dict]:
                 "direction": "caller",
                 **graph.nodes[pred],
             })
+        if len(callers) >= _MAX_RESULTS:
+            break
     return callers
 
 
@@ -384,8 +425,12 @@ def get_callees(graph: nx.DiGraph, symbol_name: str) -> list[dict]:
     if node_id is None:
         return []
 
+    visited: set[str] = {node_id}
     callees = []
     for succ in graph.successors(node_id):
+        if succ in visited:
+            continue
+        visited.add(succ)
         edge_data = graph.edges[node_id, succ]
         if edge_data.get("type") == "calls":
             node_data = graph.nodes.get(succ, {})
@@ -395,6 +440,8 @@ def get_callees(graph: nx.DiGraph, symbol_name: str) -> list[dict]:
                 "direction": "callee",
                 **node_data,
             })
+        if len(callees) >= _MAX_RESULTS:
+            break
     return callees
 
 
@@ -413,6 +460,8 @@ def get_class_members(graph: nx.DiGraph, class_name: str) -> list[dict]:
                 "relationship": "member_of",
                 **graph.nodes[succ],
             })
+        if len(members) >= _MAX_RESULTS:
+            break
     return members
 
 
@@ -427,11 +476,13 @@ def get_impact_chain(
     This answers "what breaks if I change this symbol?" by walking
     upstream through the call graph.
     """
+    depth = max(1, min(depth, 10))
+
     node_id = find_node(graph, symbol_name)
     if node_id is None:
         return []
 
-    visited: set[str] = set()
+    visited: set[str] = {node_id}
     frontier = {node_id}
     results: list[dict] = []
 
@@ -449,6 +500,8 @@ def get_impact_chain(
                         "calls": nid,
                         **graph.nodes.get(pred, {}),
                     })
+                    if len(results) >= _MAX_RESULTS:
+                        return results
         frontier = next_frontier
         if not frontier:
             break
@@ -471,16 +524,17 @@ def format_graph_context(
     Returns:
         A formatted string suitable for injection into the RAG prompt.
     """
+    target_symbol = sanitize_text(target_symbol)
     if not relationships:
         return f"No structural relationships found for `{target_symbol}`."
 
-    lines = [f"Structural analysis for `{target_symbol}` ({query_type}):\n"]
+    lines = [f"Structural analysis for `{target_symbol}` ({sanitize_text(query_type)}):\n"]
 
     for rel in relationships:
-        node_type = rel.get("type", "symbol")
-        file_path = rel.get("file_path", "unknown")
+        node_type = sanitize_text(str(rel.get("type", "symbol")))
+        file_path = sanitize_text(str(rel.get("file_path", "unknown")))
         lineno = rel.get("lineno", "?")
-        name = rel.get("name", rel.get("id", "?"))
+        name = sanitize_text(str(rel.get("name", rel.get("id", "?"))))
 
         if query_type == "callers":
             lines.append(f"  • {name} ({node_type} in {file_path}:{lineno}) ──calls──▶ {target_symbol}")
@@ -488,8 +542,8 @@ def format_graph_context(
             lines.append(f"  • {target_symbol} ──calls──▶ {name} ({node_type} in {file_path}:{lineno})")
         elif query_type == "impact":
             depth = rel.get("depth", "?")
-            calls_target = rel.get("calls", target_symbol)
-            calls_name = calls_target.rsplit(".", 1)[-1] if "." in calls_target else calls_target
+            calls_target = str(rel.get("calls", target_symbol))
+            calls_name = sanitize_text(calls_target.rsplit(".", 1)[-1] if "." in calls_target else calls_target)
             lines.append(f"  • [depth {depth}] {name} ({node_type} in {file_path}:{lineno}) ──calls──▶ {calls_name}")
         elif query_type == "members":
             lines.append(f"  • {name} ({node_type} at line {lineno})")

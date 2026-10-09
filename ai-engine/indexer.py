@@ -21,16 +21,22 @@ Usage:
 """
 
 import argparse
+import bisect
 import hashlib
 import json
 import logging
-import networkx as nx
-import os
+import re
 import uuid
 from typing import Callable
 
+import networkx as nx
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from qdrant_client.models import Distance, VectorParams, PointStruct, FilterSelector, Filter, FieldCondition, MatchValue
+from qdrant_client.models import (
+    Distance, VectorParams, PointStruct, FilterSelector, Filter,
+    FieldCondition, MatchValue, PayloadSchemaType, Range,
+)
+
+import os
 
 from config import (
     COLLECTION_NAME,
@@ -38,12 +44,20 @@ from config import (
     DEFAULT_CHUNK_SIZE,
     DEFAULT_CHUNK_OVERLAP,
     DEFAULT_DATA_DIR,
+    EMBEDDING_MODEL_NAME,
     IGNORE_DIRS,
     INDEX_STATE_FILENAME,
     GRAPH_FILENAME,
+    MAX_FILE_BYTES,
+    EMBED_BATCH,
+    REPO_ID_RE,
     get_language_for_file,
     get_qdrant_client,
     get_embedding_model,
+    embed_texts,
+    ensure_private_dir,
+    make_repo_id,
+    atomic_write_text,
 )
 import graph_builder
 
@@ -79,9 +93,9 @@ def _sha256(file_path: str) -> str:
     return h.hexdigest()
 
 
-def _make_repo_id(target_dir: str) -> str:
-    """Derive a stable repo_id from the absolute target directory path."""
-    return hashlib.sha256(os.path.abspath(target_dir).encode()).hexdigest()[:24]
+def _rel_posix(abs_path: str, root: str) -> str:
+    """Return a forward-slash relative path so Windows and POSIX produce identical keys."""
+    return os.path.relpath(abs_path, root).replace(os.sep, "/")
 
 
 def _point_id(repo_id: str, file_rel_path: str, chunk_index: int) -> str:
@@ -97,23 +111,34 @@ def _point_id(repo_id: str, file_rel_path: str, chunk_index: int) -> str:
 
 def _data_dir_for_repo(repo_id: str, base_data_dir: str) -> str:
     """Return the per-repo data directory, creating it if needed."""
-    repo_data_dir = os.path.join(base_data_dir, repo_id)
-    os.makedirs(repo_data_dir, exist_ok=True)
-    return repo_data_dir
+    ensure_private_dir(base_data_dir)
+    return ensure_private_dir(os.path.join(base_data_dir, repo_id))
+
+
+def _delete_file_points(client, collection: str, repo_id: str, rel_path: str) -> None:
+    client.delete(collection_name=collection, points_selector=FilterSelector(filter=Filter(must=[
+        FieldCondition(key="repo_id", match=MatchValue(value=repo_id)),
+        FieldCondition(key="file_path", match=MatchValue(value=rel_path)),
+    ])))
+
+
+_FINGERPRINT_KEY = "__index_fingerprint__"
 
 
 def _load_state(state_path: str) -> dict[str, str]:
-    """Load the previous index state (path → hash map) from disk."""
-    if os.path.exists(state_path):
-        with open(state_path, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return {}
+    try:
+        with open(state_path, "r", encoding="utf-8") as fh:
+            data = json.load(fh)
+        return data if isinstance(data, dict) else {}
+    except FileNotFoundError:
+        return {}
+    except (OSError, ValueError):
+        logger.warning("Index state unreadable; treating as empty: %s", state_path)
+        return {}
 
 
 def _save_state(state_path: str, state: dict[str, str]) -> None:
-    """Persist the current index state to disk."""
-    with open(state_path, "w", encoding="utf-8") as f:
-        json.dump(state, f, indent=2, sort_keys=True)
+    atomic_write_text(state_path, json.dumps(state, indent=2, sort_keys=True))
 
 
 def _discover_files(root_dir: str) -> list[str]:
@@ -121,17 +146,50 @@ def _discover_files(root_dir: str) -> list[str]:
 
     Returns a list of absolute paths.  Skips directories listed in
     IGNORE_DIRS and files whose extension isn't in CODE_EXTENSIONS.
+    Rejects symlinks pointing outside the repo (prevents secret exfiltration).
     """
+    root_real = os.path.realpath(root_dir)
     found: list[str] = []
-    for dirpath, dirnames, filenames in os.walk(root_dir):
-        # Prune ignored directories *in-place* so os.walk won't descend.
-        dirnames[:] = [d for d in dirnames if d not in IGNORE_DIRS]
-
+    for dirpath, dirnames, filenames in os.walk(root_dir, followlinks=False):
+        dirnames[:] = [d for d in dirnames
+                       if d not in IGNORE_DIRS and not d.endswith(".egg-info")
+                       and not os.path.islink(os.path.join(dirpath, d))]
         for fname in filenames:
             full_path = os.path.join(dirpath, fname)
-            if get_language_for_file(full_path) is not None:
+            if get_language_for_file(full_path) is None:
+                continue
+            try:
+                real = os.path.realpath(full_path)
+                if real != root_real and not real.startswith(root_real + os.sep):
+                    continue                        # symlink pointing outside the repo
+                size = os.path.getsize(full_path)   # raises OSError on broken symlinks
+            except OSError:
+                continue
+            if 0 < size <= MAX_FILE_BYTES:
                 found.append(full_path)
     return found
+
+
+# ─────────────────────────────────────────────────────────────
+# Secret redaction (Item 5)
+# ─────────────────────────────────────────────────────────────
+
+_SECRET_PATTERNS = [
+    re.compile(r"-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----.*?-----END [A-Z0-9 ]*PRIVATE KEY-----", re.S),
+    re.compile(r"\bAKIA[0-9A-Z]{16}\b"),
+    re.compile(r"\bgh[pousr]_[A-Za-z0-9]{36,}\b"),
+    re.compile(r"\bxox[abprs]-[A-Za-z0-9-]{10,}\b"),
+    re.compile(r"\bsk-[A-Za-z0-9_-]{20,}\b"),
+]
+_ASSIGNED_SECRET = re.compile(
+    r"(?i)(\b(?:api[_-]?key|secret(?:[_-]?key)?|token|passw(?:or)?d)\b\s*[:=]\s*)(['\"])[^'\"\n]{8,}\2")
+
+
+def _redact_secrets(text: str) -> str:
+    """Mask likely secrets but keep the number of lines unchanged so start_line/end_line stay correct."""
+    for pattern in _SECRET_PATTERNS:
+        text = pattern.sub(lambda m: "[REDACTED]" + "\n" * m.group(0).count("\n"), text)
+    return _ASSIGNED_SECRET.sub(lambda m: f"{m.group(1)}{m.group(2)}[REDACTED]{m.group(2)}", text)
 
 
 # ─────────────────────────────────────────────────────────────
@@ -169,7 +227,7 @@ def index_directory(
 
     Returns:
         Summary dict with keys: files_indexed, files_skipped,
-        files_pruned, points_upserted, graph_nodes.
+        files_pruned, points_upserted, graph_nodes, files_failed.
 
     Raises:
         IndexingError: If target_dir does not exist or another
@@ -187,7 +245,10 @@ def index_directory(
 
     # --- Resolve repo_id and data paths ---
     if repo_id is None:
-        repo_id = _make_repo_id(target_dir)
+        repo_id = make_repo_id(target_dir)
+
+    if not REPO_ID_RE.fullmatch(repo_id):
+        raise IndexingError("Invalid repo_id")
 
     base_data_dir = data_dir or DEFAULT_DATA_DIR
     repo_data_dir = _data_dir_for_repo(repo_id, base_data_dir)
@@ -195,34 +256,56 @@ def index_directory(
     state_path = os.path.join(repo_data_dir, INDEX_STATE_FILENAME)
     graph_path = os.path.join(repo_data_dir, GRAPH_FILENAME)
 
-    # --- Load or create knowledge graph ---
-    if build_graph:
-        kg = graph_builder.load_graph(graph_path) if not full_reindex else nx.DiGraph()
-    else:
-        kg = None
-
     # --- Clients ---
     try:
         client = get_qdrant_client()
+        client.get_collections()                    # first real round-trip; the constructor never connects
     except Exception as exc:
         raise IndexingError(f"Cannot connect to Qdrant: {exc}") from exc
 
-    embedding_model = get_embedding_model()
-
-    # --- Ensure collection exists ---
+    collection_created = False
     if not client.collection_exists(collection):
-        client.create_collection(
-            collection_name=collection,
-            vectors_config=VectorParams(size=VECTOR_SIZE, distance=Distance.COSINE),
-        )
+        client.create_collection(collection_name=collection,
+                                 vectors_config=VectorParams(size=VECTOR_SIZE, distance=Distance.COSINE))
+        collection_created = True
         _log(f"✅ Created Qdrant collection: '{collection}'")
+    else:
+        size = getattr(client.get_collection(collection).config.params.vectors, "size", None)
+        if size is not None and size != VECTOR_SIZE:
+            raise IndexingError(f"Collection '{collection}' has vector size {size}, expected {VECTOR_SIZE}. "
+                                f"Delete it or pass --collection.")
+    for field, schema in (("repo_id", PayloadSchemaType.KEYWORD), ("file_path", PayloadSchemaType.KEYWORD),
+                          ("chunk_index", PayloadSchemaType.INTEGER)):
+        try:
+            client.create_payload_index(collection_name=collection, field_name=field, field_schema=schema)
+        except Exception:
+            pass                                    # index already exists
+
+    # --- Warm up embedding model ---
+    try:
+        get_embedding_model()          # warm-up: raises IndexingError instead of a raw traceback
+    except Exception as exc:
+        raise IndexingError(f"Cannot load embedding model: {exc}") from exc
 
     # --- Discover files ---
     all_files = _discover_files(target_dir)
     _log(f"📂 Found {len(all_files)} indexable file(s) under {target_dir}")
 
-    # --- Load previous state ---
-    prev_state = {} if full_reindex else _load_state(state_path)
+    # --- Load previous state and check fingerprint ---
+    fingerprint = f"{EMBEDDING_MODEL_NAME}|{chunk_size}|{chunk_overlap}|v2"
+    prev_state = _load_state(state_path)
+    previous_fingerprint = prev_state.pop(_FINGERPRINT_KEY, None)
+    needs_full = full_reindex or collection_created or previous_fingerprint != fingerprint
+    if needs_full:
+        if not collection_created:                  # wipe this repo's vectors so deleted files cannot linger
+            client.delete(collection_name=collection, points_selector=FilterSelector(filter=Filter(
+                must=[FieldCondition(key="repo_id", match=MatchValue(value=repo_id))])))
+        prev_state = {}
+
+    kg = None
+    if build_graph:
+        kg = nx.DiGraph() if needs_full else graph_builder.load_graph(graph_path)
+
     new_state: dict[str, str] = {}
 
     # Classify files
@@ -230,8 +313,12 @@ def index_directory(
     skipped = 0
 
     for abs_path in all_files:
-        rel_path = os.path.relpath(abs_path, target_dir)
-        file_hash = _sha256(abs_path)
+        rel_path = _rel_posix(abs_path, target_dir)
+        try:
+            file_hash = _sha256(abs_path)
+        except OSError as exc:
+            _log(f"⚠️  Skipping {rel_path}: {exc}")
+            continue
         new_state[rel_path] = file_hash
 
         if prev_state.get(rel_path) == file_hash:
@@ -250,121 +337,91 @@ def index_directory(
 
     # --- Prune deleted files from Qdrant and graph ---
     for rel_path in deleted_rel_paths:
-        client.delete(
-            collection_name=collection,
-            points_selector=FilterSelector(
-                filter=Filter(
-                    must=[
-                        FieldCondition(key="repo_id", match=MatchValue(value=repo_id)),
-                        FieldCondition(key="file_path", match=MatchValue(value=rel_path)),
-                    ]
-                )
-            ),
-        )
+        _delete_file_points(client, collection, repo_id, rel_path)
         if kg is not None and rel_path.endswith(".py"):
             graph_builder.remove_file_from_graph(kg, rel_path)
     if deleted_rel_paths:
         _log(f"🗑️  Pruned vectors for {len(deleted_rel_paths)} deleted file(s)")
 
     # --- Process new / modified files ---
-    total_points = 0
-    graph_nodes_added = 0
+    total_points = graph_nodes_added = files_failed = 0
 
     for abs_path in files_to_index:
-        rel_path = os.path.relpath(abs_path, target_dir)
+        rel_path = _rel_posix(abs_path, target_dir)
         language = get_language_for_file(abs_path)
 
-        # Read file
-        try:
-            with open(abs_path, "r", encoding="utf-8", errors="replace") as f:
-                raw_code = f.read()
-        except Exception as exc:
+        try:                                            # read ONCE as bytes; hash exactly what we index
+            with open(abs_path, "rb") as fh:
+                raw_bytes = fh.read(MAX_FILE_BYTES + 1)
+        except OSError as exc:
             _log(f"⚠️  Skipping {rel_path}: {exc}")
+            new_state.pop(rel_path, None)               # not recorded => retried next run
+            files_failed += 1
+            continue
+        if len(raw_bytes) > MAX_FILE_BYTES or b"\x00" in raw_bytes[:8192]:
+            _log(f"⚠️  Skipping {rel_path}: binary or larger than {MAX_FILE_BYTES} bytes")
+            new_state.pop(rel_path, None)
+            _delete_file_points(client, collection, repo_id, rel_path)
+            if kg is not None and rel_path.endswith(".py"):
+                graph_builder.remove_file_from_graph(kg, rel_path)
             continue
 
-        # Delete any previous vectors for this file (handles modifications)
-        # Scoped to repo_id to prevent cross-repo interference.
-        client.delete(
-            collection_name=collection,
-            points_selector=FilterSelector(
-                filter=Filter(
-                    must=[
-                        FieldCondition(key="repo_id", match=MatchValue(value=repo_id)),
-                        FieldCondition(key="file_path", match=MatchValue(value=rel_path)),
-                    ]
-                )
-            ),
-        )
+        file_hash = hashlib.sha256(raw_bytes).hexdigest()
+        new_state[rel_path] = file_hash
+        raw_code = _redact_secrets(                     # Item 5 (keeps line count unchanged)
+            raw_bytes.decode("utf-8", errors="replace").replace("\r\n", "\n").replace("\r", "\n"))
 
-        # Chunk
-        if language is not None:
-            splitter = RecursiveCharacterTextSplitter.from_language(
-                language=language,
-                chunk_size=chunk_size,
-                chunk_overlap=chunk_overlap,
-                add_start_index=True,
-            )
-        else:
-            # Fallback: generic text splitter
-            splitter = RecursiveCharacterTextSplitter(
-                chunk_size=chunk_size,
-                chunk_overlap=chunk_overlap,
-                add_start_index=True,
-            )
-
+        splitter = RecursiveCharacterTextSplitter.from_language(
+            language=language, chunk_size=chunk_size, chunk_overlap=chunk_overlap, add_start_index=True)
         documents = splitter.create_documents([raw_code])
         if not documents:
+            _delete_file_points(client, collection, repo_id, rel_path)
+            if kg is not None and rel_path.endswith(".py"):
+                graph_builder.remove_file_from_graph(kg, rel_path)
             continue
 
-        chunks = [doc.page_content for doc in documents]
-
-        # Embed
-        embeddings = list(embedding_model.embed(chunks))
-
-        # Build points — repo_id is included in both the deterministic ID
-        # and the payload so queries can filter by repo.
-        points = []
-        for idx, (doc, vector) in enumerate(zip(documents, embeddings)):
-            chunk = doc.page_content
-            start_index = doc.metadata.get("start_index", 0)
-            start_line = raw_code.count("\n", 0, start_index) + 1
-            end_line = start_line + chunk.count("\n")
-            points.append(
-                PointStruct(
+        line_starts = [0] + [m.end() for m in re.finditer(r"\n", raw_code)]
+        vectors = embed_texts([d.page_content for d in documents])   # embed FIRST: a failure leaves old vectors intact
+        total = len(documents)
+        for b in range(0, total, EMBED_BATCH):
+            points = []
+            for idx in range(b, min(b + EMBED_BATCH, total)):
+                doc = documents[idx]
+                start_line = bisect.bisect_right(line_starts, max(doc.metadata.get("start_index", 0), 0))
+                points.append(PointStruct(
                     id=_point_id(repo_id, rel_path, idx),
-                    vector=vector.tolist(),
-                    payload={
-                        "repo_id": repo_id,
-                        "file_path": rel_path,
-                        "code_snippet": chunk,
-                        "language": language.value if language else "text",
-                        "chunk_index": idx,
-                        "start_line": start_line,
-                        "end_line": end_line,
-                    },
-                )
-            )
+                    vector=vectors[idx],
+                    payload={"repo_id": repo_id, "file_path": rel_path, "file_hash": file_hash,
+                             "code_snippet": doc.page_content, "language": language.value,
+                             "chunk_index": idx, "start_line": start_line,
+                             "end_line": start_line + doc.page_content.count("\n")},
+                ))
+            client.upsert(collection_name=collection, points=points)
+        # file shrank? drop stale tail chunks (ids are deterministic, so the upsert already overwrote the rest)
+        client.delete(collection_name=collection, points_selector=FilterSelector(filter=Filter(must=[
+            FieldCondition(key="repo_id", match=MatchValue(value=repo_id)),
+            FieldCondition(key="file_path", match=MatchValue(value=rel_path)),
+            FieldCondition(key="chunk_index", range=Range(gte=total)),
+        ])))
+        total_points += total
 
-        client.upsert(collection_name=collection, points=points)
-        total_points += len(points)
-
-        # --- Build knowledge graph for .py files ---
         if kg is not None and rel_path.endswith(".py"):
-            n_added = graph_builder.update_graph_for_file(kg, rel_path, abs_path)
-            graph_nodes_added += n_added
-
-        graph_tag = f", {graph_nodes_added} graph nodes" if kg is not None and rel_path.endswith(".py") else ""
-        _log(f"   ✔ {rel_path}  ({len(chunks)} chunks{graph_tag})")
+            try:
+                graph_nodes_added += graph_builder.update_graph_for_file(kg, rel_path, abs_path)
+            except Exception as exc:                    # one unparsable file must not abort the run
+                _log(f"⚠️  Graph update failed for {rel_path}: {exc}")
+        _log(f"   ✔ {rel_path}  ({total} chunks)")
 
     # --- Persist state and graph ---
-    _save_state(state_path, new_state)
-
     if kg is not None:
         graph_builder.save_graph(kg, graph_path)
         summary = graph_builder.get_graph_summary(kg)
         _log(f"\n🔗 Knowledge graph: {summary['total_nodes']} nodes, {summary['total_edges']} edges")
         for ntype, count in sorted(summary['nodes'].items()):
             _log(f"   {ntype}: {count}")
+
+    new_state[_FINGERPRINT_KEY] = fingerprint
+    _save_state(state_path, new_state)
 
     _log(f"\n🚀 Indexing complete — {total_points} point(s) upserted, "
          f"{skipped} file(s) unchanged, "
@@ -376,6 +433,7 @@ def index_directory(
         "files_pruned": len(deleted_rel_paths),
         "points_upserted": total_points,
         "graph_nodes": graph_nodes_added,
+        "files_failed": files_failed,
     }
 
 
