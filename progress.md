@@ -1,8 +1,8 @@
 # progress.md — Living State Tracker
 
-**Last updated:** 2026-10-09 · **Session:** 1 (baseline) · **Evaluation date:** _TBD — owner to fill in_
+**Last updated:** 2026-10-12 · **Session:** knowledge base Phase 3 · **Evaluation date:** _TBD — owner to fill in_
 **Contract:** [`README.md`](README.md) (locked). IDs F1–F7 refer to its §2.
-**Basis of this file:** static review of the repository snapshot. **Nothing was executed.** "Built" means the code exists and reads as complete; "Verified" means a run or test confirmed it. The only automated checks that exist are in `extension/test/suite.js`.
+**Basis of this file:** legacy roadmap sections were a static review of an earlier snapshot; dated knowledge-base entries above record executed checks. "Built" means the code exists and reads as complete; "Verified" means a run or test confirmed it.
 
 ### Session protocol — for any assistant starting from this file
 
@@ -12,6 +12,20 @@
 4. After each major chunk and at session end, output the full updated `progress.md` for the owner to commit.
 
 **Legend:** ✅ Built · ⚠️ Built, known defect · 🚧 Partial · ⛔ Stub / missing · ➖ Out of scope
+
+## New knowledge base plan: Phases 1–3
+
+The owner supplied a new local knowledge base implementation plan and requested Phase 1. `knowledge_base/scanner.py` now inventories JavaScript/TypeScript source and supported JS/TS manifests into a private per-repository SQLite database. It applies Git ignore rules, custom exclusions, secret and symlink safeguards, binary and size checks, and records per-path reasons, hashes, Git revision, parsing status, and coverage counts. This component is separate from the existing Qdrant indexer and does not change the VS Code extension.
+
+**Verified 2026-10-11:** `python3 -m unittest knowledge_base.test_scanner -v` passed 5 tests. A live scan of this repository found 4 source files and 3 config files included, 21 unsupported files, 9 ignored files, 9 pruned directories, and no scan errors. The new inventory database is outside the repository. The existing README scope reflects the earlier roadmap and needs reconciliation with the new plan before future integrated work.
+
+**Phase 2, 2026-10-11:** `knowledge_base/parser.py` uses Tree-sitter JavaScript, TypeScript, and TSX grammars to extract scoped symbols and unresolved syntactic references, with comments, source spans, stable IDs for ordinary declarations, and per-file parsing status/diagnostics in SQLite. The fixture suite covers nesting, overloads, aliases, dynamic imports, JSX/TSX, Unicode spans, rescan cleanup, and errors. All 10 Phase 1/2 unit tests passed; a live run parsed 4 source files with 94 symbols, 423 syntactic references, 2 comments, and no syntax or read errors. This is a separate knowledge-base component.
+
+**Phase 3, 2026-10-12:** `knowledge_base/semantic_resolver.cjs` uses the local TypeScript checker for source-limited semantic bindings and tsconfig path aliases. `knowledge_base/graph.py` stores typed, evidence-bearing nodes and relationships plus unresolved occurrences in SQLite; exposes caller/callee, import, reverse-dependency, and bounded path queries; rejects stale snapshots. Independent fixture tests verify alias imports, same-name disambiguation, class inheritance, CommonJS imports, missing targets, deletion, and stale-file detection. Runtime dispatch remains a static declaration relationship, not proof of the executed override. The pipeline remains separate from the extension and existing Python engine; Phases 4–8 of the new plan remain unimplemented.
+
+**Retrieval fix, 2026-10-11:** The existing chat search now checks saved repository source for exact text before vector search, and repository selection supports a lexical mode when Qdrant or the embedding model is unavailable. The C fixture `strcasecmp` and a copied expression resolve to `crack_detection_functions.c` at the expected lines; four retrieval regression tests pass. A running engine must be restarted to load this change. The extension's pre-existing deleted `tsconfig.json` prevents `npm run compile`; this deletion was preserved.
+
+**Installed-extension correction, 2026-10-11:** The installed CodeMind 0.4.0 still contained an older bundled Node search server, explaining why restarting Python did not change its ranking results. The current TypeScript sources were compiled with equivalent command-line options, packaged without the old server, and installed with `code --install-extension --force`. A live request to the Python API for `tensorflow` returned exact matches at lines 7–11 of the CNN fixture. VS Code must reload its window to activate the replacement extension.
 
 ---
 

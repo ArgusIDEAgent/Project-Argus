@@ -48,7 +48,8 @@ from config import (
     get_qdrant_client,
     make_repo_id,
 )
-from indexer import IndexingError, index_directory
+from indexer import IndexingError, _discover_files, index_directory
+from lexical_search import search_exact_code
 
 logger = logging.getLogger(__name__)
 
@@ -229,7 +230,17 @@ def _run_index_job(job_id: str, repo_id: str, root_path: str, full_reindex: bool
             }
             job["state"] = JobState.COMPLETED
         except IndexingError as exc:
-            job["error"], job["state"] = str(exc), JobState.FAILED
+            if str(exc).startswith(("Cannot connect to Qdrant:", "Cannot load embedding model:")):
+                logger.warning("Semantic indexing unavailable for %s: %s", repo_id, exc)
+                job["result"] = {
+                    "fileCount": len(_discover_files(root_path)),
+                    **_git_state(root_path),
+                    "semantic": {"state": "degraded", "error": str(exc), "chunkCount": 0},
+                    "docs": dict(_EMPTY_DOCS_STATUS),
+                }
+                job["state"] = JobState.COMPLETED
+            else:
+                job["error"], job["state"] = str(exc), JobState.FAILED
         except Exception:
             logger.exception("Indexing job %s failed", job_id[:8])
             job["error"], job["state"] = "Indexing failed unexpectedly; see the engine log.", JobState.FAILED
@@ -412,23 +423,25 @@ def graph_file(file_path: str, repoId: str = ""):
 
 @app.post("/search/code")
 def search_code(req: SearchRequest):
-    if req.repoId not in _REGISTERED_REPOS:
+    entry = _REGISTERED_REPOS.get(req.repoId)
+    if not entry:
         raise HTTPException(status_code=404, detail="Repository is not registered.")
+    exact_results = search_exact_code(entry["rootPath"], req.repoId, req.query, req.limit)
+    if exact_results:
+        return {"mode": "lexical", "warning": None, "results": exact_results}
     try:
         client = get_qdrant_client()
         if not client.collection_exists(COLLECTION_NAME):
-            return {"mode": "semantic", "warning": "Repository has not been indexed yet.", "results": []}
+            return {"mode": "semantic", "warning": "No exact match. This repository has no semantic index yet.", "results": []}
         points = client.query_points(
             collection_name=COLLECTION_NAME,
             query=embed_texts([req.query])[0],
             query_filter=Filter(must=[FieldCondition(key="repo_id", match=MatchValue(value=req.repoId))]),
             limit=req.limit,
         ).points
-    except HTTPException:
-        raise
     except Exception:
-        logger.exception("Semantic search failed")
-        raise HTTPException(status_code=500, detail="Search failed; see the engine log.")
+        logger.exception("Semantic search unavailable")
+        return {"mode": "unavailable", "warning": "No exact match. Semantic search is unavailable; check the engine log and Qdrant.", "results": []}
 
     results = []
     for pt in points:

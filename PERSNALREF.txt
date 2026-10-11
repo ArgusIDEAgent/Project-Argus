@@ -1,0 +1,14 @@
+// not to be alterd by ai models / codex / antigravity 
+this is strickly for the personal notes only 
+
+
+sqllite
+sqlite3 "/Users/paraspingale/.codemind/data/e3d21fb6884a718d6b658076/metadata.db"
+
+
+
+.tables
+.headers on
+.mode column
+SELECT relative_path, status, language FROM files;
+.quit

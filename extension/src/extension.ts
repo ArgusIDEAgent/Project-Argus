@@ -755,7 +755,7 @@ export function chatHtml(webview: vscode.Webview): string {
       if (message.type === 'useReference') { input.value = message.text; input.focus(); return; }
       if (message.type === 'results') {
         for (const old of messages.querySelectorAll('.code-result')) old.remove();
-        addMessage('CodeMind', message.title + (message.results.length ? '' : ': No confident matches.') + (message.warning ? '\\n' + message.warning : ''), 'server');
+        addMessage('CodeMind', message.title + (message.results.length ? '' : ': No matches found.') + (message.warning ? '\\n' + message.warning : ''), 'server');
         for (const result of message.results) {
           const item = document.createElement('div');
           item.className = 'code-result'; item.id = result.key;

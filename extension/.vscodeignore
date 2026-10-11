@@ -3,6 +3,8 @@
 src/**
 test/**
 scripts/**
+server/**
+*.vsix
 tsconfig.json
 **/*.map
 **/.DS_Store
