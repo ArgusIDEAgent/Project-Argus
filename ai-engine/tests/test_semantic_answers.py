@@ -20,6 +20,15 @@ from qdrant_client import QdrantClient
 from qdrant_client.models import Filter, FieldCondition, MatchValue
 
 
+def model_reply(content, **fields):
+    class Reply:
+        def __enter__(self): return self
+        def __exit__(self, *args): pass
+        def read(self, *args):
+            return json.dumps({'message': {'content': content}, **fields}).encode()
+    return Reply()
+
+
 class SemanticTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
@@ -35,6 +44,7 @@ class SemanticTests(unittest.TestCase):
         self.client = QdrantClient(':memory:')
         self.addCleanup(self.client.close)
         self.addCleanup(patch.stopall)
+        patch.dict(os.environ, {'CODEMIND_LOCAL_MODEL': 'test-local-model'}).start()
         patch.object(api, 'get_qdrant_client', return_value=self.client).start()
         patch.object(api, 'DEFAULT_DATA_DIR', str(self.data)).start()
         # Deterministic vectors test storage/filtering independently of model quality.
@@ -105,17 +115,72 @@ class SemanticTests(unittest.TestCase):
         self.file.write_text('const api_key = "abcdefghijk-secret";\n')
         item = {'path': 'auth.ts', 'startLine': 1, 'endLine': 1,
                 'sourceHash': hashlib.sha256(self.file.read_bytes()).hexdigest(), 'reason': 'Exact match'}
-        class Reply:
-            def __enter__(self): return self
-            def __exit__(self, *args): pass
-            def read(self, *args): return json.dumps({'message': {'content': json.dumps({'answer': 'Local explanation.', 'citations': [1]})}}).encode()
-        with patch('answers.urlopen', return_value=Reply()) as model:
+        with patch('answers.urlopen', return_value=model_reply('Local explanation.')) as model:
             result = answer_question(str(self.root), 'explain', {'results': [item], 'warning': None, 'mode': 'lexical'})
         self.assertEqual(result['answerMode'], 'local-llm')
         sent = model.call_args.args[0]
         self.assertEqual(sent.full_url, 'http://127.0.0.1:11434/api/chat')
         self.assertNotIn('abcdefghijk-secret', sent.data.decode())
         self.assertIn('[REDACTED]', sent.data.decode())
+        self.assertNotIn('format', json.loads(sent.data))
+        self.assertEqual(result['answer'], 'Local explanation.\n\nSources:\n[1] auth.ts:1-1')
+        self.assertEqual(result['citations'][0]['sourceHash'], item['sourceHash'])
+
+    def test_backend_numbers_unique_sources_and_ignores_model_reference_numbers(self):
+        first = self.search('validateToken')['results'][0]
+        second = {**first, 'startLine': 2, 'endLine': 2}
+        retrieval = {'results': [first, first.copy(), second], 'warning': None, 'mode': 'lexical'}
+        with patch('answers.urlopen', return_value=model_reply('Explanation [1] [1] [999] with `items[1]`.')):
+            result = answer_question(str(self.root), 'explain', retrieval)
+        self.assertEqual([item['id'] for item in result['citations']], [1, 2])
+        self.assertEqual(len(result['results']), 2)
+        self.assertNotIn('[999]', result['answer'])
+        explanation, sources = result['answer'].split('\n\nSources:\n')
+        self.assertIn('`items[1]`', explanation)
+        self.assertEqual(sources, '[1] auth.ts:1-1\n[2] auth.ts:2-2')
+
+    def test_output_limit_keeps_readable_explanation_and_backend_sources(self):
+        retrieval = self.search('validateToken')
+        with patch('answers.urlopen', return_value=model_reply('A partial explanation.', done_reason='length')):
+            result = answer_question(str(self.root), 'explain', retrieval)
+        self.assertEqual(result['answerMode'], 'local-llm')
+        self.assertIn('Sources:\n[1] auth.ts:', result['answer'])
+        self.assertIn('output limit', result['warning'])
+        self.assertNotIn('unavailable', result['warning'])
+
+    def test_invalid_response_is_not_reported_as_offline(self):
+        retrieval = self.search('validateToken')
+        with patch('answers.urlopen', return_value=model_reply(None)):
+            result = answer_question(str(self.root), 'explain', retrieval)
+        self.assertEqual(result['answerMode'], 'evidence')
+        self.assertIn('invalid response', result['warning'])
+        self.assertNotIn('unavailable', result['warning'])
+
+    def test_timeout_message_identifies_the_actual_failure(self):
+        retrieval = self.search('validateToken')
+        with patch('answers.urlopen', side_effect=TimeoutError('slow')):
+            result = answer_question(str(self.root), 'explain', retrieval)
+        self.assertIn('timed out', result['warning'])
+        self.assertTrue(result['citations'])
+
+    def test_source_change_during_generation_discards_answer_and_citations(self):
+        retrieval = self.search('validateToken')
+        def change_source(*args, **kwargs):
+            self.file.write_text('export const changed = 1;\n')
+            return model_reply('An outdated explanation.')
+        with patch('answers.urlopen', side_effect=change_source):
+            result = answer_question(str(self.root), 'explain', retrieval)
+        self.assertEqual(result['results'], [])
+        self.assertEqual(result['citations'], [])
+        self.assertNotIn('outdated explanation', result['answer'])
+
+    def test_evidence_only_answers_have_backend_citations_without_model_calls(self):
+        retrieval = self.search('validateToken')
+        with patch.dict(os.environ, {'CODEMIND_LOCAL_MODEL': ''}), patch('answers.urlopen') as model:
+            result = answer_question(str(self.root), 'explain', retrieval)
+        model.assert_not_called()
+        self.assertEqual(result['answerMode'], 'evidence')
+        self.assertTrue(result['citations'])
 
     def test_verified_graph_callers_and_graph_file(self):
         subprocess.run(['git', 'init', '-q', str(self.root)], check=True)
@@ -135,6 +200,13 @@ class SemanticTests(unittest.TestCase):
             client = TestClient(api.app, base_url='http://127.0.0.1')
             self.assertEqual(client.post('/ask', json={'repoId': self.repo_id, 'query': 'auth'}).status_code, 401)
             self.assertEqual(client.post('/ask', headers={'X-Codemind-Session': 'test-token'}, json={'repoId': 'c'*24, 'query': 'auth'}).status_code, 404)
+            with patch('answers.urlopen', return_value=model_reply('Token validation checks the token length.')):
+                reply = client.post('/ask', headers={'X-Codemind-Session': 'test-token'},
+                                    json={'repoId': self.repo_id, 'query': 'explain auth.ts'})
+            self.assertEqual(reply.status_code, 200)
+            payload = reply.json()
+            self.assertEqual(payload['citations'][0]['id'], 1)
+            self.assertEqual(payload['citations'][0]['sourceHash'], payload['results'][0]['sourceHash'])
 
 
 if __name__ == '__main__':

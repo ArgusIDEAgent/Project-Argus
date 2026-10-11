@@ -21,6 +21,13 @@ Set it to an empty string for evidence-only answers. Answer requests go only to
 `127.0.0.1:11434`; no cloud LLM is used by `/ask`. If Ollama is unavailable, the
 chat shows evidence with an explicit warning instead of failing.
 
+The model writes only the explanation. The backend creates the numbered Sources
+list and API `citations` from verified retrieved files, line ranges and hashes.
+Repeated evidence is deduplicated, and source numbers match the editor's result
+cards. These sources describe the context supplied for the answer; they do not
+independently verify every model claim. Timeouts, malformed replies and output
+limits have distinct messages. Source edits during generation discard the answer.
+
 Reload the editor window after installing extension 0.4.1. Select the repository
 and wait for indexing. Chat Send retrieves evidence and generates an answer;
 Search Code remains a literal/semantic search action. Exact identifiers and copied
