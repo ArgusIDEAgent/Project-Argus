@@ -51,7 +51,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       resultActions.set(key, { result: item, repoId: selected.id, queryHash: result.queryHash });
       return { ...item, key, canIgnore: Boolean(result.queryHash) };
     });
-    await panel.webview.postMessage({ type: 'results', title, results, warning: result.warning });
+    await panel.webview.postMessage({ type: 'results', title, results, warning: result.warning, answer: result.answer });
   }
 
   async function updateDocsStatus(selected: { id: string }, known?: DocsStatus): Promise<void> {
@@ -285,7 +285,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   }
 
   context.subscriptions.push(vscode.commands.registerCommand('codemind.selectRepository', selectRepository));
-  async function runSearch(reuse: boolean, suppliedQuery?: string): Promise<void> {
+  async function runSearch(reuse: boolean, suppliedQuery?: string, answer = false): Promise<void> {
     try {
       if (!panel) await vscode.commands.executeCommand('codemind.openChat');
       const selected = selectedRepository;
@@ -298,7 +298,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       const query = suppliedQuery || await vscode.window.showInputBox({
         prompt: reuse ? 'Describe the code you intend to write' : 'Search repository code' });
       if (!query?.trim()) return;
-      const result = reuse ? await server!.reuse(selected.id, { query }) : await server!.search(selected.id, query);
+      const result = reuse ? await server!.reuse(selected.id, { query }) : answer ? await server!.ask(selected.id, query) : await server!.search(selected.id, query);
       if (selectedRepository === selected) await showResults(result, reuse ? 'Reuse suggestions' : 'Code search');
     } catch (error) {
       if (panel) await panel.webview.postMessage({ type: 'error', text: error instanceof Error ? error.message : 'Search failed.' });
@@ -351,8 +351,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     panel.webview.onDidReceiveMessage(async (message: unknown) => {
       if (!panel || !server) return;
       const action = message as { type?: string; key?: string; action?: string; text?: string } | null;
-      if (action?.type === 'search' || action?.type === 'reuse') {
-        if (typeof action.text === 'string' && action.text.length <= 2000) await runSearch(action.type === 'reuse', action.text);
+      if (action?.type === 'search' || action?.type === 'reuse' || action?.type === 'ask') {
+        if (typeof action.text === 'string' && action.text.length <= 2000) await runSearch(action.type === 'reuse', action.text, action.type === 'ask');
         return;
       }
       if (action?.type === 'docsOverview') { await openDocsOverview(); return; }
@@ -404,7 +404,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       const currentPanel = panel;
       try {
         if (selectedRepository && !/^(hi|hello)$/i.test(message.text.trim())) {
-          await runSearch(false, message.text);
+          await runSearch(false, message.text, true);
           return;
         }
         const reply = await server.hello(message.text);
@@ -730,7 +730,7 @@ export function chatHtml(webview: vscode.Webview): string {
       button.disabled = true;
       clearTimeout(pendingTimer);
       pendingTimer = setTimeout(() => { button.disabled = false; }, 120000);   // never stay locked
-      vscode.postMessage({ type: 'search', text: trimmed });
+      vscode.postMessage({ type: 'ask', text: trimmed });
     }
 
     form.addEventListener('submit', event => {
@@ -755,11 +755,11 @@ export function chatHtml(webview: vscode.Webview): string {
       if (message.type === 'useReference') { input.value = message.text; input.focus(); return; }
       if (message.type === 'results') {
         for (const old of messages.querySelectorAll('.code-result')) old.remove();
-        addMessage('CodeMind', message.title + (message.results.length ? '' : ': No matches found.') + (message.warning ? '\\n' + message.warning : ''), 'server');
-        for (const result of message.results) {
+        addMessage('CodeMind', (message.answer || message.title + (message.results.length ? '' : ': No matches found.')) + (message.warning ? '\\n' + message.warning : ''), 'server');
+        for (const [index, result] of message.results.entries()) {
           const item = document.createElement('div');
           item.className = 'code-result'; item.id = result.key;
-          const title = document.createElement('strong'); title.textContent = (result.classification ? result.classification + ': ' : '') + result.name;
+          const title = document.createElement('strong'); title.textContent = '[' + (index + 1) + '] ' + (result.classification ? result.classification + ': ' : '') + result.name;
           const location = document.createElement('div'); location.textContent = result.path ? result.path + ':' + result.startLine + ' - ' + result.endLine : result.docSectionId ? 'Documentation' : 'Commit';
           const reason = document.createElement('div'); reason.textContent = result.reason;
           if (typeof result.confidence === 'number') reason.textContent += ' Match score: ' + result.confidence.toFixed(2);

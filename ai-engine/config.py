@@ -86,7 +86,11 @@ IGNORE_DIRS: set[str] = {
 CODE_EXTENSIONS: dict[str, Language] = {
     ".py": Language.PYTHON,
     ".js": Language.JS,
+    ".cjs": Language.JS,
+    ".mjs": Language.JS,
     ".ts": Language.TS,
+    ".mts": Language.TS,
+    ".cts": Language.TS,
     ".jsx": Language.JS,
     ".tsx": Language.TS,
     ".java": Language.JAVA,
@@ -129,16 +133,42 @@ def make_repo_id(target_dir: str) -> str:
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()[:24]
 
 
-@lru_cache(maxsize=1)
-def get_qdrant_client() -> QdrantClient:
+_VECTOR_LOCK = threading.RLock()
+_VECTOR_CLIENT = None
+
+
+class _LocalVectorClient:
+    """Serialize embedded Qdrant operations across FastAPI worker threads."""
+    def __init__(self, client):
+        self.client = client
+        self.is_embedded = True
+
+    def __getattr__(self, name):
+        member = getattr(self.client, name)
+        if not callable(member):
+            return member
+        def call(*args, **kwargs):
+            with _VECTOR_LOCK:
+                return member(*args, **kwargs)
+        return call
+
+
+def get_qdrant_client():
+    global _VECTOR_CLIENT
+    with _VECTOR_LOCK:
+        if _VECTOR_CLIENT is None:
+            _VECTOR_CLIENT = _create_vector_client()
+        return _VECTOR_CLIENT
+
+
+def _create_vector_client():
     api_key = os.environ.get("QDRANT_API_KEY") or None
     url = os.environ.get("QDRANT_URL")
     if url:
         return QdrantClient(url=url, api_key=api_key, timeout=30)
-    # https=False is required: qdrant-client defaults to https whenever an api_key
-    # is supplied, which breaks the plain-HTTP loopback deployment.  A remote
-    # deployment must go through QDRANT_URL (scheme-aware) instead.
-    return QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT, api_key=api_key, timeout=30, https=False)
+    # Embedded persistence requires no Docker/server and keeps repository code local.
+    storage = ensure_private_dir(os.path.join(DEFAULT_DATA_DIR, "vectors"))
+    return _LocalVectorClient(QdrantClient(path=storage, force_disable_check_same_thread=True))
 
 
 @lru_cache(maxsize=1)

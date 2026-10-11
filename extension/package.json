@@ -3,7 +3,7 @@
   "displayName": "CodeMind",
   "publisher": "codemind-local",
   "description": "Evidence-backed VS Code Assistant",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "private": true,
   "extensionKind": [
     "workspace",
@@ -73,7 +73,7 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "test:integration": "npm run compile && node test/runTest.js",
-    "package:vsix": "vsce package --out ../codemind-extension-0.4.0.vsix"
+    "package:vsix": "vsce package --out ../codemind-extension-0.4.1.vsix"
   },
   "dependencies": {},
   "devDependencies": {

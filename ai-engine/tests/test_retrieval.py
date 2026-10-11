@@ -39,6 +39,15 @@ class RetrievalTests(unittest.TestCase):
                                     'strcasecmp(extension, ".jpeg")  == 0 ||', 5)
         self.assertEqual(len(matches), 1)
 
+    def test_explicit_file_question_returns_case_insensitive_file_result(self):
+        requested = self.root / "CLAUDE.md"
+        requested.write_text("# Project guidance\nUse the local engine.\n")
+        result = search_exact_code(str(self.root), self.repo_id,
+                                   "what is in the claude.md file", 5)
+        self.assertEqual(result[0]["path"], "CLAUDE.md")
+        self.assertEqual(result[0]["startLine"], 1)
+        self.assertEqual(result[0]["reason"], "Requested file: CLAUDE.md")
+
     def test_missing_term_reports_semantic_unavailability(self):
         with patch.object(api, "get_qdrant_client", side_effect=OSError("connection refused")):
             result = api.search_code(api.SearchRequest(repoId=self.repo_id, query="not_in_source", limit=5))

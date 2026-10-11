@@ -13,7 +13,7 @@ export type Job = { id: string; state: 'queued' | 'running' | 'completed' | 'fai
 export type CodeResult = { entityId: string; path: string; name: string; startLine: number; endLine: number;
   reason: string; classification?: string; confidence?: number; revision: string; sourceHash: string;
   callers: { name: string }[]; tests: { name: string }[]; docSectionId?: string; docKind?: string };
-export type SearchResult = { results: CodeResult[]; mode: string; warning: string | null; queryHash?: string };
+export type SearchResult = { results: CodeResult[]; mode: string; warning: string | null; queryHash?: string; answer?: string; answerMode?: string };
 export type DocsStatus = { sectionCount: number; currentCount: number; staleCount: number; affectedCount: number; generatedCount: number };
 export type DocEvidence = { entityId: string; type: string; path: string; name: string; kind: string;
   relation: string; startLine: number; endLine: number; sourceHash: string | null };
@@ -84,6 +84,10 @@ export class ServerManager implements vscode.Disposable {
 
   async search(repoId: string, query: string): Promise<SearchResult> {
     return this.request('POST', '/search/code', { repoId, query, limit: 5 });
+  }
+
+  async ask(repoId: string, query: string): Promise<SearchResult> {
+    return this.request('POST', '/ask', { repoId, query, limit: 5 });
   }
 
   async reuse(repoId: string, input: { query: string } | { entityId: string }): Promise<SearchResult> {

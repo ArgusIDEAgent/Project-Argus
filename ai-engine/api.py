@@ -19,12 +19,14 @@ import hmac
 import json
 import logging
 import os
+import re
 import secrets
+import sys
 import subprocess
 import threading
 import time
 import uuid
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, closing
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any
@@ -50,6 +52,10 @@ from config import (
 )
 from indexer import IndexingError, _discover_files, index_directory
 from lexical_search import search_exact_code
+from answers import answer_question
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from knowledge_base.graph import KnowledgeGraph, build_graph
 
 logger = logging.getLogger(__name__)
 
@@ -217,7 +223,13 @@ def _run_index_job(job_id: str, repo_id: str, root_path: str, full_reindex: bool
         job = _JOBS[job_id]
         job["state"], job["startedAt"] = JobState.RUNNING, time.time()
         try:
-            result = index_directory(target_dir=root_path, repo_id=repo_id, full_reindex=full_reindex,
+            snapshot = build_graph(root_path, data_dir=DEFAULT_DATA_DIR)
+            graph_status = {"state": "ready", "statistics": snapshot["graph"]}
+        except Exception:
+            logger.exception("Knowledge graph construction failed for %s", repo_id)
+            graph_status = {"state": "unavailable", "error": "Graph construction failed; see engine log."}
+        try:
+            result = index_directory(target_dir=root_path, repo_id=repo_id, full_reindex=full_reindex, build_graph=False,
                                      on_progress=lambda msg: logger.info("[job %s] %s", job_id[:8], msg))
             chunk_count = get_qdrant_client().count(
                 COLLECTION_NAME, exact=True,
@@ -227,6 +239,7 @@ def _run_index_job(job_id: str, repo_id: str, root_path: str, full_reindex: bool
                 **_git_state(root_path),
                 "semantic": {"state": "ready", "error": None, "chunkCount": chunk_count},
                 "docs": dict(_EMPTY_DOCS_STATUS),
+                "graph": graph_status,
             }
             job["state"] = JobState.COMPLETED
         except IndexingError as exc:
@@ -237,6 +250,7 @@ def _run_index_job(job_id: str, repo_id: str, root_path: str, full_reindex: bool
                     **_git_state(root_path),
                     "semantic": {"state": "degraded", "error": str(exc), "chunkCount": 0},
                     "docs": dict(_EMPTY_DOCS_STATUS),
+                    "graph": graph_status,
                 }
                 job["state"] = JobState.COMPLETED
             else:
@@ -416,53 +430,178 @@ def analysis_reuse_feedback():
 
 @app.get("/graph/file/{file_path:path}")
 def graph_file(file_path: str, repoId: str = ""):
-    return {"nodes": [], "edges": []}
+    if repoId not in _REGISTERED_REPOS:
+        raise HTTPException(404, "Repository is not registered.")
+    database = os.path.join(DEFAULT_DATA_DIR, repoId, "metadata.db")
+    if not os.path.isfile(database):
+        return {"nodes": [], "edges": [], "warning": "Knowledge graph is not indexed yet."}
+    try:
+        graph = KnowledgeGraph(database, repoId)
+        with closing(graph._connection()) as db:
+            nodes = [dict(row) for row in db.execute("""SELECT n.id, n.kind AS type,
+                n.kind, s.start_line AS startLine, s.end_line AS endLine
+                FROM graph_nodes n JOIN symbols s ON n.symbol_id=s.id
+                WHERE n.repository_id=? AND n.relative_path=?""", (repoId, file_path))]
+            edges = [dict(row) for row in db.execute("""SELECT e.* FROM graph_relationships e
+                JOIN graph_nodes n ON n.id=e.source_id WHERE e.repository_id=?
+                AND n.relative_path=? AND e.resolution='resolved'""", (repoId, file_path))]
+        return {"nodes": nodes, "edges": edges}
+    except Exception as exc:
+        logger.warning("Graph unavailable: %s", exc)
+        return {"nodes": [], "edges": [], "warning": "Graph is stale or unavailable. Refresh the index."}
 
 
 # ── Semantic code search ─────────────────────────────────────
+
+def _enrich_graph(req, results):
+    database = os.path.join(DEFAULT_DATA_DIR, req.repoId, "metadata.db")
+    if not os.path.isfile(database):
+        return results
+    try:
+        with closing(KnowledgeGraph(database, req.repoId)._connection()) as db:
+            for item in results:
+                nodes = db.execute("""SELECT n.id, n.label FROM graph_nodes n
+                    JOIN symbols s ON n.symbol_id=s.id WHERE n.repository_id=?
+                    AND n.relative_path=? AND s.start_line<=? AND s.end_line>=?""",
+                    (req.repoId, item["path"], item["endLine"], item["startLine"])).fetchall()
+                callers = {}
+                for node in nodes:
+                    rows = db.execute("""SELECT n.id, n.label, e.evidence_file, e.evidence_line
+                        FROM graph_relationships e JOIN graph_nodes n ON n.id=e.source_id
+                        WHERE e.repository_id=? AND e.target_id=? AND e.relationship='CALLS'
+                        AND e.resolution='resolved'""", (req.repoId, node["id"]))
+                    for row in rows:
+                        callers[row["id"]] = {"name": row["label"], "path": row["evidence_file"], "line": row["evidence_line"]}
+                item["callers"] = list(callers.values())
+                item["graphVerified"] = True
+    except Exception:
+        # Retrieval remains usable when the graph is absent/stale; don't invent facts.
+        pass
+    return results
+
+def _graph_search(req):
+    match = re.search(r"\b(?:who calls|callers of|what calls)\s+[`'\"]?([\w.$]+)", req.query, re.I)
+    if not match:
+        return None
+    database = os.path.join(DEFAULT_DATA_DIR, req.repoId, "metadata.db")
+    if not os.path.isfile(database):
+        return {"mode": "graph", "results": [], "warning": "Graph is not indexed. Refresh the repository."}
+    try:
+        graph = KnowledgeGraph(database, req.repoId)
+        symbol = graph.symbol(match.group(1))
+        edges = graph.direct_callers(symbol["symbol_id"])
+        results = []
+        for edge in edges[:req.limit]:
+            path = edge["evidence_file"]
+            line = edge["evidence_line"]
+            if not path or not line:
+                continue
+            with open(os.path.join(_REGISTERED_REPOS[req.repoId]["rootPath"], path), "rb") as source:
+                source_hash = hashlib.sha256(source.read()).hexdigest()
+            results.append({"entityId": edge["id"], "path": path,
+                "name": edge["other_label"], "startLine": line, "endLine": line,
+                "reason": f"Verified static call to {symbol['label']}", "confidence": 1.0,
+                "sourceHash": source_hash, "revision": "latest", "callers": [], "tests": []})
+        return {"mode": "graph", "results": results,
+                "warning": None if results else "No verified static callers found. Dynamic or unresolved calls may still exist."}
+    except ValueError:
+        return {"mode": "graph", "results": [], "warning": "Symbol is missing or ambiguous. Use its qualified name."}
+    except Exception:
+        logger.exception("Graph query unavailable")
+        return {"mode": "graph", "results": [], "warning": "Graph is stale or unavailable. Refresh the repository."}
 
 @app.post("/search/code")
 def search_code(req: SearchRequest):
     entry = _REGISTERED_REPOS.get(req.repoId)
     if not entry:
         raise HTTPException(status_code=404, detail="Repository is not registered.")
+    graph_result = _graph_search(req)
+    if graph_result is not None:
+        return graph_result
     exact_results = search_exact_code(entry["rootPath"], req.repoId, req.query, req.limit)
+    conversational = bool(re.match(r"^[\s\"'`]*(?:where|what|how|why|which|explain|describe|tell|who)\b", req.query, re.I))
+    if conversational:
+        # A question appearing in a comment/test is not evidence answering it.
+        exact_results = [item for item in exact_results if item["reason"].startswith("Requested file:")]
     if exact_results:
-        return {"mode": "lexical", "warning": None, "results": exact_results}
+        return {"mode": "lexical", "warning": None, "results": _enrich_graph(req, exact_results)}
     try:
         client = get_qdrant_client()
         if not client.collection_exists(COLLECTION_NAME):
             return {"mode": "semantic", "warning": "No exact match. This repository has no semantic index yet.", "results": []}
+        scope = Filter(must=[FieldCondition(key="repo_id", match=MatchValue(value=req.repoId))])
+        if client.count(COLLECTION_NAME, exact=True, count_filter=scope).count == 0:
+            return {"mode": "semantic", "warning": "No semantic evidence is indexed for this repository. Refresh its index.", "results": []}
         points = client.query_points(
             collection_name=COLLECTION_NAME,
             query=embed_texts([req.query])[0],
-            query_filter=Filter(must=[FieldCondition(key="repo_id", match=MatchValue(value=req.repoId))]),
-            limit=req.limit,
+            query_filter=scope,
+            score_threshold=0.5,
+            limit=req.limit * 3,
         ).points
     except Exception:
         logger.exception("Semantic search unavailable")
         return {"mode": "unavailable", "warning": "No exact match. Semantic search is unavailable; check the engine log and Qdrant.", "results": []}
 
     results = []
+    stale = False
+    if conversational:
+        def implementation_rank(point):
+            path = str((point.payload or {}).get("file_path", "")).lower()
+            penalty = 0.15 if (path.endswith((".md", ".markdown")) or
+                any(part in {"tests", "test", "__tests__"} for part in path.split("/")) or
+                os.path.basename(path).startswith("test_")) else 0
+            return point.score - penalty
+        points = sorted(points, key=implementation_rank, reverse=True)
     for pt in points:
         payload = pt.payload or {}
         rel_path = str(payload.get("file_path") or "")
         if not rel_path or os.path.isabs(rel_path) or ".." in rel_path.replace("\\", "/").split("/"):
             continue                                # malformed or poisoned payload
-        chunk_index = int(payload.get("chunk_index", 0))
+        absolute = os.path.realpath(os.path.join(entry["rootPath"], rel_path))
+        if os.path.commonpath([absolute, os.path.realpath(entry["rootPath"])]) != os.path.realpath(entry["rootPath"]):
+            continue
+        try:
+            with open(absolute, "rb") as source:
+                current_hash = hashlib.sha256(source.read()).hexdigest()
+            if current_hash != payload.get("file_hash"):
+                stale = True
+                continue
+        except OSError:
+            stale = True
+            continue
+        try:
+            chunk_index = int(payload.get("chunk_index", 0))
+            start_line = int(payload.get("start_line", 1))
+            end_line = int(payload.get("end_line", 1))
+            if start_line < 1 or end_line < start_line:
+                continue
+        except (ValueError, TypeError):
+            continue
         results.append({
             "entityId": hashlib.sha256(f"{req.repoId}:{rel_path}:{chunk_index}".encode()).hexdigest()[:40],
             "path": rel_path,
             "name": os.path.basename(rel_path),
-            "startLine": int(payload.get("start_line", 1)),
-            "endLine": int(payload.get("end_line", 1)),
-            "reason": f"Semantic similarity score: {pt.score:.4f}",
+            "startLine": start_line,
+            "endLine": end_line,
+            "reason": f"Semantic similarity score: {pt.score:.4f}" + ("; implementation-first ranking" if conversational else ""),
             "confidence": float(pt.score),
             "revision": "latest",
             "sourceHash": str(payload.get("file_hash", "")),   # hash AT INDEX TIME
             "callers": [], "tests": [],
         })
-    return {"mode": "semantic", "warning": None, "results": results}
+        if len(results) >= req.limit:
+            break
+    warning = "Some indexed files changed. Refresh the repository index." if stale else None
+    if not results and not warning:
+        warning = "No sufficiently relevant semantic matches found. Try a more specific question or identifier."
+    return {"mode": "semantic", "warning": warning, "results": _enrich_graph(req, results)}
+
+
+@app.post("/ask")
+def ask(req: SearchRequest):
+    retrieval = search_code(req)
+    return answer_question(_REGISTERED_REPOS[req.repoId]["rootPath"], req.query, retrieval)
 
 
 if __name__ == "__main__":

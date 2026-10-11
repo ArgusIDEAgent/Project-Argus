@@ -274,8 +274,10 @@ def index_directory(
         if size is not None and size != VECTOR_SIZE:
             raise IndexingError(f"Collection '{collection}' has vector size {size}, expected {VECTOR_SIZE}. "
                                 f"Delete it or pass --collection.")
-    for field, schema in (("repo_id", PayloadSchemaType.KEYWORD), ("file_path", PayloadSchemaType.KEYWORD),
-                          ("chunk_index", PayloadSchemaType.INTEGER)):
+    payload_indexes = () if getattr(client, "is_embedded", False) else (
+        ("repo_id", PayloadSchemaType.KEYWORD), ("file_path", PayloadSchemaType.KEYWORD),
+        ("chunk_index", PayloadSchemaType.INTEGER))
+    for field, schema in payload_indexes:
         try:
             client.create_payload_index(collection_name=collection, field_name=field, field_schema=schema)
         except Exception:
@@ -296,6 +298,11 @@ def index_directory(
     prev_state = _load_state(state_path)
     previous_fingerprint = prev_state.pop(_FINGERPRINT_KEY, None)
     needs_full = full_reindex or collection_created or previous_fingerprint != fingerprint
+    if not needs_full and prev_state:
+        # State may describe a different/cleared store (e.g. server -> embedded).
+        count = client.count(collection, exact=True, count_filter=Filter(must=[
+            FieldCondition(key="repo_id", match=MatchValue(value=repo_id))])).count
+        needs_full = count == 0
     if needs_full:
         if not collection_created:                  # wipe this repo's vectors so deleted files cannot linger
             client.delete(collection_name=collection, points_selector=FilterSelector(filter=Filter(

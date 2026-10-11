@@ -31,6 +31,8 @@ async function run() {
   const html = require('../out/extension').chatHtml({});
   const script = /<script nonce="[^"]+">([\s\S]*?)<\/script>/.exec(html);
   assert.ok(script);
+  assert.match(script[1], /type: 'ask'/);
+  assert.match(script[1], /message\.answer/);
   new vm.Script(script[1]);
   const sourceRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'cm-source-'));
   const outsideRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'cm-outside-'));
