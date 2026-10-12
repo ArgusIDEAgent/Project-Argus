@@ -2,6 +2,7 @@
 import hashlib
 import json
 import os
+import sqlite3
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 import subprocess
@@ -16,6 +17,7 @@ import config
 from answers import answer_question, evidence_for
 from indexer import index_directory
 from knowledge_base.graph import build_graph
+from knowledge_base.metadata import audit, trace
 from qdrant_client import QdrantClient
 from qdrant_client.models import Filter, FieldCondition, MatchValue
 
@@ -61,6 +63,38 @@ class SemanticTests(unittest.TestCase):
         self.assertEqual(result['mode'], 'semantic')
         self.assertEqual(result['results'][0]['path'], 'auth.ts')
         self.assertIsNone(result['warning'])
+
+    def test_semantic_result_identity_matches_vector_and_sqlite(self):
+        result = self.search('Where is authentication checked?')['results'][0]
+        database = self.data/self.repo_id/'metadata.db'
+        info = trace(database,self.repo_id,result['entityId'])
+        point = self.client.retrieve(config.COLLECTION_NAME,[result['entityId']])[0]
+        self.assertEqual(result['entityId'],str(point.id))
+        self.assertEqual(result['fileId'],point.payload['file_id'])
+        self.assertEqual(result['snapshotId'],point.payload['snapshot_id'])
+        self.assertEqual(result['sourceHash'],info['sourceHash'])
+        self.assertEqual(result['sourceOrigin'],'disk')
+        self.assertEqual(audit(database)['dangling_references'],[])
+
+    def test_poisoned_vector_metadata_is_rejected_and_refresh_repairs_it(self):
+        point = self.search('Where is authentication checked?')['results'][0]['entityId']
+        self.client.set_payload(config.COLLECTION_NAME,{'snapshot_id':'wrong-snapshot'},points=[point])
+        result = self.search('Where is authentication checked?')
+        self.assertEqual(result['results'],[])
+        self.assertIn('Refresh',result['warning'])
+        with patch('indexer.get_qdrant_client',return_value=self.client), patch('indexer.embed_texts',side_effect=lambda texts:[[1.0]+[0.0]*383 for _ in texts]),patch('indexer.get_embedding_model'):
+            index_directory(str(self.root),repo_id=self.repo_id,data_dir=str(self.data),build_graph=False,full_reindex=True)
+        self.assertTrue(self.search('Where is authentication checked?')['results'])
+
+    def test_missing_metadata_forces_reindex_even_with_matching_hash_state(self):
+        database = self.data/self.repo_id/'metadata.db'
+        with sqlite3.connect(database) as db:
+            db.execute('DELETE FROM code_chunks')
+        db.close()
+        with patch('indexer.get_qdrant_client',return_value=self.client), patch('indexer.embed_texts',side_effect=lambda texts:[[1.0]+[0.0]*383 for _ in texts]),patch('indexer.get_embedding_model'):
+            result = index_directory(str(self.root),repo_id=self.repo_id,data_dir=str(self.data),build_graph=False)
+        self.assertEqual(result['files_indexed'],1)
+        self.assertTrue(self.search('Where is authentication checked?')['results'])
 
     def test_repository_isolation(self):
         other_id = 'b'*24

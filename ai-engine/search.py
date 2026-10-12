@@ -14,18 +14,21 @@ Usage:
 import argparse
 import os
 import sys
+import sqlite3
 
 from qdrant_client.models import Filter, FieldCondition, MatchValue
 
 from config import (
     COLLECTION_NAME,
     DEFAULT_TOP_K,
+    DEFAULT_DATA_DIR,
     embed_texts,
     get_qdrant_client,
     latest_repo_id,
     make_repo_id,
     sanitize_text,
 )
+from knowledge_base.metadata import validate_vector
 
 
 def search_codebase(
@@ -77,6 +80,12 @@ def search_codebase(
     for rank, point in enumerate(search_results, start=1):
         payload = point.payload
         score = point.score
+        scoped_repo = repo_id or (payload or {}).get('repo_id','')
+        try:
+            info = validate_vector(os.path.join(DEFAULT_DATA_DIR,scoped_repo,'metadata.db'),scoped_repo,point,collection)
+        except (ValueError,OSError,sqlite3.Error):
+            print('⚠️  Skipped stale or unmapped evidence. Refresh its repository index.')
+            continue
 
         result = {
             "rank": rank,
@@ -86,6 +95,8 @@ def search_codebase(
             "score": score,
             "start_line": payload.get("start_line", 1),
             "end_line": payload.get("end_line", 1),
+            "entityId": info['entityId'], "fileId": info['fileId'], "symbolId": info['symbolId'],
+            "snapshotId": info['snapshotId'], "sourceHash": info['sourceHash'], "sourceOrigin": info['sourceOrigin'],
         }
         results.append(result)
 

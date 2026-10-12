@@ -24,6 +24,7 @@ import logging
 import os
 import re
 import sys
+import sqlite3
 
 import networkx as nx
 from dotenv import load_dotenv
@@ -31,6 +32,7 @@ from litellm import completion
 
 from config import (
     COLLECTION_NAME,
+    DEFAULT_DATA_DIR,
     embed_texts,
     find_graph_file,
     get_qdrant_client,
@@ -39,6 +41,25 @@ from config import (
     sanitize_text,
 )
 import graph_builder
+from knowledge_base.metadata import validate_vector
+
+
+def _verified_chunks(points, repo_id, collection):
+    chunks = []
+    for point in points:
+        payload = point.payload or {}
+        scoped_repo = repo_id or payload.get('repo_id','')
+        try:
+            info = validate_vector(os.path.join(DEFAULT_DATA_DIR,scoped_repo,'metadata.db'),scoped_repo,point,collection)
+        except (ValueError,OSError,sqlite3.Error):
+            logging.warning('Skipped stale or unmapped vector evidence; refresh the repository index')
+            continue
+        chunks.append({'file_path':info['path'], 'code_snippet':payload.get('code_snippet',''),
+            'language':payload.get('language','text'), 'score':getattr(point,'score',0.0),
+            'chunk_index':info['chunk_index'], 'start_line':info['startLine'], 'end_line':info['endLine'],
+            'entityId':info['entityId'], 'fileId':info['fileId'], 'symbolId':info['symbolId'],
+            'snapshotId':info['snapshotId'], 'sourceHash':info['sourceHash'], 'sourceOrigin':info['sourceOrigin']})
+    return chunks
 
 # Load API keys from .env
 load_dotenv()
@@ -164,18 +185,7 @@ def _retrieve_context(
         limit=top_k,
     ).points
 
-    return [
-        {
-            "file_path": pt.payload.get("file_path", "unknown"),
-            "code_snippet": pt.payload.get("code_snippet", ""),
-            "language": pt.payload.get("language", "text"),
-            "score": pt.score,
-            "chunk_index": pt.payload.get("chunk_index", 0),
-            "start_line": pt.payload.get("start_line"),
-            "end_line": pt.payload.get("end_line"),
-        }
-        for pt in search_results
-    ]
+    return _verified_chunks(search_results,repo_id,collection)
 
 
 def _retrieve_chunks_by_file(
@@ -205,15 +215,7 @@ def _retrieve_chunks_by_file(
     except Exception as exc:
         print(f"⚠️  Could not fetch chunks for graph-related files: {exc}")
         return []
-    chunks = [{
-        "file_path": p.payload.get("file_path", "unknown"),
-        "code_snippet": p.payload.get("code_snippet", ""),
-        "language": p.payload.get("language", "text"),
-        "chunk_index": p.payload.get("chunk_index", 0),
-        "start_line": p.payload.get("start_line"),
-        "end_line": p.payload.get("end_line"),
-        "score": 0.0,
-    } for p in points]
+    chunks = _verified_chunks(points,repo_id,collection)
     chunks.sort(key=lambda c: (c["file_path"], c["chunk_index"]))
     return chunks
 

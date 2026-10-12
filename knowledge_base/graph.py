@@ -21,14 +21,17 @@ from typing import Any
 from knowledge_base.parser import LANGUAGES, parse_repository
 
 
-GRAPH_SCHEMA_VERSION = 4
+from knowledge_base.identity import entity_id
+from knowledge_base.metadata import SCHEMA_VERSION, begin_snapshot, finish_snapshot, publish_graph
+
+GRAPH_SCHEMA_VERSION = SCHEMA_VERSION
 FUNCTION_KINDS = {"function", "function_overload", "method", "method_signature",
                   "arrow_function", "function_expression"}
 CLASS_KINDS = {"class", "interface", "type_alias", "enum"}
 
 
 def _id(kind: str, *parts: str) -> str:
-    return f"{kind}:" + hashlib.sha256(json.dumps(parts, ensure_ascii=False).encode()).hexdigest()
+    return entity_id(kind, *parts)
 
 
 def _schema(db: sqlite3.Connection) -> None:
@@ -306,6 +309,7 @@ def build_graph(repo_root: str | Path, *, data_dir: str | Path | None = None,
                  "inferred": sum(row[5] == "inferred" for row in edges.values()),
                  "unresolved": len(unresolved)}
         with db:
+            snapshot_id = begin_snapshot(db, repo_id, 'graph', observed_at=inventory['scanned_at'], revision=inventory['git_revision'])
             db.execute("DELETE FROM graph_relationships WHERE repository_id=?", (repo_id,))
             db.execute("DELETE FROM graph_unresolved WHERE repository_id=?", (repo_id,))
             db.execute("DELETE FROM graph_nodes WHERE repository_id=?", (repo_id,))
@@ -317,6 +321,11 @@ def build_graph(repo_root: str | Path, *, data_dir: str | Path | None = None,
                  evidence_file, evidence_line, evidence_start_byte, evidence_end_byte)
                 VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
                            unresolved.values())
+            publish_graph(db, repo_id, snapshot_id)
+            for diagnostic in semantic['diagnostics']:
+                db.execute("INSERT INTO index_errors(repository_id,snapshot_id,stage,kind,detail) VALUES (?,?,'graph','typescript_diagnostic',?)",
+                           (repo_id,snapshot_id,json.dumps(diagnostic)))
+            finish_snapshot(db, snapshot_id)
             db.execute("""INSERT INTO graph_snapshots VALUES (?,?,?,?,?,?,?)
                 ON CONFLICT(repository_id) DO UPDATE SET
                 inventory_scanned_at=excluded.inventory_scanned_at, built_at=excluded.built_at,
@@ -328,7 +337,7 @@ def build_graph(repo_root: str | Path, *, data_dir: str | Path | None = None,
             db.execute("UPDATE repositories SET schema_version=? WHERE id=?",
                        (GRAPH_SCHEMA_VERSION, repo_id))
     return {**inventory, "graph": stats, "semantic_diagnostics": semantic["diagnostics"],
-            "typescript_version": semantic["typescriptVersion"]}
+            "typescript_version": semantic["typescriptVersion"], "graph_snapshot_id": snapshot_id}
 
 
 class KnowledgeGraph:
@@ -341,9 +350,13 @@ class KnowledgeGraph:
     def _connection(self) -> sqlite3.Connection:
         db = sqlite3.connect(self.database)
         db.row_factory = sqlite3.Row
-        current = db.execute("""SELECT r.root_path, r.last_scanned_at, s.inventory_scanned_at
-            FROM repositories r LEFT JOIN graph_snapshots s ON s.repository_id=r.id
-            WHERE r.id=?""", (self.repository_id,)).fetchone()
+        try:
+            current = db.execute("""SELECT r.root_path, r.last_scanned_at, s.inventory_scanned_at
+                FROM repositories r LEFT JOIN graph_snapshots s ON s.repository_id=r.id
+                WHERE r.id=?""", (self.repository_id,)).fetchone()
+        except sqlite3.Error as error:
+            db.close()
+            raise RuntimeError('Graph is not indexed yet') from error
         if not current or current["last_scanned_at"] != current["inventory_scanned_at"]:
             db.close()
             raise RuntimeError("Graph is missing or stale; rebuild it after scanning")

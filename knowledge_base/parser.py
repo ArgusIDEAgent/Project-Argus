@@ -34,7 +34,10 @@ LANGUAGES = {
     ".cts": Language(tree_sitter_typescript.language_typescript()),
     ".tsx": Language(tree_sitter_typescript.language_tsx()),
 }
-SYNTAX_SCHEMA_VERSION = 3
+from knowledge_base.identity import symbol_identity
+from knowledge_base.metadata import SCHEMA_VERSION, begin_snapshot, finish_snapshot, publish_syntax
+
+SYNTAX_SCHEMA_VERSION = SCHEMA_VERSION
 
 DEFINITIONS = {
     "function_declaration": "function", "generator_function_declaration": "function",
@@ -158,9 +161,7 @@ def parse_source(source: bytes, *, suffix: str, repository_id: str,
     def identifier(kind: str, name: str, parent_id: str | None, signature: str) -> tuple[str, str]:
         key = (parent_id, kind, name, signature)
         occurrences[key] += 1
-        identity = json.dumps([repository_id, relative_path, parent_id, kind, name,
-                               signature, occurrences[key]], ensure_ascii=False)
-        return hashlib.sha256(identity.encode()).hexdigest(), identity
+        return symbol_identity(repository_id, relative_path, parent_id, kind, name, signature, occurrences[key])
 
     def add_ref(kind: str, node: Node, scope: str | None, expression: str | None,
                 metadata: dict[str, Any] | None = None) -> None:
@@ -320,6 +321,8 @@ def parse_repository(repo_root: str | Path, *, data_dir: str | Path | None = Non
     with closing(sqlite3.connect(inventory["database"])) as db:
         db.execute("PRAGMA foreign_keys=ON")
         _ensure_schema(db)
+        with db:
+            snapshot_id = begin_snapshot(db, repo_id, 'syntax', observed_at=inventory['scanned_at'], revision=inventory['git_revision'])
         files = db.execute("SELECT relative_path, content_sha256 FROM files WHERE repository_id=? "
                            "AND status='included' AND extension IN (?,?,?,?,?,?,?,?) "
                            "ORDER BY relative_path", (repo_id, *LANGUAGES)).fetchall()
@@ -341,10 +344,20 @@ def parse_repository(repo_root: str | Path, *, data_dir: str | Path | None = Non
                     "detail": str(error) if isinstance(error, ValueError) else type(error).__name__}])
 
             with db:
-                for table in ("symbols", "syntax_references", "syntax_comments", "parse_diagnostics"):
+                current_ids = {s['id'] for s in parsed.symbols}
+                old_ids = {r[0] for r in db.execute("SELECT id FROM symbols WHERE repository_id=? AND relative_path=?", (repo_id,relative_path))}
+                db.executemany("DELETE FROM symbols WHERE id=?", [(sid,) for sid in old_ids-current_ids])
+                for table in ("syntax_references", "syntax_comments", "parse_diagnostics"):
                     db.execute(f"DELETE FROM {table} WHERE repository_id=? AND relative_path=?",
                                (repo_id, relative_path))
-                db.executemany("""INSERT INTO symbols VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                db.executemany("""INSERT INTO symbols VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                    ON CONFLICT(id) DO UPDATE SET identity_key=excluded.identity_key,
+                    parent_symbol_id=excluded.parent_symbol_id,kind=excluded.kind,name=excluded.name,
+                    qualified_name=excluded.qualified_name,parameters_json=excluded.parameters_json,
+                    return_annotation=excluded.return_annotation,modifiers_json=excluded.modifiers_json,
+                    exported=excluded.exported,default_export=excluded.default_export,doc_comment=excluded.doc_comment,
+                    start_line=excluded.start_line,start_column=excluded.start_column,end_line=excluded.end_line,
+                    end_column=excluded.end_column,start_byte=excluded.start_byte,end_byte=excluded.end_byte""",
                                [(s["id"], repo_id, relative_path, s["identity_key"], s["parent_symbol_id"],
                                  s["kind"], s["name"], s["qualified_name"], json.dumps(s["parameters"]),
                                  s["return_annotation"], json.dumps(s["modifiers"]), int(s["exported"]),
@@ -371,11 +384,14 @@ def parse_repository(repo_root: str | Path, *, data_dir: str | Path | None = Non
                         "end_column", "start_byte", "end_byte"))) for d in parsed.diagnostics])
                 db.execute("UPDATE files SET parse_status=? WHERE repository_id=? AND relative_path=?",
                            (parsed.status, repo_id, relative_path))
+                publish_syntax(db, repo_id, relative_path, snapshot_id, expected_hash)
             counts[parsed.status] += 1
             counts["symbols"] += len(parsed.symbols)
             counts["references"] += len(parsed.references)
             counts["comments"] += len(parsed.comments)
-    return {**inventory, "parsing": counts}
+        with db:
+            finish_snapshot(db, snapshot_id)
+    return {**inventory, "parsing": counts, "syntax_snapshot_id": snapshot_id}
 
 
 def main() -> None:

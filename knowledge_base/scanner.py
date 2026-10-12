@@ -20,7 +20,8 @@ import subprocess
 from datetime import datetime, timezone
 
 
-SCHEMA_VERSION = 2
+from knowledge_base.identity import file_id, repository_id
+from knowledge_base.metadata import SCHEMA_VERSION, ensure_schema, begin_snapshot, finish_snapshot
 DEFAULT_MAX_BYTES = 1_000_000
 SOURCE_EXTENSIONS = {
     ".js": "javascript", ".jsx": "javascript", ".mjs": "javascript",
@@ -230,6 +231,7 @@ def _prepare_database(path: Path) -> sqlite3.Connection:
     columns = {row[1] for row in connection.execute("PRAGMA table_info(files)")}
     if "parse_status" not in columns:
         connection.execute("ALTER TABLE files ADD COLUMN parse_status TEXT NOT NULL DEFAULT 'not_indexed'")
+    ensure_schema(connection)
     return connection
 
 
@@ -244,7 +246,7 @@ def scan_repository(repo_root: str | Path, *, data_dir: str | Path | None = None
     base = Path(data_dir or os.environ.get("CODEMIND_DATA_DIR", "~/.codemind/data")).expanduser().resolve()
     if base == root or root in base.parents:
         raise ValueError("Inventory data directory must be outside the repository")
-    repo_id = hashlib.sha256(os.path.normcase(str(root)).encode()).hexdigest()[:24]
+    repo_id = repository_id(root)
     db_path = base / repo_id / "metadata.db"
     git_repo, revision = _git_context(root)
     if not git_repo and _has_gitignore(root):
@@ -265,13 +267,33 @@ def scan_repository(repo_root: str | Path, *, data_dir: str | Path | None = None
                           last_scanned_at=excluded.last_scanned_at,
                           schema_version=excluded.schema_version""",
                        (repo_id, str(root), revision, scanned_at, SCHEMA_VERSION))
-            db.execute("DELETE FROM files WHERE repository_id=?", (repo_id,))
-            db.executemany("INSERT INTO files VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                           [(repo_id, *entry) for entry in entries])
+            snapshot_id = begin_snapshot(db, repo_id, 'inventory', observed_at=scanned_at, revision=revision)
+            observed = {entry[0] for entry in entries}
+            for path, in db.execute("SELECT relative_path FROM files WHERE repository_id=?", (repo_id,)).fetchall():
+                if path not in observed:
+                    db.execute("DELETE FROM files WHERE repository_id=? AND relative_path=?", (repo_id, path))
+            for entry in entries:
+                path = entry[0]
+                previous = db.execute("SELECT content_sha256,status FROM files WHERE repository_id=? AND relative_path=?", (repo_id, path)).fetchone()
+                # Retain unchanged entities; invalidate parsed evidence on edits or exclusions.
+                if previous and (previous[0] != entry[7] or entry[2] not in ('included', 'unsupported')):
+                    db.execute("DELETE FROM symbols WHERE repository_id=? AND relative_path=?", (repo_id, path))
+                    db.execute("DELETE FROM graph_nodes WHERE repository_id=? AND relative_path=?", (repo_id, path))
+                    if entry[2] not in ('included', 'unsupported') or entry[7] is not None:
+                        db.execute("DELETE FROM code_chunks WHERE repository_id=? AND file_id=?", (repo_id, file_id(repo_id, path)))
+                db.execute("""INSERT INTO files(repository_id,relative_path,kind,status,reason,extension,language,size_bytes,content_sha256,parse_status,id)
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(repository_id,relative_path) DO UPDATE SET
+                    kind=excluded.kind,status=excluded.status,reason=excluded.reason,extension=excluded.extension,
+                    language=excluded.language,size_bytes=excluded.size_bytes,content_sha256=excluded.content_sha256,
+                    parse_status=CASE WHEN files.content_sha256=excluded.content_sha256 THEN files.parse_status ELSE excluded.parse_status END""",
+                    (repo_id, *entry, file_id(repo_id, path)))
+                if entry[2] == 'error':
+                    db.execute("INSERT INTO index_errors(repository_id,snapshot_id,relative_path,stage,kind) VALUES (?,?,?,'inventory',?)", (repo_id,snapshot_id,path,entry[3]))
             db.execute("INSERT INTO inventory_runs (repository_id, scanned_at, git_revision, statistics_json) VALUES (?, ?, ?, ?)",
                        (repo_id, scanned_at, revision, json.dumps(counts, sort_keys=True)))
+            finish_snapshot(db, snapshot_id)
     return {"repository_id": repo_id, "root_path": str(root), "git_revision": revision,
-            "database": str(db_path), "scanned_at": scanned_at, "statistics": counts}
+            "database": str(db_path), "scanned_at": scanned_at, "snapshot_id": snapshot_id, "statistics": counts}
 
 
 def main() -> None:

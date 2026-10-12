@@ -26,7 +26,7 @@ import hashlib
 import json
 import logging
 import re
-import uuid
+from pathlib import Path
 from typing import Callable
 
 import networkx as nx
@@ -61,6 +61,9 @@ from config import (
 )
 import graph_builder
 
+from knowledge_base.identity import chunk_id
+from knowledge_base.metadata import SCHEMA_VERSION, SemanticIndex
+
 logger = logging.getLogger(__name__)
 
 
@@ -79,9 +82,6 @@ class IndexingError(Exception):
 # ─────────────────────────────────────────────────────────────
 # Helpers
 # ─────────────────────────────────────────────────────────────
-
-# Fixed namespace UUID for deterministic point ID generation.
-_NAMESPACE_UUID = uuid.UUID("a3f1b2c4-d5e6-7890-abcd-ef1234567890")
 
 
 def _sha256(file_path: str) -> str:
@@ -105,8 +105,7 @@ def _point_id(repo_id: str, file_rel_path: str, chunk_index: int) -> str:
     Qdrant collection — e.g. src/app.py in Repo A won't overwrite
     src/app.py in Repo B.
     """
-    name = f"{repo_id}::{file_rel_path}::{chunk_index}"
-    return str(uuid.uuid5(_NAMESPACE_UUID, name))
+    return chunk_id(repo_id, file_rel_path, chunk_index)
 
 
 def _data_dir_for_repo(repo_id: str, base_data_dir: str) -> str:
@@ -208,6 +207,23 @@ def index_directory(
     build_graph: bool = True,
     on_progress: Callable[[str], None] | None = None,
 ) -> dict:
+    canonical_root = str(Path(target_dir).expanduser().resolve())
+    if not os.path.isdir(canonical_root):
+        raise IndexingError(f"Target directory does not exist: {target_dir}")
+    repo_id = repo_id or make_repo_id(canonical_root)
+    if not REPO_ID_RE.fullmatch(repo_id):
+        raise IndexingError('Invalid repo_id')
+    with SemanticIndex(canonical_root, repo_id, data_dir or DEFAULT_DATA_DIR) as metadata:
+        return _index_directory(canonical_root, repo_id=repo_id, data_dir=data_dir,
+            collection=collection, full_reindex=full_reindex, chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap, build_graph=build_graph, on_progress=on_progress, metadata=metadata)
+
+
+def _index_directory(
+    target_dir: str, *, repo_id: str, data_dir: str | None,
+    collection: str, full_reindex: bool, chunk_size: int, chunk_overlap: int,
+    build_graph: bool, on_progress: Callable[[str], None] | None, metadata: SemanticIndex,
+) -> dict:
     """Walk *target_dir*, embed new/modified files, and upsert into Qdrant.
 
     Args:
@@ -290,11 +306,12 @@ def index_directory(
         raise IndexingError(f"Cannot load embedding model: {exc}") from exc
 
     # --- Discover files ---
-    all_files = _discover_files(target_dir)
+    all_files = [p for p in _discover_files(target_dir) if _rel_posix(p,target_dir) in metadata.entries]
+    metadata.prune([_rel_posix(p,target_dir) for p in all_files])
     _log(f"📂 Found {len(all_files)} indexable file(s) under {target_dir}")
 
     # --- Load previous state and check fingerprint ---
-    fingerprint = f"{EMBEDDING_MODEL_NAME}|{chunk_size}|{chunk_overlap}|v2"
+    fingerprint = f"{EMBEDDING_MODEL_NAME}|{chunk_size}|{chunk_overlap}|metadata-v{SCHEMA_VERSION}"
     prev_state = _load_state(state_path)
     previous_fingerprint = prev_state.pop(_FINGERPRINT_KEY, None)
     needs_full = full_reindex or collection_created or previous_fingerprint != fingerprint
@@ -328,7 +345,7 @@ def index_directory(
             continue
         new_state[rel_path] = file_hash
 
-        if prev_state.get(rel_path) == file_hash:
+        if prev_state.get(rel_path) == file_hash and metadata.has_chunks(rel_path,file_hash):
             skipped += 1  # unchanged
         else:
             files_to_index.append(abs_path)
@@ -364,11 +381,14 @@ def index_directory(
             _log(f"⚠️  Skipping {rel_path}: {exc}")
             new_state.pop(rel_path, None)               # not recorded => retried next run
             files_failed += 1
+            with metadata.db:
+                metadata.error(rel_path,type(exc).__name__)
             continue
         if len(raw_bytes) > MAX_FILE_BYTES or b"\x00" in raw_bytes[:8192]:
             _log(f"⚠️  Skipping {rel_path}: binary or larger than {MAX_FILE_BYTES} bytes")
             new_state.pop(rel_path, None)
             _delete_file_points(client, collection, repo_id, rel_path)
+            metadata.publish(rel_path, [])
             if kg is not None and rel_path.endswith(".py"):
                 graph_builder.remove_file_from_graph(kg, rel_path)
             continue
@@ -383,12 +403,18 @@ def index_directory(
         documents = splitter.create_documents([raw_code])
         if not documents:
             _delete_file_points(client, collection, repo_id, rel_path)
+            metadata.publish(rel_path, [])
             if kg is not None and rel_path.endswith(".py"):
                 graph_builder.remove_file_from_graph(kg, rel_path)
             continue
 
         line_starts = [0] + [m.end() for m in re.finditer(r"\n", raw_code)]
         vectors = embed_texts([d.page_content for d in documents])   # embed FIRST: a failure leaves old vectors intact
+        chunks = [(doc.page_content,
+                   bisect.bisect_right(line_starts,max(doc.metadata.get('start_index',0),0)),
+                   bisect.bisect_right(line_starts,max(doc.metadata.get('start_index',0),0))+doc.page_content.count('\n'))
+                  for doc in documents]
+        records = metadata.records(rel_path,file_hash,chunks,collection)
         total = len(documents)
         for b in range(0, total, EMBED_BATCH):
             points = []
@@ -401,7 +427,11 @@ def index_directory(
                     payload={"repo_id": repo_id, "file_path": rel_path, "file_hash": file_hash,
                              "code_snippet": doc.page_content, "language": language.value,
                              "chunk_index": idx, "start_line": start_line,
-                             "end_line": start_line + doc.page_content.count("\n")},
+                             "end_line": start_line + doc.page_content.count("\n"),
+                             "chunk_id": records[idx][0], "file_id": records[idx][2],
+                             "symbol_id": records[idx][3], "snapshot_id": metadata.snapshot,
+                             "content_hash": records[idx][9], "schema_version": SCHEMA_VERSION,
+                             "source_origin": "disk"},
                 ))
             client.upsert(collection_name=collection, points=points)
         # file shrank? drop stale tail chunks (ids are deterministic, so the upsert already overwrote the rest)
@@ -410,6 +440,7 @@ def index_directory(
             FieldCondition(key="file_path", match=MatchValue(value=rel_path)),
             FieldCondition(key="chunk_index", range=Range(gte=total)),
         ])))
+        metadata.publish(rel_path,records)
         total_points += total
 
         if kg is not None and rel_path.endswith(".py"):
@@ -441,6 +472,7 @@ def index_directory(
         "points_upserted": total_points,
         "graph_nodes": graph_nodes_added,
         "files_failed": files_failed,
+        "metadata_database": str(metadata.database), "snapshot_id": metadata.snapshot, "schema_version": SCHEMA_VERSION,
     }
 
 

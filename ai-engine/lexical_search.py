@@ -6,6 +6,8 @@ import re
 
 from config import MAX_FILE_BYTES
 from indexer import _discover_files, _redact_secrets, _rel_posix
+from knowledge_base.identity import file_id, entity_id
+from knowledge_base.metadata import SCHEMA_VERSION
 
 
 def search_exact_code(root: str, repo_id: str, query: str, limit: int) -> list[dict]:
@@ -38,7 +40,9 @@ def search_exact_code(root: str, repo_id: str, query: str, limit: int) -> list[d
         basename = os.path.basename(relative_path).casefold()
         if basename in requested_names:
             results.append({
-                "entityId": hashlib.sha256(f"{repo_id}:{relative_path}:file".encode()).hexdigest()[:40],
+                "entityId": file_id(repo_id,relative_path),
+                "fileId": file_id(repo_id,relative_path), "snapshotId": None,
+                "sourceOrigin": "current_disk", "schemaVersion": SCHEMA_VERSION,
                 "path": relative_path,
                 "name": os.path.basename(relative_path),
                 "startLine": 1,
@@ -55,7 +59,9 @@ def search_exact_code(root: str, repo_id: str, query: str, limit: int) -> list[d
             if needle not in " ".join(line.casefold().split()):
                 continue
             results.append({
-                "entityId": hashlib.sha256(f"{repo_id}:{relative_path}:{line_number}".encode()).hexdigest()[:40],
+                "entityId": entity_id('source_match',file_id(repo_id,relative_path),source_hash,str(line_number)),
+                "fileId": file_id(repo_id,relative_path), "snapshotId": None,
+                "sourceOrigin": "current_disk", "schemaVersion": SCHEMA_VERSION,
                 "path": relative_path,
                 "name": os.path.basename(relative_path),
                 "startLine": line_number,

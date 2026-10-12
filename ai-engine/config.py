@@ -6,9 +6,10 @@ so that indexer.py, search.py, and rag_pipeline.py stay DRY.
 """
 
 import glob
-import hashlib
 import os
 import re
+import sys
+from pathlib import Path
 import threading
 import uuid
 from functools import lru_cache
@@ -17,6 +18,9 @@ from dotenv import load_dotenv
 from langchain_text_splitters import Language
 from qdrant_client import QdrantClient
 from fastembed import TextEmbedding
+
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
+from knowledge_base.identity import repository_id
 
 load_dotenv()   # every entry point (api, indexer, search, rag) now sees QDRANT_API_KEY etc.
 
@@ -129,8 +133,7 @@ def ensure_private_dir(path: str) -> str:
 
 def make_repo_id(target_dir: str) -> str:
     """Stable id shared by CLI and API (realpath + case-normalised for Windows drive letters)."""
-    canonical = os.path.normcase(os.path.realpath(os.path.expanduser(target_dir)))
-    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()[:24]
+    return repository_id(Path(target_dir).expanduser())
 
 
 _VECTOR_LOCK = threading.RLock()

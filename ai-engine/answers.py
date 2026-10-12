@@ -64,6 +64,8 @@ def answer_question(root, query, retrieval):
     citations = [{"id": index + 1, "path": item["path"],
                   "startLine": item["startLine"], "endLine": item["endLine"],
                   "sourceHash": item["sourceHash"]} for index, item in enumerate(results)]
+    for citation, item in zip(citations, results):
+        citation.update({key:item[key] for key in ('entityId','fileId','symbolId','snapshotId','sourceOrigin','schemaVersion') if key in item})
     response = {**retrieval, "results": results, "citations": citations, "answerMode": "evidence"}
     if not evidence:
         response["answer"] = "I couldn't find current repository evidence for this question. Try a function or filename, or refresh the repository index."

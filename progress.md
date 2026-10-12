@@ -114,3 +114,9 @@ Built outside the original vision and absent from README §2, so **proposed OUT*
 
 *Order matters:* structural answers are only as good as the graph, so NEXT-1 precedes NEXT-2.
 *Queued, not immediate:* F7 — remaining pytest coverage and the golden-question evaluation; a check of demo step 4 (edit → refresh → re-ask).
+
+## 2026-10-12 — Knowledge-base Phase 4
+
+Implemented the separately supplied knowledge-base plan's metadata/identity phase (not the historical F1–F7 roadmap above): SQLite schema v5, shared IDs, file/symbol/graph/chunk provenance, definition/reference occurrences, snapshot/error records, cross-repository foreign keys, deletion cleanup, and saved-source validation. Existing graph and vector IDs remain compatible. API/CLI vector results and answer citations now use canonical metadata; failed snapshots or disagreeing vector payloads are not presented as verified evidence. Local Qdrant and the working citation UI are retained. See `knowledge_base/README.md` for inspection commands and boundaries.
+
+Regression verification: scanner/parser/graph/metadata suites and existing retrieval/local-answer/citation suites. First index refresh upgrades old vector payloads once; ordinary indexing remains hash-incremental. Code-aware chunking, editor-buffer indexing, cross-rename matching and continuous synchronization are not claimed as Phase 4 work.

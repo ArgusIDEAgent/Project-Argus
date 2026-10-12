@@ -21,6 +21,7 @@ import logging
 import os
 import re
 import secrets
+import sqlite3
 import sys
 import subprocess
 import threading
@@ -56,6 +57,7 @@ from answers import answer_question
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from knowledge_base.graph import KnowledgeGraph, build_graph
+from knowledge_base.metadata import SCHEMA_VERSION, trace, validate_vector
 
 logger = logging.getLogger(__name__)
 
@@ -224,7 +226,7 @@ def _run_index_job(job_id: str, repo_id: str, root_path: str, full_reindex: bool
         job["state"], job["startedAt"] = JobState.RUNNING, time.time()
         try:
             snapshot = build_graph(root_path, data_dir=DEFAULT_DATA_DIR)
-            graph_status = {"state": "ready", "statistics": snapshot["graph"]}
+            graph_status = {"state": "ready", "statistics": snapshot["graph"], "snapshotId": snapshot['graph_snapshot_id']}
         except Exception:
             logger.exception("Knowledge graph construction failed for %s", repo_id)
             graph_status = {"state": "unavailable", "error": "Graph construction failed; see engine log."}
@@ -240,6 +242,7 @@ def _run_index_job(job_id: str, repo_id: str, root_path: str, full_reindex: bool
                 "semantic": {"state": "ready", "error": None, "chunkCount": chunk_count},
                 "docs": dict(_EMPTY_DOCS_STATUS),
                 "graph": graph_status,
+                "metadata": {"schemaVersion": SCHEMA_VERSION, "snapshotId": result.get('snapshot_id')},
             }
             job["state"] = JobState.COMPLETED
         except IndexingError as exc:
@@ -498,10 +501,13 @@ def _graph_search(req):
                 continue
             with open(os.path.join(_REGISTERED_REPOS[req.repoId]["rootPath"], path), "rb") as source:
                 source_hash = hashlib.sha256(source.read()).hexdigest()
+            provenance = trace(database,req.repoId,edge['id'])
             results.append({"entityId": edge["id"], "path": path,
                 "name": edge["other_label"], "startLine": line, "endLine": line,
                 "reason": f"Verified static call to {symbol['label']}", "confidence": 1.0,
-                "sourceHash": source_hash, "revision": "latest", "callers": [], "tests": []})
+                "sourceHash": source_hash, "revision": "latest", "callers": [], "tests": [],
+                "fileId": provenance['fileId'], "snapshotId": provenance['snapshotId'],
+                "sourceOrigin": provenance['sourceOrigin'], "schemaVersion": provenance['schemaVersion']})
         return {"mode": "graph", "results": results,
                 "warning": None if results else "No verified static callers found. Dynamic or unresolved calls may still exist."}
     except ValueError:
@@ -578,8 +584,16 @@ def search_code(req: SearchRequest):
                 continue
         except (ValueError, TypeError):
             continue
+        try:
+            provenance = validate_vector(os.path.join(DEFAULT_DATA_DIR,req.repoId,'metadata.db'),req.repoId,pt,COLLECTION_NAME)
+        except (ValueError, OSError, sqlite3.Error):
+            stale = True
+            continue
         results.append({
-            "entityId": hashlib.sha256(f"{req.repoId}:{rel_path}:{chunk_index}".encode()).hexdigest()[:40],
+            "entityId": provenance['entityId'],
+            "fileId": provenance['fileId'], "symbolId": provenance['symbolId'],
+            "snapshotId": provenance['snapshotId'], "sourceOrigin": provenance['sourceOrigin'],
+            "schemaVersion": provenance['schemaVersion'],
             "path": rel_path,
             "name": os.path.basename(rel_path),
             "startLine": start_line,
@@ -592,7 +606,7 @@ def search_code(req: SearchRequest):
         })
         if len(results) >= req.limit:
             break
-    warning = "Some indexed files changed. Refresh the repository index." if stale else None
+    warning = "Some indexed files or metadata changed. Refresh the repository index." if stale else None
     if not results and not warning:
         warning = "No sufficiently relevant semantic matches found. Try a more specific question or identifier."
     return {"mode": "semantic", "warning": warning, "results": _enrich_graph(req, results)}
