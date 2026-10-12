@@ -9,6 +9,10 @@ class PlanningTests(unittest.TestCase):
         cases = [
             (' "Who calls `validateToken`?" ','callers','validateToken',''),
             ('What does login call?','callees','login',''),
+            ('Who calls the function validateToken?','callers','validateToken',''),
+            ('What does module login import?','imports','login',''),
+            ('dependents of the module auth','dependents','auth',''),
+            ('impact of function validateToken','impact','validateToken',''),
             ('What breaks if I change validateToken?','impact','validateToken',''),
             ('What happens if I modify src/auth.ts?','dependents','src/auth.ts','src/auth.ts'),
             ('imports of src/login.ts','imports','src/login.ts','src/login.ts'),
@@ -30,6 +34,7 @@ class PlanningTests(unittest.TestCase):
             with self.assertRaises(ValueError): plan_query(query)
         self.assertEqual(plan_query('  `validateToken`  ').reference,'validateToken')
         self.assertEqual(plan_query('what does login do?').intent,'explore')
+        self.assertEqual(plan_query('How does the code change a password?').intent,'explore')
         self.assertEqual(plan_query('a'*64).reference,'a'*64)
         self.assertEqual(plan_query('解释 `验证`').reference,'验证')
 

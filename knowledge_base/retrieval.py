@@ -1,4 +1,4 @@
-"""Deterministic, local hybrid retrieval. No answer LLM and no inferred edges.
+"""Deterministic local retrieval. No answer LLM or similarity-invented edges.
 
 Providers return the existing source-evidence dictionaries. This interface adds
 query planning, exact identity lookup, bounded structural traversal, rank fusion
@@ -33,6 +33,7 @@ class QueryPlan:
     reference: str = ''
     file: str = ''
     keywords: str = ''
+    module: str = ''
 
 
 def plan_query(query):
@@ -44,12 +45,13 @@ def plan_query(query):
     if not normalized:
         raise ValueError('Query must contain searchable text')
     plan = QueryPlan(normalized)
+    qualifier = r'(?:(?:the|function|method|symbol|file|module)\s+)*'
     patterns = (
-        ('callers',rf'\b(?:who calls|what calls|callers of|calls to)\s+[`\'\"]?({IDENTIFIER})'),
-        ('callees',rf'\b(?:callees of|what does)\s+[`\'\"]?({IDENTIFIER})(?:[`\'\"]?\s+call\b)?'),
-        ('impact',rf'\b(?:impact of|affected by changing|(?:change|modify|changing|modifying))\s+[`\'\"]?({IDENTIFIER})'),
-        ('imports',rf'\b(?:imports of|dependencies of|what does)\s+[`\'\"]?({PATH}|{IDENTIFIER})(?:[`\'\"]?\s+import\b)?'),
-        ('dependents',rf'\b(?:dependents of|(?:depends?|depend) on)\s+[`\'\"]?({PATH}|{IDENTIFIER})'),
+        ('callers',rf'\b(?:who calls|what calls|callers of|calls to)\s+{qualifier}[`\'\"]?({IDENTIFIER})'),
+        ('callees',rf'\b(?:callees of|what does)\s+{qualifier}[`\'\"]?({IDENTIFIER})(?:[`\'\"]?\s+call\b)?'),
+        ('impact',rf'\b(?:impact of|affected by changing|(?:change|modify|changing|modifying))\s+{qualifier}[`\'\"]?({IDENTIFIER})'),
+        ('imports',rf'\b(?:imports of|dependencies of|what does)\s+{qualifier}[`\'\"]?({PATH}|{IDENTIFIER})(?:[`\'\"]?\s+import\b)?'),
+        ('dependents',rf'\b(?:dependents of|(?:depends?|depend) on)\s+{qualifier}[`\'\"]?({PATH}|{IDENTIFIER})'),
     )
     for intent,pattern in patterns:
         match = re.search(pattern,normalized,re.I)
@@ -59,7 +61,7 @@ def plan_query(query):
         if intent in ('callees','imports') and match.group(0).lower().startswith('what does'):
             if not re.search(r'\b'+('call' if intent=='callees' else 'import')+r'\b',normalized,re.I):
                 continue
-        if intent=='impact' and not re.search(r'\b(?:impact|breaks?|affect|happens|change|modify)\b',normalized,re.I):
+        if intent=='impact' and not re.search(r'\b(?:impact|breaks?|affect(?:ed|s)?|happens|changes\s+if|if\s+(?:I|we|you)\s+(?:change|modify))\b',normalized,re.I):
             continue
         plan.intent,plan.reference = intent,match.group(1)
         break
@@ -72,6 +74,9 @@ def plan_query(query):
             if plan.reference==original: plan.reference=plan.file
         if plan.intent=='impact':
             plan.intent,plan.reference = 'dependents',plan.file
+    module_match = re.search(r'\bmodule\s+[`\'\"]?([\w./-]+)',normalized,re.I)
+    if module_match:
+        plan.module = module_match.group(1).rstrip('.').removeprefix('./')
     if not plan.reference:
         quoted = re.search(r'[`\'"]('+IDENTIFIER+r')[`\'"]',normalized)
         named = next((m for m in re.finditer(r'\b(?:explain|describe|definition of|where is|defined|function|method|symbol)\s+(?:(?:the|function|method|symbol|file|module)\s+)*[`\'"]?('+IDENTIFIER+r')',normalized,re.I)
@@ -144,10 +149,26 @@ class HybridRetriever:
             'resolution':'syntax_only','confidence':1.,'revision':'latest','callers':[],'tests':[]}
 
     def _lookup(self,reference,filters,file=''):
-        rows = self._read('''SELECT s.*,f.language FROM symbols s JOIN files f
+        def restrictions(columns):
+            clauses,parameters = [],[]
+            for key,column in columns.items():
+                values = filters.get(key)
+                if values:
+                    clauses.append(f'{column} IN ({",".join("?" for _ in values)})')
+                    parameters.extend(values)
+            if file:
+                column = columns['files']
+                clauses.append(f"({column}=? OR substr({column},-length(?)-1)='/' || ?)")
+                parameters.extend((file,file,file))
+            return ''.join(' AND '+clause for clause in clauses),parameters
+        # Apply scope before the candidate bound: a common name elsewhere must
+        # not hide an explicitly filtered definition later in repository order.
+        scope,args = restrictions({'files':'s.relative_path','languages':'f.language','symbolTypes':'s.kind',
+            'modules':"substr(f.relative_path,1,length(f.relative_path)-length(coalesce(f.extension,'')))"})
+        rows = self._read(f'''SELECT s.*,f.language FROM symbols s JOIN files f
             ON f.repository_id=s.repository_id AND f.relative_path=s.relative_path
             WHERE s.repository_id=? AND (s.name=? OR s.qualified_name=? OR s.id=?)
-            ORDER BY s.relative_path,s.start_line LIMIT 100''',(self.repo_id,reference,reference,reference))
+            {scope} ORDER BY s.relative_path,s.start_line LIMIT 100''',(self.repo_id,reference,reference,reference,*args))
         results = []
         for row in rows:
             try:
@@ -158,28 +179,36 @@ class HybridRetriever:
             except (ValueError,OSError):
                 self.warnings.append('Some exact definitions changed. Refresh the repository index.')
         # Python has syntax-aware chunks, but no invented resolved graph symbols.
-        if not rows:
-            contexts = self._read('''SELECT x.*,c.symbol_id FROM chunk_context x JOIN code_chunks c ON c.id=x.id
-                JOIN index_snapshots s ON s.id=c.snapshot_id WHERE x.repo_id=? AND s.state='ready'
-                AND c.symbol_id IS NULL AND x.symbol_kind IN ('function','method','class')
-                AND (x.symbol_name=? OR x.qualified_name=?) ORDER BY x.path,c.start_line LIMIT 100''',
-                (self.repo_id,reference,reference))
-            seen = set()
-            for row in contexts:
-                key = (row['path'],row['parent_symbol_key'])
-                if key in seen: continue
-                seen.add(key)
-                try:
-                    result = self._symbol_result({**row,'kind':row['symbol_kind']})
-                    if file and result['path'] != file and PurePosixPath(result['path']).name != file: continue
-                    if self._matches(result,filters): results.append(result)
-                except (ValueError,OSError):
-                    self.warnings.append('Some exact definitions changed. Refresh the repository index.')
+        scope,args = restrictions({'files':'x.path','languages':'x.language','symbolTypes':'x.symbol_kind','modules':'x.module'})
+        contexts = self._read(f'''SELECT x.*,c.symbol_id FROM chunk_context x JOIN code_chunks c ON c.id=x.id
+            JOIN index_snapshots s ON s.id=c.snapshot_id WHERE x.repo_id=? AND s.state='ready'
+            AND c.symbol_id IS NULL AND x.language='python' AND x.symbol_kind IN ('function','method','class')
+            AND (x.symbol_name=? OR x.qualified_name=?) {scope} ORDER BY x.path,c.start_line LIMIT 100''',
+            (self.repo_id,reference,reference,*args))
+        seen = set()
+        for row in contexts:
+            key = (row['path'],row['parent_symbol_key'])
+            if key in seen: continue
+            seen.add(key)
+            try:
+                result = self._symbol_result({**row,'kind':row['symbol_kind']})
+                if file and result['path'] != file and PurePosixPath(result['path']).name != file: continue
+                if self._matches(result,filters): results.append(result)
+            except (ValueError,OSError):
+                self.warnings.append('Some exact definitions changed. Refresh the repository index.')
         return results
 
     def _matches(self,item,filters):
         return matches_filters({'file_path':item['path'],'module':item.get('module',''),
             'language':item.get('language',''),'symbol_kind':item.get('symbolType','')},filters)
+
+    def _modules(self,reference):
+        return [r['relative_path'] for r in self._read('''SELECT relative_path FROM files
+            WHERE repository_id=? AND kind!='directory' AND status IN ('included','unsupported')
+            ORDER BY relative_path''',(self.repo_id,)) if r['relative_path']==reference
+            or PurePosixPath(r['relative_path']).name==reference
+            or str(PurePosixPath(r['relative_path']).with_suffix(''))==reference
+            or PurePosixPath(r['relative_path']).stem==reference]
 
     def _verify(self,item):
         try:
@@ -191,6 +220,8 @@ class HybridRetriever:
             if item.get('sourceOrigin')!='current_disk':
                 info = trace(self.database,self.repo_id,item['entityId'])
                 if any(item.get(k)!=info.get(k) for k in ('path','sourceHash','startLine','endLine','snapshotId','fileId','symbolId','schemaVersion','sourceOrigin')):
+                    return False
+                if info['kind']=='relationship' and item.get('resolution')!=info.get('resolution'):
                     return False
             for context in item.get('graphContext',[]):
                 info = trace(self.database,self.repo_id,context['entityId'])
@@ -240,16 +271,24 @@ class HybridRetriever:
                 examined = 0
                 while queue and len(results)<limit and examined<MAX_CANDIDATES:
                     current,depth,chain = queue.popleft()
-                    unresolved.extend(dict(r) for r in db.execute('''SELECT expression AS target,reason,resolution,
+                    unknown = db.execute('''SELECT id,expression AS target,reason,resolution,
                         evidence_file AS file,evidence_line AS line FROM graph_unresolved
-                        WHERE repository_id=? AND source_id=? LIMIT 10''',(self.repo_id,current)))
+                        WHERE repository_id=? AND source_id=? LIMIT 10''',(self.repo_id,current)).fetchall()
+                    for occurrence in unknown:
+                        try:
+                            info = trace(self.database,self.repo_id,occurrence['id'])
+                            unresolved.append({**dict(occurrence),**{k:info[k] for k in ('entityId','fileId','symbolId',
+                                'snapshotId','sourceOrigin','schemaVersion','path','startLine','endLine','sourceHash')},'source_verified':True})
+                        except (ValueError,OSError,sqlite3.Error):
+                            self.warnings.append('Some unresolved reference evidence changed. Refresh the index.')
                     edges = db.execute(f'''SELECT e.*,n.label AS other_name,n.symbol_id AS other_symbol,
                         s.kind AS symbol_kind,f.language FROM graph_relationships e
                         JOIN graph_nodes n ON n.id=e.{other_column} LEFT JOIN symbols s ON s.id=n.symbol_id
                         LEFT JOIN files f ON f.repository_id=e.repository_id AND f.relative_path=e.evidence_file
                         WHERE e.repository_id=? AND e.{current_column}=? AND e.relationship=?
-                        AND e.resolution='resolved' ORDER BY e.evidence_file,e.evidence_line,e.id LIMIT 100''',
-                        (self.repo_id,current,relation)).fetchall()
+                        AND (e.resolution='resolved' OR (?=1 AND e.resolution='inferred'))
+                        ORDER BY e.resolution='resolved' DESC,e.evidence_file,e.evidence_line,e.id LIMIT 100''',
+                        (self.repo_id,current,relation,int(plan.intent=='imports'))).fetchall()
                     for edge in edges:
                         examined += 1
                         if examined>MAX_CANDIDATES: break
@@ -263,9 +302,10 @@ class HybridRetriever:
                             'schemaVersion','path','startLine','endLine','sourceHash')},
                             'name':edge['other_name'],'relatedSymbolId':edge['other_symbol'],
                             'language':edge['language'],'module':str(PurePosixPath(info['path']).with_suffix('')),
-                            'symbolType':edge['symbol_kind'] or '', 'relationship':relation,'resolution':'resolved',
-                            'graphDistance':depth+1,'graphEdges':chain+[edge['id']],
-                            'reason':f"Verified static {relation} relationship ({plan.intent}); distance {depth+1}",
+                            'symbolType':edge['symbol_kind'] or '', 'relationship':relation,'resolution':edge['resolution'],
+                            'graphDistance':depth+1,'graphEdges':chain+[edge['id']] if edge['resolution']=='resolved' else [],
+                            'reason':f"Verified static {relation} relationship ({plan.intent}); distance {depth+1}" if edge['resolution']=='resolved'
+                                else 'Inferred external import specifier; not proof that the package is installed or executed',
                             'confidence':1.,'revision':'latest','callers':[],'tests':[]}
                         if edge['other_symbol']:
                             target = self._lookup(edge['other_symbol'],{})
@@ -320,7 +360,7 @@ class HybridRetriever:
             self.warnings.append('Source evidence changed during final verification. Refresh the repository index.')
         results = final[:limit]
         methods = {method for method,items in verified.items() if items}
-        mode = mode or ('hybrid' if len(methods)>1 else next(iter(methods),'unavailable'))
+        mode = mode or ('hybrid' if len(methods)>1 else next(iter(methods),'hybrid'))
         mode = 'lexical' if mode=='literal' else mode
         for item in results:
             item['rankingSignals']['context'] = {'symbolType':item.get('symbolType'),
@@ -337,7 +377,7 @@ class HybridRetriever:
             warning = 'No sufficiently relevant verified matches found. Try a precise symbol or file path.'
         return {'query':plan.query,'status':status if status=='ambiguous' and results else 'found' if results else 'not_found',
             'mode':mode,'intent':plan.intent,'detected':asdict(plan),'results':results,'warning':warning,
-            'uncertainty':unresolved or [],'indexVersion':max((r.get('schemaVersion',0) for r in results),default=None),
+            'uncertainty':[u for u in unresolved or [] if self._verify(u)],'indexVersion':max((r.get('schemaVersion',0) for r in results),default=None),
             'bounds':{'candidateLimit':MAX_CANDIDATES,'graphDepth':MAX_GRAPH_DEPTH,'graphEdgeLimit':MAX_CANDIDATES}}
 
     def retrieve(self,query,*,filters=None,limit=5,retrieval='auto'):
@@ -358,7 +398,7 @@ class HybridRetriever:
         if retrieval in ('auto','hybrid'):
             try:
                 structural = plan.intent in ('callers','callees','impact','imports','dependents')
-                definitions = self._lookup(plan.reference,{} if structural else filters,plan.file) if plan.reference else []
+                definitions = self._lookup(plan.reference,{} if structural else filters,plan.file) if plan.reference and not plan.module else []
             except sqlite3.Error:
                 definitions = []
                 self.warnings.append('Exact symbol metadata is unavailable. Refresh the repository index.')
@@ -372,6 +412,16 @@ class HybridRetriever:
                 return self._finish(plan,{'graph':results},limit,mode='graph',status=status,unresolved=unresolved)
             if definitions:
                 return self._finish(plan,self._expand(plan,{'exact':definitions},filters,budget),limit,mode='exact')
+            if plan.module:
+                literal = []
+                for path in self._modules(plan.module)[:budget]:
+                    scoped = {**filters,'files':[path]} if not filters.get('files') or path in filters['files'] else None
+                    if scoped is not None:
+                        literal.extend(r for r in self.exact_search('explain '+path,scoped,1)
+                            if r['path']==path and r['reason'].startswith('Requested file:'))
+                ambiguous = len(literal)>1
+                if ambiguous: self.warnings.append('Module is ambiguous. Use its repository-relative path.')
+                return self._finish(plan,{'literal':literal},limit,status='ambiguous' if ambiguous else None)
             literal = self.exact_search(plan.query,filters,budget)
             conversational = bool(re.match(r'^(?:where|what|how|why|which|explain|describe|tell|who)\b',plan.query,re.I))
             if conversational: literal = [r for r in literal if r['reason'].startswith('Requested file:')]
@@ -404,4 +454,5 @@ class HybridRetriever:
         if retrieval in ('auto','hybrid'):
             rankings = self._expand(plan,rankings,filters,budget)
         return self._finish(plan,rankings,limit,mode='keyword' if retrieval=='keyword' else
-            'semantic' if retrieval=='semantic' and semantic and semantic['mode']!='unavailable' else None)
+            'semantic' if retrieval=='semantic' and semantic and semantic['mode']!='unavailable' else
+            'unavailable' if semantic and semantic['mode']=='unavailable' and not any(rankings.values()) else None)

@@ -159,3 +159,40 @@ selected repository once. Dependencies include faiss-cpu in requirements.txt;
 the launcher's dependency check now checks FAISS too. See knowledge_base/README.md
 and RETRIEVAL_SETUP.md. Phase 6 hybrid fusion/reranking and later continuous
 synchronization work are not claimed as implemented here.
+
+## 2026-10-12 — Knowledge-base Phase 6
+
+Implemented the owner's separate hybrid-retrieval plan with the local
+`HybridRetriever` interface, authenticated `/retrieve`, compatible `/search/code`
+and the same evidence pipeline for `/ask`. Deterministic intent planning detects
+symbols/files/modules; exact identity and current-source lookup precede exploratory
+FTS5/vector rank fusion. RRF combines channel ranks rather than incompatible raw
+scores; deduplication, implementation/symbol context and bounded verified graph
+expansion influence final evidence ordering. Caller/callee/import/impact/dependent
+queries use static graph provenance, not semantic guesses.
+
+Standard snake-case result fields coexist with the editor's source/citation fields.
+Results explicitly report found, not_found or ambiguous; ambiguous explanations
+do not call an answer model. Saved-source hashes, ready snapshots, canonical IDs
+and source ranges are checked before fusion and again before return. Stale/failed
+evidence is discarded. Keyword fallback remains usable when vectors fail. Exact
+Python definitions remain syntax-only, including cross-language name collisions;
+external import specifiers remain inferred and unresolved references are separate
+source-verified uncertainty, not resolved edges. Graph traversal is cycle-safe and
+bounded to three hops/100 examined edges with truncation warnings.
+
+Verified: 104 Python regression tests (48 knowledge-base and 56 API/answer tests),
+extension compilation/integration, Python compilation and whitespace checks. An
+isolated live API on port 8001 indexed a five-file TS/Python fixture with the real
+local BGE embedding model: 16 checks covered hybrid natural-language relevance,
+exact identity, callers/callees/impact/imports/dependents, ambiguity/file filters,
+module lookup, missing files, Python retrieval, keyword errors, evidence-only
+answers, canonical source citations and authentication. The expected permission
+function ranked first with both keyword/vector contributions. These are curated
+smoke checks, not a general retrieval-accuracy guarantee. Test data was temporary;
+the user's port-8000 engine and original repository database were left untouched.
+
+Restart `python3 start_codemind.py` once to load Phase 6 after stopping the old
+engine. Ready Phase 5 indexes need no re-embedding for this phase; older indexes
+still require the Phase 5 refresh. There are no new dependencies or schema changes.
+Continuous synchronization/watchers remain Phase 7, not completed work here.

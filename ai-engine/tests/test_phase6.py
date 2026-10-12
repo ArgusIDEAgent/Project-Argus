@@ -105,6 +105,8 @@ class Phase6Tests(unittest.TestCase):
         dependencies=self.search('what happens if I modify auth.ts?')
         self.assertEqual({r['path'] for r in dependencies['results']},{'login.ts','entry.ts'})
         self.assertTrue(all(r['relationship']=='DEPENDS_ON' for r in dependencies['results']))
+        self.assertEqual(self.search('imports of the module login')['status'],'found')
+        self.assertEqual(self.search('who calls the function validateToken?')['status'],'found')
 
     def test_explanation_expands_verified_callee_definitions(self):
         result=self.search('explain login')
@@ -139,6 +141,33 @@ class Phase6Tests(unittest.TestCase):
         self.assertEqual(result['results'][0]['path'],'cache.py')
         self.assertIsNone(result['results'][0]['symbol_id'])
         self.assertEqual(result['results'][0]['resolution'],'syntax_only')
+
+    def test_cross_language_names_are_ambiguous_and_language_filter_resolves(self):
+        (self.root/'cache.py').write_text('def validateToken(token):\n    return bool(token)\n')
+        self.refresh()
+        self.assertEqual(self.search('validateToken')['status'],'ambiguous')
+        result=self.search('validateToken',filters={'languages':['python']})
+        self.assertEqual(result['status'],'found')
+        self.assertEqual(result['results'][0]['path'],'cache.py')
+        self.assertEqual(self.search('validateToken',filters={'languages':['python','typescript']})['status'],'ambiguous')
+
+    def test_explicit_module_is_not_overridden_by_same_named_function(self):
+        (self.root/'cache.py').write_text('def auth():\n    return True\n')
+        self.refresh()
+        result=self.search('explain module auth')
+        self.assertEqual(result['status'],'found')
+        self.assertEqual(result['results'][0]['path'],'auth.ts')
+        self.assertTrue(result['results'][0]['reason'].startswith('Requested file:'))
+
+    def test_exact_filters_apply_before_candidate_limit(self):
+        for number in range(101):
+            (self.root/f'common{number:03d}.ts').write_text('export function sharedName() { return true; }\n')
+        self.refresh()
+        for filters in ({'files':['common100.ts']},{'modules':['common100']}):
+            with self.subTest(filters=filters):
+                result=self.search('sharedName',filters=filters)
+                self.assertEqual(result['status'],'found')
+                self.assertEqual(result['results'][0]['path'],'common100.ts')
 
     def test_unknown_explicit_file_never_returns_unrelated_vectors(self):
         with patch.object(api,'embed_texts',side_effect=AssertionError('Missing file must not embed')):
@@ -208,6 +237,40 @@ class Phase6Tests(unittest.TestCase):
         self.refresh()
         result=self.search('callers of validateToken',limit=1,filters={'files':['z.ts']})
         self.assertEqual(result['results'][0]['name'],'finalCaller')
+
+    def test_explicit_module_name_resolves_to_source_without_embeddings(self):
+        with patch.object(api,'embed_texts',side_effect=AssertionError('Exact module lookup must not embed')):
+            result=self.search('explain module auth')
+        self.assertEqual(result['results'][0]['path'],'auth.ts')
+        self.assertEqual(result['status'],'found')
+        self.assertEqual(self.search('explain module nonexistent')['results'],[])
+
+    def test_missing_metadata_graph_query_is_read_only(self):
+        self.database.rename(self.database.with_name('saved.db'))
+        result=self.search('who calls validateToken?')
+        self.assertEqual(result['status'],'not_found')
+        self.assertFalse(self.database.exists())
+
+    def test_inferred_imports_and_unresolved_calls_keep_their_categories(self):
+        (self.root/'external.ts').write_text('import missing from "missing-sdk";\nexport function externalCaller() { return missing(); }\n')
+        self.refresh()
+        imports=self.search('imports of external.ts')
+        self.assertTrue(any(r['resolution']=='inferred' for r in imports['results']))
+        inferred=next(r for r in imports['results'] if r['resolution']=='inferred')
+        self.assertTrue(inferred['source_verified'])
+        self.assertEqual(inferred['graphEdges'],[])
+        self.assertIn('not proof',inferred['reason'])
+        callees=self.search('callees of externalCaller')
+        self.assertEqual(callees['results'],[])
+        self.assertTrue(callees['uncertainty'])
+        self.assertTrue(all(u['resolution']=='unresolved' and u['source_verified'] for u in callees['uncertainty']))
+
+    def test_empty_healthy_search_is_not_reported_as_engine_unavailability(self):
+        with patch.object(api,'embed_texts',return_value=[[0.,1.]+[0.]*382]):
+            result=self.search('Where is cosmic laser navigation handled?')
+        self.assertEqual(result['status'],'not_found')
+        self.assertEqual(result['mode'],'hybrid')
+        self.assertNotIn('unavailable',result['warning'])
 
 
 if __name__=='__main__': unittest.main()

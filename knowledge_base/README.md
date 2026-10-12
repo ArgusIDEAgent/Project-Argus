@@ -1,4 +1,4 @@
-# Knowledge base: Phases 1–5
+# Knowledge base: Phases 1–6
 
 Run from the project root:
 
@@ -105,8 +105,8 @@ Filters combine with AND; values within one field combine with OR. Modules are
 repository-relative paths without their final extension, not guessed namespaces.
 Paths cannot escape the repository. Existing editor requests require no changes;
 normal Send still uses the backend's validated citations and local answer model.
-This phase provides separate retrieval representations, not Phase 6's new hybrid
-fusion/reranking system. Similarity means relevance, not verified program behavior.
+Phase 5 provides the separate retrieval representations; Phase 6 below combines
+them. Similarity means relevance, not verified program behavior.
 
 The retained local CPU model is `BAAI/bge-small-en-v1.5` (384 dimensions).
 `.venv/bin/python -m knowledge_base.benchmark_semantic` benchmarks real embeddings
@@ -126,4 +126,83 @@ python3 start_codemind.py
 .venv/bin/python -m unittest knowledge_base.test_semantic -v
 .venv/bin/python -m unittest discover -s ai-engine/tests -v
 .venv/bin/python -m knowledge_base.benchmark_semantic
+```
+
+## Phase 6 hybrid information retrieval
+
+`knowledge_base.retrieval.HybridRetriever` is the unified local retrieval interface.
+Authenticated `POST /retrieve` and the compatible `POST /search/code` share it;
+`/ask` uses the same evidence before generating an optional local-model answer.
+Retrieval itself never calls an answer LLM. Existing camel-case fields and source
+citations remain compatible with the editor. Legacy CLI vector/RAG commands remain
+separate; they are not claimed to use this new hybrid interface.
+
+The deterministic planner normalizes queries and detects explicit symbols,
+filenames, paths and module names. Exact definitions and copied source text take
+precedence over broader retrieval. Explicit files/modules are resolved by source
+path; missing files do not fall through to unrelated vectors. Duplicate definitions
+or basenames return `status: ambiguous` and candidates rather than silently choosing
+one. Use a qualified name or repository-relative path; ordinary exact lookup also
+supports file/language filters. `/ask` returns clarification evidence for ambiguous
+results without asking a model to choose a definition.
+
+Exploratory questions combine FTS5 BM25 keyword ranks and FAISS cosine ranks using
+Reciprocal Rank Fusion: each channel contributes `1 / (60 + rank)`. Raw keyword and
+cosine scores are never added together. Identical source units contribute once per
+channel and are deduplicated across channels. Exact identity takes precedence;
+implementation/test/documentation context and requested symbol type influence final
+ordering. Graph candidates are ordered by bounded traversal distance. Source
+reliability is a verification gate, not a model-generated confidence score. See the
+primary [RRF ranking documentation](https://learn.microsoft.com/en-us/azure/search/hybrid-search-ranking).
+
+Supported graph queries include `who calls validateToken?`, `what does login call?`,
+`what breaks if I change validateToken?`, `imports of src/login.ts` and
+`dependents of src/auth.ts`. Structural queries never substitute semantic similarity
+for a relationship. Impact/dependency traversal uses resolved edges, at most three
+hops and 100 examined edges; cycles terminate. Result budgets are bounded, and a
+warning indicates traversal truncation. Structural filters constrain returned
+evidence, not the target definition; qualify the target in the query if ambiguous.
+For explanations/dependency context, at most three selected canonical symbols
+expand to up to ten verified callee definitions each. Python syntax-aware units
+remain searchable but have no invented resolved Python call graph.
+
+An exact external import may be shown with `resolution: inferred` and its real
+specifier range. This is not proof that the package is installed or executed.
+Unresolved references appear separately in `uncertainty`, with source provenance;
+they are never counted as resolved graph edges. `source_verified` verifies the
+evidence location, not the existence of an unresolved target or runtime behavior.
+
+Each channel and the final fused result set are checked against canonical IDs,
+ready snapshots, current saved-file hashes and source ranges. Deleted, stale,
+unfinished or mismatched evidence is discarded with a refresh warning. A vector
+failure falls back to explicitly labelled keyword evidence when available. Healthy
+empty search is `not_found`, not an unavailable service. No filesystem watcher or
+automatic continuous synchronization is claimed here; that remains Phase 7.
+
+Example request (the same filters and limit contract as `/search/code`):
+
+```json
+{"repoId":"REGISTERED_REPO_ID","query":"Where are resource permissions checked?","retrieval":"hybrid","limit":5}
+```
+
+Each result adds the plan's standard `symbol_id`, `symbol`, `file`, `start_line`,
+`end_line`, `retrieval_method`, `resolution` and `source_verified` fields alongside
+the existing editor fields. Syntax-only definitions are labelled `syntax_only`,
+non-relationship search evidence `not_applicable`, and verified graph edges
+`resolved`. Python canonical `symbol_id` remains null; its chunk `entityId` is real.
+`retrievalMethods`, `fusionScore` and `rankingSignals` explain the contributing
+channels. `index_version` is the schema version; `index_snapshot` identifies the
+actual observation snapshot. Response status is `found`, `not_found` or `ambiguous`.
+`mode` identifies the chosen route; per-result channels distinguish contributions.
+Structural results identify an actual relationship `entityId` and its source call
+or import range; `relatedSymbolId`/`graphContext` identify the related definition
+when indexed. They do not relabel a call-site range as the callee's definition.
+
+Phase 6 introduces no schema migration or embedding model change. Restart the
+engine once to load this code. Already-ready Phase 5 indexes can be reused without
+re-embedding; older indexes still need the Phase 5 refresh described above.
+
+```sh
+.venv/bin/python -m unittest knowledge_base.test_retrieval -v
+.venv/bin/python -m unittest discover -s ai-engine/tests -v
 ```
