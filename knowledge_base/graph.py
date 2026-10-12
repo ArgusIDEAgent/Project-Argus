@@ -116,9 +116,9 @@ def _source_symbol(symbols_by_file: dict[str, list[sqlite3.Row]], file: str,
 
 
 def build_graph(repo_root: str | Path, *, data_dir: str | Path | None = None,
-                exclusions: tuple[str, ...] = ()) -> dict[str, Any]:
+                exclusions: tuple[str, ...] = (), incremental: bool = False) -> dict[str, Any]:
     """Scan, parse, semantically resolve, and atomically replace one graph snapshot."""
-    inventory = parse_repository(repo_root, data_dir=data_dir, exclusions=exclusions)
+    inventory = parse_repository(repo_root, data_dir=data_dir, exclusions=exclusions, incremental=incremental)
     root = Path(inventory["root_path"])
     repo_id = inventory["repository_id"]
     db_path = inventory["database"]

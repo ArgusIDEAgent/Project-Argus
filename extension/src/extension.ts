@@ -34,6 +34,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   let gitStateTimer: NodeJS.Timeout | undefined;
   let selectedRepository: { id: string; rootPath: string } | undefined;
   let lastGitState: string | undefined;
+  let lastSynchronizationStatus: string | undefined;
   let refreshing = false;
   let refreshAgain = false;
   let refreshFailures = 0;
@@ -144,7 +145,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       if (selectedRepository === selected && job.result) lastGitState = `${job.result.commitHash}:${job.result.branch}`;
       if (selectedRepository === selected && panel) {
         await panel.webview.postMessage({ type: 'repository',
-          text: indexedLabel(selected.rootPath, job.result) + (job.result?.semantic?.state === 'degraded' ? ' - lexical search' : ' - semantic search') });
+          text: indexedLabel(selected.rootPath, job.result) + (job.result?.semantic?.state === 'degraded' ? ' - lexical search' : ' - semantic search') + ' - saved files only' });
         await updateDocsStatus(selected, job.result?.docs);
         const checks = [...pendingSymbols];
         pendingSymbols.clear();
@@ -192,6 +193,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     autoRefreshPaused = false;
     selectedRepository = repository;
     lastGitState = `${commitHash}:${branch}`;
+    lastSynchronizationStatus = undefined;
     try {
       repositoryWatcher = fs.watch(repository.rootPath, { recursive: true }, (_event, filename) => {
         const changed = filename?.toString().split(path.sep).join('/') || '';
@@ -213,6 +215,16 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       if (selectedRepository !== repository || !server) return;
       void server.liveState(repository.id).then(state => {
         if (selectedRepository !== repository) return;
+        if (state.synchronization) {
+          const fresh = state.synchronization.fresh;
+          const status = `${fresh}:${state.synchronization.state}`;
+          if (panel && ((!fresh && lastSynchronizationStatus !== status) || (fresh && lastSynchronizationStatus?.startsWith('false:')))) {
+            void panel.webview.postMessage({ type: 'repository', text: fresh
+              ? `${path.basename(repository.rootPath)} - knowledge synchronized - saved files only`
+              : `${path.basename(repository.rootPath)} - index ${state.synchronization.state === 'failed' ? 'failed' : 'stale/updating'} - saved files only` });
+          }
+          lastSynchronizationStatus = status;
+        }
         const current = `${state.commitHash}:${state.branch}`;
         if (current !== lastGitState) { lastGitState = current; scheduleRefresh(); }
       }).catch(error => output.appendLine(`Git state check failed: ${error instanceof Error ? error.message : error}`));
@@ -253,7 +265,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       if (!job) return;
       if (job.state === 'failed') throw new Error(job.error || 'Repository scan failed.');
       await currentPanel.webview.postMessage({ type: 'repository', text: indexedLabel(repository.rootPath, job.result) +
-        (job.result?.semantic?.state === 'degraded' ? ' - lexical search' : ' - semantic search') });
+        (job.result?.semantic?.state === 'degraded' ? ' - lexical search' : ' - semantic search') + ' - saved files only' });
       watchRepository(repository, job.result?.commitHash || 'unborn', job.result?.branch || 'HEAD');
       await updateDocsStatus(repository, job.result?.docs);
       scheduleRefresh();

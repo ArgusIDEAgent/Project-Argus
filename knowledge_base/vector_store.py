@@ -103,6 +103,12 @@ class FaissClient:
             size = self._collection(collection_name)[0]
             return Result(config=Result(params=Result(vectors=Result(size=size))))
 
+    def delete_collection(self,collection_name):
+        with self._guard(),self.db:
+            self.db.execute('DELETE FROM collections WHERE name=?',(collection_name,))
+            self.cache.pop(collection_name,None)
+            self._index_path(collection_name).unlink(missing_ok=True)
+
     def _rows(self, name, condition=None):
         return [(cid,vid,np.frombuffer(vector,dtype='<f4'),json.loads(payload))
                 for cid,vid,vector,payload in self.db.execute('SELECT chunk_id,vector_id,embedding,payload FROM vectors WHERE collection_name=? ORDER BY vector_id',(name,))
@@ -194,13 +200,15 @@ class FaissClient:
     def retrieve(self, collection_name, ids, **kwargs):
         with self._guard():
             selected = {str(i) for i in ids}
-            return [Result(id=r[0],payload=r[3],vector=None) for r in self._rows(collection_name) if r[0] in selected]
+            return [Result(id=r[0],payload=r[3],vector=r[2].tolist() if kwargs.get('with_vectors') else None)
+                    for r in self._rows(collection_name) if r[0] in selected]
 
     def scroll(self, collection_name, scroll_filter=None, limit=200, offset=None, **kwargs):
         with self._guard():
             rows = sorted(self._rows(collection_name,scroll_filter),key=lambda r:r[0])
             rows = [r for r in rows if offset is None or r[0] >= str(offset)]
-            return ([Result(id=r[0],payload=r[3],vector=None) for r in rows[:limit]],rows[limit][0] if len(rows)>limit else None)
+            return ([Result(id=r[0],payload=r[3],vector=r[2].tolist() if kwargs.get('with_vectors') else None)
+                     for r in rows[:limit]],rows[limit][0] if len(rows)>limit else None)
 
     def set_payload(self, collection_name, payload, points):
         with self._guard():

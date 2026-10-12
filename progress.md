@@ -196,3 +196,57 @@ Restart `python3 start_codemind.py` once to load Phase 6 after stopping the old
 engine. Ready Phase 5 indexes need no re-embedding for this phase; older indexes
 still require the Phase 5 refresh. There are no new dependencies or schema changes.
 Continuous synchronization/watchers remain Phase 7, not completed work here.
+
+## 2026-10-13 — Knowledge-base Phase 7
+
+Implemented the owner's separate incremental-indexing/synchronization plan.
+The engine watches registered repositories independently of the chat panel and
+restores watchers on restart. Debounced native events plus five-second content-hash
+reconciliation detect saved edits, additions, deletions, moves, renames and ignore
+changes, including unchanged timestamps. Native-watcher failures retain periodic
+reconciliation with explicit status; failed builds retry with bounded backoff.
+Unsupported text observation is bounded; oversized/binary/non-regular assets are
+not treated as source text.
+
+Each update builds an immutable private SQLite/vector generation. Unchanged syntax
+is reused; changed JS/TS files are reparsed. Reverse dependencies identify affected
+importers transitively, and the TypeScript checker conservatively re-resolves all
+included JS/TS files so unchanged callers cannot keep obsolete export/alias bindings.
+Only changed chunk embedding inputs require the model; unchanged units in edited
+files reuse vectors with refreshed payloads/ranges. Deletions require no embedding
+model. Deleted/excluded entities, graph edges, FTS chunks and vectors are removed.
+
+Graph/metadata/vector provenance and membership are validated, followed by a final
+repository fingerprint check. One atomic active pointer publishes only a complete
+generation. Failed builds retain the previous consistent pointer, mark failure and
+block stale indexed answers rather than reporting a degraded partial build as
+completed. Retrieval pins one generation and checks the whole repository before/
+after evidence retrieval; answers/citations are discarded when saved code changes
+during generation. Current-disk literal/file evidence is explicitly labelled.
+Current/previous generations and pinned readers survive bounded snapshot cleanup;
+legacy stores and repository files are not deleted.
+
+Verified: 128 Python regression tests (48 knowledge-base + 80 engine/answer,
+including 24 Phase 7 tests), Python compilation, extension compilation/integration
+and whitespace checks. Injected model/store/watcher failures produced the expected
+test warnings, not unexpected test failures. Isolated live API checks on port 8001
+used the real cached local embedding model: saved edits embedded one changed chunk
+and reused another; restart restored watching; renames invalidated obsolete callers;
+moves with corrected imports rebuilt verified relationships; citations matched
+current source hashes; an unchanged refresh embedded nothing; deletion pruned the
+definition/vectors and left the unchanged caller explicitly unresolved. Snapshot
+retention kept only current/previous generations. The port-8000 user engine was not
+restarted and no real-repository refresh was requested during these checks.
+
+Install the watchdog dependency from requirements.txt and restart the normal
+`python3 start_codemind.py` launcher once; the first synchronization creates a
+consistent generation, then saved edits need no manual phase commands. The metadata
+inspection CLI resolves the active database. Compile/rebuild the extension for its
+new synchronization/saved-files-only header; a separate
+codemind-extension-phase7-0.4.1.vsix is packaged without replacing older artifacts.
+The isolated verification data was moved to Trash (recoverable) after stopping
+only the port-8001 test server. See knowledge_base/README.md and
+RETRIEVAL_SETUP.md. Saved files only, no guessed cross-rename identity; compiler
+resolution remains whole-project and unchanged vector rows are copied for snapshot
+isolation. Fine-grained compiler invalidation/performance benchmarking is not
+claimed. No metadata-schema or embedding-model migration is introduced.

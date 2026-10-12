@@ -300,12 +300,6 @@ def _index_directory(
         except Exception:
             pass                                    # index already exists
 
-    # --- Warm up embedding model ---
-    try:
-        get_embedding_model()          # warm-up: raises IndexingError instead of a raw traceback
-    except Exception as exc:
-        raise IndexingError(f"Cannot load embedding model: {exc}") from exc
-
     # --- Discover files ---
     all_files = [p for p in _discover_files(target_dir) if _rel_posix(p,target_dir) in metadata.entries]
     metadata.prune([_rel_posix(p,target_dir) for p in all_files])
@@ -369,7 +363,7 @@ def _index_directory(
         _log(f"🗑️  Pruned vectors for {len(deleted_rel_paths)} deleted file(s)")
 
     # --- Process new / modified files ---
-    total_points = graph_nodes_added = files_failed = 0
+    total_points = graph_nodes_added = files_failed = chunks_embedded = chunks_reused = 0
 
     for abs_path in files_to_index:
         rel_path = _rel_posix(abs_path, target_dir)
@@ -408,7 +402,31 @@ def _index_directory(
                 graph_builder.remove_file_from_graph(kg, rel_path)
             continue
 
-        vectors = embed_texts([d.embedding_text(rel_path) for d in documents])
+        previous_points,next_offset = client.scroll(collection_name=collection,scroll_filter=Filter(must=[
+            FieldCondition(key='repo_id',match=MatchValue(value=repo_id)),
+            FieldCondition(key='file_path',match=MatchValue(value=rel_path))]),limit=1000,with_vectors=True)
+        while next_offset is not None:
+            page,next_offset = client.scroll(collection_name=collection,scroll_filter=Filter(must=[
+                FieldCondition(key='repo_id',match=MatchValue(value=repo_id)),
+                FieldCondition(key='file_path',match=MatchValue(value=rel_path))]),offset=next_offset,limit=1000,with_vectors=True)
+            previous_points.extend(page)
+        previous_ids = {str(point.id) for point in previous_points}
+        reusable = {(point.payload or {}).get('embedding_hash'):point.vector for point in previous_points
+                    if point.vector is not None and not needs_full}
+        inputs = [doc.embedding_text(rel_path) for doc in documents]
+        embedding_hashes = [hashlib.sha256(text.encode()).hexdigest() for text in inputs]
+        changed = [i for i,digest in enumerate(embedding_hashes) if digest not in reusable]
+        vectors = [reusable.get(digest) for digest in embedding_hashes]
+        if changed:
+            try:
+                get_embedding_model()
+            except Exception as exc:
+                raise IndexingError(f'Cannot load embedding model: {exc}') from exc
+            fresh = embed_texts([inputs[i] for i in changed])
+            if len(fresh)!=len(changed): raise IndexingError('Embedding count differs from changed chunk count')
+            for i,vector in zip(changed,fresh): vectors[i] = vector
+        chunks_embedded += len(changed)
+        chunks_reused += len(documents)-len(changed)
         chunks = [(doc.text,doc.start_line,doc.end_line) for doc in documents]
         records = metadata.records(rel_path,file_hash,chunks,collection,contexts=documents)
         total = len(documents)
@@ -428,6 +446,7 @@ def _index_directory(
                              "comments": doc.comments, "chunk_kind": doc.kind,
                              "parent_symbol_key": doc.symbol_key,
                              "embedding_model": EMBEDDING_MODEL_NAME,
+                             "embedding_hash": embedding_hashes[idx],
                              "chunk_id": records[idx][0], "file_id": records[idx][2],
                              "symbol_id": records[idx][3], "snapshot_id": metadata.snapshot,
                              "content_hash": records[idx][9], "schema_version": SCHEMA_VERSION,
@@ -436,15 +455,6 @@ def _index_directory(
             client.upsert(collection_name=collection, points=points)
         # Symbol-based IDs survive line shifts. Remove IDs for renamed/deleted
         # units as well as tails; ordinal-only pruning cannot do that.
-        previous_points,next_offset = client.scroll(collection_name=collection,scroll_filter=Filter(must=[
-            FieldCondition(key='repo_id',match=MatchValue(value=repo_id)),
-            FieldCondition(key='file_path',match=MatchValue(value=rel_path))]),limit=1000,with_vectors=False)
-        previous_ids = {str(point.id) for point in previous_points}
-        while next_offset is not None:
-            page,next_offset = client.scroll(collection_name=collection,scroll_filter=Filter(must=[
-                FieldCondition(key='repo_id',match=MatchValue(value=repo_id)),
-                FieldCondition(key='file_path',match=MatchValue(value=rel_path))]),offset=next_offset,limit=1000,with_vectors=False)
-            previous_ids.update(str(point.id) for point in page)
         stale_ids = previous_ids-{doc.id for doc in documents}
         if stale_ids:
             client.delete(collection_name=collection,points_selector=list(stale_ids))
@@ -480,6 +490,7 @@ def _index_directory(
         "points_upserted": total_points,
         "graph_nodes": graph_nodes_added,
         "files_failed": files_failed,
+        "chunks_embedded": chunks_embedded, "chunks_reused": chunks_reused,
         "metadata_database": str(metadata.database), "snapshot_id": metadata.snapshot, "schema_version": SCHEMA_VERSION,
     }
 

@@ -97,8 +97,10 @@ class SemanticTests(unittest.TestCase):
         self.assertTrue(self.search('Where is authentication checked?')['results'])
 
     def test_repository_isolation(self):
-        other_id = 'b'*24
-        api._REGISTERED_REPOS[other_id] = {'rootPath': str(self.root)}
+        other_root = Path(self.temp.name)/'other'
+        other_root.mkdir()
+        other_id = config.make_repo_id(str(other_root))
+        api._REGISTERED_REPOS[other_id] = {'rootPath': str(other_root)}
         self.addCleanup(api._REGISTERED_REPOS.pop, other_id)
         result = api.search_code(api.SearchRequest(repoId=other_id, query='Where is authentication checked?'))
         self.assertEqual(result['results'], [])

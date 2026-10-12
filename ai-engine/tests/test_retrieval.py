@@ -18,10 +18,13 @@ class RetrievalTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
-        self.root = Path(self.temp.name)
+        self.root = Path(self.temp.name)/'repo'
+        self.root.mkdir()
+        patch.object(api,'DEFAULT_DATA_DIR',str(Path(self.temp.name)/'data')).start()
+        self.addCleanup(patch.stopall)
         self.source = self.root / "crack_detection_functions.c"
         self.source.write_text('return strcasecmp(extension, ".jpeg") == 0 ||\n')
-        self.repo_id = "a" * 24
+        self.repo_id = api.make_repo_id(str(self.root))
         api._REGISTERED_REPOS[self.repo_id] = {"rootPath": str(self.root)}
         self.addCleanup(api._REGISTERED_REPOS.pop, self.repo_id)
 
@@ -59,11 +62,11 @@ class RetrievalTests(unittest.TestCase):
         api._JOBS[job_id] = {"id": job_id, "repoId": self.repo_id,
                              "state": api.JobState.QUEUED, "createdAt": 0}
         self.addCleanup(api._JOBS.pop, job_id)
-        with patch.object(api, "index_directory", side_effect=IndexingError("Cannot connect to Qdrant: unavailable")):
+        with patch.object(api, "get_qdrant_client", side_effect=IndexingError("Cannot connect to Qdrant: unavailable")):
             api._run_index_job(job_id, self.repo_id, str(self.root))
-        self.assertEqual(api._JOBS[job_id]["state"], api.JobState.COMPLETED)
-        self.assertEqual(api._JOBS[job_id]["result"]["semantic"]["state"], "degraded")
-        self.assertEqual(api._JOBS[job_id]["result"]["fileCount"], 1)
+        self.assertEqual(api._JOBS[job_id]["state"], api.JobState.FAILED)
+        self.assertTrue(api._JOBS[job_id]['error'])
+        self.assertTrue(api.search_code(api.SearchRequest(repoId=self.repo_id,query='explain sample.py'))['warning'])
 
 
 if __name__ == "__main__":

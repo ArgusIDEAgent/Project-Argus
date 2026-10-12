@@ -61,6 +61,7 @@ from knowledge_base.metadata import SCHEMA_VERSION, trace, validate_vector
 from knowledge_base.identity import relative_path as normalized_relative_path
 from knowledge_base.semantic import keyword_search, matches_filters
 from knowledge_base.retrieval import HybridRetriever, plan_query
+from knowledge_base.synchronization import SnapshotStore, SyncManager
 
 logger = logging.getLogger(__name__)
 
@@ -70,6 +71,7 @@ logger = logging.getLogger(__name__)
 # ─────────────────────────────────────────────────────────────
 
 _SESSION_TOKEN = ""   # set at startup by lifespan(); empty => every request is rejected (fail closed)
+_SYNC_MANAGER = None
 
 
 def _issue_session_token() -> str:
@@ -91,10 +93,17 @@ async def _require_session(x_codemind_session: str | None = Header(default=None)
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    global _SESSION_TOKEN
+    global _SESSION_TOKEN, _SYNC_MANAGER
     _SESSION_TOKEN = _issue_session_token()
     _load_registry()
-    yield
+    if os.environ.get('CODEMIND_AUTO_SYNC','1')!='0':
+        _SYNC_MANAGER = SyncManager(DEFAULT_DATA_DIR,lambda rid:_enqueue_job(rid,False,None))
+        for rid,entry in list(_REGISTERED_REPOS.items()): _SYNC_MANAGER.add(rid,entry['rootPath'])
+    try:
+        yield
+    finally:
+        if _SYNC_MANAGER: _SYNC_MANAGER.close()
+        _SYNC_MANAGER = None
 
 
 app = FastAPI(title="Argus Python AI Engine", lifespan=lifespan,
@@ -204,7 +213,7 @@ def _git_state(root: str) -> dict:
 # Job management
 # ─────────────────────────────────────────────────────────────
 
-def _enqueue_job(repo_id: str, full: bool, background_tasks: BackgroundTasks) -> dict:
+def _enqueue_job(repo_id: str, full: bool, background_tasks: BackgroundTasks | None) -> dict:
     entry = _REGISTERED_REPOS.get(repo_id)
     if not entry:
         raise HTTPException(status_code=404, detail=f"Repo '{repo_id}' not registered")
@@ -219,7 +228,10 @@ def _enqueue_job(repo_id: str, full: bool, background_tasks: BackgroundTasks) ->
                           key=lambda j: j["createdAt"])
         for old in finished[:max(0, len(_JOBS) - _MAX_JOBS)]:
             _JOBS.pop(old["id"], None)
-    background_tasks.add_task(_run_index_job, job_id, repo_id, entry["rootPath"], full)
+    if background_tasks is not None:
+        background_tasks.add_task(_run_index_job, job_id, repo_id, entry["rootPath"], full)
+    else:
+        threading.Thread(target=_run_index_job,args=(job_id,repo_id,entry['rootPath'],full),daemon=True).start()
     return {"jobId": job_id, "state": "queued"}
 
 
@@ -227,43 +239,30 @@ def _run_index_job(job_id: str, repo_id: str, root_path: str, full_reindex: bool
     with _INDEX_RUN_LOCK:
         job = _JOBS[job_id]
         job["state"], job["startedAt"] = JobState.RUNNING, time.time()
+        store = None
         try:
-            snapshot = build_graph(root_path, data_dir=DEFAULT_DATA_DIR)
-            graph_status = {"state": "ready", "statistics": snapshot["graph"], "snapshotId": snapshot['graph_snapshot_id']}
-        except Exception:
-            logger.exception("Knowledge graph construction failed for %s", repo_id)
-            graph_status = {"state": "unavailable", "error": "Graph construction failed; see engine log."}
-        try:
-            result = index_directory(target_dir=root_path, repo_id=repo_id, full_reindex=full_reindex, build_graph=False,
-                                     on_progress=lambda msg: logger.info("[job %s] %s", job_id[:8], msg))
-            chunk_count = get_qdrant_client().count(
-                COLLECTION_NAME, exact=True,
-                count_filter=Filter(must=[FieldCondition(key="repo_id", match=MatchValue(value=repo_id))])).count
+            store = SnapshotStore(root_path,repo_id,DEFAULT_DATA_DIR)
+            result = store.publish(client=get_qdrant_client(),collection=COLLECTION_NAME,
+                index_directory=index_directory,build_graph=build_graph,full=full_reindex,
+                on_progress=lambda msg:logger.info('[job %s] %s',job_id[:8],msg))
+            chunk_count = result['chunk_count']
             job["result"] = {
                 "fileCount": result["files_indexed"] + result["files_skipped"],
                 **_git_state(root_path),
                 "semantic": {"state": "ready", "error": None, "chunkCount": chunk_count},
                 "docs": dict(_EMPTY_DOCS_STATUS),
-                "graph": graph_status,
-                "metadata": {"schemaVersion": SCHEMA_VERSION, "snapshotId": result.get('snapshot_id')},
+                "graph": {"state":"ready","statistics":result['graph']['graph'],"snapshotId":result['graph']['graph_snapshot_id']},
+                "metadata": {"schemaVersion": SCHEMA_VERSION, "snapshotId": result.get('snapshot_id'),
+                             "activeSnapshotId":result['activeSnapshotId'],"savedFilesOnly":True},
+                "incremental": {k:result.get(k) for k in ('files_indexed','files_skipped','files_pruned','chunks_embedded','chunks_reused','unchanged')},
             }
             job["state"] = JobState.COMPLETED
-        except IndexingError as exc:
-            if str(exc).startswith(("Cannot connect to Qdrant:", "Cannot open vector store:", "Cannot load embedding model:")):
-                logger.warning("Semantic indexing unavailable for %s: %s", repo_id, exc)
-                job["result"] = {
-                    "fileCount": len(_discover_files(root_path)),
-                    **_git_state(root_path),
-                    "semantic": {"state": "degraded", "error": str(exc), "chunkCount": 0},
-                    "docs": dict(_EMPTY_DOCS_STATUS),
-                    "graph": graph_status,
-                }
-                job["state"] = JobState.COMPLETED
-            else:
-                job["error"], job["state"] = str(exc), JobState.FAILED
-        except Exception:
+        except Exception as exc:
             logger.exception("Indexing job %s failed", job_id[:8])
             job["error"], job["state"] = "Indexing failed unexpectedly; see the engine log.", JobState.FAILED
+            if store:
+                try: store.failed(exc)
+                except Exception: logger.exception('Unable to record synchronization failure')
         finally:
             job["completedAt"] = time.time()
 
@@ -357,6 +356,7 @@ def register_repo(req: RegisterRequest):
         entry["rootPath"] = abs_root               # NOT realpath: the extension compares paths by prefix
         _REGISTERED_REPOS[repo_id] = entry
         _save_registry()
+    if _SYNC_MANAGER: _SYNC_MANAGER.add(repo_id,abs_root)
     return {"repository": {"id": repo_id, "rootPath": abs_root, "defaultBranch": "main",
                            "createdAt": entry["createdAt"], "config": {}}}
 
@@ -414,6 +414,11 @@ def live_state(repo_id: str):
             else latest_job["state"]
         )
         result["jobId"] = latest_job["id"]
+    view = SnapshotStore(entry['rootPath'],repo_id,DEFAULT_DATA_DIR).view()
+    if _SYNC_MANAGER and not view['manifest']:
+        view.update(fresh=False,error='Waiting for the first consistent knowledge snapshot.')
+    result['synchronization'] = {k:view[k] for k in ('snapshotId','fresh','state','error','savedFilesOnly')}
+    if _SYNC_MANAGER: result['synchronization'].update(_SYNC_MANAGER.status(repo_id))
     return result
 
 
@@ -464,8 +469,20 @@ def analysis_reuse_feedback():
 @app.get("/graph/file/{file_path:path}")
 def graph_file(file_path: str, repoId: str = ""):
     if repoId not in _REGISTERED_REPOS:
+        raise HTTPException(404, 'Repository is not registered.')
+    with SnapshotStore(_REGISTERED_REPOS[repoId]['rootPath'],repoId,DEFAULT_DATA_DIR).pin_view() as view:
+        return _graph_file_pinned(file_path,repoId,view)
+
+
+def _graph_file_pinned(file_path,repoId,view):
+    if repoId not in _REGISTERED_REPOS:
         raise HTTPException(404, "Repository is not registered.")
-    database = os.path.join(DEFAULT_DATA_DIR, repoId, "metadata.db")
+    store = SnapshotStore(_REGISTERED_REPOS[repoId]['rootPath'],repoId,DEFAULT_DATA_DIR)
+    if _SYNC_MANAGER and not view['manifest']:
+        view.update(fresh=False,error='Waiting for the first consistent knowledge snapshot.')
+    if not view['fresh']:
+        return {'nodes':[],'edges':[],'warning':view['error'],'knowledgeSnapshotId':view['snapshotId']}
+    database = os.path.join(view['data_dir'], repoId, "metadata.db")
     if not os.path.isfile(database):
         return {"nodes": [], "edges": [], "warning": "Knowledge graph is not indexed yet."}
     try:
@@ -478,7 +495,9 @@ def graph_file(file_path: str, repoId: str = ""):
             edges = [dict(row) for row in db.execute("""SELECT e.* FROM graph_relationships e
                 JOIN graph_nodes n ON n.id=e.source_id WHERE e.repository_id=?
                 AND n.relative_path=? AND e.resolution='resolved'""", (repoId, file_path))]
-        return {"nodes": nodes, "edges": edges}
+        if view['snapshotId'] and not store.matches(view['snapshotId']):
+            return {'nodes':[],'edges':[],'warning':'Saved files changed during graph retrieval.'}
+        return {"nodes": nodes, "edges": edges,'knowledgeSnapshotId':view['snapshotId']}
     except Exception as exc:
         logger.warning("Graph unavailable: %s", exc)
         return {"nodes": [], "edges": [], "warning": "Graph is stale or unavailable. Refresh the index."}
@@ -486,8 +505,8 @@ def graph_file(file_path: str, repoId: str = ""):
 
 # ── Semantic code search ─────────────────────────────────────
 
-def _enrich_graph(req, results):
-    database = os.path.join(DEFAULT_DATA_DIR, req.repoId, "metadata.db")
+def _enrich_graph(req, results, data_dir=None):
+    database = os.path.join(data_dir or DEFAULT_DATA_DIR, req.repoId, "metadata.db")
     if not os.path.isfile(database):
         return results
     try:
@@ -516,25 +535,48 @@ def _enrich_graph(req, results):
 @app.post("/search/code")
 def search_code(req: SearchRequest):
     entry = _REGISTERED_REPOS.get(req.repoId)
+    if not entry: raise HTTPException(status_code=404, detail='Repository is not registered.')
+    with SnapshotStore(entry['rootPath'],req.repoId,DEFAULT_DATA_DIR).pin_view() as view:
+        return _retrieve_pinned(req,view)
+
+
+def _retrieve_pinned(req,view):
+    entry = _REGISTERED_REPOS.get(req.repoId)
     if not entry:
         raise HTTPException(status_code=404, detail="Repository is not registered.")
+    if _SYNC_MANAGER and not view['manifest']:
+        view.update(fresh=False,error='Waiting for the first consistent knowledge snapshot.')
+    data_dir = str(view['data_dir'])
+    collection = view['manifest']['collection'] if view['manifest'] else COLLECTION_NAME
     def channel(fn):
-        return lambda query,filters,limit: fn(req.model_copy(update={
-            'query':query,'filters':SearchFilters(**filters),'limit':limit}))
-    retriever = HybridRetriever(entry['rootPath'],req.repoId,DEFAULT_DATA_DIR,
+        def call(query,filters,limit):
+            request = req.model_copy(update={'query':query,'filters':SearchFilters(**filters),'limit':limit})
+            return fn(request,data_dir=data_dir,collection=collection) if view['managed'] else fn(request)
+        return call
+    retriever = HybridRetriever(entry['rootPath'],req.repoId,data_dir,indexed_ready=view['fresh'],
         exact_search=lambda query,filters,limit: search_exact_code(entry['rootPath'],req.repoId,query,limit,filters=filters),
         keyword_search=channel(_keyword_search),semantic_search=channel(_semantic_search))
     result = retriever.retrieve(req.query,filters=req.filters.model_dump(),limit=req.limit,retrieval=req.retrieval)
-    result['results'] = _enrich_graph(req,result['results'])
+    if view['fresh']: result['results'] = _enrich_graph(req,result['results'],data_dir)
+    if view['manifest'] and not SnapshotStore(entry['rootPath'],req.repoId,DEFAULT_DATA_DIR).matches(view['snapshotId']):
+        result['results'] = [r for r in result['results'] if r.get('sourceOrigin')=='current_disk']
+        result['uncertainty'] = []
+        result['status'] = 'found' if result['results'] else 'not_found'
+        view.update(fresh=False,error='Saved files changed during retrieval; indexed evidence was discarded.')
+    result['knowledgeSnapshotId'] = view['snapshotId']
+    result['knowledgeSourceHash'] = view['manifest']['sources']['digest'] if view['manifest'] else None
+    result['synchronization'] = {k:view[k] for k in ('fresh','state','error','savedFilesOnly')}
+    if view['error']: result['warning'] = ' '.join(filter(None,(view['error'],result.get('warning'))))
     return result
 
 
-def _semantic_search(req):
+def _semantic_search(req, *, data_dir=None, collection=None):
+    data_dir,collection = data_dir or DEFAULT_DATA_DIR,collection or COLLECTION_NAME
     entry = _REGISTERED_REPOS[req.repoId]
     conversational = bool(re.match(r"^(?:where|what|how|why|which|explain|describe|tell|who)\b", req.query, re.I))
     try:
         client = get_qdrant_client()
-        if not client.collection_exists(COLLECTION_NAME):
+        if not client.collection_exists(collection):
             return {"mode": "semantic", "warning": "No exact match. This repository has no semantic index yet.", "results": []}
         conditions = [FieldCondition(key="repo_id",match=MatchValue(value=req.repoId))]
         for key,column in (('files','file_path'),('modules','module'),('languages','language'),('symbolTypes','symbol_kind')):
@@ -542,10 +584,10 @@ def _semantic_search(req):
             if values:
                 conditions.append(FieldCondition(key=column,match=MatchAny(any=values)))
         scope = Filter(must=conditions)
-        if client.count(COLLECTION_NAME, exact=True, count_filter=scope).count == 0:
+        if client.count(collection, exact=True, count_filter=scope).count == 0:
             return {"mode": "semantic", "warning": "No semantic evidence is indexed for this repository. Refresh its index.", "results": []}
         points = client.query_points(
-            collection_name=COLLECTION_NAME,
+            collection_name=collection,
             query=embed_texts([req.query])[0],
             query_filter=scope,
             score_threshold=0.5,
@@ -593,7 +635,7 @@ def _semantic_search(req):
         except (ValueError, TypeError):
             continue
         try:
-            provenance = validate_vector(os.path.join(DEFAULT_DATA_DIR,req.repoId,'metadata.db'),req.repoId,pt,COLLECTION_NAME)
+            provenance = validate_vector(os.path.join(data_dir,req.repoId,'metadata.db'),req.repoId,pt,collection)
         except (ValueError, OSError, sqlite3.Error):
             stale = True
             continue
@@ -623,8 +665,8 @@ def _semantic_search(req):
     return {"mode": "semantic", "warning": warning, "results": results}
 
 
-def _keyword_search(req):
-    database = os.path.join(DEFAULT_DATA_DIR,req.repoId,'metadata.db')
+def _keyword_search(req, *, data_dir=None, collection=None):
+    database = os.path.join(data_dir or DEFAULT_DATA_DIR,req.repoId,'metadata.db')
     results,stale = [],False
     try:
         rows = keyword_search(database,req.repoId,req.query,filters=req.filters.model_dump(),limit=req.limit*3)
@@ -653,7 +695,19 @@ def _keyword_search(req):
 @app.post("/ask")
 def ask(req: SearchRequest):
     retrieval = search_code(req)
-    return answer_question(_REGISTERED_REPOS[req.repoId]["rootPath"], req.query, retrieval)
+    root = _REGISTERED_REPOS[req.repoId]['rootPath']
+    result = answer_question(root,req.query,retrieval)
+    if retrieval.get('knowledgeSourceHash'):
+        from knowledge_base.synchronization import observe_sources
+        try: current = observe_sources(root)['digest']==retrieval['knowledgeSourceHash']
+        except (OSError,ValueError): current = False
+    else: current = True
+    if not current:
+        result.update(results=[],citations=[],status='not_found',answerMode='evidence',
+            answer='Saved repository files changed during this answer. Synchronization is updating the index; ask again after it completes.',
+            warning='Answer discarded because its knowledge snapshot is stale.')
+        result['synchronization']['fresh'] = False
+    return result
 
 
 if __name__ == "__main__":

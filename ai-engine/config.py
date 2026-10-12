@@ -229,6 +229,7 @@ def sanitize_text(text: str) -> str:
 
 def latest_repo_id() -> str | None:
     states = glob.glob(os.path.join(DEFAULT_DATA_DIR, "*", INDEX_STATE_FILENAME))
+    states += glob.glob(os.path.join(DEFAULT_DATA_DIR,'*','active_snapshot.json'))
     return os.path.basename(os.path.dirname(max(states, key=os.path.getmtime))) if states else None
 
 
@@ -236,5 +237,7 @@ def find_graph_file(repo_id: str | None = None) -> str | None:
     repo_id = repo_id or latest_repo_id()
     if not repo_id or not REPO_ID_RE.fullmatch(repo_id):
         return None
+    if os.path.isfile(os.path.join(DEFAULT_DATA_DIR,repo_id,'active_snapshot.json')):
+        return None  # The old NetworkX file cannot represent a versioned JS/TS graph.
     candidate = os.path.join(DEFAULT_DATA_DIR, repo_id, GRAPH_FILENAME)
     return candidate if os.path.isfile(candidate) else None

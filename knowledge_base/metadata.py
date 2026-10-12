@@ -452,9 +452,14 @@ def main():
     import os
     base = Path(args.data_dir or os.environ.get('CODEMIND_DATA_DIR','~/.codemind/data')).expanduser()
     repo = repository_id(args.repo)
-    database = base/repo/'metadata.db'
+    from knowledge_base.synchronization import SnapshotStore
     try:
-        result = trace(database,repo,args.trace) if args.trace else audit(database)
+        with SnapshotStore(args.repo,repo,base).pin_view() as view:
+            database = view['data_dir']/repo/'metadata.db'
+            result = trace(database,repo,args.trace) if args.trace else audit(database)
+            result['active_snapshot_id'] = view['snapshotId']
+            result['database'] = str(database)
+            result['synchronization'] = {k:view[k] for k in ('fresh','state','error','savedFilesOnly')}
     except (ValueError,sqlite3.Error) as error:
         parser.exit(1,f'{error}. Refresh the repository index.\n')
     print(json.dumps(result,indent=2))

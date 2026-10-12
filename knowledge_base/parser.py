@@ -311,7 +311,7 @@ def _ensure_schema(db: sqlite3.Connection) -> None:
 
 
 def parse_repository(repo_root: str | Path, *, data_dir: str | Path | None = None,
-                     exclusions: tuple[str, ...] = ()) -> dict[str, Any]:
+                     exclusions: tuple[str, ...] = (), incremental: bool = False) -> dict[str, Any]:
     """Refresh inventory, then replace each file's syntax rows transactionally."""
     inventory = scan_repository(repo_root, data_dir=data_dir, exclusions=exclusions)
     root = Path(inventory["root_path"])
@@ -327,6 +327,13 @@ def parse_repository(repo_root: str | Path, *, data_dir: str | Path | None = Non
                            "AND status='included' AND extension IN (?,?,?,?,?,?,?,?) "
                            "ORDER BY relative_path", (repo_id, *LANGUAGES)).fetchall()
         for relative_path, expected_hash in files:
+            if incremental and db.execute('''SELECT 1 FROM files f WHERE f.repository_id=?
+                AND f.relative_path=? AND f.parse_status='parsed' AND f.content_sha256=?
+                AND EXISTS (SELECT 1 FROM index_snapshots s WHERE s.repository_id=f.repository_id
+                            AND s.stage='syntax' AND s.state='ready') ''',
+                (repo_id,relative_path,expected_hash)).fetchone():
+                counts['skipped'] = counts.get('skipped',0)+1
+                continue
             suffix = Path(relative_path).suffix.lower()
             try:
                 path = root / relative_path

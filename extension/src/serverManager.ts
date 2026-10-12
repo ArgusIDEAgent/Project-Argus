@@ -78,7 +78,8 @@ export class ServerManager implements vscode.Disposable {
     return this.request<Job>('GET', `/jobs/${encodeURIComponent(id)}`);
   }
 
-  async liveState(id: string): Promise<{ commitHash: string; branch: string }> {
+  async liveState(id: string): Promise<{ commitHash: string; branch: string;
+    synchronization?: { fresh: boolean; state: string; error: string | null; savedFilesOnly: boolean } }> {
     return this.request('GET', `/repos/${encodeURIComponent(id)}/live-state`);
   }
 

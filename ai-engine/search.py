@@ -29,14 +29,31 @@ from config import (
     sanitize_text,
 )
 from knowledge_base.metadata import validate_vector
+from knowledge_base.synchronization import repository_view,SnapshotStore
 
 
 def search_codebase(
+    query: str, *, top_k: int = DEFAULT_TOP_K,
+    collection: str = COLLECTION_NAME, repo_id: str | None = None,
+) -> list[dict]:
+    if repo_id:
+        try: view = repository_view(repo_id,DEFAULT_DATA_DIR)
+        except (ValueError,OSError,KeyError):
+            print('Knowledge snapshot unavailable; use the engine refresh endpoint.')
+            return []
+        if view:
+            with SnapshotStore(view['manifest']['root'],repo_id,DEFAULT_DATA_DIR).pin_view() as pinned:
+                return _search_codebase(query,top_k=top_k,collection=collection,repo_id=repo_id,view=pinned)
+    return _search_codebase(query,top_k=top_k,collection=collection,repo_id=repo_id)
+
+
+def _search_codebase(
     query: str,
     *,
     top_k: int = DEFAULT_TOP_K,
     collection: str = COLLECTION_NAME,
     repo_id: str | None = None,
+    view=None,
 ) -> list[dict]:
     """Search the indexed codebase and return the top-K matching chunks.
 
@@ -47,6 +64,12 @@ def search_codebase(
     Returns a list of dicts with keys: file_path, code_snippet, language, score.
     """
     client = get_qdrant_client()
+    data_dir = DEFAULT_DATA_DIR
+    if view:
+        if not view['fresh']:
+            print('Knowledge snapshot is stale; wait for synchronization or refresh.')
+            return []
+        data_dir,collection = str(view['data_dir']),view['manifest']['collection']
 
     print(f"\n🔍 Searching for: '{sanitize_text(query)}' (top {top_k})")
     if repo_id:
@@ -82,7 +105,7 @@ def search_codebase(
         score = point.score
         scoped_repo = repo_id or (payload or {}).get('repo_id','')
         try:
-            info = validate_vector(os.path.join(DEFAULT_DATA_DIR,scoped_repo,'metadata.db'),scoped_repo,point,collection)
+            info = validate_vector(os.path.join(data_dir,scoped_repo,'metadata.db'),scoped_repo,point,collection)
         except (ValueError,OSError,sqlite3.Error):
             print('⚠️  Skipped stale or unmapped evidence. Refresh its repository index.')
             continue
@@ -108,6 +131,9 @@ def search_codebase(
             print(f"      {sanitize_text(line)}")
         print(f"  {'─' * 50}\n")
 
+    if view and not SnapshotStore(view['manifest']['root'],repo_id,DEFAULT_DATA_DIR).matches(view['snapshotId']):
+        print('Saved files changed during retrieval; results discarded.')
+        return []
     return results
 
 

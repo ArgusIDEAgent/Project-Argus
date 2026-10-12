@@ -177,7 +177,7 @@ class Phase6Tests(unittest.TestCase):
 
     def test_http_retrieve_is_authenticated_and_does_not_call_answer_model(self):
         from fastapi.testclient import TestClient
-        with TestClient(api.app,base_url='http://127.0.0.1') as client, patch('answers.urlopen',side_effect=AssertionError('Retrieval must not call an LLM')):
+        with patch.dict(os.environ,{'CODEMIND_AUTO_SYNC':'0'}), TestClient(api.app,base_url='http://127.0.0.1') as client, patch('answers.urlopen',side_effect=AssertionError('Retrieval must not call an LLM')):
             body={'repoId':self.repo,'query':'validateToken'}
             self.assertEqual(client.post('/retrieve',json=body).status_code,401)
             result=client.post('/retrieve',json=body,headers={'X-CodeMind-Session':api._SESSION_TOKEN})

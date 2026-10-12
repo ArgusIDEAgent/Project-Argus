@@ -124,7 +124,7 @@ def fuse_rankings(rankings, *, limit=MAX_CANDIDATES):
 
 
 class HybridRetriever:
-    def __init__(self,root,repo_id,data_dir,*,exact_search,keyword_search,semantic_search):
+    def __init__(self,root,repo_id,data_dir,*,exact_search,keyword_search,semantic_search,indexed_ready=True):
         self.root = Path(root).resolve(strict=True)
         self.repo_id = repo_id
         self.database = Path(data_dir)/repo_id/'metadata.db'
@@ -132,6 +132,7 @@ class HybridRetriever:
         self.keyword_search = keyword_search
         self.semantic_search = semantic_search
         self.warnings = []
+        self.indexed_ready = indexed_ready
 
     def _read(self,sql,args=()):
         if not self.database.is_file():
@@ -395,6 +396,13 @@ class HybridRetriever:
             for value in values: relative_path(value)
         plan = plan_query(query)
         budget = min(MAX_CANDIDATES,limit*3)
+        if not self.indexed_ready:
+            self.warnings.append('Knowledge snapshot is stale or unavailable. Saved-file lookup remains available while synchronization retries.')
+            literal = [] if plan.intent in ('callers','callees','impact','imports','dependents') else self.exact_search(plan.query,filters,budget)
+            if re.match(r'^(?:where|what|how|why|which|explain|describe|tell|who)\b',plan.query,re.I):
+                literal = [r for r in literal if r['reason'].startswith('Requested file:')]
+            ambiguous = len({r['path'] for r in literal if r['reason'].startswith('Requested file:')})>1
+            return self._finish(plan,{'literal':literal},limit,status='ambiguous' if ambiguous else None)
         if retrieval in ('auto','hybrid'):
             try:
                 structural = plan.intent in ('callers','callees','impact','imports','dependents')

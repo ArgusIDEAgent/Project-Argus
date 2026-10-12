@@ -1,4 +1,4 @@
-# Knowledge base: Phases 1–6
+# Knowledge base: Phases 1–7
 
 Run from the project root:
 
@@ -13,7 +13,7 @@ python3 -m knowledge_base.graph --repo /absolute/path/to/local/git/repository
 
 The Python entry point is `knowledge_base.scanner.scan_repository(...)`. It returns the repository ID, Git revision, SQLite location, scan time, and coverage counts. Optional `--exclude` globs and `--max-file-bytes` override the default one-megabyte limit.
 
-The private database is stored at `~/.codemind/data/<repository-id>/metadata.db` (or under `CODEMIND_DATA_DIR` / `--data-dir`), outside the scanned repository. It stores repository metadata, one row per observed file or pruned directory, and scan history. Each file row includes a repository-relative path, kind, language, status and reason, size, content SHA-256 for included files, and parsing status. The scanner itself stores no source contents; Phase 5 stores redacted eligible chunks locally for keyword retrieval. A successful rescan upserts file rows in one transaction, retaining stable IDs and unchanged evidence while removing deleted paths.
+Standalone phase commands store their private database at `~/.codemind/data/<repository-id>/metadata.db` (or under `CODEMIND_DATA_DIR` / `--data-dir`), outside the scanned repository. Phase 7's engine uses immutable generation databases described below; use the metadata inspection command to locate its active database. The inventory stores repository metadata, one row per observed file or pruned directory, and scan history. Each file row includes a repository-relative path, kind, language, status and reason, size, content SHA-256 for included files, and parsing status. The scanner itself stores no source contents; Phase 5 stores redacted eligible chunks locally for keyword retrieval. A successful rescan upserts file rows in one transaction, retaining stable IDs and unchanged evidence while removing deleted paths.
 
 This phase recognizes JavaScript/TypeScript source files and common JS/TS project manifests. Other file types are reported as unsupported. Git's own ignore matcher handles nested `.gitignore` rules and negations for Git repositories. Sensitive filenames, symlinks, generated directories, binary files, oversized files, and high-confidence embedded secret markers are excluded separately. Ignored directories are counted once; their descendants are intentionally not enumerated. A non-Git directory can be scanned only if it contains no `.gitignore` rules to evaluate.
 
@@ -176,8 +176,8 @@ Each channel and the final fused result set are checked against canonical IDs,
 ready snapshots, current saved-file hashes and source ranges. Deleted, stale,
 unfinished or mismatched evidence is discarded with a refresh warning. A vector
 failure falls back to explicitly labelled keyword evidence when available. Healthy
-empty search is `not_found`, not an unavailable service. No filesystem watcher or
-automatic continuous synchronization is claimed here; that remains Phase 7.
+empty search is `not_found`, not an unavailable service. Phase 6 alone does not
+provide continuous synchronization; Phase 7 below adds it.
 
 Example request (the same filters and limit contract as `/search/code`):
 
@@ -206,3 +206,91 @@ re-embedding; older indexes still need the Phase 5 refresh described above.
 .venv/bin/python -m unittest knowledge_base.test_retrieval -v
 .venv/bin/python -m unittest discover -s ai-engine/tests -v
 ```
+
+## Phase 7 incremental indexing and continuous synchronization
+
+The normal engine watches every registered repository, including after a restart
+and when the chat panel is closed. Native filesystem events are debounced for
+0.6 seconds. Independent five-second SHA-256 reconciliation catches missed events,
+ignore-rule changes and same-size edits with unchanged modification timestamps.
+If native watching fails, hash reconciliation continues with an explicit warning;
+failed indexing retries with bounded backoff. Observation retains the inventory's
+ignore/path protections and bounds unsupported text reads to one megabyte; large,
+binary and non-regular assets are not read as source text. Only **saved disk files**
+are supported, not unsaved editor buffers.
+
+`SnapshotStore.publish` builds a private candidate from the previous SQLite
+database and repository-scoped vectors. Unchanged parsed files reuse their syntax
+rows. Changed files are reparsed, and resolved reverse dependencies identify
+affected importers transitively. The TypeScript checker conservatively re-resolves
+**all included JS/TS files**: an unchanged caller is rechecked when exports,
+signatures, import aliases or configuration change. This is deliberately not a
+fine-grained incremental compiler. Rename/move is delete plus add; identities are
+not guessed across paths. Deleted/excluded entities, relationships, keyword chunks
+and vectors are removed from the new generation.
+
+Only changed embedding inputs are sent to the model. Unchanged units within an
+edited file reuse their vectors while refreshing source hashes, ranges and
+payloads. No-op refreshes create no generation and compute no embeddings; deletion
+does not require loading the embedding model. Snapshot isolation currently copies
+unchanged vector rows into a new collection, so it avoids re-embedding, not all
+storage/copy work. Graph, metadata and vector membership/provenance are validated,
+then the complete repository fingerprint is checked again before publication.
+
+One atomic `active_snapshot.json` pointer selects the complete generation only
+after the related components are ready. Its database is at:
+
+```text
+<data-dir>/<repository-id>/generations/<generation-id>/<repository-id>/metadata.db
+```
+
+The vector collection is private to that repository and generation. Ready
+per-stage snapshot IDs remain valid inside this coherent generation;
+`knowledgeSnapshotId` is the outer generation ID, not a replacement for each
+result's provenance `snapshotId`. Current and previous generations are retained;
+older private generations/collections are reclaimed unless pinned by a reader.
+Legacy databases/shared collections and repository source files are not deleted.
+
+Search, graph and metadata readers pin one generation. Whole-repository hash
+checks before/after retrieval block stale graph/keyword/vector evidence, including
+changes to files not selected by the query. `/ask` checks the captured repository
+fingerprint after answer generation and discards answers/citations if it changed.
+Failures retain the previous consistent pointer and report stale/failed status;
+they are not reported as completed indexing. Literal/file lookup may still return
+explicitly labelled `sourceOrigin: current_disk` evidence while indexes are stale.
+There is no silent old-snapshot fallback for semantic/structural answers.
+
+`GET /repos/<id>/live-state` reports `synchronization.snapshotId`, `fresh`, `state`,
+`error`, `watching`, `watchError`, `hashAuditSeconds` and `savedFilesOnly`. Retrieval
+also returns synchronization status and `knowledgeSnapshotId`. The extension's
+repository header shows stale/updating/failed state and the saved-files boundary.
+The metadata CLI resolves/pins the active database; standalone scanner/parser/
+graph commands remain diagnostics and do not advance the engine's active pointer.
+Retained scoped CLI vector search follows the active collection. The old
+NetworkX/cloud-RAG CLI refuses managed snapshots; use chat or `/ask` instead.
+
+Install dependencies once, stop the old engine, and start the normal launcher:
+
+```sh
+.venv/bin/python -m pip install -r requirements.txt
+python3 start_codemind.py
+```
+
+The first synchronization upgrades an existing index to a consistent generation.
+Afterward, save files normally; no manual phase commands or refresh are needed.
+Keep the engine running. `CODEMIND_AUTO_SYNC=0` disables automatic watching for
+controlled tests; explicit refresh and source-staleness safeguards still work.
+Compile/use the updated extension (or rebuild its VSIX) to see the new header.
+No metadata-schema or embedding-model migration is introduced by Phase 7.
+
+Verification includes saved edits, unchanged timestamps, unchanged importers,
+rename/move/delete cleanup, ignore changes, native-watcher failure, failed builds,
+concurrent source edits during retrieval/answers, snapshot retention and recovery.
+
+```sh
+.venv/bin/python -m unittest discover -s ai-engine/tests -p test_phase7.py -v
+.venv/bin/python -m knowledge_base.metadata --repo "/absolute/path/to/repository"
+```
+
+Primary implementation references: [watchdog observer/events](https://watchdog.readthedocs.io/en/stable/quickstart.html)
+and [SQLite online backup](https://docs.python.org/3/library/sqlite3.html#sqlite3.Connection.backup).

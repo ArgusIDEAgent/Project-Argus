@@ -42,6 +42,7 @@ from config import (
 )
 import graph_builder
 from knowledge_base.metadata import validate_vector
+from knowledge_base.synchronization import repository_view
 
 
 def _verified_chunks(points, repo_id, collection):
@@ -291,6 +292,13 @@ def ask_codemind(
     # search is always scoped (no cross-repository leakage) where possible.
     if repo_id is None:
         repo_id = latest_repo_id()
+
+    if repo_id:
+        try:
+            if repository_view(repo_id,DEFAULT_DATA_DIR):
+                return 'This repository uses versioned knowledge snapshots. Use CodeMind chat or POST /ask; the legacy NetworkX RAG command cannot safely mix its graph with this index.'
+        except (ValueError,OSError,KeyError):
+            return 'No consistent knowledge snapshot is available. Refresh using the local engine.'
 
     print(f"\n👤 Developer: {sanitize_text(question)}")
     if repo_id:
