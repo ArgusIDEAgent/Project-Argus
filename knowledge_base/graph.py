@@ -391,9 +391,10 @@ class KnowledgeGraph:
                include_inferred: bool = False) -> list[dict[str, Any]]:
         column = "target_id" if reverse else "source_id"
         with closing(self._connection()) as db:
-            rows = db.execute(f"""SELECT e.*, n.kind AS other_kind, n.label AS other_label,
+            rows = db.execute(f"""SELECT e.*, n.kind AS other_kind, n.label AS other_label, s.kind AS other_symbol_kind,
                 n.relative_path AS other_path FROM graph_relationships e
                 JOIN graph_nodes n ON n.id=e.{'source_id' if reverse else 'target_id'}
+                LEFT JOIN symbols s ON s.id=n.symbol_id
                 WHERE e.repository_id=? AND e.{column}=? AND e.relationship=?
                 AND (e.resolution='resolved' OR ?=1)
                 ORDER BY e.evidence_file, e.evidence_line, n.label""",

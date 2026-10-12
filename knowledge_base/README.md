@@ -1,4 +1,4 @@
-# Knowledge base: Phases 1–4
+# Knowledge base: Phases 1–5
 
 Run from the project root:
 
@@ -13,7 +13,7 @@ python3 -m knowledge_base.graph --repo /absolute/path/to/local/git/repository
 
 The Python entry point is `knowledge_base.scanner.scan_repository(...)`. It returns the repository ID, Git revision, SQLite location, scan time, and coverage counts. Optional `--exclude` globs and `--max-file-bytes` override the default one-megabyte limit.
 
-The private database is stored at `~/.codemind/data/<repository-id>/metadata.db` (or under `CODEMIND_DATA_DIR` / `--data-dir`), outside the scanned repository. It stores repository metadata, one row per observed file or pruned directory, and scan history. Each file row includes a repository-relative path, kind, language, status and reason, size, content SHA-256 for included files, and parsing status. Source contents are not stored. A successful rescan upserts file rows in one transaction, retaining stable IDs and unchanged evidence while removing deleted paths.
+The private database is stored at `~/.codemind/data/<repository-id>/metadata.db` (or under `CODEMIND_DATA_DIR` / `--data-dir`), outside the scanned repository. It stores repository metadata, one row per observed file or pruned directory, and scan history. Each file row includes a repository-relative path, kind, language, status and reason, size, content SHA-256 for included files, and parsing status. The scanner itself stores no source contents; Phase 5 stores redacted eligible chunks locally for keyword retrieval. A successful rescan upserts file rows in one transaction, retaining stable IDs and unchanged evidence while removing deleted paths.
 
 This phase recognizes JavaScript/TypeScript source files and common JS/TS project manifests. Other file types are reported as unsupported. Git's own ignore matcher handles nested `.gitignore` rules and negations for Git repositories. Sensitive filenames, symlinks, generated directories, binary files, oversized files, and high-confidence embedded secret markers are excluded separately. Ignored directories are counted once; their descendants are intentionally not enumerated. A non-Git directory can be scanned only if it contains no `.gitignore` rules to evaluate.
 
@@ -39,7 +39,7 @@ Snapshots record stage, schema version, Git revision, observation/completion tim
 
 Graph rows and canonical relationships publish in the same SQLite transaction. SQLite and Qdrant cannot share one atomic transaction: a vector run publishes a ready snapshot only after its writes complete. Failed or interrupted snapshots and mismatched payloads are rejected by retrieval. Missing chunk metadata forces reindexing even when the saved hash state matches. The first refresh after this upgrade re-embeds old vectors once to populate the new payload fields. Subsequent runs remain hash-incremental. JS/TS ignore/security rules also constrain semantic discovery; eligible Python/Markdown and other existing vector languages still work without claiming JS/TS symbol extraction.
 
-The normal launcher remains `python3 start_codemind.py`; restart it once after upgrading, then select/refresh the repository in CodeMind. There is no need to run all phase commands before every chat. The current local Qdrant store is retained; FAISS/new chunking from Phase 5 are not part of this change.
+The normal launcher remains `python3 start_codemind.py`; restart it once after upgrading, then select/refresh the repository in CodeMind. There is no need to run all phase commands before every chat. The Phase 4 release retained local Qdrant; Phase 5 below changes the default backend without deleting that store.
 
 Inspect metadata from the project root using the virtual environment:
 
@@ -50,3 +50,80 @@ Inspect metadata from the project root using the virtual environment:
 ```
 
 These metadata commands are read-only. The report includes row counts, schema version and dangling-reference checks. `--trace` accepts a graph node, edge, symbol, or semantic chunk ID and checks its snapshot state, canonical file path, current source hash and source bounds. Semantic results and backend-generated citations expose the same `entityId`, `fileId`, optional `symbolId`, `snapshotId`, source origin, and schema version. Legacy CLI vector retrieval uses the same validation; unverifiable evidence is skipped with a refresh warning.
+
+## Phase 5 semantic knowledge representation
+
+Schema **6** adds `chunk_context` and an external-content SQLite FTS5 index, with
+transactional update/delete triggers. The upgrade keeps canonical file/symbol/
+graph IDs; the first refresh replaces old ordinal-based chunk IDs with semantic
+unit UUIDs. Ordinary function chunks keep their IDs across line shifts and body
+edits. Child ordinal changes, renames and moves are not cross-edit identity claims.
+
+JS/TS chunks use Tree-sitter declarations; Python uses AST function/class/method
+boundaries without inventing resolved Python graph symbols. Small classes and
+methods are searchable units, while large functions have bounded overlapping
+children retaining their parent symbol key. Imports and executable module-level
+code remain searchable. Markdown headings and configuration sections are separate
+units; unsupported or invalid syntax uses a labelled text fallback. Function-attached
+comments enrich the function rather than appearing as competing standalone hits.
+Each chunk carries its path, language, module, qualified name, kind, signature,
+comments, redacted source and exact saved-source line range.
+
+The default backend is local FAISS normalized inner-product (cosine) search,
+persisted under `~/.codemind/data/faiss`. Its SQLite journal durably maps a stable
+int64 FAISS vector ID to the chunk UUID, which connects to canonical file/symbol
+metadata and a source range. Cache writes are atomic; missing/corrupted caches
+rebuild from the journal. Cached FAISS files are hash-checked before loading.
+Explicit `QDRANT_URL` remains an opt-in compatibility path; the old embedded
+Qdrant directory is not deleted. Neither vectors nor FTS rows create graph edges.
+See the primary [FAISS cosine documentation](https://github.com/facebookresearch/faiss/wiki/MetricType-and-distances),
+[FAISS index-loading precautions](https://github.com/facebookresearch/faiss/wiki/Index-IO,-cloning-and-hyper-parameter-tuning)
+and [SQLite FTS5 documentation](https://www.sqlite.org/fts5.html).
+
+FTS5 BM25 supports indexed identifiers, package names, error messages, routes and
+configuration terms. Search rejects stale source hashes and failed snapshots on
+both keyword and vector paths. If embedding queries fail, available keyword
+evidence is labelled explicitly instead of being presented as semantic retrieval.
+`POST /search/code` and `/ask` accept optional `retrieval` (`auto`, `semantic`,
+`keyword`) and exact metadata filters:
+
+```json
+{
+  "repoId": "REGISTERED_REPO_ID",
+  "query": "Where are resource permissions checked?",
+  "retrieval": "semantic",
+  "filters": {
+    "files": ["src/auth.ts"],
+    "modules": ["src/auth"],
+    "languages": ["typescript"],
+    "symbolTypes": ["function"]
+  }
+}
+```
+
+Filters combine with AND; values within one field combine with OR. Modules are
+repository-relative paths without their final extension, not guessed namespaces.
+Paths cannot escape the repository. Existing editor requests require no changes;
+normal Send still uses the backend's validated citations and local answer model.
+This phase provides separate retrieval representations, not Phase 6's new hybrid
+fusion/reranking system. Similarity means relevance, not verified program behavior.
+
+The retained local CPU model is `BAAI/bge-small-en-v1.5` (384 dimensions).
+`.venv/bin/python -m knowledge_base.benchmark_semantic` benchmarks real embeddings
+against 12 curated natural-language questions over JavaScript, TypeScript and
+Python. Both raw syntax units and contextual units retrieved the expected function
+first in 12/12 cases after eliminating duplicate attached-comment hits. This small
+smoke benchmark is not a general accuracy guarantee or a comparison against all
+code embedding models. `--model NAME` can evaluate another supported FastEmbed
+candidate without changing production indexes. It never calls an answer LLM.
+
+Upgrade/run/check from the project root:
+
+```sh
+.venv/bin/python -m pip install -r requirements.txt
+python3 start_codemind.py
+# Select/refresh the repository once in CodeMind; subsequent indexing is incremental.
+.venv/bin/python -m unittest knowledge_base.test_semantic -v
+.venv/bin/python -m unittest discover -s ai-engine/tests -v
+.venv/bin/python -m knowledge_base.benchmark_semantic
+```

@@ -120,3 +120,42 @@ Built outside the original vision and absent from README §2, so **proposed OUT*
 Implemented the separately supplied knowledge-base plan's metadata/identity phase (not the historical F1–F7 roadmap above): SQLite schema v5, shared IDs, file/symbol/graph/chunk provenance, definition/reference occurrences, snapshot/error records, cross-repository foreign keys, deletion cleanup, and saved-source validation. Existing graph and vector IDs remain compatible. API/CLI vector results and answer citations now use canonical metadata; failed snapshots or disagreeing vector payloads are not presented as verified evidence. Local Qdrant and the working citation UI are retained. See `knowledge_base/README.md` for inspection commands and boundaries.
 
 Regression verification: scanner/parser/graph/metadata suites and existing retrieval/local-answer/citation suites. First index refresh upgrades old vector payloads once; ordinary indexing remains hash-incremental. Code-aware chunking, editor-buffer indexing, cross-rename matching and continuous synchronization are not claimed as Phase 4 work.
+
+## 2026-10-12 — Knowledge-base Phase 5
+
+Implemented the owner's separate semantic-representation plan: source-aware JS/TS
+and Python function/class/method units, bounded children with parent identities,
+module/documentation/configuration sections, and explicit syntax/text fallbacks.
+Chunks include qualified names, signatures, attached comments, language/module and
+saved-source ranges. Attached comments enrich their symbols instead of competing
+as standalone hits; nested JSON configuration stays together within size limits.
+
+Default vector storage is now local FAISS cosine search with a durable SQLite
+vector-ID/chunk-ID journal and recoverable hash-checked cache files. The old local
+Qdrant directory is untouched; explicit QDRANT_URL retains remote compatibility.
+Metadata schema v6 adds redacted chunk context and SQLite FTS5 BM25 keyword
+retrieval. The API accepts file/module/language/symbol-kind filters, separate
+semantic/keyword modes and labelled keyword fallback when embeddings fail.
+Both retrieval paths reject stale/unfinished evidence and preserve backend
+citations. Similarity creates no CALLS or DEPENDS_ON relationships.
+
+Verified: 76 storage, API, previous phase and citation regression tests; Python
+compilation, extension compilation/integration and diff whitespace checks. A real
+local-embedding smoke benchmark retrieves the expected function first in all 12
+curated JavaScript/TypeScript/Python questions for both raw units and contextual
+units. This is not a general accuracy guarantee or an exhaustive model comparison.
+An isolated live API test on port 8001 upgraded a copy of the existing schema-v5
+database successfully and indexed 46 files into 990 chunks with no indexing
+errors or dangling metadata references. Live checks verified natural-language
+authentication retrieval, file/language/kind filters, keyword configuration/error
+retrieval, rejected unauthenticated requests and a local Ollama answer whose
+backend citation matched its source hash, chunk ID and range. Literal lookup now
+shares inventory ignore/sensitive-file exclusions with semantic discovery.
+The user's port-8000 engine
+and original database were not restarted or modified by that test.
+
+Run `python3 start_codemind.py` after stopping the old engine, then refresh the
+selected repository once. Dependencies include faiss-cpu in requirements.txt;
+the launcher's dependency check now checks FAISS too. See knowledge_base/README.md
+and RETRIEVAL_SETUP.md. Phase 6 hybrid fusion/reranking and later continuous
+synchronization work are not claimed as implemented here.

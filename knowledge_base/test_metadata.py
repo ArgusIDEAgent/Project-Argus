@@ -133,7 +133,7 @@ class MetadataTests(unittest.TestCase):
         self.assertEqual(db.execute('SELECT id FROM files').fetchone()[0],file_id(self.repo,'src/auth.ts'))
         self.assertEqual(db.execute('SELECT count(*) FROM index_snapshots').fetchone()[0],1)
         self.assertEqual(audit(self.database)['dangling_references'],[])
-        db.execute('PRAGMA user_version=6')
+        db.execute(f'PRAGMA user_version={SCHEMA_VERSION+1}')
         with self.assertRaisesRegex(ValueError,'newer'):
             ensure_schema(db)
 
@@ -175,7 +175,7 @@ class MetadataTests(unittest.TestCase):
         db.execute('PRAGMA foreign_keys=OFF')
         for trigger in ('chunk_symbol_repo_insert','chunk_symbol_repo_update','file_graph_cleanup','symbol_graph_cleanup'):
             db.execute(f'DROP TRIGGER {trigger}')
-        for table in ('symbol_sources','symbol_occurrences','graph_node_sources','relationships','code_chunks','index_errors','index_snapshots'):
+        for table in ('chunk_context','chunk_fts','symbol_sources','symbol_occurrences','graph_node_sources','relationships','code_chunks','index_errors','index_snapshots'):
             db.execute(f'DROP TABLE {table}')
         db.execute('UPDATE repositories SET schema_version=4')
         db.execute('PRAGMA user_version=0')

@@ -8,12 +8,18 @@ python3 start_codemind.py
 
 This uses the project's `.venv` so FastAPI and Tree-sitter are loaded from the
 correct environment. Keep this terminal running. Stop an existing engine before
-starting another: embedded Qdrant allows only one process to own its storage.
+starting another, since only one server can bind port 8000.
 
-No Qdrant server or Docker is needed by default. Vectors persist in
-`~/.codemind/data/vectors`; inventory and graph SQLite databases are per repository.
+No Qdrant server or Docker is needed by default. Phase 5 FAISS vectors and their
+durable ID journal persist in `~/.codemind/data/faiss`; inventory, graph, source
+context and FTS5 keyword indexes are in each repository's `metadata.db`.
+The old embedded Qdrant directory (`~/.codemind/data/vectors`) is left untouched.
+Install the upgraded dependencies once with
+`.venv/bin/python -m pip install -r requirements.txt`, then restart and refresh the
+selected repository once to build the new chunks and FAISS index.
 An explicit `QDRANT_URL` still selects the existing server-backed option.
-Do not run the standalone vector indexing CLI while the embedded engine is running.
+Do not run concurrent indexing jobs for the same repository; searches are safe
+while indexing and reject unfinished or stale source evidence.
 
 For generated answers, start Ollama and use an installed model. The default is
 `llama3:latest`; set `CODEMIND_LOCAL_MODEL` before starting the engine to change it.
@@ -31,7 +37,8 @@ limits have distinct messages. Source edits during generation discard the answer
 Reload the editor window after installing extension 0.4.1. Select the repository
 and wait for indexing. Chat Send retrieves evidence and generates an answer;
 Search Code remains a literal/semantic search action. Exact identifiers and copied
-expressions search current saved files. Conversational questions use vectors,
+expressions search current saved files. Indexed identifiers, error text and
+configuration keys also use SQLite FTS5 BM25. Conversational questions use vectors,
 except explicit filenames such as `CLAUDE.md`. Semantic scores are similarity,
 not proof that code implements the requested behaviour.
 
@@ -47,5 +54,7 @@ Regression checks:
 ```sh
 .venv/bin/python -m unittest discover -s ai-engine/tests -v
 .venv/bin/python -m unittest knowledge_base.test_scanner knowledge_base.test_parser knowledge_base.test_graph -v
+.venv/bin/python -m unittest knowledge_base.test_metadata knowledge_base.test_semantic -v
+.venv/bin/python -m knowledge_base.benchmark_semantic
 npm --prefix extension run test:integration
 ```

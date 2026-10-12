@@ -3,14 +3,17 @@
 import hashlib
 import os
 import re
+from pathlib import Path
 
-from config import MAX_FILE_BYTES
+from config import MAX_FILE_BYTES, get_index_language
 from indexer import _discover_files, _redact_secrets, _rel_posix
 from knowledge_base.identity import file_id, entity_id
 from knowledge_base.metadata import SCHEMA_VERSION
+from knowledge_base.semantic import matches_filters
+from knowledge_base.scanner import _inventory, _git_context, _has_gitignore
 
 
-def search_exact_code(root: str, repo_id: str, query: str, limit: int) -> list[dict]:
+def search_exact_code(root: str, repo_id: str, query: str, limit: int, *, filters=None) -> list[dict]:
     """Find literal code text in eligible saved files, with verified source hashes."""
     needle = " ".join(query.strip().casefold().split())
     if not needle:
@@ -24,8 +27,26 @@ def search_exact_code(root: str, repo_id: str, query: str, limit: int) -> list[d
         token.casefold() for token in re.findall(r"[A-Za-z0-9][A-Za-z0-9_.-]*\.[A-Za-z0-9]+", query)
     }
 
+    # Newly searchable config formats must obey the same exclusions as vectors.
+    # This is a read-only inventory: it does not publish a scan or change SQLite.
+    try:
+        repository = Path(root).resolve(strict=True)
+        git, _ = _git_context(repository)
+        if not git and _has_gitignore(repository):
+            return []
+        eligible = {row[0] for row in _inventory(repository,git,(),MAX_FILE_BYTES)
+                    if row[1] != 'directory' and row[2] in ('included','unsupported')}
+    except (OSError,RuntimeError):
+        return []
+
     results: list[dict] = []
     for absolute_path in sorted(_discover_files(root)):
+        path = _rel_posix(absolute_path,root)
+        if path not in eligible:
+            continue
+        if not matches_filters({'file_path':path,'module':os.path.splitext(path)[0],
+                                'language':get_index_language(path),'symbol_kind':''},filters or {}):
+            continue
         try:
             with open(absolute_path, "rb") as source:
                 raw = source.read(MAX_FILE_BYTES + 1)

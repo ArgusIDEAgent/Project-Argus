@@ -15,7 +15,7 @@ import uuid
 
 from knowledge_base.identity import entity_id, file_id, relative_path, repository_id
 
-SCHEMA_VERSION = 5
+SCHEMA_VERSION = 6
 
 
 def ensure_schema(db: sqlite3.Connection) -> None:
@@ -130,6 +130,8 @@ def ensure_schema(db: sqlite3.Connection) -> None:
         CREATE TRIGGER IF NOT EXISTS symbol_graph_cleanup BEFORE DELETE ON symbols
         BEGIN DELETE FROM graph_nodes WHERE symbol_id=OLD.id; END;
     """)
+    from knowledge_base.semantic import ensure_semantic_schema
+    ensure_semantic_schema(db)
     with db:
         if version < SCHEMA_VERSION:
             # Backfill existing v2-v4 evidence without changing any entity IDs.
@@ -263,6 +265,13 @@ def trace(database, repo_id, identifier):
         if not row:
             raise ValueError("Entity has no unified metadata; refresh the repository")
         info = dict(row)
+        if kind == 'chunk' and db.execute("SELECT 1 FROM sqlite_master WHERE name='chunk_context'").fetchone():
+            context = db.execute('SELECT * FROM chunk_context WHERE id=?',(identifier,)).fetchone()
+            if context:
+                if hashlib.sha256(context['source'].encode()).hexdigest() != info['content_hash']:
+                    raise ValueError('Chunk context differs from its indexed source')
+                info.update({key:context[key] for key in ('language','module','symbol_kind','symbol_name',
+                    'qualified_name','signature','comments','chunk_kind','parent_symbol_key','embedding_model')})
         snapshot = db.execute("SELECT * FROM index_snapshots WHERE id=? AND repository_id=?", (info['snapshot_id'], repo_id)).fetchone()
         if not snapshot or snapshot['state'] != 'ready':
             raise ValueError("Index snapshot is not ready")
@@ -360,11 +369,13 @@ class SemanticIndex:
                     self.db.execute("DELETE FROM code_chunks WHERE repository_id=? AND file_id=?", (self.repo_id,fid))
 
     def has_chunks(self, path, source_hash):
-        return self.db.execute("""SELECT 1 FROM code_chunks c JOIN index_snapshots s ON s.id=c.snapshot_id
-            WHERE c.repository_id=? AND c.file_id=? AND c.source_hash=? AND s.state='ready' LIMIT 1""",
-            (self.repo_id,file_id(self.repo_id,path),source_hash)).fetchone() is not None
+        row = self.db.execute("""SELECT count(*),count(x.id) FROM code_chunks c
+            JOIN index_snapshots s ON s.id=c.snapshot_id LEFT JOIN chunk_context x ON x.id=c.id
+            WHERE c.repository_id=? AND c.file_id=? AND c.source_hash=? AND s.state='ready'""",
+            (self.repo_id,file_id(self.repo_id,path),source_hash)).fetchone()
+        return row[0]>0 and row[0]==row[1]
 
-    def records(self, path, source_hash, chunks, collection):
+    def records(self, path, source_hash, chunks, collection, *, contexts=None):
         from knowledge_base.identity import chunk_id
         entry = self.entries[relative_path(path)]
         fid = file_id(self.repo_id,path)
@@ -381,16 +392,32 @@ class SemanticIndex:
                 language=excluded.language,content_sha256=excluded.content_sha256,size_bytes=excluded.size_bytes,
                 parse_status=CASE WHEN files.content_sha256=excluded.content_sha256 THEN files.parse_status ELSE excluded.parse_status END""",
                 (self.repo_id,*entry[:7],source_hash,entry[8],fid))
-        return [chunk_record(self.db,self.repo_id,path,self.snapshot,chunk_id(self.repo_id,path,i),i,
-                             source_hash,text,start,end,collection) for i,(text,start,end) in enumerate(chunks)]
+        records = []
+        for i,(text,start,end) in enumerate(chunks):
+            identifier = contexts[i].id if contexts else chunk_id(self.repo_id,path,i)
+            record = chunk_record(self.db,self.repo_id,path,self.snapshot,identifier,i,source_hash,text,start,end,collection)
+            if contexts and contexts[i].symbol_key:
+                verified = self.db.execute('''SELECT s.id FROM symbols s JOIN symbol_sources p ON p.symbol_id=s.id
+                    WHERE s.id=? AND s.repository_id=? AND p.source_hash=? AND s.relative_path=?
+                      AND s.start_line<=? AND s.end_line>=?''',
+                    (contexts[i].symbol_key,self.repo_id,source_hash,path,start,end)).fetchone()
+                if verified:
+                    record = (*record[:3],verified[0],*record[4:])
+            records.append(record)
+        return records
 
-    def publish(self, path, records):
+    def publish(self, path, records, *, contexts=None, embedding_model=''):
         source = self.root / relative_path(path)
         if source.resolve(strict=True) != source or (records and hashlib.sha256(source.read_bytes()).hexdigest() != records[0][8]):
             raise ValueError('Source changed during vector publication')
         with self.db:
+            self.db.execute('DELETE FROM chunk_context WHERE repo_id=? AND path=?',(self.repo_id,path))
             self.db.execute("DELETE FROM code_chunks WHERE repository_id=? AND file_id=?", (self.repo_id,file_id(self.repo_id,path)))
             self.db.executemany('INSERT INTO code_chunks VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',records)
+            if contexts:
+                from knowledge_base.semantic import context_row
+                self.db.executemany('INSERT INTO chunk_context VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+                    [context_row(chunk,self.repo_id,path,embedding_model) for chunk in contexts])
 
 
 def validate_vector(database, repo_id, point, collection):
@@ -409,6 +436,9 @@ def validate_vector(database, repo_id, point, collection):
         or info['content_hash'] != hashlib.sha256(str(payload.get('code_snippet','')).encode()).hexdigest()
         or (info['startLine'],info['endLine']) != (payload.get('start_line'),payload.get('end_line'))):
         raise ValueError('Vector payload disagrees with canonical metadata')
+    for key in ('language','module','symbol_kind','symbol_name','qualified_name','signature','comments','chunk_kind','parent_symbol_key','embedding_model'):
+        if key in info and info[key] != payload.get(key):
+            raise ValueError('Vector structural context disagrees with metadata')
     return info
 
 

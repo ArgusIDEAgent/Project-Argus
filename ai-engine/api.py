@@ -30,13 +30,13 @@ import uuid
 from contextlib import asynccontextmanager, closing
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any
+from typing import Any, Literal
 
 from fastapi import BackgroundTasks, Depends, FastAPI, Header, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field
-from qdrant_client.models import Filter, FieldCondition, MatchValue
+from pydantic import BaseModel, Field, field_validator
+from qdrant_client.models import Filter, FieldCondition, MatchValue, MatchAny
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
@@ -58,6 +58,9 @@ from answers import answer_question
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from knowledge_base.graph import KnowledgeGraph, build_graph
 from knowledge_base.metadata import SCHEMA_VERSION, trace, validate_vector
+from knowledge_base.identity import relative_path as normalized_relative_path
+from knowledge_base.semantic import keyword_search, matches_filters
+from knowledge_base.retrieval import HybridRetriever, plan_query
 
 logger = logging.getLogger(__name__)
 
@@ -246,7 +249,7 @@ def _run_index_job(job_id: str, repo_id: str, root_path: str, full_reindex: bool
             }
             job["state"] = JobState.COMPLETED
         except IndexingError as exc:
-            if str(exc).startswith(("Cannot connect to Qdrant:", "Cannot load embedding model:")):
+            if str(exc).startswith(("Cannot connect to Qdrant:", "Cannot open vector store:", "Cannot load embedding model:")):
                 logger.warning("Semantic indexing unavailable for %s: %s", repo_id, exc)
                 job["result"] = {
                     "fileCount": len(_discover_files(root_path)),
@@ -299,10 +302,37 @@ class RegisterRequest(BaseModel):
     rootPath: str = Field(min_length=1, max_length=4096)
     config: dict = Field(default_factory=dict)     # accepted for compatibility, intentionally ignored
 
+class SearchFilters(BaseModel):
+    files: list[str] = Field(default_factory=list,max_length=25)
+    modules: list[str] = Field(default_factory=list,max_length=25)
+    languages: list[str] = Field(default_factory=list,max_length=25)
+    symbolTypes: list[str] = Field(default_factory=list,max_length=25)
+
+    @field_validator('files','modules')
+    @classmethod
+    def safe_paths(cls,values):
+        return [normalized_relative_path(value) for value in values]
+
+    @field_validator('languages','symbolTypes')
+    @classmethod
+    def labels(cls,values):
+        if any(not value or len(value)>64 for value in values):
+            raise ValueError('Invalid metadata filter')
+        return [value.lower() for value in values]
+
+
 class SearchRequest(BaseModel):
     repoId: str = Field(pattern=r"^[a-f0-9]{24}$")
     query: str = Field(min_length=1, max_length=2000)
     limit: int = Field(default=5, ge=1, le=25)
+    filters: SearchFilters = Field(default_factory=SearchFilters)
+    retrieval: Literal['auto','hybrid','semantic','keyword'] = 'auto'
+
+    @field_validator('query')
+    @classmethod
+    def searchable_query(cls,value):
+        plan_query(value)
+        return value
 
 
 # ─────────────────────────────────────────────────────────────
@@ -476,66 +506,42 @@ def _enrich_graph(req, results):
                     for row in rows:
                         callers[row["id"]] = {"name": row["label"], "path": row["evidence_file"], "line": row["evidence_line"]}
                 item["callers"] = list(callers.values())
-                item["graphVerified"] = True
+                item["graphVerified"] = bool(nodes)
     except Exception:
         # Retrieval remains usable when the graph is absent/stale; don't invent facts.
         pass
     return results
 
-def _graph_search(req):
-    match = re.search(r"\b(?:who calls|callers of|what calls)\s+[`'\"]?([\w.$]+)", req.query, re.I)
-    if not match:
-        return None
-    database = os.path.join(DEFAULT_DATA_DIR, req.repoId, "metadata.db")
-    if not os.path.isfile(database):
-        return {"mode": "graph", "results": [], "warning": "Graph is not indexed. Refresh the repository."}
-    try:
-        graph = KnowledgeGraph(database, req.repoId)
-        symbol = graph.symbol(match.group(1))
-        edges = graph.direct_callers(symbol["symbol_id"])
-        results = []
-        for edge in edges[:req.limit]:
-            path = edge["evidence_file"]
-            line = edge["evidence_line"]
-            if not path or not line:
-                continue
-            with open(os.path.join(_REGISTERED_REPOS[req.repoId]["rootPath"], path), "rb") as source:
-                source_hash = hashlib.sha256(source.read()).hexdigest()
-            provenance = trace(database,req.repoId,edge['id'])
-            results.append({"entityId": edge["id"], "path": path,
-                "name": edge["other_label"], "startLine": line, "endLine": line,
-                "reason": f"Verified static call to {symbol['label']}", "confidence": 1.0,
-                "sourceHash": source_hash, "revision": "latest", "callers": [], "tests": [],
-                "fileId": provenance['fileId'], "snapshotId": provenance['snapshotId'],
-                "sourceOrigin": provenance['sourceOrigin'], "schemaVersion": provenance['schemaVersion']})
-        return {"mode": "graph", "results": results,
-                "warning": None if results else "No verified static callers found. Dynamic or unresolved calls may still exist."}
-    except ValueError:
-        return {"mode": "graph", "results": [], "warning": "Symbol is missing or ambiguous. Use its qualified name."}
-    except Exception:
-        logger.exception("Graph query unavailable")
-        return {"mode": "graph", "results": [], "warning": "Graph is stale or unavailable. Refresh the repository."}
-
+@app.post("/retrieve")
 @app.post("/search/code")
 def search_code(req: SearchRequest):
     entry = _REGISTERED_REPOS.get(req.repoId)
     if not entry:
         raise HTTPException(status_code=404, detail="Repository is not registered.")
-    graph_result = _graph_search(req)
-    if graph_result is not None:
-        return graph_result
-    exact_results = search_exact_code(entry["rootPath"], req.repoId, req.query, req.limit)
-    conversational = bool(re.match(r"^[\s\"'`]*(?:where|what|how|why|which|explain|describe|tell|who)\b", req.query, re.I))
-    if conversational:
-        # A question appearing in a comment/test is not evidence answering it.
-        exact_results = [item for item in exact_results if item["reason"].startswith("Requested file:")]
-    if exact_results:
-        return {"mode": "lexical", "warning": None, "results": _enrich_graph(req, exact_results)}
+    def channel(fn):
+        return lambda query,filters,limit: fn(req.model_copy(update={
+            'query':query,'filters':SearchFilters(**filters),'limit':limit}))
+    retriever = HybridRetriever(entry['rootPath'],req.repoId,DEFAULT_DATA_DIR,
+        exact_search=lambda query,filters,limit: search_exact_code(entry['rootPath'],req.repoId,query,limit,filters=filters),
+        keyword_search=channel(_keyword_search),semantic_search=channel(_semantic_search))
+    result = retriever.retrieve(req.query,filters=req.filters.model_dump(),limit=req.limit,retrieval=req.retrieval)
+    result['results'] = _enrich_graph(req,result['results'])
+    return result
+
+
+def _semantic_search(req):
+    entry = _REGISTERED_REPOS[req.repoId]
+    conversational = bool(re.match(r"^(?:where|what|how|why|which|explain|describe|tell|who)\b", req.query, re.I))
     try:
         client = get_qdrant_client()
         if not client.collection_exists(COLLECTION_NAME):
             return {"mode": "semantic", "warning": "No exact match. This repository has no semantic index yet.", "results": []}
-        scope = Filter(must=[FieldCondition(key="repo_id", match=MatchValue(value=req.repoId))])
+        conditions = [FieldCondition(key="repo_id",match=MatchValue(value=req.repoId))]
+        for key,column in (('files','file_path'),('modules','module'),('languages','language'),('symbolTypes','symbol_kind')):
+            values = getattr(req.filters,key)
+            if values:
+                conditions.append(FieldCondition(key=column,match=MatchAny(any=values)))
+        scope = Filter(must=conditions)
         if client.count(COLLECTION_NAME, exact=True, count_filter=scope).count == 0:
             return {"mode": "semantic", "warning": "No semantic evidence is indexed for this repository. Refresh its index.", "results": []}
         points = client.query_points(
@@ -547,7 +553,7 @@ def search_code(req: SearchRequest):
         ).points
     except Exception:
         logger.exception("Semantic search unavailable")
-        return {"mode": "unavailable", "warning": "No exact match. Semantic search is unavailable; check the engine log and Qdrant.", "results": []}
+        return {"mode": "unavailable", "warning": "No exact match. Semantic search is unavailable; check the local embedding/vector engine log.", "results": []}
 
     results = []
     stale = False
@@ -561,6 +567,8 @@ def search_code(req: SearchRequest):
         points = sorted(points, key=implementation_rank, reverse=True)
     for pt in points:
         payload = pt.payload or {}
+        if not matches_filters(payload,req.filters.model_dump()):
+            continue
         rel_path = str(payload.get("file_path") or "")
         if not rel_path or os.path.isabs(rel_path) or ".." in rel_path.replace("\\", "/").split("/"):
             continue                                # malformed or poisoned payload
@@ -595,10 +603,13 @@ def search_code(req: SearchRequest):
             "snapshotId": provenance['snapshotId'], "sourceOrigin": provenance['sourceOrigin'],
             "schemaVersion": provenance['schemaVersion'],
             "path": rel_path,
-            "name": os.path.basename(rel_path),
+            "name": payload.get('qualified_name') or os.path.basename(rel_path),
+            "language": payload.get('language'), "module": payload.get('module'),
+            "symbolType": payload.get('symbol_kind'), "chunkKind": payload.get('chunk_kind'),
+            "retrievalKind": 'semantic',
             "startLine": start_line,
             "endLine": end_line,
-            "reason": f"Semantic similarity score: {pt.score:.4f}" + ("; implementation-first ranking" if conversational else ""),
+            "reason": f"Semantic similarity score: {pt.score:.4f}; relevance, not proof of dependency" + ("; implementation-first ranking" if conversational else ""),
             "confidence": float(pt.score),
             "revision": "latest",
             "sourceHash": str(payload.get("file_hash", "")),   # hash AT INDEX TIME
@@ -609,7 +620,34 @@ def search_code(req: SearchRequest):
     warning = "Some indexed files or metadata changed. Refresh the repository index." if stale else None
     if not results and not warning:
         warning = "No sufficiently relevant semantic matches found. Try a more specific question or identifier."
-    return {"mode": "semantic", "warning": warning, "results": _enrich_graph(req, results)}
+    return {"mode": "semantic", "warning": warning, "results": results}
+
+
+def _keyword_search(req):
+    database = os.path.join(DEFAULT_DATA_DIR,req.repoId,'metadata.db')
+    results,stale = [],False
+    try:
+        rows = keyword_search(database,req.repoId,req.query,filters=req.filters.model_dump(),limit=req.limit*3)
+        for row in rows:
+            try:
+                info = trace(database,req.repoId,row['id'])
+            except (ValueError,OSError,sqlite3.Error):
+                stale = True
+                continue
+            results.append({'entityId':info['entityId'],'fileId':info['fileId'],'symbolId':info['symbolId'],
+                'snapshotId':info['snapshotId'],'sourceOrigin':info['sourceOrigin'],'schemaVersion':info['schemaVersion'],
+                'path':info['path'],'name':row['qualified_name'] or os.path.basename(info['path']),
+                'startLine':info['startLine'],'endLine':info['endLine'],'sourceHash':info['sourceHash'],
+                'language':row['language'],'module':row['module'],'symbolType':row['symbol_kind'],'chunkKind':row['chunk_kind'],
+                'retrievalKind':'keyword','keywordScore':-row['rank'],'confidence':0.8,'revision':'latest',
+                'reason':'Keyword evidence ranked by SQLite FTS5 BM25; not a dependency','callers':[],'tests':[]})
+            if len(results)>=req.limit:
+                break
+    except sqlite3.Error:
+        logger.exception('Keyword index unavailable')
+        return {'mode':'keyword','results':[],'warning':'Keyword index is unavailable. Refresh the repository index.'}
+    warning = 'Some keyword evidence changed. Refresh the repository index.' if stale else None if results else 'No keyword evidence matched the query and filters.'
+    return {'mode':'keyword','results':results,'warning':warning}
 
 
 @app.post("/ask")

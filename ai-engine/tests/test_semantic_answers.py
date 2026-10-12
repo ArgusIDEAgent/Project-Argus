@@ -77,8 +77,8 @@ class SemanticTests(unittest.TestCase):
         self.assertEqual(audit(database)['dangling_references'],[])
 
     def test_poisoned_vector_metadata_is_rejected_and_refresh_repairs_it(self):
-        point = self.search('Where is authentication checked?')['results'][0]['entityId']
-        self.client.set_payload(config.COLLECTION_NAME,{'snapshot_id':'wrong-snapshot'},points=[point])
+        points = [item['entityId'] for item in self.search('Where is authentication checked?')['results']]
+        self.client.set_payload(config.COLLECTION_NAME,{'snapshot_id':'wrong-snapshot'},points=points)
         result = self.search('Where is authentication checked?')
         self.assertEqual(result['results'],[])
         self.assertIn('Refresh',result['warning'])

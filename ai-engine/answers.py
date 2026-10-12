@@ -73,6 +73,9 @@ def answer_question(root, query, retrieval):
     fallback = "Relevant repository evidence:\n" + "\n".join(
         f"[{i+1}] {item['path']}:{item['startLine']}-{item['endLine']} — {item['reason']}"
         for i, item in enumerate(results))
+    if retrieval.get('status') == 'ambiguous':
+        response['answer'] = 'Several source definitions match. Use a qualified symbol name or a file filter.\n\n' + fallback
+        return response
     model = os.environ.get("CODEMIND_LOCAL_MODEL", "llama3:latest")
     if not model:
         response["answer"] = fallback

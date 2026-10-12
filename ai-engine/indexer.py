@@ -1,8 +1,9 @@
 """
 indexer.py — Full-repo, incremental code indexer for CodeMind (Argus).
 
-Recursively walks a target directory, chunks source files using language-aware
-splitters, embeds the chunks via FastEmbed, and upserts them into Qdrant.
+Recursively walks a target directory, extracts source-aware semantic units,
+embeds their structural context via FastEmbed, and persists FAISS vectors plus
+SQLite metadata/FTS5. An explicit QDRANT_URL retains remote Qdrant compatibility.
 Also builds a NetworkX knowledge graph of code structure (functions, classes,
 call relationships) via AST parsing for structural/impact queries.
 
@@ -21,7 +22,6 @@ Usage:
 """
 
 import argparse
-import bisect
 import hashlib
 import json
 import logging
@@ -30,10 +30,9 @@ from pathlib import Path
 from typing import Callable
 
 import networkx as nx
-from langchain_text_splitters import RecursiveCharacterTextSplitter
 from qdrant_client.models import (
     Distance, VectorParams, PointStruct, FilterSelector, Filter,
-    FieldCondition, MatchValue, PayloadSchemaType, Range,
+    FieldCondition, MatchValue, PayloadSchemaType,
 )
 
 import os
@@ -52,6 +51,7 @@ from config import (
     EMBED_BATCH,
     REPO_ID_RE,
     get_language_for_file,
+    get_index_language,
     get_qdrant_client,
     get_embedding_model,
     embed_texts,
@@ -63,6 +63,7 @@ import graph_builder
 
 from knowledge_base.identity import chunk_id
 from knowledge_base.metadata import SCHEMA_VERSION, SemanticIndex
+from knowledge_base.chunking import CHUNKING_VERSION, chunk_source
 
 logger = logging.getLogger(__name__)
 
@@ -224,7 +225,7 @@ def _index_directory(
     collection: str, full_reindex: bool, chunk_size: int, chunk_overlap: int,
     build_graph: bool, on_progress: Callable[[str], None] | None, metadata: SemanticIndex,
 ) -> dict:
-    """Walk *target_dir*, embed new/modified files, and upsert into Qdrant.
+    """Walk *target_dir*, embed new/modified files, and update the vector store.
 
     Args:
         target_dir:   Root of the codebase to index.
@@ -234,7 +235,7 @@ def _index_directory(
                       Defaults to ~/.codemind/data/.  State is stored at
                       <data_dir>/<repo_id>/index_state.json, keeping the
                       target repo clean (no VS Code file-watcher loops).
-        collection:   Qdrant collection name.
+        collection:   Vector collection name.
         full_reindex: When True, ignores saved state and re-indexes every file.
         chunk_size:   Maximum chunk size in characters.
         chunk_overlap: Overlap between adjacent chunks.
@@ -277,14 +278,14 @@ def _index_directory(
         client = get_qdrant_client()
         client.get_collections()                    # first real round-trip; the constructor never connects
     except Exception as exc:
-        raise IndexingError(f"Cannot connect to Qdrant: {exc}") from exc
+        raise IndexingError(f"Cannot open vector store: {exc}") from exc
 
     collection_created = False
     if not client.collection_exists(collection):
         client.create_collection(collection_name=collection,
                                  vectors_config=VectorParams(size=VECTOR_SIZE, distance=Distance.COSINE))
         collection_created = True
-        _log(f"✅ Created Qdrant collection: '{collection}'")
+        _log(f"✅ Created {getattr(client,'backend','qdrant')} collection: '{collection}'")
     else:
         size = getattr(client.get_collection(collection).config.params.vectors, "size", None)
         if size is not None and size != VECTOR_SIZE:
@@ -311,7 +312,7 @@ def _index_directory(
     _log(f"📂 Found {len(all_files)} indexable file(s) under {target_dir}")
 
     # --- Load previous state and check fingerprint ---
-    fingerprint = f"{EMBEDDING_MODEL_NAME}|{chunk_size}|{chunk_overlap}|metadata-v{SCHEMA_VERSION}"
+    fingerprint = f"{EMBEDDING_MODEL_NAME}|{chunk_size}|{chunk_overlap}|metadata-v{SCHEMA_VERSION}|chunks-v{CHUNKING_VERSION}|{getattr(client,'backend','qdrant')}"
     prev_state = _load_state(state_path)
     previous_fingerprint = prev_state.pop(_FINGERPRINT_KEY, None)
     needs_full = full_reindex or collection_created or previous_fingerprint != fingerprint
@@ -359,7 +360,7 @@ def _index_directory(
         f"{len(deleted_rel_paths)} deleted"
     )
 
-    # --- Prune deleted files from Qdrant and graph ---
+    # --- Prune deleted files from the vector store and graph ---
     for rel_path in deleted_rel_paths:
         _delete_file_points(client, collection, repo_id, rel_path)
         if kg is not None and rel_path.endswith(".py"):
@@ -372,7 +373,7 @@ def _index_directory(
 
     for abs_path in files_to_index:
         rel_path = _rel_posix(abs_path, target_dir)
-        language = get_language_for_file(abs_path)
+        language = get_index_language(abs_path)
 
         try:                                            # read ONCE as bytes; hash exactly what we index
             with open(abs_path, "rb") as fh:
@@ -398,9 +399,8 @@ def _index_directory(
         raw_code = _redact_secrets(                     # Item 5 (keeps line count unchanged)
             raw_bytes.decode("utf-8", errors="replace").replace("\r\n", "\n").replace("\r", "\n"))
 
-        splitter = RecursiveCharacterTextSplitter.from_language(
-            language=language, chunk_size=chunk_size, chunk_overlap=chunk_overlap, add_start_index=True)
-        documents = splitter.create_documents([raw_code])
+        documents = chunk_source(raw_code,path=rel_path,repo_id=repo_id,language=language,
+                                 max_chars=chunk_size,overlap=chunk_overlap)
         if not documents:
             _delete_file_points(client, collection, repo_id, rel_path)
             metadata.publish(rel_path, [])
@@ -408,39 +408,47 @@ def _index_directory(
                 graph_builder.remove_file_from_graph(kg, rel_path)
             continue
 
-        line_starts = [0] + [m.end() for m in re.finditer(r"\n", raw_code)]
-        vectors = embed_texts([d.page_content for d in documents])   # embed FIRST: a failure leaves old vectors intact
-        chunks = [(doc.page_content,
-                   bisect.bisect_right(line_starts,max(doc.metadata.get('start_index',0),0)),
-                   bisect.bisect_right(line_starts,max(doc.metadata.get('start_index',0),0))+doc.page_content.count('\n'))
-                  for doc in documents]
-        records = metadata.records(rel_path,file_hash,chunks,collection)
+        vectors = embed_texts([d.embedding_text(rel_path) for d in documents])
+        chunks = [(doc.text,doc.start_line,doc.end_line) for doc in documents]
+        records = metadata.records(rel_path,file_hash,chunks,collection,contexts=documents)
         total = len(documents)
         for b in range(0, total, EMBED_BATCH):
             points = []
             for idx in range(b, min(b + EMBED_BATCH, total)):
                 doc = documents[idx]
-                start_line = bisect.bisect_right(line_starts, max(doc.metadata.get("start_index", 0), 0))
                 points.append(PointStruct(
-                    id=_point_id(repo_id, rel_path, idx),
+                    id=doc.id,
                     vector=vectors[idx],
                     payload={"repo_id": repo_id, "file_path": rel_path, "file_hash": file_hash,
-                             "code_snippet": doc.page_content, "language": language.value,
-                             "chunk_index": idx, "start_line": start_line,
-                             "end_line": start_line + doc.page_content.count("\n"),
+                             "code_snippet": doc.text, "language": language,
+                             "chunk_index": idx, "start_line": doc.start_line,
+                             "end_line": doc.end_line, "module": doc.module,
+                             "symbol_kind": doc.symbol_kind, "symbol_name": doc.name,
+                             "qualified_name": doc.qualified_name, "signature": doc.signature,
+                             "comments": doc.comments, "chunk_kind": doc.kind,
+                             "parent_symbol_key": doc.symbol_key,
+                             "embedding_model": EMBEDDING_MODEL_NAME,
                              "chunk_id": records[idx][0], "file_id": records[idx][2],
                              "symbol_id": records[idx][3], "snapshot_id": metadata.snapshot,
                              "content_hash": records[idx][9], "schema_version": SCHEMA_VERSION,
                              "source_origin": "disk"},
                 ))
             client.upsert(collection_name=collection, points=points)
-        # file shrank? drop stale tail chunks (ids are deterministic, so the upsert already overwrote the rest)
-        client.delete(collection_name=collection, points_selector=FilterSelector(filter=Filter(must=[
-            FieldCondition(key="repo_id", match=MatchValue(value=repo_id)),
-            FieldCondition(key="file_path", match=MatchValue(value=rel_path)),
-            FieldCondition(key="chunk_index", range=Range(gte=total)),
-        ])))
-        metadata.publish(rel_path,records)
+        # Symbol-based IDs survive line shifts. Remove IDs for renamed/deleted
+        # units as well as tails; ordinal-only pruning cannot do that.
+        previous_points,next_offset = client.scroll(collection_name=collection,scroll_filter=Filter(must=[
+            FieldCondition(key='repo_id',match=MatchValue(value=repo_id)),
+            FieldCondition(key='file_path',match=MatchValue(value=rel_path))]),limit=1000,with_vectors=False)
+        previous_ids = {str(point.id) for point in previous_points}
+        while next_offset is not None:
+            page,next_offset = client.scroll(collection_name=collection,scroll_filter=Filter(must=[
+                FieldCondition(key='repo_id',match=MatchValue(value=repo_id)),
+                FieldCondition(key='file_path',match=MatchValue(value=rel_path))]),offset=next_offset,limit=1000,with_vectors=False)
+            previous_ids.update(str(point.id) for point in page)
+        stale_ids = previous_ids-{doc.id for doc in documents}
+        if stale_ids:
+            client.delete(collection_name=collection,points_selector=list(stale_ids))
+        metadata.publish(rel_path,records,contexts=documents,embedding_model=EMBEDDING_MODEL_NAME)
         total_points += total
 
         if kg is not None and rel_path.endswith(".py"):
@@ -482,7 +490,7 @@ def _index_directory(
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="CodeMind (Argus) — Index a codebase into Qdrant for semantic search.",
+        description="CodeMind (Argus) — Index a codebase for local semantic search.",
     )
     parser.add_argument(
         "--dir",
@@ -508,7 +516,7 @@ def main() -> None:
     parser.add_argument(
         "--collection",
         default=COLLECTION_NAME,
-        help=f"Qdrant collection name (default: {COLLECTION_NAME}).",
+        help=f"Vector collection name (default: {COLLECTION_NAME}).",
     )
     parser.add_argument(
         "--chunk-size",

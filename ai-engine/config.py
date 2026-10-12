@@ -25,7 +25,7 @@ from knowledge_base.identity import repository_id
 load_dotenv()   # every entry point (api, indexer, search, rag) now sees QDRANT_API_KEY etc.
 
 # ──────────────────────────────────────────────
-# Qdrant / Vector settings
+# Local FAISS / optional remote Qdrant settings
 # ──────────────────────────────────────────────
 COLLECTION_NAME = "codemind_codebase"
 VECTOR_SIZE = 384  # BAAI/bge-small-en-v1.5 output dimension
@@ -88,6 +88,11 @@ IGNORE_DIRS: set[str] = {
 # File extension → LangChain Language mapping
 # ──────────────────────────────────────────────
 CODE_EXTENSIONS: dict[str, Language] = {
+    ".json": Language.JS,
+    ".yaml": Language.MARKDOWN,
+    ".yml": Language.MARKDOWN,
+    ".toml": Language.MARKDOWN,
+    ".ini": Language.MARKDOWN,
     ".py": Language.PYTHON,
     ".js": Language.JS,
     ".cjs": Language.JS,
@@ -120,6 +125,14 @@ def get_language_for_file(file_path: str) -> Language | None:
     """Return the LangChain Language enum for a file, or None if unsupported."""
     _, ext = os.path.splitext(file_path)
     return CODE_EXTENSIONS.get(ext.lower())
+
+
+def get_index_language(file_path: str) -> str:
+    suffix = Path(file_path).suffix.lower()
+    if suffix in ('.json','.yaml','.yml','.toml','.ini'):
+        return {'.yml':'yaml'}.get(suffix,suffix[1:])
+    language = get_language_for_file(file_path)
+    return {'js':'javascript','ts':'typescript'}.get(language.value,language.value) if language else 'text'
 
 
 # ──────────────────────────────────────────────
@@ -157,6 +170,7 @@ class _LocalVectorClient:
 
 
 def get_qdrant_client():
+    """Compatibility factory name: local FAISS unless QDRANT_URL is explicit."""
     global _VECTOR_CLIENT
     with _VECTOR_LOCK:
         if _VECTOR_CLIENT is None:
@@ -169,9 +183,9 @@ def _create_vector_client():
     url = os.environ.get("QDRANT_URL")
     if url:
         return QdrantClient(url=url, api_key=api_key, timeout=30)
-    # Embedded persistence requires no Docker/server and keeps repository code local.
-    storage = ensure_private_dir(os.path.join(DEFAULT_DATA_DIR, "vectors"))
-    return _LocalVectorClient(QdrantClient(path=storage, force_disable_check_same_thread=True))
+    from knowledge_base.vector_store import FaissClient
+    # Keep the previous Qdrant directory untouched; rebuild into a new local store.
+    return FaissClient(ensure_private_dir(os.path.join(DEFAULT_DATA_DIR, "faiss")))
 
 
 @lru_cache(maxsize=1)
