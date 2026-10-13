@@ -1,0 +1,206 @@
+{
+  "evaluation": "Synthetic development fixture with fixed query vectors; not real-model retrieval quality or production performance",
+  "timing": "Planning plus execution; normalization, fixture indexing, warm-up and external proof recount excluded",
+  "repository_id": "be24b8c2e0d966c011f45015",
+  "generation_id": "14989860b2744e9cad04176e7c259fb1",
+  "indexing_stage_ids": [
+    "2841c39e-6cd9-4f48-a32b-349478229e1c",
+    "34704218-8197-4f97-94b6-b6a72057911f",
+    "5a0bbe55-04bf-4f4d-afad-f447a27220f5",
+    "9dff87fc-c08a-48e3-af82-4a688e249ade",
+    "afb793c5-eb77-4145-82c3-1721bf9a7255"
+  ],
+  "pin_count": 1,
+  "one_pinned_generation": true,
+  "workloads": 9,
+  "repeats": 3,
+  "timed_runs": 54,
+  "proofs_checked": 312,
+  "evidence_validity": 1,
+  "outcomes_matched": true,
+  "deterministic_results": true,
+  "latency": {
+    "sequential": {
+      "planning": {
+        "median_ms": 0.252,
+        "p95_ms": 0.319
+      },
+      "execution": {
+        "median_ms": 73.401,
+        "p95_ms": 872.754
+      },
+      "total": {
+        "median_ms": 73.72,
+        "p95_ms": 873.042
+      }
+    },
+    "concurrent": {
+      "planning": {
+        "median_ms": 0.223,
+        "p95_ms": 0.313
+      },
+      "execution": {
+        "median_ms": 57.772,
+        "p95_ms": 942.978
+      },
+      "total": {
+        "median_ms": 57.965,
+        "p95_ms": 943.291
+      }
+    }
+  },
+  "details": [
+    {
+      "workload": "definition",
+      "question": "Where is login defined?",
+      "expected_requirement_statuses": [
+        "success"
+      ],
+      "actual_requirement_statuses": [
+        "success"
+      ],
+      "outcomes_match": true,
+      "stable_across_modes_and_repeats": true,
+      "peak_concurrency": {
+        "sequential": 1,
+        "concurrent": 1
+      }
+    },
+    {
+      "workload": "callers",
+      "question": "Who calls login?",
+      "expected_requirement_statuses": [
+        "success"
+      ],
+      "actual_requirement_statuses": [
+        "success"
+      ],
+      "outcomes_match": true,
+      "stable_across_modes_and_repeats": true,
+      "peak_concurrency": {
+        "sequential": 1,
+        "concurrent": 1
+      }
+    },
+    {
+      "workload": "callees",
+      "question": "What does login call?",
+      "expected_requirement_statuses": [
+        "success"
+      ],
+      "actual_requirement_statuses": [
+        "success"
+      ],
+      "outcomes_match": true,
+      "stable_across_modes_and_repeats": true,
+      "peak_concurrency": {
+        "sequential": 1,
+        "concurrent": 1
+      }
+    },
+    {
+      "workload": "path",
+      "question": "Dependency path from entry to validateToken",
+      "expected_requirement_statuses": [
+        "success"
+      ],
+      "actual_requirement_statuses": [
+        "success"
+      ],
+      "outcomes_match": true,
+      "stable_across_modes_and_repeats": true,
+      "peak_concurrency": {
+        "sequential": 1,
+        "concurrent": 1
+      }
+    },
+    {
+      "workload": "contract",
+      "question": "Contract of validateToken",
+      "expected_requirement_statuses": [
+        "partial"
+      ],
+      "actual_requirement_statuses": [
+        "partial"
+      ],
+      "outcomes_match": true,
+      "stable_across_modes_and_repeats": true,
+      "peak_concurrency": {
+        "sequential": 1,
+        "concurrent": 1
+      }
+    },
+    {
+      "workload": "module",
+      "question": "Overview of auth.ts",
+      "expected_requirement_statuses": [
+        "success"
+      ],
+      "actual_requirement_statuses": [
+        "success"
+      ],
+      "outcomes_match": true,
+      "stable_across_modes_and_repeats": true,
+      "peak_concurrency": {
+        "sequential": 1,
+        "concurrent": 1
+      }
+    },
+    {
+      "workload": "semantic_clarification",
+      "question": "Find code that validates a token and show its callers",
+      "expected_requirement_statuses": [
+        "success",
+        "ambiguous"
+      ],
+      "actual_requirement_statuses": [
+        "success",
+        "ambiguous"
+      ],
+      "outcomes_match": true,
+      "stable_across_modes_and_repeats": true,
+      "peak_concurrency": {
+        "sequential": 1,
+        "concurrent": 1
+      }
+    },
+    {
+      "workload": "compound_sequential",
+      "question": "Find the login function, show its callers, and tell me what might be affected if I change it.",
+      "expected_requirement_statuses": [
+        "success",
+        "success",
+        "partial"
+      ],
+      "actual_requirement_statuses": [
+        "success",
+        "success",
+        "partial"
+      ],
+      "outcomes_match": true,
+      "stable_across_modes_and_repeats": true,
+      "peak_concurrency": {
+        "sequential": 1,
+        "concurrent": 1
+      }
+    },
+    {
+      "workload": "independent",
+      "question": "Who calls login and what does entry call?",
+      "expected_requirement_statuses": [
+        "success",
+        "success"
+      ],
+      "actual_requirement_statuses": [
+        "success",
+        "success"
+      ],
+      "outcomes_match": true,
+      "stable_across_modes_and_repeats": true,
+      "peak_concurrency": {
+        "sequential": 1,
+        "concurrent": 2
+      }
+    }
+  ]
+}

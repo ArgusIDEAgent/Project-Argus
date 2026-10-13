@@ -1,0 +1,168 @@
+{
+  "evaluation": "Synthetic development fixture, fixed query vectors; not a production guarantee",
+  "timing": "Phase 7 aggregate() only, including canonical verification and serialization-budget enforcement; normalization, execution/retrieval and proof/citation recount excluded",
+  "source_context": "Metadata-only default; optional redacted excerpts are tested separately",
+  "repository_id": "7281240efa80e8a58d4a70ba",
+  "generation_id": "40fbbeda341343f385933318b1af5f1e",
+  "pin_count": 1,
+  "indexing_stage_ids": [
+    "4971fea1-c0d6-48d4-9b37-e0c42018b458",
+    "6d6f74ab-1d07-490f-a84a-d8a74aa31902",
+    "7b82a73d-dc49-4faa-9801-9a5e48529164",
+    "a4763530-19fa-48d5-acc5-ca9b4e67727e",
+    "d3c34cdf-5a76-43e0-b7bf-a28df355469c"
+  ],
+  "workloads": 9,
+  "repeats": 3,
+  "timed_runs": 27,
+  "latency": {
+    "median_ms": 26.264,
+    "p95_ms": 68.323
+  },
+  "package_bytes": {
+    "median": 16371,
+    "min": 6166,
+    "max": 80858
+  },
+  "proofs_checked": 153,
+  "evidence_validity": 1,
+  "citations_checked": 153,
+  "citation_validity": 1,
+  "invalid_evidence_checks": {
+    "generation": true,
+    "hash": true,
+    "range": true,
+    "symbol": true
+  },
+  "invalid_evidence_rejection": 1,
+  "coverage_preserved": true,
+  "deterministic_packages": true,
+  "details": [
+    {
+      "workload": "definition",
+      "latency": {
+        "median_ms": 18.636,
+        "p95_ms": 18.699
+      },
+      "median_package_bytes": 6166,
+      "coverage_preserved": true,
+      "deterministic_packages": true,
+      "validation_status": "valid",
+      "findings": 1,
+      "records": 1,
+      "conflicts": 0
+    },
+    {
+      "workload": "callers",
+      "latency": {
+        "median_ms": 24.999,
+        "p95_ms": 26.622
+      },
+      "median_package_bytes": 16371,
+      "coverage_preserved": true,
+      "deterministic_packages": true,
+      "validation_status": "valid",
+      "findings": 2,
+      "records": 5,
+      "conflicts": 0
+    },
+    {
+      "workload": "callees",
+      "latency": {
+        "median_ms": 21.662,
+        "p95_ms": 21.906
+      },
+      "median_package_bytes": 10400,
+      "coverage_preserved": true,
+      "deterministic_packages": true,
+      "validation_status": "valid",
+      "findings": 1,
+      "records": 3,
+      "conflicts": 0
+    },
+    {
+      "workload": "path",
+      "latency": {
+        "median_ms": 26.264,
+        "p95_ms": 26.837
+      },
+      "median_package_bytes": 15949,
+      "coverage_preserved": true,
+      "deterministic_packages": true,
+      "validation_status": "valid",
+      "findings": 1,
+      "records": 5,
+      "conflicts": 0
+    },
+    {
+      "workload": "contract",
+      "latency": {
+        "median_ms": 19.294,
+        "p95_ms": 19.9
+      },
+      "median_package_bytes": 8152,
+      "coverage_preserved": true,
+      "deterministic_packages": true,
+      "validation_status": "valid",
+      "findings": 1,
+      "records": 1,
+      "conflicts": 0
+    },
+    {
+      "workload": "module",
+      "latency": {
+        "median_ms": 53.427,
+        "p95_ms": 54.766
+      },
+      "median_package_bytes": 60991,
+      "coverage_preserved": true,
+      "deterministic_packages": true,
+      "validation_status": "valid",
+      "findings": 14,
+      "records": 14,
+      "conflicts": 0
+    },
+    {
+      "workload": "semantic_clarification",
+      "latency": {
+        "median_ms": 26.442,
+        "p95_ms": 27.991
+      },
+      "median_package_bytes": 28020,
+      "coverage_preserved": true,
+      "deterministic_packages": true,
+      "validation_status": "valid",
+      "findings": 5,
+      "records": 8,
+      "conflicts": 0
+    },
+    {
+      "workload": "compound_sequential",
+      "latency": {
+        "median_ms": 68.323,
+        "p95_ms": 69.074
+      },
+      "median_package_bytes": 80858,
+      "coverage_preserved": true,
+      "deterministic_packages": true,
+      "validation_status": "valid",
+      "findings": 24,
+      "records": 9,
+      "conflicts": 0
+    },
+    {
+      "workload": "independent",
+      "latency": {
+        "median_ms": 27.659,
+        "p95_ms": 27.777
+      },
+      "median_package_bytes": 20206,
+      "coverage_preserved": true,
+      "deterministic_packages": true,
+      "validation_status": "valid",
+      "findings": 3,
+      "records": 5,
+      "conflicts": 0
+    }
+  ]
+}

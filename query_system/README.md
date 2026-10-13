@@ -1,5 +1,15 @@
 # Hybrid query contracts: Phase 1
 
+Phase 6 adds a standalone deterministic planner and executor. See
+[PHASE6.md](PHASE6.md) for the compatibility audit, routing table, one-pin lifecycle,
+explicit semantic-candidate selection, resource limits and verification commands.
+It reuses the existing engines and does not alter the production API routes.
+
+Phase 7 adds standalone evidence aggregation and validation under the same
+executor pin. See [PHASE7.md](PHASE7.md) for provenance checks, claim classes,
+requirement coverage, canonical deduplication, budgets and backend-owned citations.
+It does not invoke an LLM or switch `/retrieve` or `/ask` to new contracts.
+
 `contracts.py` defines the boundary between CodeMind's existing knowledge base and
 the planned graph, semantic, rules, and Graph RAG engines. It does not change the
 current `/retrieve` or `/ask` response formats.
