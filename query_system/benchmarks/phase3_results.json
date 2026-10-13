@@ -1,0 +1,136 @@
+{
+  "evaluation": "isolated real-model fixture; not a general accuracy claim",
+  "model": "BAAI/bge-small-en-v1.5",
+  "repository_id": "291a299f006a27abe4e1ec62",
+  "generation_id": "a6365d02bfa7489b9d968de6a970f7ba",
+  "source_digest": "b88e4ddfcd6dda6804e094bdac2ad0faab07bfa2acab993cf3f1ba88d0068b29",
+  "pipeline_version": "phase8-hardening-1",
+  "questions": 12,
+  "repeats_per_question": 3,
+  "limit": 5,
+  "identical_result_order": true,
+  "details": [
+    {
+      "question": "Where is the logic that checks whether a user is allowed to access a resource?",
+      "expected": "auth.ts::authorizeRequest",
+      "first_relevant_rank": {
+        "baseline": 1,
+        "engine": 1
+      }
+    },
+    {
+      "question": "Where are expired login sessions rejected?",
+      "expected": "auth.ts::verifySession",
+      "first_relevant_rank": {
+        "engine": 1,
+        "baseline": 1
+      }
+    },
+    {
+      "question": "How are repeated events prevented from being processed twice?",
+      "expected": "events.js::deduplicateEvent",
+      "first_relevant_rank": {
+        "baseline": 1,
+        "engine": 1
+      }
+    },
+    {
+      "question": "Where are notification emails sent to subscribers?",
+      "expected": "events.js::notifySubscribers",
+      "first_relevant_rank": {
+        "engine": 1,
+        "baseline": 1
+      }
+    },
+    {
+      "question": "Where are expensive computed results saved for reuse?",
+      "expected": "cache.py::memoize_result",
+      "first_relevant_rank": {
+        "baseline": 1,
+        "engine": 1
+      }
+    },
+    {
+      "question": "Where are expired cache items removed?",
+      "expected": "cache.py::evict_old_entries",
+      "first_relevant_rank": {
+        "engine": 1,
+        "baseline": 1
+      }
+    },
+    {
+      "question": "Where is a customer charged for an invoice?",
+      "expected": "payments.py::settle_invoice",
+      "first_relevant_rank": {
+        "baseline": 1,
+        "engine": 1
+      }
+    },
+    {
+      "question": "How is money returned after cancelling a purchase?",
+      "expected": "payments.py::refund_purchase",
+      "first_relevant_rank": {
+        "engine": 1,
+        "baseline": 1
+      }
+    },
+    {
+      "question": "Where are numbers drawn as bars?",
+      "expected": "charts.ts::drawChart",
+      "first_relevant_rank": {
+        "baseline": 1,
+        "engine": 1
+      }
+    },
+    {
+      "question": "How are products ordered by cost?",
+      "expected": "charts.ts::sortProducts",
+      "first_relevant_rank": {
+        "engine": 1,
+        "baseline": 1
+      }
+    },
+    {
+      "question": "Where is an uploaded image written to disk?",
+      "expected": "uploads.ts::persistUpload",
+      "first_relevant_rank": {
+        "baseline": 1,
+        "engine": 1
+      }
+    },
+    {
+      "question": "Where is a small image preview created?",
+      "expected": "uploads.ts::createThumbnail",
+      "first_relevant_rank": {
+        "engine": 1,
+        "baseline": 1
+      }
+    }
+  ],
+  "baseline": {
+    "recall_at_5": 1,
+    "mrr_at_5": 1,
+    "median_latency_ms": 33.262,
+    "p95_latency_ms": 46.965,
+    "evidence_validity": 1,
+    "emitted_evidence": 162,
+    "invalid_evidence": 0,
+    "statuses": {
+      "found": 36
+    }
+  },
+  "engine": {
+    "recall_at_5": 1,
+    "mrr_at_5": 1,
+    "median_latency_ms": 42.765,
+    "p95_latency_ms": 54.637,
+    "evidence_validity": 1,
+    "emitted_evidence": 162,
+    "invalid_evidence": 0,
+    "statuses": {
+      "success": 36
+    }
+  },
+  "measured_on": "2026-10-13",
+  "fixture_lifecycle": "Temporary labeled repository removed after evaluation; existing stored embeddings were not rebuilt"
+}
