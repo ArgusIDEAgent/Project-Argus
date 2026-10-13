@@ -250,3 +250,55 @@ RETRIEVAL_SETUP.md. Saved files only, no guessed cross-rename identity; compiler
 resolution remains whole-project and unchanged vector rows are copied for snapshot
 isolation. Fine-grained compiler invalidation/performance benchmarking is not
 claimed. No metadata-schema or embedding-model migration is introduced.
+
+## 2026-10-13 — Knowledge-base Phase 8 validation and hardening
+
+Implemented the separate knowledge-base plan's final validation phase, including
+future change-impact foundations. Hand-maintained JS/TS fixtures cover aliases,
+cycles, duplicate names, nested/anonymous functions, inheritance, interfaces,
+overloads, callbacks and statically unknown/dynamic calls. The validation command
+runs isolated real-BGE/private-FAISS benchmarks, evaluates gold definitions and
+relationships, checks retrieval/citation provenance and saved updates, and runs
+the complete Python regression suites. It produces reproducible JSON/Markdown
+reports with dependency versions and implementation/fixture hashes. Skipped gates
+are unmeasured; failures/timeouts cannot be reported as passes; existing reports
+are never overwritten.
+
+Fixed a verified graph bug: union receiver methods no longer arbitrarily bind to
+the first class. Overloaded calls target their unique implementation. Metadata
+trace rejects line/byte disagreement and derives multiline relationship ranges.
+Malformed snapshot components fail closed. Pipeline versioning invalidates old
+graphs after restart even if sources are unchanged, rebuilding graph bindings
+while reusing unchanged embeddings. No new dependencies, schema migration or
+extension UI changes were required.
+
+Added bounded, cycle-safe canonical function dependency paths, verified test-file
+references and explicit truncation. Tests cover callers, module dependents,
+function/module paths, duplicate identity, overload signatures versus bodies,
+unresolved targets and potentially-affected wording. Added concurrent-reader,
+killed-candidate/restart, corrupt-manifest, UTF-8/CRLF citation and upgrade tests.
+
+Verified: 144 Python regressions (59 knowledge-base + 85 engine/answer), extension
+compilation/integration, Python compilation and whitespace checks. Six real-model
+synthetic profiles (JS 4/36/132 eligible files; TS 12/44/140) passed all measured
+quality gates: 100% inventory, supported-symbol/static-binding precision and
+recall, curated recall@5 and source-context citation accuracy. Ten distinct
+questions repeated across sizes gave 30 executions and 150 checked citations.
+Saved modifications, renames, moves, deletions and no-op reuse passed without
+dangling metadata. Expected unsupported constructs remained explicit; the TS
+fixture additionally reports an unsupported variable export, documented in the
+report rather than counted as a verified export.
+
+Warm-model initial indexing measured 0.476–3.667 seconds; five-sample per-profile
+retrieval p95 measured 125.18–391.02 ms. Worker RSS, separate child RSS, initial
+storage and post-update storage are recorded. These synthetic observations are
+not production budgets, general accuracy guarantees or concurrent-load results.
+Remote Qdrant, other-language resolved graphs, unsaved buffers, runtime execution
+and generated-model claim correctness require separate validation.
+
+See knowledge_base/VALIDATION.md and the retained report under
+/Users/paraspingale/.codemind/validation/phase8-2026-10-13-final/. The existing
+port-8000 engine was left running; restart the usual python3 start_codemind.py
+launcher once after stopping it. Automatic synchronization upgrades older graph
+generations; there is no need to run phase commands before each chat. Full future
+impact UI remains separate from the tested graph traversal foundations.

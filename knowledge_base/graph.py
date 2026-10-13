@@ -439,6 +439,73 @@ class KnowledgeGraph:
                 (self.repository_id, node_id, node_id)).fetchall()
         return [dict(row) for row in rows]
 
+    def symbol_dependency_paths(self, source_symbol_id: str, target_symbol_id: str,
+                                *, max_depth: int = 5, max_paths: int = 100,
+                                max_work: int = 10_000) -> dict[str, Any]:
+        """Bounded, cycle-safe static call paths; never a runtime-impact claim."""
+        if not 1 <= max_depth <= 20 or not 1 <= max_paths <= 1000 or not 1 <= max_work <= 50_000:
+            raise ValueError('Invalid traversal budget')
+        paths, examined, truncated = [], 0, False
+        with closing(self._connection()) as db:
+            nodes = {}
+            for identifier in (source_symbol_id, target_symbol_id):
+                row = db.execute('SELECT id FROM graph_nodes WHERE repository_id=? AND symbol_id=?',
+                                 (self.repository_id, identifier)).fetchone()
+                if row:
+                    nodes[identifier] = row[0]
+            if len(nodes) == len({source_symbol_id, target_symbol_id}):
+                start, goal = nodes[source_symbol_id], nodes[target_symbol_id]
+                queue = deque([(start, [source_symbol_id], [start], [])])
+                while queue:
+                    current, symbols, visited, evidence = queue.popleft()
+                    if current == goal and evidence:
+                        paths.append({'symbolIds': symbols, 'graphEdges': evidence})
+                        if len(paths) >= max_paths:
+                            truncated = bool(queue)
+                            break
+                        continue
+                    if len(evidence) >= max_depth:
+                        more = db.execute("SELECT 1 FROM graph_relationships WHERE repository_id=? AND source_id=? AND relationship='CALLS' AND resolution='resolved' AND target_id NOT IN (%s) LIMIT 1" % ','.join('?' for _ in visited),
+                                          (self.repository_id, current, *visited)).fetchone()
+                        truncated |= bool(more)
+                        continue
+                    remaining = max_work - examined
+                    edges = db.execute('''SELECT e.id,e.target_id,n.symbol_id FROM graph_relationships e
+                        JOIN graph_nodes n ON n.id=e.target_id WHERE e.repository_id=? AND e.source_id=?
+                        AND e.relationship='CALLS' AND e.resolution='resolved' AND n.symbol_id IS NOT NULL
+                        ORDER BY e.id LIMIT ?''', (self.repository_id, current, remaining + 1)).fetchall()
+                    if len(edges) > remaining:
+                        truncated = True
+                    for edge in edges[:remaining]:
+                        examined += 1
+                        if edge['target_id'] not in visited:
+                            queue.append((edge['target_id'], symbols+[edge['symbol_id']],
+                                          visited+[edge['target_id']], evidence+[edge['id']]))
+                    if examined >= max_work and queue:
+                        truncated = True
+                        break
+        return {'paths': paths, 'truncated': truncated, 'examinedEdges': examined,
+                'interpretation': 'Potentially affected through static calls, not guaranteed runtime behaviour'}
+
+    def test_references(self, symbol_id: str, *, limit: int = 100) -> dict[str, Any]:
+        """Verified references in conventionally named test files, not coverage."""
+        if not 1 <= limit <= 1000:
+            raise ValueError('limit must be between 1 and 1000')
+        with closing(self._connection()) as db:
+            rows = db.execute('''SELECT e.*,n.symbol_id AS source_symbol_id FROM graph_relationships e
+                JOIN graph_nodes target ON target.id=e.target_id JOIN graph_nodes n ON n.id=e.source_id
+                WHERE e.repository_id=? AND target.symbol_id=? AND e.resolution='resolved'
+                AND e.relationship IN ('CALLS','REFERENCES')
+                AND (e.evidence_file GLOB 'tests/*' OR e.evidence_file GLOB 'test/*'
+                     OR e.evidence_file GLOB '*/tests/*' OR e.evidence_file GLOB '*/test/*'
+                     OR e.evidence_file GLOB '__tests__/*' OR e.evidence_file GLOB '*/__tests__/*'
+                     OR e.evidence_file GLOB '*.test.*' OR e.evidence_file GLOB '*.spec.*'
+                     OR e.evidence_file GLOB 'test_*' OR e.evidence_file GLOB '*/test_*')
+                ORDER BY e.evidence_file,e.evidence_line,e.id LIMIT ?''',
+                (self.repository_id, symbol_id, limit+1)).fetchall()
+        return {'references': [dict(row) for row in rows[:limit]], 'truncated': len(rows)>limit,
+                'interpretation': 'Potentially affected test references; not proof of execution or test coverage'}
+
     def dependency_paths(self, source_path: str, target_path: str,
                          max_depth: int = 5, max_paths: int = 100) -> list[list[str]]:
         if max_depth < 1 or max_depth > 20:

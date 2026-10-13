@@ -27,6 +27,7 @@ from knowledge_base.identity import repository_id
 from knowledge_base.scanner import DEFAULT_MAX_BYTES, EXCLUDED_DIRS, _git_context, _has_gitignore, _inventory
 
 logger = logging.getLogger(__name__)
+PIPELINE_VERSION = 'phase8-hardening-1'
 
 
 def _read_json(path):
@@ -103,6 +104,15 @@ class SnapshotStore:
                 or manifest.get('root')!=str(self.root) or manifest.get('state')!='ready'
                 or not re.fullmatch(r'[a-f0-9]{32}',str(manifest.get('id','')))):
                 raise ValueError('Invalid active knowledge snapshot')
+            sources, result = manifest.get('sources'), manifest.get('result')
+            if (not isinstance(sources,dict) or not isinstance(sources.get('files'),dict)
+                or not re.fullmatch(r'[a-f0-9]{64}',str(sources.get('digest','')))
+                or not isinstance(result,dict)
+                or any(not isinstance(result.get(key),int) or result[key]<0
+                       for key in ('files_indexed','files_skipped'))
+                or not isinstance(manifest.get('collection'),str)
+                or not manifest['collection'].endswith('_'+self.repo_id+'_'+manifest['id'])):
+                raise ValueError('Invalid active knowledge snapshot components')
         return manifest
 
     def data_for(self,manifest):
@@ -144,7 +154,8 @@ class SnapshotStore:
         if not re.fullmatch(r'[a-f0-9]{32}',str(identifier)): return False
         try:
             manifest = _read_json(self.data_for({'id':identifier})/self.repo_id/'generation.json')
-            return bool(manifest and manifest['sources']['digest']==observe_sources(self.root)['digest'])
+            return bool(manifest and manifest.get('pipelineVersion')==PIPELINE_VERSION
+                        and manifest['sources']['digest']==observe_sources(self.root)['digest'])
         except (OSError,ValueError,KeyError): return False
 
     def failed(self,exc):
@@ -165,11 +176,15 @@ class SnapshotStore:
         fresh,error = True,None
         if managed:
             try:
-                fresh = bool(manifest and manifest['sources']['digest']==observe_sources(self.root)['digest'])
+                fresh = bool(manifest and manifest.get('pipelineVersion')==PIPELINE_VERSION
+                             and manifest['sources']['digest']==observe_sources(self.root)['digest'])
             except (OSError,ValueError): fresh = False
             if manifest and not (self.data_for(manifest)/self.repo_id/'metadata.db').is_file(): fresh = False
             if state.get('state')=='failed': fresh = False
-            if not fresh: error = state.get('lastError') or 'Saved files changed; knowledge index is stale or updating.'
+            if not fresh:
+                error = state.get('lastError') or ('Knowledge pipeline changed; refresh is required.'
+                    if manifest and manifest.get('pipelineVersion')!=PIPELINE_VERSION
+                    else 'Saved files changed; knowledge index is stale or updating.')
         return {'manifest':manifest,'data_dir':self.data_for(manifest),
                 'snapshotId':manifest['id'] if manifest else None,'managed':managed,
                 'fresh':fresh,'state':state.get('state','unmanaged'),'error':error,'savedFilesOnly':True}
@@ -185,7 +200,8 @@ class SnapshotStore:
                 with closing(sqlite3.connect((self.data_for(previous)/self.repo_id/'metadata.db').resolve().as_uri()+'?mode=ro',uri=True)) as db:
                     expected_count = db.execute('SELECT count(*) FROM code_chunks WHERE repository_id=?',(self.repo_id,)).fetchone()[0]
                 store_ready = client.count(previous['collection'],exact=True).count==expected_count
-            if previous and not full and store_ready and previous['sources']['digest']==before['digest']:
+            if (previous and previous.get('pipelineVersion')==PIPELINE_VERSION and not full
+                and store_ready and previous['sources']['digest']==before['digest']):
                 _write_json(self.path/'sync_state.json',{'state':'ready','activeSnapshotId':previous['id'],
                     'lastError':None,'savedFilesOnly':True})
                 return {**previous['result'],'unchanged':True,'activeSnapshotId':previous['id'],
@@ -262,6 +278,7 @@ class SnapshotStore:
                     'changed_files':sorted(changed_files),'affected_files':sorted(affected_files),
                     'resolutionScope':'all included JS/TS files (conservative dependency invalidation)'}
                 manifest = {'id':identifier,'repoId':self.repo_id,'root':str(self.root),'state':'ready',
+                    'pipelineVersion':PIPELINE_VERSION,
                     'collection':new_collection,'sources':after,'result':published,'savedFilesOnly':True,
                     'previousId':previous['id'] if previous else None}
                 _write_json(repo_dir/'generation.json',manifest)

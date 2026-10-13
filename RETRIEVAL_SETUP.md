@@ -1,5 +1,12 @@
 # Running the local retrieval and answer pipeline
 
+Phase 8 hardening is implemented. After stopping the old engine, restart the usual
+launcher once. Automatic synchronization rebuilds older graph generations even
+with unchanged source files, reusing unchanged embeddings. Old indexed evidence
+is explicitly stale until this completes. No new dependencies, schema migration
+or extension installation are needed for Phase 8. Validation commands and measured
+limits are in `knowledge_base/README.md` and `knowledge_base/VALIDATION.md`.
+
 From the project directory (including its trailing space), run:
 
 ```sh

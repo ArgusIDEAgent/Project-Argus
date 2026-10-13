@@ -305,7 +305,8 @@ class HybridRetriever:
                             'language':edge['language'],'module':str(PurePosixPath(info['path']).with_suffix('')),
                             'symbolType':edge['symbol_kind'] or '', 'relationship':relation,'resolution':edge['resolution'],
                             'graphDistance':depth+1,'graphEdges':chain+[edge['id']] if edge['resolution']=='resolved' else [],
-                            'reason':f"Verified static {relation} relationship ({plan.intent}); distance {depth+1}" if edge['resolution']=='resolved'
+                            'reason':(f"Potentially affected via verified static {relation}; not proof of runtime impact; distance {depth+1}"
+                                if plan.intent in ('impact','dependents') else f"Verified static {relation} relationship ({plan.intent}); distance {depth+1}") if edge['resolution']=='resolved'
                                 else 'Inferred external import specifier; not proof that the package is installed or executed',
                             'confidence':1.,'revision':'latest','callers':[],'tests':[]}
                         if edge['other_symbol']:

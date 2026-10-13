@@ -301,6 +301,15 @@ def trace(database, repo_id, identifier):
             raise ValueError("Indexed source location is invalid")
         if info.get('start_byte') is not None and not 0 <= info['start_byte'] <= info['end_byte'] <= len(source):
             raise ValueError("Indexed byte location is invalid")
+        if info.get('start_byte') is not None:
+            byte_start, byte_end = info['start_byte'], info['end_byte']
+            actual_start = source[:byte_start].count(b'\n') + 1
+            actual_end = source[:byte_end].count(b'\n') + 1
+            if start != actual_start or (info.get('end_line') is not None and end != actual_end):
+                raise ValueError('Indexed lines disagree with byte location')
+            if kind == 'relationship':
+                # End offsets are exclusive; relationships store no end line.
+                end = source[:max(byte_start, byte_end-1)].count(b'\n') + 1
         info.update(path=file['relative_path'], fileId=file['id'], symbolId=info.get('symbol_id'),
                     snapshotId=info['snapshot_id'], sourceHash=info['source_hash'], startLine=start, endLine=end)
         return info

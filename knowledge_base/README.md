@@ -1,4 +1,4 @@
-# Knowledge base: Phases 1–7
+# Knowledge base: Phases 1–8
 
 Run from the project root:
 
@@ -294,3 +294,70 @@ concurrent source edits during retrieval/answers, snapshot retention and recover
 
 Primary implementation references: [watchdog observer/events](https://watchdog.readthedocs.io/en/stable/quickstart.html)
 and [SQLite online backup](https://docs.python.org/3/library/sqlite3.html#sqlite3.Connection.backup).
+
+## Phase 8 validation and hardening
+
+Run the reproducible quality gate with the existing virtual environment and
+installed extension dependencies. Use a **new or empty output directory outside
+the repository**; existing reports are never overwritten:
+
+```sh
+.venv/bin/python -m knowledge_base.validation --output /tmp/codemind-quality-run --sizes 0,32,128
+```
+
+This creates `quality-report.json`, `quality-report.md`, per-case reports/logs,
+and complete knowledge-base/engine regression logs. A failed gate exits nonzero.
+`--structural-only` and `--skip-regressions` are diagnostic shortcuts: skipped
+gates remain unmeasured and the overall report cannot say passed. Worker timeouts
+and failures are reported as failures, not empty passing benchmarks.
+
+The fixtures under `fixtures/phase8` have independently maintained gold files,
+definitions (qualified names, kinds and exact spans), relationships and questions.
+They cover aliases, duplicate names, overloads, interfaces/inheritance, nested and
+anonymous functions, callbacks, dynamic imports, ambiguous receivers and cycles.
+Tests also mutate, rename, move and delete saved files. The full benchmark uses
+the real cached BGE model, private FAISS storage and immutable publication; it
+does not start a server, index a user repository or call an answer model. Unit
+failure tests use deterministic vectors; those are not embedding-quality evidence.
+
+Quality gates measure inventory, symbol precision/recall, static-relationship
+precision/recall, curated recall@5, source-context citation accuracy, unsupported
+coverage, parser failures, provenance and incremental consistency. Reports split
+results by language, repository size and construct; relationship metrics count
+unique bindings, while every relationship occurrence is separately trace-checked.
+Timing, worker/child peak RSS and disk usage are recorded. Model warmup is separate
+from indexing; initial storage is separate from post-update storage. Reports
+include dependency versions and implementation/fixture hashes. See
+[VALIDATION.md](VALIDATION.md) for the measured run and its limits.
+
+Hardening rejects ambiguous union callees instead of selecting the first method,
+binds overloaded calls to their unique implementation, validates citation lines
+against byte offsets (including multiline UTF-8/CRLF evidence), and rejects
+malformed snapshot components. Concurrent-reader and killed-candidate tests prove
+that unpublished generations are not served and restart can recover. A pipeline
+version invalidates pre-hardening generations: after restarting the normal engine,
+automatic synchronization rebuilds their graph even if source hashes are unchanged,
+reusing unchanged embeddings. Until then, old indexed evidence is marked stale.
+No metadata-schema, embedding-model or extension UI change is required.
+
+Future impact foundations are read-only `KnowledgeGraph` operations:
+
+- `direct_callers(symbol_id)` and `reverse_dependencies(module_path)`;
+- `dependency_paths(source_path, target_path)` for modules;
+- `symbol_dependency_paths(source_id, target_id, max_depth=5, max_paths=100,
+  max_work=10000)` for cycle-safe call paths and canonical evidence IDs, with an
+  explicit `truncated` flag;
+- `test_references(symbol_id, limit=100)` for verified CALLS/REFERENCES in
+  conventionally named test files, with explicit truncation;
+- `unresolved_references(symbol_id=...)` for statically unknown targets.
+
+Use canonical symbol IDs to distinguish duplicates and overload signatures from
+implementations. These operations and impact retrieval report **potentially
+affected** components, not guaranteed behaviour or test coverage. This phase does
+not implement a full future change-impact UI or execution analysis.
+
+Synthetic results do not establish production budgets, general accuracy, Python
+graph support, remote-Qdrant reliability or model-generated claim correctness.
+Representative repository performance testing remains necessary before budgets
+are set. Existing corruption/store/model/watcher-failure tests remain in the
+regression gate.

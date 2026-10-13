@@ -93,7 +93,13 @@ function declaration(symbol) {
     symbol = checker.getAliasedSymbol(symbol);
   }
   const declarations = symbol.declarations || [];
-  const candidate = symbol.valueDeclaration || declarations.find((decl) => decl.body)
+  // Union receivers can expose declarations from several classes. They do
+  // not provide a single verified callee. Overloads share one owner.
+  const owners = new Set(declarations.map((decl) =>
+    `${decl.getSourceFile().fileName}:${decl.parent.pos}:${decl.parent.end}`));
+  const implementations = declarations.filter((decl) => decl.body);
+  if (owners.size > 1 || implementations.length > 1) return null;
+  const candidate = implementations[0] || symbol.valueDeclaration
     || declarations.find((decl) => included(decl.getSourceFile().fileName)) || declarations[0];
   if (!candidate || !included(candidate.getSourceFile().fileName)) return null;
   const source = candidate.getSourceFile();
