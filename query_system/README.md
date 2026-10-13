@@ -210,3 +210,12 @@ PYTHONPATH=ai-engine .venv/bin/python -m unittest discover -s ai-engine/tests -p
 with one pinned generation and no LLM, semantic discovery or indexing calls.
 See [PHASE4.md](PHASE4.md) for the interface audit, registry, operation parameters,
 evidence guarantees, partial/unsupported outcomes, resource limits and tests.
+
+## Query understanding: Phase 5
+
+Use `QueryUnderstandingEngine` inside `pinned(store)`, then call
+`normalize(request, conversation=None)` on that engine. It returns an enriched
+Phase 1 `NormalizedQuery` using deterministic recognition and
+read-only canonical entity resolution. It never dispatches an answering engine.
+See [PHASE5.md](PHASE5.md) for the architecture audit, intent/context contracts,
+compound requirements, capability limits and the 96-query labeled benchmark.

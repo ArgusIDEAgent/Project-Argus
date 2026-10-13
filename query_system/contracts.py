@@ -75,22 +75,123 @@ Intent = Literal[
     "FEATURE_DISCOVERY", "FUNCTION_EXPLANATION", "WORKFLOW_EXPLANATION",
     "MODULE_OVERVIEW", "CHANGE_IMPACT", "BEHAVIOR_INVESTIGATION",
     "CODE_COMPARISON", "TEST_DISCOVERY",
+    "FUNCTION_CONTRACT",
+    "UNRESOLVED",
 ]
 
 
+EntityKind = Literal["function", "method", "class", "symbol", "module", "file", "selection", "feature", "api_path"]
+
+
+class EntityCandidate(ContractModel):
+    entity_id: str = Field(min_length=1)
+    name: str = Field(min_length=1)
+    kind: EntityKind
+    file_path: str
+    symbol_id: str | None = None
+    evidence: Evidence
+
+    @model_validator(mode="after")
+    def canonical_mapping(self):
+        if self.file_path != self.evidence.file_path:
+            raise ValueError("Candidate scope differs from its canonical source proof")
+        if self.kind not in ("file", "module") and (
+                self.symbol_id != self.evidence.symbol_id or self.entity_id != self.evidence.evidence_id):
+            raise ValueError("Candidate symbol identity differs from its canonical proof")
+        return self
+
+
 class QueryEntity(ContractModel):
-    kind: Literal["function", "class", "module", "file", "feature", "api_path"]
+    kind: EntityKind
     name: str = Field(min_length=1)
     symbol_id: str | None = None
+    file_path: str | None = None
+    file_id: str | None = None
+    entity_id: str | None = None
+    resolution: Literal["resolved", "ambiguous", "not_found", "unresolved_text", "unsupported"] = "unresolved_text"
+    origin: Literal["text", "active_file", "selected_symbol", "selection", "previous_target"] = "text"
+    selection: EditorSelection | None = None
+    evidence: Evidence | None = None
+    candidates: list[EntityCandidate] = Field(default_factory=list, max_length=25)
+    candidates_truncated: bool = False
+    reason: str | None = None
+
+
+class IntentRequirement(ContractModel):
+    intent: Intent
+    order: int = Field(ge=0)
+    entity_indices: list[int] = Field(default_factory=list, max_length=12)
+    depends_on: list[int] = Field(default_factory=list, max_length=12)
+    required_capabilities: list[str] = Field(default_factory=list)
+    support: Literal["supported", "partial", "unsupported", "unresolved"] = "unresolved"
+    limitations: list[str] = Field(default_factory=list)
+    interpretation: str | None = None
 
 
 class NormalizedQuery(ContractModel):
-    intents: list[Intent] = Field(min_length=1)
-    entities: list[QueryEntity] = Field(default_factory=list)
+    intents: list[Intent] = Field(min_length=1, max_length=12)
+    entities: list[QueryEntity] = Field(default_factory=list, max_length=12)
     change_type: str | None = None
     scope: Literal["repository", "active_file", "selected_symbol", "selected_directory"] = "repository"
     requires_explanation: bool = False
     depth: Depth = "standard"
+    original_question: str | None = None
+    normalized_question: str | None = None
+    repository_id: RepositoryId | None = None
+    snapshot_id: GenerationId | None = None
+    primary_intent: Intent | None = None
+    secondary_intents: list[Intent] = Field(default_factory=list)
+    requirements: list[IntentRequirement] = Field(default_factory=list, max_length=12)
+    status: Literal["success", "partial", "ambiguous", "unresolved", "not_found", "unsupported", "stale_index", "error"] = "success"
+    context_used: list[str] = Field(default_factory=list)
+    unresolved_references: list[str] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+    legacy_plan: dict[str, JsonValue] = Field(default_factory=dict)
+    normalization_ms: int = Field(default=0, ge=0)
+    error: EngineError | None = None
+
+    @model_validator(mode="after")
+    def validate_requirements(self):
+        if self.primary_intent is not None and self.primary_intent != self.intents[0]:
+            raise ValueError("Primary intent must be the first recognized intent")
+        if self.primary_intent is not None and self.secondary_intents != self.intents[1:]:
+            raise ValueError("Secondary intents must preserve recognized order")
+        for index, requirement in enumerate(self.requirements):
+            if requirement.order != index or requirement.intent not in self.intents:
+                raise ValueError("Intent requirements must have consecutive order and recognized intents")
+            if any(value < 0 or value >= len(self.entities) for value in requirement.entity_indices):
+                raise ValueError("Requirement refers to an unknown entity")
+            if any(value < 0 or value >= index for value in requirement.depends_on):
+                raise ValueError("Target dependencies must point to earlier requirements")
+        return self
+
+
+class QueryContext(ContractModel):
+    """One caller-owned, bounded turn of context; never persistent conversation memory."""
+    repository_id: RepositoryId
+    snapshot_id: GenerationId
+    active_file: str | None = Field(default=None, max_length=4096)
+    selected_symbol_id: str | None = Field(default=None, max_length=4096)
+    selection: EditorSelection | None = None
+    previous_target: QueryEntity | None = None
+    previous_intents: list[Intent] = Field(default_factory=list, max_length=12)
+
+    @model_validator(mode="after")
+    def valid_context(self):
+        if self.active_file is not None:
+            relative_path(self.active_file)
+        if self.selection is not None and self.active_file is None:
+            raise ValueError("Context selection requires an active file")
+        if self.previous_target is not None:
+            if self.previous_target.resolution != "resolved" or self.previous_target.evidence is None:
+                raise ValueError("Previous target must be a previously source-verified resolved entity")
+            if len(self.previous_target.model_dump_json()) > 16384:
+                raise ValueError("Previous target exceeds the bounded context size")
+            proof = self.previous_target.evidence
+            if (self.previous_target.symbol_id != proof.symbol_id or self.previous_target.file_id != proof.file_id
+                    or self.previous_target.file_path != proof.file_path):
+                raise ValueError("Previous target identity differs from its canonical source proof")
+        return self
 
 
 class SnapshotContext(ContractModel):
