@@ -1,0 +1,31 @@
+{
+  "profiles": [
+    {
+      "profile": "react",
+      "state": "completed",
+      "copied_files": 5,
+      "copied_lines": 2142,
+      "indexing_ms": 7760.979041999235,
+      "python_peak_rss_bytes": 812007424
+    },
+    {
+      "profile": "cnn",
+      "state": "completed",
+      "copied_files": 2,
+      "copied_lines": 448,
+      "indexing_ms": 1598.1777080005486,
+      "python_peak_rss_bytes": 812482560
+    },
+    {
+      "profile": "node",
+      "state": "completed",
+      "copied_files": 16,
+      "copied_lines": 2719,
+      "indexing_ms": 32115.565750000314,
+      "python_peak_rss_bytes": 829702144
+    }
+  ],
+  "default_hybrid_changed": false,
+  "new_dependencies_or_models": false,
+  "user_indexes_modified": false
+}

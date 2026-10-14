@@ -8,9 +8,9 @@ const vscode = require('vscode');
 const { ServerManager } = require('../out/serverManager');
 const { HybridChatSession } = require('../out/hybridChat');
 
-async function fixture(project) {
+async function fixture(project, fault = '') {
   const child = spawn(path.join(project, '.venv/bin/python'), [path.join(project, 'ai-engine/tests/stabilization_live_server.py')],
-    { cwd: project, env: { ...process.env, CODEMIND_AUTO_SYNC: '0' }, stdio: ['pipe', 'pipe', 'pipe'] });
+    { cwd: project, env: { ...process.env, CODEMIND_AUTO_SYNC: '0', CODEMIND_QUAL_FAULT: fault }, stdio: ['pipe', 'pipe', 'pipe'] });
   let diagnostics = '';
   child.stderr.on('data', value => { diagnostics += value.toString(); });
   const options = await new Promise((resolve, reject) => {
@@ -66,7 +66,36 @@ async function run() {
     await session.ask(selected, 'Who calls verifiedSourcePath and verifiedPreviewSource?', () => true);
     reply = messages.findLast(message => message.type === 'hybridResults');
     assert.ok(reply.html.includes('verifiedSourcePath')); assert.ok(reply.html.includes('verifiedPreviewSource'));
+    // Real editor + authenticated transport + real frozen source/embedding index.
+    // Generation is off for this cohort, so these verify honest deterministic
+    // presentation/fallback, not successful LLM explanations.
+    const scenarios = [
+      ['semantic', 'Find code that verifies source file hashes before opening citations', /CodeMind Hybrid Answer/],
+      ['function', 'Explain verifiedSourcePath', /verifiedSourcePath/],
+      ['workflow', 'Explain the workflow from openVerifiedPreviewSource to verifiedSourcePath', /openVerifiedPreviewSource/],
+      ['impact', 'Impact of verifiedSourcePath', /verifiedSourcePath/],
+      ['comparison', 'Compare verifiedSourcePath and verifiedPreviewSource', /verifiedPreviewSource/],
+      ['compound', 'Find callers of verifiedSourcePath and explain verifiedPreviewSource', /req-001/],
+      ['ambiguous', 'Compare verifiedSourcePath with isInside', /mbiguous|candidate|choose/i],
+      ['missing', 'Where is phase3Nonexistent defined?', /No verified match within scope\/bounds/],
+    ];
+    const passed = ['exact_lookup', 'canonical_navigation', 'depths', 'callers', 'target_list', 'foreign_repository_action', 'forged_action'];
+    for (const [name, question, expected] of scenarios) {
+      await session.ask(selected, question, () => true);
+      reply = messages.findLast(message => message.type === 'hybridResults');
+      assert.match(reply.html, expected, name);
+      assert.ok(!reply.html.includes('command:'), name);
+      passed.push(name);
+    }
+    // Suppress an actual in-flight transport reply after repository selection
+    // changes. No delay/response producer is substituted.
+    const beforeSwitch = messages.length;
+    let current = true;
+    const inflight = session.ask(selected, 'Where is verifiedSourcePath defined?', () => current);
+    current = false; session.clear(); await inflight;
+    assert.equal(messages.length, beforeSwitch); passed.push('repository_switch_in_flight');
     await assert.rejects(session.ask(selected, 'How many files are in this repository?', () => true), /statistics/);
+    passed.push('unsupported_statistics');
     // Actual optional Ollama bridge; acceptance/fallback is visible, not a mocked producer.
     await settings.update('hybridAllowGeneration', true, vscode.ConfigurationTarget.Global);
     await session.ask(selected, 'Where is verifiedSourcePath defined and explain verifiedSourcePath', () => true);
@@ -74,16 +103,55 @@ async function run() {
     assert.ok(reply.html.includes('req-001'));
     assert.ok(/Local model:/.test(reply.html));
     assert.ok(!reply.html.includes('command:'));
+    passed.push('real_ollama_or_explicit_fallback');
+    // Actual host/render/navigation checks with source staleness confined to the
+    // disposable corpus. Restore bytes even on failure; never edit user source.
+    const savedPath = path.join(options.rootPath, 'extension/src/sourceNavigation.ts');
+    const savedBytes = fs.readFileSync(savedPath);
+    try {
+      fs.appendFileSync(savedPath, '\n// private Phase 3 stale-source probe\n');
+      await assert.rejects(session.ask(selected, 'Where is verifiedSourcePath defined?', () => true), /current indexed snapshot/i);
+    } finally { fs.writeFileSync(savedPath, savedBytes); }
+    passed.push('stale_source');
+    await settings.update('hybridAllowGeneration', false, vscode.ConfigurationTarget.Global);
+    await session.ask(selected, 'Where is verifiedSourcePath defined? /* <script>phase3Injection()</script> command:evil */', () => true);
+    reply = messages.findLast(message => message.type === 'hybridResults');
+    assert.ok(!reply.html.includes('<script>phase3Injection()'));
+    assert.ok(!reply.html.includes('command:evil')); passed.push('query_markup_injection');
     const authority = await server.hybridQuery({ repository_id: selected.id, question: 'Where is verifiedSourcePath defined?', depth: 'standard' }, false);
     session.clear(); await settings.update('hybridEnabled', false, vscode.ConfigurationTarget.Global);
     const cleared = messages.length;
     await session.handle({ type: 'hybridDepth', key: reply.key, depth: 'deep' }, selected);
     assert.equal(messages.length, cleared);
+    passed.push('legacy_hybrid_rollback');
     // Restart only the ephemeral server; original engine/index remains untouched.
     server.dispose(); const oldOwner = owner; owner = undefined; await oldOwner.close(); owner = await fixture(project);
     process.env.CODEMIND_PORT = String(owner.options.port); process.env.CODEMIND_SESSION_TOKEN = owner.options.token;
     server = new ServerManager(project, options.rootPath, output); await server.start();
     await assert.rejects(server.hybridPresentation(selected.id, authority.navigation_token, 'quick'), /ask the question again/i);
+    passed.push('backend_restart_expired_handle');
+    await settings.update('hybridEnabled', true, vscode.ConfigurationTarget.Global);
+    const injected = [];
+    for (const fault of ['model_unavailable', 'model_timeout', 'graph_failure']) {
+      server.dispose(); const previousOwner = owner; owner = undefined; await previousOwner.close();
+      owner = await fixture(project, fault);
+      process.env.CODEMIND_PORT = String(owner.options.port); process.env.CODEMIND_SESSION_TOKEN = owner.options.token;
+      server = new ServerManager(project, options.rootPath, output); await server.start();
+      session.clear(); session = new HybridChatSession(server, async message => { messages.push(message); if (message.html) panel.webview.html = message.html; return panel.webview.postMessage(message); });
+      await settings.update('hybridAllowGeneration', true, vscode.ConfigurationTarget.Global);
+      const question = fault === 'graph_failure'
+        ? 'Where is verifiedSourcePath defined and contract of verifiedPreviewSource' : 'Explain verifiedSourcePath';
+      await session.ask(selected, question, () => true);
+      reply = messages.findLast(message => message.type === 'hybridResults');
+      if (fault === 'graph_failure') {
+        assert.ok(reply.html.includes('req-001')); assert.match(reply.html, /Failed operation|Partial coverage/);
+      } else { assert.match(reply.html, new RegExp('Local model: ' + (fault === 'model_timeout' ? 'timeout' : 'unavailable'))); }
+      injected.push(fault);
+    }
+    console.log('PHASE3_REAL_HOST_SCENARIOS ' + JSON.stringify({ passed, count: passed.length,
+      fault_injected_actual_host: injected,
+      limits: ['Generation-disabled scenarios are not successful model explanations.',
+        'Transport/model failure and source-injection scenarios are separately tested; not all are real-source host scenarios.'] }));
     console.log('Final real CodeMind VS Code + authenticated read-only backend: depths, both targets, context, canonical source opening, unsupported requests, real Ollama/fallback, repository scope, rollback and ephemeral restart PASS');
   } finally {
     session?.clear(); server?.dispose(); if (owner) await owner.close();

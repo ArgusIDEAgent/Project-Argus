@@ -1,5 +1,13 @@
 # CodeMind Extension
 
+Offline regression command: `npm test` in this directory (or
+`npm --prefix extension test` from the project root). It compiles TypeScript and
+runs the Node resolver/rendering/session/transport/navigation tests using existing
+dependencies. It launches no VS Code process and downloads nothing.
+`npm run test:integration` retains real Electron/editor suites; use
+`CODEMIND_TEST_VSCODE` for an existing binary. No local binary means explicitly
+not executed, with no automatic download. See [testing instructions](../TESTING.md).
+
 ## Phase 10 development hybrid chat (default off)
 
 Start the existing launcher from the project root with

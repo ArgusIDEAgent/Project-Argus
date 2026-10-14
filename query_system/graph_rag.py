@@ -29,7 +29,7 @@ SYSTEM = (
     "For original prose use interpretation or hypothesis, fact_id=null, nonempty text, and approved record_ids; it is NOT fact-checked. "
     "Never claim confirmed root cause, runtime execution order, behavioral equivalence or performance from static evidence. "
     "Semantic results indicate similarity, never dependencies. Never promote hypotheses/unresolved references to facts. "
-    "Never write citations, citation IDs, source lists or tool calls in text. Cover every original requirement order, "
+    "Never write citations, citation IDs, source lists or tool calls in text. Cover each original requirement order exactly once; "
     "mark partial/unsupported honestly, and retain uncertainty and coverage gaps."
 )
 LIMITATIONS = [
@@ -38,10 +38,10 @@ LIMITATIONS = [
     "Deadlines are cooperative; synchronous HTTP/source validation can outlast the requested deadline.",
 ]
 TASK_GUIDANCE = {
-    "function": "Describe the definition, visible inputs/outputs, internal steps, branches and errors, and known callers/callees ONLY where supplied evidence supports them. State missing details rather than inventing them.",
-    "workflow": "Describe the supplied multi-file static path in its indexed direction. Separate resolved call edges from possible runtime behavior; do not invent execution order.",
+    "function": "Explain visible inputs, outputs, steps, branches, errors and supplied calls in evidence-linked interpretation prose, not just copied facts. Mark missing details unknown.",
+    "workflow": "Explain the supplied indexed static path in evidence-linked prose, not just copied facts. Resolved edges do not prove runtime order; mark missing evidence unknown.",
     "behavior": "Describe source-supported possible causes and missing diagnostic evidence. A possible cause is a hypothesis, never a verified root cause from static evidence alone.",
-    "comparison": "Compare both explicit targets: signatures, visible implementation patterns and supplied relationships. Mark unavailable characteristics unknown; do not infer performance or behavioral equivalence.",
+    "comparison": "Compare both explicit targets in evidence-linked prose, not copied facts: signatures, implementations, supplied relationships. Mark unknowns; never infer performance or equivalence.",
 }
 
 
@@ -196,12 +196,31 @@ class GraphRagGenerator:
             omissions.extend("fact_limit:" + item.fact_id for item in facts if item.fact_id not in admitted_facts)
             facts = [item for item in facts if item.fact_id in admitted_facts]
         def messages():
+            # Canonical IDs/provenance remain in PreparedContext and the verified
+            # package. Repeating them inside each prompt data object can crowd
+            # out the required source even when that source fits its own cap.
+            # record_ids/fact_ids still link every prompt observation to the
+            # unchanged backend validator; no authority is inferred from prose.
+            identity_fields = {"evidence_ids", "entity_id", "source_symbol_id", "target_symbol_id",
+                               "source_node_id", "target_node_id", "path_node_ids"}
+            prompt_sources = [{**item.model_dump(mode="json"),
+                               "data": {key: value for key, value in item.data.items() if key not in {"provenance", "symbol_id"}}}
+                              for item in sources]
+            prompt_facts = [{**item.model_dump(mode="json"),
+                             "data": {key: value for key, value in item.data.items() if key not in identity_fields}}
+                            for item in facts]
+            coverage_limits = list(dict.fromkeys(limit for item in package.requirements
+                if item.requirement_id in selected_requirements for limit in item.limitations))
             payload = self.safety.tree({"task": request.explanation_type, "question": request.query.question,
-                "requirements": [{**item.model_dump(mode="json"), "support_ids": request.bindings[item.order],
-                                  "targets": [{"name": entity.name, "kind": entity.kind, "symbol_id": entity.symbol_id, "path": entity.file_path} for entity in targets[item.order]]} for item in request.normalized.requirements],
-                "sources": [item.model_dump(mode="json") for item in sources], "facts": [item.model_dump(mode="json") for item in facts],
+                "requirements": [{"order": item.order, "intent": item.intent, "depends_on": item.depends_on,
+                                  "interpretation": item.interpretation, "support_ids": request.bindings[item.order],
+                                  "targets": [{"name": entity.name, "kind": entity.kind, "path": entity.file_path} for entity in targets[item.order]]} for item in request.normalized.requirements],
+                "sources": prompt_sources, "facts": prompt_facts,
                 "gaps": {str(key): value for key, value in gaps.items()}, "limitations": package.limitations,
-                "coverage": [{"requirement_id": item.requirement_id, "state": item.state, "limitations": item.limitations} for item in package.requirements if item.requirement_id in selected_requirements],
+                "coverage_limitations": coverage_limits,
+                "coverage": [{"requirement_id": item.requirement_id, "state": item.state,
+                              "limitation_indices": [coverage_limits.index(limit) for limit in item.limitations]}
+                             for item in package.requirements if item.requirement_id in selected_requirements],
                 "context_truncated": bool(omissions), "omitted_count": len(omissions)})
             return [{"role": "system", "content": SYSTEM + " " + TASK_GUIDANCE[request.explanation_type]}, {"role": "user", "content": json.dumps(payload, ensure_ascii=False, separators=(",", ":"), allow_nan=False)}]
         # Byte admission is conservative, not a claim of exact token counting.

@@ -89,6 +89,7 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
+    "test": "npm run compile && node --test test/presentation.test.js test/stabilization.test.js test/runtime.test.js ../knowledge_base/test_semantic_resolver.cjs",
     "test:integration": "npm run compile && node test/runTest.js",
     "package:vsix": "vsce package --out ../codemind-extension-0.4.1.vsix"
   },

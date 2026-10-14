@@ -106,14 +106,14 @@ export class HybridChatSession {
         if (!['quick', 'standard', 'deep'].includes(action.depth || '')) return true;
         const reply = await this.server.hybridPresentation(selected.id, answer.token, action.depth!);
         if (version !== answer.version || !this.answers.has(action.key!) || !hybridEnabled()) return true;
-        if (reply.presentation.package_id !== answer.view.package_id || reply.presentation.snapshot_id !== answer.view.snapshot_id) throw new Error('Display generation changed.');
+        if (reply.presentation.schema_version !== 'phase9-1' || reply.presentation.repository_id !== answer.repoId || reply.presentation.package_id !== answer.view.package_id || reply.presentation.snapshot_id !== answer.view.snapshot_id) throw new Error('Display repository/generation changed.');
         answer.view = reply.presentation; await this.show(action.key!, answer);
       } else {
         const reference = typeof action.actionKey === 'string' ? answer.sources.get(action.actionKey) : undefined;
         if (!reference) return true;
         const reply = await this.server.hybridSource(selected.id, answer.token, reference, answer.view.depth);
         if (version !== answer.version || !this.answers.has(action.key!) || !hybridEnabled()) return true;
-        if (reply.presentation.package_id !== answer.view.package_id || reply.presentation.snapshot_id !== answer.view.snapshot_id) throw new Error('Source generation changed.');
+        if (reply.presentation.schema_version !== 'phase9-1' || reply.presentation.repository_id !== answer.repoId || reply.presentation.package_id !== answer.view.package_id || reply.presentation.snapshot_id !== answer.view.snapshot_id) throw new Error('Source repository/generation changed.');
         answer.view = reply.presentation; await this.show(action.key!, answer);
         await openVerifiedPreviewSource(selected.rootPath, reply, reference);
       }

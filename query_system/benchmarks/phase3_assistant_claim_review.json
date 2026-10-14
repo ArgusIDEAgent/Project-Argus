@@ -1,0 +1,31 @@
+{
+  "reviewer": "Codex assistant; NOT independent human review",
+  "source_run": "phase3_verified/extension.json",
+  "original_outputs_modified": false,
+  "scope": "All seven backend-accepted model claims in the thirteen positive-task cohort. Model claims are the unit, not individual clauses. Repeated outputs are counted as observations but are not independent examples. Rejected/absent outputs are reviewed separately as quality failures, not accepted prose.",
+  "source_evidence": [
+    {"path":"extension/src/sourceNavigation.ts","lines":[7,31],"facts":["Reject empty, absolute or NUL-containing relative paths, not their negation.","Resolve both root and file, check containment before and after realpath, require a regular file <=5 MiB, compare SHA-256, return canonical real path.","A hash mismatch does not establish which input changed; root/stat/read operations can also throw."]},
+    {"path":"extension/src/responsePreview.ts","lines":[54,94],"facts":["verifiedPreviewSource passes root, proof.file_path and proof.source_hash to verifiedSourcePath.","openVerifiedPreviewSource calls verifiedPreviewSource before opening the document and again after dirty/range/hash checks, before showing the editor.","Static paths do not prove observed runtime execution."]}
+  ],
+  "claims": [
+    {"case":"function.repeat2","claim_index":0,"classification":"properly_qualified_source_supported","supported_or_qualified":true,"completeness":"partial","notes":["Checks described are source-supported, but the explanation omits the complete input/return contract, symlink distinctions, exact 5 MiB boundary and additional filesystem exceptions.","The printed backslash-zero notation must be understood as U+0000, not a two-character substring."]},
+    {"case":"function.repeat3","claim_index":0,"classification":"properly_qualified_source_supported","supported_or_qualified":true,"completeness":"partial","notes":["Repeats the function.repeat2 claim; not independent validation."]},
+    {"case":"workflow.repeat2","claim_index":0,"classification":"contradicted_by_source","supported_or_qualified":false,"critical":true,"completeness":"misleading","contradictions":["The statement that a path throws when it is NOT absolute or NUL-containing reverses the implemented guard.","The claim that verifiedSourcePath receives the same arguments as openVerifiedPreviewSource/verifiedPreviewSource is false: it receives root, proof.file_path and proof.source_hash.","The narrative obscures the first verification before document open and the subsequent recheck; it must not be treated as an observed runtime trace."]},
+    {"case":"workflow.repeat3","claim_index":0,"classification":"contradicted_by_source","supported_or_qualified":false,"critical":true,"completeness":"misleading","notes":["Repeats the same source-contradicted workflow assertions; not an independent hallucination family."]},
+    {"case":"behavior.repeat2","claim_index":0,"classification":"hypothetical_consequence_with_source_support","supported_or_qualified":true,"completeness":"partial","notes":["Possible validation failures are supported when kept hypothetical; this is not a diagnosed root cause.","The source-changed possibility does not prove a mismatch was caused by a changed file rather than incorrect expected metadata. NUL and exact size boundary need clarification; uncaught filesystem failures are omitted."]},
+    {"case":"behavior.repeat3","claim_index":0,"classification":"hypothetical_consequence_with_source_support","supported_or_qualified":true,"completeness":"partial","notes":["Repeats behavior.repeat2; caveats unchanged."]},
+    {"case":"compound","claim_index":0,"classification":"fully_source_supported","supported_or_qualified":true,"completeness":"insufficient_explanation","notes":["The location statement is correct but repeats a finding instead of explaining the requested function. Backend acceptance is not adequate employee usefulness or requirement completeness."]}
+  ],
+  "counts": {"accepted_model_claim_observations":7,"supported_or_properly_qualified":5,"contradicted":2,"independent_human_reviews":0},
+  "supported_or_qualified_rate":0.7142857142857143,
+  "contradicted_claim_rate":0.2857142857142857,
+  "unassessable_or_rejected_positive_tasks":6,
+  "rejected_task_review": {"first_function_workflow_behavior_comparison":"No response body before deadline; factuality not assessable.","comparison_repeats":"Backend validation rejects the output; no accepted comparison explanation to qualify."},
+  "gate": "FAILED: source-contradicted accepted prose and no qualified comparison family. This seven-claim assistant annotation is neither a population accuracy estimate nor human approval.",
+  "corrections_separate_from_original": [
+    "Correct guard interpretation: an empty, absolute or NUL-containing indexed relative path is rejected.",
+    "Correct argument flow: verifiedPreviewSource derives root and proof fields before calling verifiedSourcePath; openVerifiedPreviewSource invokes verification before opening and rechecks after editor validation.",
+    "Do not replace or relabel original model outputs with these corrections. Prefer generation-disabled deterministic evidence while model qualification remains incomplete."
+  ],
+  "usefulness": {"human_state":"pending","assistant_rubric":"Assess directness, locate code, follow flow, facts vs hypotheses, unknowns and actionable next steps independently for each family; no numeric human scores are fabricated."}
+}

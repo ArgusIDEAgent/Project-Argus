@@ -1,0 +1,726 @@
+[
+  {
+    "id": "A1",
+    "question": "Where is verifiedSourcePath defined?",
+    "expected": [
+      [
+        "SYMBOL_LOCATION",
+        [
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "actual": [
+      [
+        "SYMBOL_LOCATION",
+        [
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "matches": true
+  },
+  {
+    "id": "A2",
+    "question": "Find function verifiedPreviewSource",
+    "expected": [
+      [
+        "SYMBOL_LOCATION",
+        [
+          "verifiedPreviewSource"
+        ]
+      ]
+    ],
+    "actual": [
+      [
+        "SYMBOL_LOCATION",
+        [
+          "verifiedPreviewSource"
+        ]
+      ]
+    ],
+    "matches": true
+  },
+  {
+    "id": "A3",
+    "question": "Where is escapeDisplay defined?",
+    "expected": [
+      [
+        "SYMBOL_LOCATION",
+        [
+          "escapeDisplay"
+        ]
+      ]
+    ],
+    "actual": [
+      [
+        "SYMBOL_LOCATION",
+        [
+          "escapeDisplay"
+        ]
+      ]
+    ],
+    "matches": true
+  },
+  {
+    "id": "B1",
+    "question": "Who calls verifiedSourcePath?",
+    "expected": [
+      [
+        "DIRECT_CALLERS",
+        [
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "actual": [
+      [
+        "DIRECT_CALLERS",
+        [
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "matches": true
+  },
+  {
+    "id": "B2",
+    "question": "What does verifiedSourcePath call?",
+    "expected": [
+      [
+        "DIRECT_CALLEES",
+        [
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "actual": [
+      [
+        "DIRECT_CALLEES",
+        [
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "matches": true
+  },
+  {
+    "id": "B3",
+    "question": "Dependency path from openVerifiedPreviewSource to verifiedSourcePath",
+    "expected": [
+      [
+        "DEPENDENCY_PATH",
+        [
+          "openVerifiedPreviewSource",
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "actual": [
+      [
+        "DEPENDENCY_PATH",
+        [
+          "openVerifiedPreviewSource",
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "matches": true
+  },
+  {
+    "id": "C1",
+    "question": "Find code that verifies source file hashes before opening citations",
+    "expected": [
+      [
+        "FEATURE_DISCOVERY",
+        [
+          "Find code that verifies source file hashes before opening citations"
+        ]
+      ]
+    ],
+    "actual": [
+      [
+        "FEATURE_DISCOVERY",
+        [
+          "Find code that verifies source file hashes before opening citations"
+        ]
+      ]
+    ],
+    "matches": true
+  },
+  {
+    "id": "C2",
+    "question": "Find code that loads study logs and a summary from the backend",
+    "expected": [
+      [
+        "FEATURE_DISCOVERY",
+        [
+          "Find code that loads study logs and a summary from the backend"
+        ]
+      ]
+    ],
+    "actual": [
+      [
+        "FEATURE_DISCOVERY",
+        [
+          "Find code that loads study logs and a summary from the backend"
+        ]
+      ]
+    ],
+    "matches": true
+  },
+  {
+    "id": "D1",
+    "question": "Explain verifiedSourcePath",
+    "expected": [
+      [
+        "FUNCTION_EXPLANATION",
+        [
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "actual": [
+      [
+        "FUNCTION_EXPLANATION",
+        [
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "matches": true
+  },
+  {
+    "id": "D2",
+    "question": "Explain verifiedSourcePath including inputs, outputs and errors",
+    "expected": [
+      [
+        "FUNCTION_EXPLANATION",
+        [
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "actual": [
+      [
+        "FUNCTION_EXPLANATION",
+        [
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "matches": true
+  },
+  {
+    "id": "D3",
+    "question": "What does verifiedSourcePath return?",
+    "expected": [
+      [
+        "FUNCTION_CONTRACT",
+        [
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "actual": [
+      [
+        "SYMBOL_LOCATION",
+        [
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "matches": false
+  },
+  {
+    "id": "D4",
+    "question": "Contract of verifiedSourcePath",
+    "expected": [
+      [
+        "FUNCTION_CONTRACT",
+        [
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "actual": [
+      [
+        "FUNCTION_CONTRACT",
+        [
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "matches": true
+  },
+  {
+    "id": "E1",
+    "question": "Explain the workflow from openVerifiedPreviewSource to verifiedSourcePath",
+    "expected": [
+      [
+        "WORKFLOW_EXPLANATION",
+        [
+          "openVerifiedPreviewSource",
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "actual": [
+      [
+        "WORKFLOW_EXPLANATION",
+        [
+          "openVerifiedPreviewSource",
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "matches": true
+  },
+  {
+    "id": "F1",
+    "question": "Impact of verifiedSourcePath",
+    "expected": [
+      [
+        "CHANGE_IMPACT",
+        [
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "actual": [
+      [
+        "CHANGE_IMPACT",
+        [
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "matches": true
+  },
+  {
+    "id": "F2",
+    "question": "Find tests for verifiedSourcePath",
+    "expected": [
+      [
+        "TEST_DISCOVERY",
+        [
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "actual": [
+      [
+        "TEST_DISCOVERY",
+        [
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "matches": true
+  },
+  {
+    "id": "F3",
+    "question": "Show dependencies of verifiedSourcePath",
+    "expected": [
+      [
+        "DEPENDENCY_PATH",
+        [
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "actual": [
+      [
+        "DEPENDENCY_PATH",
+        [
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "matches": true
+  },
+  {
+    "id": "G1",
+    "question": "Compare verifiedSourcePath and verifiedPreviewSource",
+    "expected": [
+      [
+        "CODE_COMPARISON",
+        [
+          "verifiedSourcePath",
+          "verifiedPreviewSource"
+        ]
+      ]
+    ],
+    "actual": [
+      [
+        "CODE_COMPARISON",
+        [
+          "verifiedSourcePath",
+          "verifiedPreviewSource"
+        ]
+      ]
+    ],
+    "matches": true
+  },
+  {
+    "id": "G2",
+    "question": "Compare verifiedSourcePath with extension/src/sourceNavigation.ts::isInside",
+    "expected": [
+      [
+        "CODE_COMPARISON",
+        [
+          "verifiedSourcePath",
+          "isInside"
+        ]
+      ]
+    ],
+    "actual": [
+      [
+        "CODE_COMPARISON",
+        [
+          "verifiedSourcePath",
+          "isInside"
+        ]
+      ]
+    ],
+    "matches": true
+  },
+  {
+    "id": "H1",
+    "question": "Which CNN architecture and hyperparameters are used?",
+    "expected": [
+      [
+        "FEATURE_DISCOVERY",
+        [
+          "Which CNN architecture and hyperparameters are used?"
+        ]
+      ]
+    ],
+    "actual": [
+      [
+        "SYMBOL_LOCATION",
+        [
+          "CNN"
+        ]
+      ]
+    ],
+    "matches": false
+  },
+  {
+    "id": "H2",
+    "question": "What hyperparameter tuning is actually performed?",
+    "expected": [
+      [
+        "FEATURE_DISCOVERY",
+        [
+          "What hyperparameter tuning is actually performed?"
+        ]
+      ]
+    ],
+    "actual": [
+      [
+        "FEATURE_DISCOVERY",
+        [
+          "What hyperparameter tuning is actually performed?"
+        ]
+      ]
+    ],
+    "matches": true
+  },
+  {
+    "id": "H3",
+    "question": "Find code that configures image size batch size and training epochs",
+    "expected": [
+      [
+        "FEATURE_DISCOVERY",
+        [
+          "Find code that configures image size batch size and training epochs"
+        ]
+      ]
+    ],
+    "actual": [
+      [
+        "FEATURE_DISCOVERY",
+        [
+          "Find code that configures image size batch size and training epochs"
+        ]
+      ]
+    ],
+    "matches": true
+  },
+  {
+    "id": "I1",
+    "question": "Why might verifiedSourcePath fail?",
+    "expected": [
+      [
+        "BEHAVIOR_INVESTIGATION",
+        [
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "actual": [
+      [
+        "BEHAVIOR_INVESTIGATION",
+        [
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "matches": true
+  },
+  {
+    "id": "J1",
+    "question": "Where is phase3Nonexistent defined?",
+    "expected": [
+      [
+        "SYMBOL_LOCATION",
+        [
+          "phase3Nonexistent"
+        ]
+      ]
+    ],
+    "actual": [
+      [
+        "SYMBOL_LOCATION",
+        [
+          "phase3Nonexistent"
+        ]
+      ]
+    ],
+    "matches": true
+  },
+  {
+    "id": "J2",
+    "question": "Compare verifiedSourcePath with isInside",
+    "expected": [
+      [
+        "CODE_COMPARISON",
+        [
+          "verifiedSourcePath",
+          "isInside"
+        ]
+      ]
+    ],
+    "actual": [
+      [
+        "CODE_COMPARISON",
+        [
+          "verifiedSourcePath",
+          "isInside"
+        ]
+      ]
+    ],
+    "matches": true
+  },
+  {
+    "id": "J4",
+    "question": "Who calls check_folder in 46_CNN_Surface_Crack_Detection.py?",
+    "expected": [
+      [
+        "DIRECT_CALLERS",
+        [
+          "check_folder"
+        ]
+      ]
+    ],
+    "actual": [
+      [
+        "DIRECT_CALLERS",
+        [
+          "check_folder"
+        ]
+      ]
+    ],
+    "matches": true
+  },
+  {
+    "id": "K1",
+    "question": "Where is verifiedSourcePath defined and explain verifiedSourcePath",
+    "expected": [
+      [
+        "SYMBOL_LOCATION",
+        [
+          "verifiedSourcePath"
+        ]
+      ],
+      [
+        "FUNCTION_EXPLANATION",
+        [
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "actual": [
+      [
+        "SYMBOL_LOCATION",
+        [
+          "verifiedSourcePath"
+        ]
+      ],
+      [
+        "FUNCTION_EXPLANATION",
+        [
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "matches": true
+  },
+  {
+    "id": "K2",
+    "question": "Who calls verifiedSourcePath and verifiedPreviewSource?",
+    "expected": [
+      [
+        "DIRECT_CALLERS",
+        [
+          "verifiedSourcePath",
+          "verifiedPreviewSource"
+        ]
+      ]
+    ],
+    "actual": [
+      [
+        "DIRECT_CALLERS",
+        [
+          "verifiedSourcePath",
+          "verifiedPreviewSource"
+        ]
+      ]
+    ],
+    "matches": true
+  },
+  {
+    "id": "K3",
+    "question": "Find callers of verifiedSourcePath and explain verifiedPreviewSource",
+    "expected": [
+      [
+        "DIRECT_CALLERS",
+        [
+          "verifiedSourcePath"
+        ]
+      ],
+      [
+        "FUNCTION_EXPLANATION",
+        [
+          "verifiedPreviewSource"
+        ]
+      ]
+    ],
+    "actual": [
+      [
+        "DIRECT_CALLERS",
+        [
+          "verifiedSourcePath"
+        ]
+      ],
+      [
+        "FUNCTION_EXPLANATION",
+        [
+          "verifiedPreviewSource"
+        ]
+      ]
+    ],
+    "matches": true
+  },
+  {
+    "id": "K4",
+    "question": "Compare verifiedSourcePath and verifiedPreviewSource and find tests for both",
+    "expected": [
+      [
+        "CODE_COMPARISON",
+        [
+          "verifiedSourcePath",
+          "verifiedPreviewSource"
+        ]
+      ],
+      [
+        "TEST_DISCOVERY",
+        [
+          "verifiedSourcePath",
+          "verifiedPreviewSource"
+        ]
+      ]
+    ],
+    "actual": [
+      [
+        "CODE_COMPARISON",
+        [
+          "verifiedSourcePath",
+          "verifiedPreviewSource"
+        ]
+      ],
+      [
+        "TEST_DISCOVERY",
+        [
+          "verifiedSourcePath",
+          "verifiedPreviewSource"
+        ]
+      ]
+    ],
+    "matches": true
+  },
+  {
+    "id": "A4",
+    "question": "Where is readJson defined?",
+    "expected": [
+      [
+        "SYMBOL_LOCATION",
+        [
+          "readJson"
+        ]
+      ]
+    ],
+    "actual": [
+      [
+        "SYMBOL_LOCATION",
+        [
+          "readJson"
+        ]
+      ]
+    ],
+    "matches": true
+  },
+  {
+    "id": "B4",
+    "question": "What does emptyForm call?",
+    "expected": [
+      [
+        "DIRECT_CALLEES",
+        [
+          "emptyForm"
+        ]
+      ]
+    ],
+    "actual": [
+      [
+        "DIRECT_CALLEES",
+        [
+          "emptyForm"
+        ]
+      ]
+    ],
+    "matches": true
+  },
+  {
+    "id": "D5",
+    "question": "Contract of readJson",
+    "expected": [
+      [
+        "FUNCTION_CONTRACT",
+        [
+          "readJson"
+        ]
+      ]
+    ],
+    "actual": [
+      [
+        "FUNCTION_CONTRACT",
+        [
+          "readJson"
+        ]
+      ]
+    ],
+    "matches": true
+  }
+]

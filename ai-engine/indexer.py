@@ -330,6 +330,7 @@ def _index_directory(
     # Classify files
     files_to_index: list[str] = []
     skipped = 0
+    files_failed = 0
 
     for abs_path in all_files:
         rel_path = _rel_posix(abs_path, target_dir)
@@ -337,6 +338,9 @@ def _index_directory(
             file_hash = _sha256(abs_path)
         except OSError as exc:
             _log(f"⚠️  Skipping {rel_path}: {exc}")
+            files_failed += 1
+            with metadata.db:
+                metadata.error(rel_path, type(exc).__name__)
             continue
         new_state[rel_path] = file_hash
 
@@ -363,7 +367,7 @@ def _index_directory(
         _log(f"🗑️  Pruned vectors for {len(deleted_rel_paths)} deleted file(s)")
 
     # --- Process new / modified files ---
-    total_points = graph_nodes_added = files_failed = chunks_embedded = chunks_reused = 0
+    total_points = graph_nodes_added = chunks_embedded = chunks_reused = 0
 
     for abs_path in files_to_index:
         rel_path = _rel_posix(abs_path, target_dir)
@@ -463,9 +467,16 @@ def _index_directory(
 
         if kg is not None and rel_path.endswith(".py"):
             try:
-                graph_nodes_added += graph_builder.update_graph_for_file(kg, rel_path, abs_path)
+                added = graph_builder.update_graph_for_file(kg, rel_path, abs_path)
+                if not added:
+                    raise IndexingError('Python graph parsing did not produce a module')
+                graph_nodes_added += added
             except Exception as exc:                    # one unparsable file must not abort the run
                 _log(f"⚠️  Graph update failed for {rel_path}: {exc}")
+                files_failed += 1
+                new_state.pop(rel_path, None)
+                with metadata.db:
+                    metadata.error(rel_path, type(exc).__name__)
         _log(f"   ✔ {rel_path}  ({total} chunks)")
 
     # --- Persist state and graph ---
@@ -479,7 +490,8 @@ def _index_directory(
     new_state[_FINGERPRINT_KEY] = fingerprint
     _save_state(state_path, new_state)
 
-    _log(f"\n🚀 Indexing complete — {total_points} point(s) upserted, "
+    outcome = 'incomplete' if files_failed else 'complete'
+    _log(f"\n🚀 Indexing {outcome} — {total_points} point(s) upserted, "
          f"{skipped} file(s) unchanged, "
          f"{len(deleted_rel_paths)} file(s) pruned.")
 

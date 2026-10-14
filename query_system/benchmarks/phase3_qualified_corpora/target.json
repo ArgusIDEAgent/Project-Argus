@@ -1,0 +1,5271 @@
+{
+  "profile": "target",
+  "original_source": "/Users/paraspingale/Desktop/Projects/CodeMind/CodeingMind_Project ",
+  "state": "completed",
+  "embedding_batch_size": 8,
+  "embedding_threads": 2,
+  "benchmark_only_overrides": true,
+  "copied_files": 189,
+  "copied_bytes": 2071476,
+  "copied_lines": 36153,
+  "inventory": [
+    [
+      "project_plan.md",
+      7344,
+      "5ce273f6f1912e9352731ceb23c47263ebe81a0fd0818df0f67d4c2709840330"
+    ],
+    [
+      "conftest.py",
+      1742,
+      "0733533e35e9d9cad0fbd78b7310524f84f713426a6eb33f4d46abda5bb830d9"
+    ],
+    [
+      "progress.md",
+      30643,
+      "b65e125e4b3fee51b4f385ba5804071a6107feebe385374ea147ce821a40de8d"
+    ],
+    [
+      "TESTING.md",
+      5209,
+      "2c4ec7187a06858f91b472949cbfb12f237c0b12c73c93ac06452e1f15b838a1"
+    ],
+    [
+      "README.md",
+      9307,
+      "c84a1615728aa42508ee127662e06284063845b074a3ce3942852f5c4ffe66cc"
+    ],
+    [
+      "REPO_AUDIT_REPORT.md",
+      18190,
+      "1b27f32530e131a378de41af96b459449e0e3fdd17cebcdfc3111f3f8b2d5fb1"
+    ],
+    [
+      "RETRIEVAL_SETUP.md",
+      6292,
+      "df64fef11f2c7ac4914bfe32f014be1d63c2a9398262b871250e1b85c3f89157"
+    ],
+    [
+      "start_codemind.py",
+      779,
+      "5fdd6abd71f21dd00f8a62ec1e4ba57afa21f9eefb62054f8526beed9b8a6c39"
+    ],
+    [
+      "CLAUDE.md",
+      2420,
+      "dfa65e54a827f598d896d686bac5b065479c62ec2b2f7aede71cf358bdf65af5"
+    ],
+    [
+      "extension/README.md",
+      5730,
+      "3605250b54ec5a58152590bbabbb63e1c3fac06a9cd3c2abec97bef9e51f7f26"
+    ],
+    [
+      "extension/package-lock.json",
+      78646,
+      "ebff1ac764e4a52c3385efe14d4a04b79a503cede76684e2faa4a1080d8d8436"
+    ],
+    [
+      "extension/package.json",
+      3396,
+      "5c00258801a6fb5a0eadf77917e637425442ff95854803a192bb24c10881206d"
+    ],
+    [
+      "extension/tsconfig.json",
+      286,
+      "0fdba4730f6ba8658666f4f2091695ae663a13f404efb0fd1133399f7e899f9e"
+    ],
+    [
+      "extension/test/presentation.test.js",
+      12307,
+      "3fb706712e36ff58e78a143d2bd37d27b52425e077cbd46008429ae150c22670"
+    ],
+    [
+      "extension/test/presentationSuite.js",
+      5749,
+      "8e7c5df2f82ed48b958a70082164bfce240029fda7c2bacb2dd7260a5048a593"
+    ],
+    [
+      "extension/test/runTest.js",
+      1112,
+      "75b251d82d8582387ccd11b6f57689a5b93e997f776b8fd453e435d3835675ad"
+    ],
+    [
+      "extension/test/suite.js",
+      2717,
+      "ef33da39c5769f7f6ffec9174fab251db257b1a4fcb0ee52b69cc2a3e497b3ae"
+    ],
+    [
+      "extension/test/runtime.test.js",
+      11015,
+      "baf9a1a863dc29c7c412e729d712d7ff9121d098232996f75a78c2f2c29532be"
+    ],
+    [
+      "extension/test/stabilizationRealSuite.js",
+      12387,
+      "533801f06a462b3a44791b00247fa8c2f92f2adcda613f383a3ebebfb894a53d"
+    ],
+    [
+      "extension/test/hybridSuite.js",
+      8724,
+      "91d938752e93c6e44cbc152bbafcd8add7418c9e40226d0219407742b4154580"
+    ],
+    [
+      "extension/test/stabilization.test.js",
+      3167,
+      "31e35e80915a733fa1d501bb47596bcb436eac10a76169f9a9b71a044147bbc6"
+    ],
+    [
+      "extension/server/embeddingProvider.js",
+      2919,
+      "9bfbf723ad6cb8826342907912a232f5f236d8a5105880b449a8a1a27bf7fe6e"
+    ],
+    [
+      "extension/server/semanticStore.js",
+      5965,
+      "5bc0b621530c8c2ace35056315dd9e888d643567451edf3d36d7dfddd53b78d8"
+    ],
+    [
+      "extension/server/registry.js",
+      32059,
+      "125980158364c7fb281c1cbd85ec104b6cfcc7bb4f7b4752a7051a703b91fd26"
+    ],
+    [
+      "extension/server/frameworkAdapters.js",
+      6055,
+      "ccce4df36c55c875003fcd035d1785b11e60ac8198b59f7cdcf175a3a821b584"
+    ],
+    [
+      "extension/server/server.js",
+      12655,
+      "d98f3ba92cd732f7082727eed1b5f9c2ab64312e0cfc63be6db0301a21503889"
+    ],
+    [
+      "extension/server/graphStore.js",
+      16109,
+      "f1bed81bd1e6993877e31d306eca2b6d0dfe154bce482f739278377632367e2a"
+    ],
+    [
+      "extension/server/chunker.js",
+      4507,
+      "04ed21c867e8bb1f552d5e239c46258cd89cc21383e571eeff9c2154370e46d6"
+    ],
+    [
+      "extension/server/reuseAnalyzer.js",
+      5654,
+      "44f190be72d524c64e082ca08edba3895b97c0ea991fbc8543b25d03130836bd"
+    ],
+    [
+      "extension/server/docStore.js",
+      13724,
+      "cbb79270ec4e23dc08133c5b166ee1f1f27af6abb67ec322e9be665c87ee3825"
+    ],
+    [
+      "extension/server/codeParser.js",
+      12532,
+      "e805a5c26034e7e3a55aa84ae02292d39107ac2fcb88d414ae2a793f3a8f323c"
+    ],
+    [
+      "extension/server/semanticCalibration.js",
+      3533,
+      "3358ef3d8369cc57ba875705700b8567a1e198f66192d6ef3b7278c2b1d295d1"
+    ],
+    [
+      "extension/server/docPlanner.js",
+      7294,
+      "d2b43504220b4781037d5ccd471ddb6fe01632a335f95bd666b22568ddb923a2"
+    ],
+    [
+      "extension/server/modelProvider.js",
+      2334,
+      "fab8203c8b740b291ee7438c72910a72aeac263b5bf8ba0cf8234eaa26fb071f"
+    ],
+    [
+      "extension/server/graphBuilder.js",
+      2038,
+      "81d01b3637e88143ef40ba3a28c67e69a5d37d12e46ac3f3320c6488d2b1ff03"
+    ],
+    [
+      "extension/server/retrievalService.js",
+      7301,
+      "ffc36b82e53794d9c698a7f961309dd9861069a2a6837c2f85539d79282cd8dd"
+    ],
+    [
+      "extension/server/gitService.js",
+      7842,
+      "27cba7dddb0681f9721b113fa2ca6971180ac69596ed307544da89dae04f59bf"
+    ],
+    [
+      "extension/.vscode/launch.json",
+      303,
+      "78c8a9187a0237744d3a9436d49f864124c7bfca48533a0223483f77925c5df6"
+    ],
+    [
+      "extension/src/responsePreview.ts",
+      11680,
+      "5af85802f3940719993e21f3c734314b55a7ae8fbda7b097e7fb793148a887b5"
+    ],
+    [
+      "extension/src/extension.ts",
+      43598,
+      "c97c3c4a4b90baf695447077f1a039b88853c6d61364dbfb1238f300fc87fb4c"
+    ],
+    [
+      "extension/src/hybridChat.ts",
+      8802,
+      "bf04c29c8cfcbf3f4acac1bc2a05220c1c23c635ea176d67393344240b0213f1"
+    ],
+    [
+      "extension/src/sourceNavigation.ts",
+      1421,
+      "84dcabc85f12975121888b59fe0e9cef608bee2387c13c083b614124a711a66a"
+    ],
+    [
+      "extension/src/serverManager.ts",
+      10335,
+      "f4cc837e12a0d721aa90309cb0a15b423a2684ca0264b5d3bdc59626417d1ce0"
+    ],
+    [
+      "extension/src/responsePresentation.ts",
+      11249,
+      "92a1c7abf558ab65c2834943ae72494b62285608ed8f81737f0e0314ba803176"
+    ],
+    [
+      "query_system/test_understanding.py",
+      5293,
+      "8853e90d0070f7ed83e491cf515c312e10e67659f4e75ec5b790dc8e58259d74"
+    ],
+    [
+      "query_system/test_contracts.py",
+      10434,
+      "21f7a69afd509ed78b9f0e644bddb541c3f9aee2b3a3f38a028c74a37e69b831"
+    ],
+    [
+      "query_system/PHASE9.md",
+      16332,
+      "0a59dd11832db52cba938ed2bf188a343366ae767a418588e598c8d00e75f4b8"
+    ],
+    [
+      "query_system/IMPROVEMENT_PHASE2_REPORT.md",
+      24440,
+      "d790fe486f242d8cc56c01112542fce7709a1aa9dd9250fa4a5e719b2143c7d6"
+    ],
+    [
+      "query_system/presentation_contracts.py",
+      4585,
+      "dca62a03f6e14731d924dfaa77a44277eb6fd450e757cddad60dcf91fa6589d6"
+    ],
+    [
+      "query_system/rule_registry.py",
+      5483,
+      "cad17d1883bb3ddaea2d0803f4689ba5fb8be141fc6cbdfd958ca22831320929"
+    ],
+    [
+      "query_system/benchmark_presentation.py",
+      5667,
+      "c966ad8657905377ed236fe8d53a7c28d8b56c5c5f86443458ee19a98a270bef"
+    ],
+    [
+      "query_system/benchmark_understanding.py",
+      9470,
+      "bf8c9b45b955971b6ef22effe26a6310c8952c59989aca565497bdda9582a4db"
+    ],
+    [
+      "query_system/benchmark_evidence.py",
+      7690,
+      "58c82d985c26e7d5ad5debc47ad7549212453777b0e5ef7a96cb81f63732ed2c"
+    ],
+    [
+      "query_system/presentation_preview.py",
+      6675,
+      "b6c4a82d80a2a6690dc17265edee79096e7cf5f7411f11538d142154235a2a21"
+    ],
+    [
+      "query_system/PHASE8.md",
+      17393,
+      "4d614c2276c3089383d79e38c03c96d1921da28ed8e89b656905d9e6b3d90b66"
+    ],
+    [
+      "query_system/STABILIZATION_REPORT.md",
+      26486,
+      "973ce12f02510e730e67cd84e95ca2fb4866b93653ba1e4b9bed093defbcd877"
+    ],
+    [
+      "query_system/graph_presentation.py",
+      3693,
+      "3df249616baae1f35a2304e847fc935db475e8af6c3a5da1c1a206efcbedc084"
+    ],
+    [
+      "query_system/S2.md",
+      12013,
+      "b1a50202814df8282ee5e4626a5fb817e939fe6e6971022d23027a7fb701bb78"
+    ],
+    [
+      "query_system/test_presentation.py",
+      12511,
+      "3fa3dee9c811195611767f3ef310a44854ef33f8040675a1db2d3a084550b4c2"
+    ],
+    [
+      "query_system/hybrid_contracts.py",
+      2831,
+      "6501448382f77338e5fa1f00d2ca7ddb5340ba9c55d42c5096e375a977b91871"
+    ],
+    [
+      "query_system/response_presentation.py",
+      16089,
+      "bf59fc0912cc9c308463e13d92bef94e83a38f0da59d162836512c2d87ca199b"
+    ],
+    [
+      "query_system/graph_engine.py",
+      20630,
+      "552210b8724af95a65423f953ba1511d220573c3b2608bb104e3dc14c6aa8429"
+    ],
+    [
+      "query_system/PHASE7.md",
+      14532,
+      "064cf86b4fcaca9b665582c05823960fc74abc3ecc89890a7ed4b8844494fda6"
+    ],
+    [
+      "query_system/evidence_aggregation.py",
+      35211,
+      "26d53d253a7c4b4a0487ebe331815ed63e149198dabd634f3af6a88f12fa3e0b"
+    ],
+    [
+      "query_system/__init__.py",
+      62,
+      "0b65dc7110cb3c2bd930a57c1c5f1a16bc11118bd657cf0f3e75db12665e0807"
+    ],
+    [
+      "query_system/test_semantic.py",
+      2308,
+      "37343b2477619e10322bddfbc997bd5a3c49010dcf8a593716053652f862c43d"
+    ],
+    [
+      "query_system/PHASE6.md",
+      12326,
+      "eef5c9ad32d8070efb2cca2e847f3131af5479dfc7ad2741091eb32d8267aa63"
+    ],
+    [
+      "query_system/rule_engine.py",
+      26639,
+      "e956efde61e990adc7284a0a77daf2409e0a569bb2eff9c3dae7bf6be65e0345"
+    ],
+    [
+      "query_system/qualify_stabilization_live.py",
+      15333,
+      "09460251c9f8f86bc5f0f32effe13d232bd455431636e1eb2a49dedf4f22338b"
+    ],
+    [
+      "query_system/local_ollama.py",
+      7631,
+      "b9ca928ed8f5a45d82dfb07952d13b005fd51927a585dd10882372edad91ed61"
+    ],
+    [
+      "query_system/STABILIZATION_HUMAN_REVIEW.md",
+      5537,
+      "dce0dd027e74633e9f37766861afef3f923e13eb6c12889095e736cbb175e72c"
+    ],
+    [
+      "query_system/test_stabilization.py",
+      3195,
+      "2f7bb0fc725336e9ccd225406873f4bb9f64028a9dd42d2fb110136cf497ec33"
+    ],
+    [
+      "query_system/PHASE10.md",
+      20031,
+      "2dce916e9f776f695865b5f7e23839c54d65df80aeb1f937e96bb9a98b2e58ca"
+    ],
+    [
+      "query_system/README.md",
+      14613,
+      "db5a6b591265f42381338a5e7799be7135cc7fc0d6c9cbd3769f01e53eaea8b2"
+    ],
+    [
+      "query_system/orchestration.py",
+      16961,
+      "ba3d316953f7362e4322a96cda68111e011f99db5a6d340396b1dd5375e29de0"
+    ],
+    [
+      "query_system/generation_safety.py",
+      2689,
+      "c429bc0b9f8092f0ee7ac6b2b58f214a280493c40e86177bb00a2f32cb4b4860"
+    ],
+    [
+      "query_system/qualify_phase3.py",
+      25669,
+      "87bf6c704bc828a5eacb4000de6f8f93276458ef656b3d3357ec6d8f598b7af9"
+    ],
+    [
+      "query_system/qualify_stabilization.py",
+      18340,
+      "922b26b0ca1cdfd57aa06ac1825b0d02328081e2fb76deb92253ade6089c274c"
+    ],
+    [
+      "query_system/PHASE5.md",
+      12535,
+      "c9bb01d522025033864e71d04e8ccb6c79b603918c30658eab7f6ba5e6436f89"
+    ],
+    [
+      "query_system/S2_AUDIT.md",
+      3817,
+      "e65431cfe872da2ac61f5266a753f4ca5292df91db01ee5a92b395857393fad1"
+    ],
+    [
+      "query_system/test_execution.py",
+      6421,
+      "96de61dd9e566049f878d27e0dce86af47b14f14d8e3eabd03961ca328e23862"
+    ],
+    [
+      "query_system/benchmark_hybrid.py",
+      17989,
+      "6bde44e7ac936b30ef638d2f19282e09ed8442495cdbbf54cec2e35a67b252c9"
+    ],
+    [
+      "query_system/graph_rag.py",
+      32181,
+      "e6105be2361fdcc0ab45dc7efa280168ba02ce367412d24aac78c96d63be39f8"
+    ],
+    [
+      "query_system/benchmark_execution.py",
+      7527,
+      "2ad92469545b750b6b924db1a7d6544b6fa7b1879b514f3f958b57b72448c6f8"
+    ],
+    [
+      "query_system/test_evidence.py",
+      6836,
+      "aef5a910851c6586ba510abf76a4427b9a4a5470b0e14027b667aa37346eeb64"
+    ],
+    [
+      "query_system/benchmark_generation.py",
+      8716,
+      "99d6255dc6fb1da0523d8b3c6e53bce229bec63821858ea84f791272534c71b7"
+    ],
+    [
+      "query_system/contracts.py",
+      21096,
+      "805e38731cd70a753958be480aa0563436172e43dc54a0f6f6bcddb82ba392fc"
+    ],
+    [
+      "query_system/PHASE4.md",
+      11070,
+      "ae60909f82f0ec5d97fe3ef8a21bec199322f4e52cbf858321f1b0f7d20956a4"
+    ],
+    [
+      "query_system/router.py",
+      12163,
+      "a7449afa43e108522e03fdccb38935966bce8d69bfcc42330a63296897320563"
+    ],
+    [
+      "query_system/semantic_engine.py",
+      16808,
+      "88ab147b7a1c977b3d8a692e2986a3837a073a7bfc5b912d39805ff642572b61"
+    ],
+    [
+      "query_system/IMPROVEMENT_PHASE1_REPORT.md",
+      19471,
+      "d9d320df54aff22bd062ce58b027f559ba3e32568082dd793724da10227de237"
+    ],
+    [
+      "query_system/query_understanding.py",
+      46484,
+      "9560fca1b961653f7f62f6d2384f264184b1fd7964952a6f3e0c0e6db3b52c63"
+    ],
+    [
+      "query_system/evidence_contracts.py",
+      11783,
+      "c133997ea3530f05b87b84f4a502e0741ad96fa1335c82491a9940a4a03b0415"
+    ],
+    [
+      "query_system/test_phase3_understanding.py",
+      4252,
+      "6fc2e6281da335bdf8533ae72f869c2dc13004dde256af188559b51a6081782d"
+    ],
+    [
+      "query_system/test_rules.py",
+      3369,
+      "a67091bdc1120ecc41ab66b07b0f47711990c1e09128cba396563dd3492fb809"
+    ],
+    [
+      "query_system/PHASE10_INTEGRATION_AUDIT.md",
+      5745,
+      "e58296404ed472dc2349515c7f9b3d7a3dd6cc8c916833a93f9995a334c9f94a"
+    ],
+    [
+      "query_system/benchmark_s2.py",
+      6446,
+      "0d22aaa8a7110c16421536bf908caa048f08a2f08cdf48d906540d0d7bbdc1e7"
+    ],
+    [
+      "query_system/benchmark_semantic.py",
+      9198,
+      "00b14b82abcb71a4056552dfb0268e2c083c94146282d34abaa4aee43451b6f5"
+    ],
+    [
+      "query_system/test_s2_understanding.py",
+      6778,
+      "691b1849821fe44f637f8f413d1d963de312c549e0e1f81a802e1961e6450002"
+    ],
+    [
+      "query_system/test_generation.py",
+      8493,
+      "5a856a411141e60c24a90a584e48da1b6c0ce799c569a66a471506e2dea45713"
+    ],
+    [
+      "query_system/executor.py",
+      22609,
+      "b77711c8614e07cd2630f1183c9253581aadb75f674ecf6b2213cd8d588c9a52"
+    ],
+    [
+      "query_system/IMPROVEMENT_PHASE2_BASELINE.md",
+      1701,
+      "3596045f12e2410153df3bb7b9a0899842fa26fc04917fc008761fbdc139d632"
+    ],
+    [
+      "query_system/execution_contracts.py",
+      10099,
+      "dfd12fd0df6ebd6267d2f0a6cce91836fb920bd8baffe1b0991d98ad02c769d3"
+    ],
+    [
+      "query_system/generation_contracts.py",
+      7309,
+      "a4c2392bc98bd4b43db2277353b8aee1ca244545497908222d7c0ded8d46efdb"
+    ],
+    [
+      "knowledge_base/test_parser.py",
+      7574,
+      "ab4dca9fcb176bc5b7e84b86601c34aeacc0626180d317c14eab0f7e4de3fa60"
+    ],
+    [
+      "knowledge_base/test_resolver_s1.py",
+      5928,
+      "09e94b9174e91036221886925c1f9d641802b7ff09e534668dec183c23ba7e07"
+    ],
+    [
+      "knowledge_base/test_retrieval.py",
+      3398,
+      "fdb8d5669b9cfd1d207d20eaa63562c2dcd17ab26039ae86950c5b1fed83a07b"
+    ],
+    [
+      "knowledge_base/scanner.py",
+      17451,
+      "5a549cd95bdde649aed6991339ff0db1aee33810fc000057d47772c86dcb5796"
+    ],
+    [
+      "knowledge_base/chunking.py",
+      9013,
+      "f26f1765b4a4adabdb1a691644ce02879c347bd267c575c305417dca4738a632"
+    ],
+    [
+      "knowledge_base/synchronization.py",
+      23143,
+      "e4534624b3ad47913ec59a99ef64c42aa1ef6d0205a05d532124f5b980b3acad"
+    ],
+    [
+      "knowledge_base/semantic_resolver.cjs",
+      10760,
+      "b2d10473f719b827ce862916e6617aa9f62a81f23ea25a4d19cf77c944e698c3"
+    ],
+    [
+      "knowledge_base/test_validation.py",
+      8400,
+      "ffc79f59f3fc898c063149bd988ba2e5cdaf27be81b6774a09d996a9548664d2"
+    ],
+    [
+      "knowledge_base/semantic.py",
+      4243,
+      "748209139bc22ae69a718b13721fb06704a05eebfcf11e6260186b4fad01d7f5"
+    ],
+    [
+      "knowledge_base/metadata.py",
+      32540,
+      "f63c1f12fbaeb65f041783eaeab85778c5b818982d31594a158fd19ce05432b4"
+    ],
+    [
+      "knowledge_base/vector_store.py",
+      10953,
+      "95252689c94baddc0a20aba1f10a2ca12f50a7a5a05ef87fbff98e5aaef7fcb5"
+    ],
+    [
+      "knowledge_base/test_validation_runtime.py",
+      9987,
+      "f53498c01c76796f1deefdc52f11a28706953b12dbf3868a241f869364a6d019"
+    ],
+    [
+      "knowledge_base/VALIDATION.md",
+      5837,
+      "b8f08374e08f161b0374c3ae6d37050399cb75785879dd6680f7157e893560b9"
+    ],
+    [
+      "knowledge_base/graph.py",
+      32204,
+      "155450044edc219053536a8bc444c651b765bccb5f0065c99fac3e05775be176"
+    ],
+    [
+      "knowledge_base/test_metadata.py",
+      11274,
+      "b28e7019acb54a152f0f7f82e62fbfa8470573e149106c09eca938b850ba179e"
+    ],
+    [
+      "knowledge_base/__init__.py",
+      55,
+      "6e2041cf95b12f4a4acc3ba59c1574917b2a0f6919607d5ba101fa4bba9a3a47"
+    ],
+    [
+      "knowledge_base/test_semantic.py",
+      10694,
+      "58d88458a694e241c2de2683d6388d8401e34444f3666ff149a70716828fa3ce"
+    ],
+    [
+      "knowledge_base/README.md",
+      27977,
+      "7665097331f3b0c3a5c234c1fb9979c3f164d4f672824a7e41d2b35d4316aab4"
+    ],
+    [
+      "knowledge_base/parser.py",
+      24139,
+      "36bb954075bf92b471dca00fe9c1f8d6ed6735b494bca7415f2f8b0729c56c2c"
+    ],
+    [
+      "knowledge_base/S1.md",
+      12624,
+      "8177f74765331fb66b472ea8bebef72f8dc448488348ce44378b930e66d7a5d2"
+    ],
+    [
+      "knowledge_base/retrieval.py",
+      30309,
+      "85a741fd76e8dc3bfa37c9fa2341438cf43305beb721e2175b2899d5c433ce76"
+    ],
+    [
+      "knowledge_base/test_graph.py",
+      9442,
+      "46fe0b88179b068b682f382edba671e74d4fe48c748b8d70e927e21a8a9b0fa8"
+    ],
+    [
+      "knowledge_base/identity.py",
+      1494,
+      "b1675f2e741a463c091e19a4dad48601bc953a7fa130d87a79663dba95844fbd"
+    ],
+    [
+      "knowledge_base/benchmark_semantic.py",
+      6038,
+      "3dce24685c96a6b2f090f2e293f4dcd8a0295a80ec4b40fcdf2c4b2dbf9cdb59"
+    ],
+    [
+      "knowledge_base/verify_resolver_s1.py",
+      12942,
+      "7f30783725a6a3c3d44d66d5b42022725529b36e2d453d9e206a38066a95b766"
+    ],
+    [
+      "knowledge_base/test_semantic_resolver.cjs",
+      8984,
+      "6110e4639eae20dc172a74d9753d97de0b7f13f6b1731b01a17b922666e8897f"
+    ],
+    [
+      "knowledge_base/validation.py",
+      30031,
+      "e3331bc5052571423095ac1569faf2a27f2dfe6704b03e8791778fff10126656"
+    ],
+    [
+      "knowledge_base/fixtures/phase8/expected.json",
+      7251,
+      "306d008e6b36cdd207e87e43cbab71b0efb8cae9b03161fcfdde8f98a1cec9d8"
+    ],
+    [
+      "knowledge_base/fixtures/phase8/typescript/tsconfig.json",
+      84,
+      "032a3b4bfd3ff517b0ac0013e54f24d79f8390408aa2169cd19a3d284f03204c"
+    ],
+    [
+      "knowledge_base/fixtures/phase8/typescript/tests/auth.test.ts",
+      312,
+      "589ce775e28ff8007cfe5f2c0481ffad170b24c29448d2af4e358602c1645a40"
+    ],
+    [
+      "knowledge_base/fixtures/phase8/typescript/src/cycle_a.ts",
+      121,
+      "df7742fe4a14798c6a53b89869678de97a41bff6b56e7555c11b3325ee9fb1ee"
+    ],
+    [
+      "knowledge_base/fixtures/phase8/typescript/src/entry.ts",
+      128,
+      "5434986be679a2b61406157930c376cbf05842c58caf3dd41ba56d91ea7e675a"
+    ],
+    [
+      "knowledge_base/fixtures/phase8/typescript/src/dynamic.ts",
+      610,
+      "a9822fb7abd704f1b6cecefeec7a01cf22eca3f1c09e831439df9b55750e9241"
+    ],
+    [
+      "knowledge_base/fixtures/phase8/typescript/src/alternate.ts",
+      76,
+      "579a382313514f53ad76e27c40f91ace124de63d58e22f2be713447b99984d22"
+    ],
+    [
+      "knowledge_base/fixtures/phase8/typescript/src/cycle_b.ts",
+      121,
+      "61fdca85a25dfa7aeed47e9e862b887c93c31595032310432db4aa162b86b2b1"
+    ],
+    [
+      "knowledge_base/fixtures/phase8/typescript/src/controller.ts",
+      313,
+      "53bf16c9d1af89807886a7ae8ac94896a905a2b618449e1e32bc162240cfac15"
+    ],
+    [
+      "knowledge_base/fixtures/phase8/typescript/src/ambiguous.ts",
+      270,
+      "f7ff6dff2abce2d8a2dcea37989097c73164dd9481e9445d9ce7125ffac4b725"
+    ],
+    [
+      "knowledge_base/fixtures/phase8/typescript/src/service.ts",
+      485,
+      "fa679ebac758cc544a6ffd8865df70fbdcb2a5cba652ce482a9bd4ff023801bb"
+    ],
+    [
+      "knowledge_base/fixtures/phase8/typescript/src/auth.ts",
+      428,
+      "5242550f2937053254ae3e8a3b7f774d6632aa5c15efaaa6f86d23b1a425b6fe"
+    ],
+    [
+      "knowledge_base/fixtures/phase8/javascript/tests/events.test.js",
+      125,
+      "6bb0f9ebd61429f092bba4b543f3a98b5919fe28db1a374000165d40398e0095"
+    ],
+    [
+      "knowledge_base/fixtures/phase8/javascript/src/events.js",
+      466,
+      "66538510ac230ec9c0967e85cec857a5df75e80e0d0eace10f41a8be79fff446"
+    ],
+    [
+      "knowledge_base/fixtures/phase8/javascript/src/cache.js",
+      310,
+      "ebd632a1a6345998aa0bdab174991390213bc340acfebcbff2d87e48c10d5528"
+    ],
+    [
+      "knowledge_base/fixtures/phase8/javascript/src/consumer.js",
+      303,
+      "362f013c398268c758a5d3f0d2579ebf0fb6d53a3a831713e48341d17f8b52a5"
+    ],
+    [
+      "ai-engine/lexical_search.py",
+      4403,
+      "cf7f0e4852b6a2e09bbf760b31efc2e0f92a353acae27cc66d26e42943f83ebe"
+    ],
+    [
+      "ai-engine/config.py",
+      8780,
+      "dee902c393a2337e691752c9d0c8e352a5de7091a77f1eda78c6f062a01b767d"
+    ],
+    [
+      "ai-engine/answers.py",
+      6981,
+      "301a94d65abfb33746273f8fd69e73acf609024667af1c76ff6663f5a3c6f698"
+    ],
+    [
+      "ai-engine/api.py",
+      36254,
+      "88012d88e6410a5636857649a60495be49240f9791b97c10ed4a026d49ae1ce6"
+    ],
+    [
+      "ai-engine/hybrid_api.py",
+      9584,
+      "6a00eec70f54045755d8edb721465b08e80cfbaafb0a792e8901e9f07f77e9cf"
+    ],
+    [
+      "ai-engine/indexer.py",
+      26044,
+      "9bded593bdf5d9cee6a9fbd25a29c5b4195f8e535e2c5d182ed58448233692bc"
+    ],
+    [
+      "ai-engine/search.py",
+      7070,
+      "71b21847b0ac78cce3060a9a559a5fd85f42a02065625c3c98f76d94425023e4"
+    ],
+    [
+      "ai-engine/rag_pipeline.py",
+      21981,
+      "9547309da113f2de5556a89257c7b81a416085fa7aa6b2cd88ce23cc13b73280"
+    ],
+    [
+      "ai-engine/graph_builder.py",
+      21428,
+      "fd91daf550c3ad30fe0ec1040b94155cb04622dc57b0e2a9e784ea8bb1e208d5"
+    ],
+    [
+      "ai-engine/graph_query.py",
+      6465,
+      "5efa1c2b501c0b5fcf68b920c55f54d2328f2676cbafc2d804dc6cc44f622eca"
+    ],
+    [
+      "ai-engine/LEGACY_RAG.md",
+      2671,
+      "ff68073d9b3b75b98856aaacacadf83b92382b1a4c091ef477d1e222c2857b09"
+    ],
+    [
+      "ai-engine/sample_code/auth_service.py",
+      1448,
+      "14a6593be690a85cf4fcc12aceec1bc2768754e42bff1c6686368ad92b5270f5"
+    ],
+    [
+      "ai-engine/tests/phase9_preview_fixture.py",
+      1014,
+      "c323af6e8e3390a4268611bfdb462323110e65bd86eb9d343d289272ef75ae93"
+    ],
+    [
+      "ai-engine/tests/test_phase8.py",
+      7486,
+      "ad3ed96069628ef7390298d5439c50da6f6bd98eb1de40031088a5e45fc997c5"
+    ],
+    [
+      "ai-engine/tests/test_phase3_semantic.py",
+      18072,
+      "a2d6acbf8cc062919aec90487a7f9d1ec2783d884a1c6fd31d60d39635379f70"
+    ],
+    [
+      "ai-engine/tests/test_retrieval.py",
+      3562,
+      "cf60b21015733d87bfe85c5d331802ee431ca1393fdbe7b0213b6caf06948a56"
+    ],
+    [
+      "ai-engine/tests/test_phase0b.py",
+      13201,
+      "ef60eef0fdcaef9b6e66e1b520df615a4dd053251cdfd79c0f31d6eff18f8a82"
+    ],
+    [
+      "ai-engine/tests/test_rag_detection.py",
+      7980,
+      "aa5f0b7dd058eb065b60225705d5cd786e07c0a91b23f9ec9ef260b18644c6d3"
+    ],
+    [
+      "ai-engine/tests/test_phase6.py",
+      16539,
+      "a39cdcf91f2a62d0f979da393e56dfe2870ef276b902df30250cae5b76ae8bd0"
+    ],
+    [
+      "ai-engine/tests/test_phase3_qualification.py",
+      3326,
+      "e692268ce92b8bbb221d4bfdd440429e0bb19c63e4ee1ce69669425ab2055146"
+    ],
+    [
+      "ai-engine/tests/test_phase7_evidence.py",
+      21273,
+      "bb9a2e000b295f80cdedb6e8ad42ec9e398fe091eedfbcc244787f6209328541"
+    ],
+    [
+      "ai-engine/tests/test_runtime_api.py",
+      8997,
+      "84257fe3057a0a2eede62952829f69321d7f3d732b6cdd72aad26d89e98c764d"
+    ],
+    [
+      "ai-engine/tests/test_manual_smoke.py",
+      3555,
+      "ab560d12e764eadc1edb2e6c630c674d57735cd9715e65975f59327beb03093c"
+    ],
+    [
+      "ai-engine/tests/test_phase7.py",
+      17175,
+      "942d6b6903d941d40da17cc9c2fb2e7c7ddaaa64b323ba1b5d5cd99f23bc3836"
+    ],
+    [
+      "ai-engine/tests/test_phase5_understanding.py",
+      17849,
+      "460b853c9cb3afaacc418753f8eab42c1624f539f5ccc2da3684be56d2e72a55"
+    ],
+    [
+      "ai-engine/tests/test_stabilization.py",
+      5077,
+      "0c9d8ce22c94bf8ac6ed16a9f1a8d53164852949239cf93293affd925ce8e8a0"
+    ],
+    [
+      "ai-engine/tests/test_runtime_hybrid.py",
+      8484,
+      "3be0de981955fa4308f6652fb3af25aa3228eff56501eecd366d23f1d0d6afb0"
+    ],
+    [
+      "ai-engine/tests/test_phase5.py",
+      6853,
+      "c431e8d92574415e5abec9cba315e32c366162fdaa6f569e0ef45e79cdfb09ad"
+    ],
+    [
+      "ai-engine/tests/test_phase6_execution.py",
+      20903,
+      "cd09af13992c2e930ae15a2495181ce4caef177a0e23de0fe003160b3ddacee0"
+    ],
+    [
+      "ai-engine/tests/test_runtime_indexing.py",
+      11617,
+      "c25d57d25c34323991ad085ee700a9e6ee1d716f9f99a5166e2837bb885ae943"
+    ],
+    [
+      "ai-engine/tests/test_phase4_rules.py",
+      24700,
+      "cb0d3312700fdade3800139d1577b41baa595978733a1960c7c861e6c08f704d"
+    ],
+    [
+      "ai-engine/tests/test_phase10_integration.py",
+      23808,
+      "5d2934c9173bd4bf98e59621d7e3aeccdfe890255e006b7991a29bb907b73590"
+    ],
+    [
+      "ai-engine/tests/test_semantic_answers.py",
+      14652,
+      "6cf77bfeff5039363bcae291ba38abdc4f8704ec273a7271c5029ac3501eadd4"
+    ],
+    [
+      "ai-engine/tests/test_phase9_presentation.py",
+      13899,
+      "0f2595a571ff1c127ade868491076538d7d7e19203d82df27d371bf1934ccfce"
+    ],
+    [
+      "ai-engine/tests/test_s2_understanding.py",
+      8010,
+      "e80f0b652d5d381310735e760fca4cddd92163fabdecfb4818613e9ed9526021"
+    ],
+    [
+      "ai-engine/tests/stabilization_live_server.py",
+      4993,
+      "d4502defa80b8148eeef48a687c1b24b5c2d1f5efdca4829ad4b5ae3944a658d"
+    ],
+    [
+      "ai-engine/tests/phase5_fixture.py",
+      815,
+      "2c9a7917011cefef0fc714580d94a6cf752e484a50bb4fa0fbb4802ad9df5b56"
+    ],
+    [
+      "ai-engine/tests/phase10_server_fixture.py",
+      2242,
+      "0083f89bddc54731faf98376abbfde26f82011e7536c6e5dc4b8196c09808d7f"
+    ],
+    [
+      "ai-engine/tests/test_phase2_graph.py",
+      20027,
+      "cf6f3716915d5368992c7bc4f19e5f674e4b240ed2d1c38545e3c5e28130139c"
+    ],
+    [
+      "ai-engine/tests/test_phase8_generation.py",
+      23673,
+      "b0ef73f64d794f0ed76f92fdd66ac68f98181d341af0e7f82ca39228e46f4bde"
+    ],
+    [
+      "ai-engine/manual/legacy_openrouter_smoke.py",
+      1966,
+      "b0af79a10f537f3597f7920cd07628493a309ed712ecc5b777b712e30f8fe7ac"
+    ],
+    [
+      "ai-engine/manual/README.md",
+      1023,
+      "5c9ce65f8cf2528c78e3b4891562cb12d03ab2023bb668ced3ebbc24cb3eb91b"
+    ]
+  ],
+  "frozen_digest": "82b9016faa87483c02a227497ac3be874b04cd17c3306adc6bbfedc47510f667",
+  "indexing_ms": 300503.7131250001,
+  "publication": {
+    "files_indexed": 188,
+    "files_skipped": 0,
+    "files_pruned": 0,
+    "points_upserted": 4042,
+    "graph_nodes": 0,
+    "files_failed": 0,
+    "chunks_embedded": 4042,
+    "chunks_reused": 0,
+    "metadata_database": "/private/var/folders/yh/wmczyxhs0cd7kx2xmtzb18fh0000gn/T/cm-phase3-target-dcrr79ac/private/2c702a00791022ef780f1bc5/generations/ecd3144d9a844ca59505de0673fc90a3/2c702a00791022ef780f1bc5/metadata.db",
+    "snapshot_id": "21a4dfdb-0fc1-4f4e-8ba9-1032b429124c",
+    "schema_version": 6,
+    "activeSnapshotId": "ecd3144d9a844ca59505de0673fc90a3",
+    "graph": {
+      "repository_id": "2c702a00791022ef780f1bc5",
+      "root_path": "/private/var/folders/yh/wmczyxhs0cd7kx2xmtzb18fh0000gn/T/cm-phase3-target-dcrr79ac/repository",
+      "git_revision": null,
+      "database": "/private/var/folders/yh/wmczyxhs0cd7kx2xmtzb18fh0000gn/T/cm-phase3-target-dcrr79ac/private/2c702a00791022ef780f1bc5/generations/ecd3144d9a844ca59505de0673fc90a3/2c702a00791022ef780f1bc5/metadata.db",
+      "scanned_at": "2026-10-14T15:43:35.696409+00:00",
+      "snapshot_id": "62240018-069b-414e-82a2-472c7b10e7c1",
+      "statistics": {
+        "included": 50,
+        "unsupported": 139,
+        "ignored": 0,
+        "skipped": 0,
+        "error": 0,
+        "ignored_directories": 0,
+        "error_directories": 0,
+        "source_files": 46,
+        "config_files": 4
+      },
+      "parsing": {
+        "parsed": 46,
+        "partial": 0,
+        "error": 0,
+        "symbols": 847,
+        "references": 3711,
+        "comments": 59
+      },
+      "syntax_snapshot_id": "d955580c-f427-4563-b3c2-bca57cd3964b",
+      "graph": {
+        "nodes": 973,
+        "relationships": 2078,
+        "resolved": 1982,
+        "inferred": 96,
+        "unresolved": 2614
+      },
+      "semantic_diagnostics": [],
+      "typescript_version": "5.9.3",
+      "graph_snapshot_id": "ddb65a68-54f9-42d0-99fd-4c9fb93d9626"
+    },
+    "unchanged": false,
+    "chunk_count": 4042,
+    "changed_files": [
+      "CLAUDE.md",
+      "README.md",
+      "REPO_AUDIT_REPORT.md",
+      "RETRIEVAL_SETUP.md",
+      "TESTING.md",
+      "ai-engine/LEGACY_RAG.md",
+      "ai-engine/answers.py",
+      "ai-engine/api.py",
+      "ai-engine/config.py",
+      "ai-engine/graph_builder.py",
+      "ai-engine/graph_query.py",
+      "ai-engine/hybrid_api.py",
+      "ai-engine/indexer.py",
+      "ai-engine/lexical_search.py",
+      "ai-engine/manual/README.md",
+      "ai-engine/manual/legacy_openrouter_smoke.py",
+      "ai-engine/rag_pipeline.py",
+      "ai-engine/sample_code/auth_service.py",
+      "ai-engine/search.py",
+      "ai-engine/tests/phase10_server_fixture.py",
+      "ai-engine/tests/phase5_fixture.py",
+      "ai-engine/tests/phase9_preview_fixture.py",
+      "ai-engine/tests/stabilization_live_server.py",
+      "ai-engine/tests/test_manual_smoke.py",
+      "ai-engine/tests/test_phase0b.py",
+      "ai-engine/tests/test_phase10_integration.py",
+      "ai-engine/tests/test_phase2_graph.py",
+      "ai-engine/tests/test_phase3_qualification.py",
+      "ai-engine/tests/test_phase3_semantic.py",
+      "ai-engine/tests/test_phase4_rules.py",
+      "ai-engine/tests/test_phase5.py",
+      "ai-engine/tests/test_phase5_understanding.py",
+      "ai-engine/tests/test_phase6.py",
+      "ai-engine/tests/test_phase6_execution.py",
+      "ai-engine/tests/test_phase7.py",
+      "ai-engine/tests/test_phase7_evidence.py",
+      "ai-engine/tests/test_phase8.py",
+      "ai-engine/tests/test_phase8_generation.py",
+      "ai-engine/tests/test_phase9_presentation.py",
+      "ai-engine/tests/test_rag_detection.py",
+      "ai-engine/tests/test_retrieval.py",
+      "ai-engine/tests/test_runtime_api.py",
+      "ai-engine/tests/test_runtime_hybrid.py",
+      "ai-engine/tests/test_runtime_indexing.py",
+      "ai-engine/tests/test_s2_understanding.py",
+      "ai-engine/tests/test_semantic_answers.py",
+      "ai-engine/tests/test_stabilization.py",
+      "conftest.py",
+      "extension/.vscode/launch.json",
+      "extension/README.md",
+      "extension/package-lock.json",
+      "extension/package.json",
+      "extension/server/chunker.js",
+      "extension/server/codeParser.js",
+      "extension/server/docPlanner.js",
+      "extension/server/docStore.js",
+      "extension/server/embeddingProvider.js",
+      "extension/server/frameworkAdapters.js",
+      "extension/server/gitService.js",
+      "extension/server/graphBuilder.js",
+      "extension/server/graphStore.js",
+      "extension/server/modelProvider.js",
+      "extension/server/registry.js",
+      "extension/server/retrievalService.js",
+      "extension/server/reuseAnalyzer.js",
+      "extension/server/semanticCalibration.js",
+      "extension/server/semanticStore.js",
+      "extension/server/server.js",
+      "extension/src/extension.ts",
+      "extension/src/hybridChat.ts",
+      "extension/src/responsePresentation.ts",
+      "extension/src/responsePreview.ts",
+      "extension/src/serverManager.ts",
+      "extension/src/sourceNavigation.ts",
+      "extension/test/hybridSuite.js",
+      "extension/test/presentation.test.js",
+      "extension/test/presentationSuite.js",
+      "extension/test/runTest.js",
+      "extension/test/runtime.test.js",
+      "extension/test/stabilization.test.js",
+      "extension/test/stabilizationRealSuite.js",
+      "extension/test/suite.js",
+      "extension/tsconfig.json",
+      "knowledge_base/README.md",
+      "knowledge_base/S1.md",
+      "knowledge_base/VALIDATION.md",
+      "knowledge_base/__init__.py",
+      "knowledge_base/benchmark_semantic.py",
+      "knowledge_base/chunking.py",
+      "knowledge_base/fixtures/phase8/expected.json",
+      "knowledge_base/fixtures/phase8/javascript/src/cache.js",
+      "knowledge_base/fixtures/phase8/javascript/src/consumer.js",
+      "knowledge_base/fixtures/phase8/javascript/src/events.js",
+      "knowledge_base/fixtures/phase8/javascript/tests/events.test.js",
+      "knowledge_base/fixtures/phase8/typescript/src/alternate.ts",
+      "knowledge_base/fixtures/phase8/typescript/src/ambiguous.ts",
+      "knowledge_base/fixtures/phase8/typescript/src/auth.ts",
+      "knowledge_base/fixtures/phase8/typescript/src/controller.ts",
+      "knowledge_base/fixtures/phase8/typescript/src/cycle_a.ts",
+      "knowledge_base/fixtures/phase8/typescript/src/cycle_b.ts",
+      "knowledge_base/fixtures/phase8/typescript/src/dynamic.ts",
+      "knowledge_base/fixtures/phase8/typescript/src/entry.ts",
+      "knowledge_base/fixtures/phase8/typescript/src/service.ts",
+      "knowledge_base/fixtures/phase8/typescript/tests/auth.test.ts",
+      "knowledge_base/fixtures/phase8/typescript/tsconfig.json",
+      "knowledge_base/graph.py",
+      "knowledge_base/identity.py",
+      "knowledge_base/metadata.py",
+      "knowledge_base/parser.py",
+      "knowledge_base/retrieval.py",
+      "knowledge_base/scanner.py",
+      "knowledge_base/semantic.py",
+      "knowledge_base/semantic_resolver.cjs",
+      "knowledge_base/synchronization.py",
+      "knowledge_base/test_graph.py",
+      "knowledge_base/test_metadata.py",
+      "knowledge_base/test_parser.py",
+      "knowledge_base/test_resolver_s1.py",
+      "knowledge_base/test_retrieval.py",
+      "knowledge_base/test_semantic.py",
+      "knowledge_base/test_semantic_resolver.cjs",
+      "knowledge_base/test_validation.py",
+      "knowledge_base/test_validation_runtime.py",
+      "knowledge_base/validation.py",
+      "knowledge_base/vector_store.py",
+      "knowledge_base/verify_resolver_s1.py",
+      "progress.md",
+      "project_plan.md",
+      "query_system/IMPROVEMENT_PHASE1_REPORT.md",
+      "query_system/IMPROVEMENT_PHASE2_BASELINE.md",
+      "query_system/IMPROVEMENT_PHASE2_REPORT.md",
+      "query_system/PHASE10.md",
+      "query_system/PHASE10_INTEGRATION_AUDIT.md",
+      "query_system/PHASE4.md",
+      "query_system/PHASE5.md",
+      "query_system/PHASE6.md",
+      "query_system/PHASE7.md",
+      "query_system/PHASE8.md",
+      "query_system/PHASE9.md",
+      "query_system/README.md",
+      "query_system/S2.md",
+      "query_system/S2_AUDIT.md",
+      "query_system/STABILIZATION_HUMAN_REVIEW.md",
+      "query_system/STABILIZATION_REPORT.md",
+      "query_system/__init__.py",
+      "query_system/benchmark_evidence.py",
+      "query_system/benchmark_execution.py",
+      "query_system/benchmark_generation.py",
+      "query_system/benchmark_hybrid.py",
+      "query_system/benchmark_presentation.py",
+      "query_system/benchmark_s2.py",
+      "query_system/benchmark_semantic.py",
+      "query_system/benchmark_understanding.py",
+      "query_system/contracts.py",
+      "query_system/evidence_aggregation.py",
+      "query_system/evidence_contracts.py",
+      "query_system/execution_contracts.py",
+      "query_system/executor.py",
+      "query_system/generation_contracts.py",
+      "query_system/generation_safety.py",
+      "query_system/graph_engine.py",
+      "query_system/graph_presentation.py",
+      "query_system/graph_rag.py",
+      "query_system/hybrid_contracts.py",
+      "query_system/local_ollama.py",
+      "query_system/orchestration.py",
+      "query_system/presentation_contracts.py",
+      "query_system/presentation_preview.py",
+      "query_system/qualify_phase3.py",
+      "query_system/qualify_stabilization.py",
+      "query_system/qualify_stabilization_live.py",
+      "query_system/query_understanding.py",
+      "query_system/response_presentation.py",
+      "query_system/router.py",
+      "query_system/rule_engine.py",
+      "query_system/rule_registry.py",
+      "query_system/semantic_engine.py",
+      "query_system/test_contracts.py",
+      "query_system/test_evidence.py",
+      "query_system/test_execution.py",
+      "query_system/test_generation.py",
+      "query_system/test_phase3_understanding.py",
+      "query_system/test_presentation.py",
+      "query_system/test_rules.py",
+      "query_system/test_s2_understanding.py",
+      "query_system/test_semantic.py",
+      "query_system/test_stabilization.py",
+      "query_system/test_understanding.py",
+      "start_codemind.py"
+    ],
+    "affected_files": [
+      "CLAUDE.md",
+      "README.md",
+      "REPO_AUDIT_REPORT.md",
+      "RETRIEVAL_SETUP.md",
+      "TESTING.md",
+      "ai-engine/LEGACY_RAG.md",
+      "ai-engine/answers.py",
+      "ai-engine/api.py",
+      "ai-engine/config.py",
+      "ai-engine/graph_builder.py",
+      "ai-engine/graph_query.py",
+      "ai-engine/hybrid_api.py",
+      "ai-engine/indexer.py",
+      "ai-engine/lexical_search.py",
+      "ai-engine/manual/README.md",
+      "ai-engine/manual/legacy_openrouter_smoke.py",
+      "ai-engine/rag_pipeline.py",
+      "ai-engine/sample_code/auth_service.py",
+      "ai-engine/search.py",
+      "ai-engine/tests/phase10_server_fixture.py",
+      "ai-engine/tests/phase5_fixture.py",
+      "ai-engine/tests/phase9_preview_fixture.py",
+      "ai-engine/tests/stabilization_live_server.py",
+      "ai-engine/tests/test_manual_smoke.py",
+      "ai-engine/tests/test_phase0b.py",
+      "ai-engine/tests/test_phase10_integration.py",
+      "ai-engine/tests/test_phase2_graph.py",
+      "ai-engine/tests/test_phase3_qualification.py",
+      "ai-engine/tests/test_phase3_semantic.py",
+      "ai-engine/tests/test_phase4_rules.py",
+      "ai-engine/tests/test_phase5.py",
+      "ai-engine/tests/test_phase5_understanding.py",
+      "ai-engine/tests/test_phase6.py",
+      "ai-engine/tests/test_phase6_execution.py",
+      "ai-engine/tests/test_phase7.py",
+      "ai-engine/tests/test_phase7_evidence.py",
+      "ai-engine/tests/test_phase8.py",
+      "ai-engine/tests/test_phase8_generation.py",
+      "ai-engine/tests/test_phase9_presentation.py",
+      "ai-engine/tests/test_rag_detection.py",
+      "ai-engine/tests/test_retrieval.py",
+      "ai-engine/tests/test_runtime_api.py",
+      "ai-engine/tests/test_runtime_hybrid.py",
+      "ai-engine/tests/test_runtime_indexing.py",
+      "ai-engine/tests/test_s2_understanding.py",
+      "ai-engine/tests/test_semantic_answers.py",
+      "ai-engine/tests/test_stabilization.py",
+      "conftest.py",
+      "extension/.vscode/launch.json",
+      "extension/README.md",
+      "extension/package-lock.json",
+      "extension/package.json",
+      "extension/server/chunker.js",
+      "extension/server/codeParser.js",
+      "extension/server/docPlanner.js",
+      "extension/server/docStore.js",
+      "extension/server/embeddingProvider.js",
+      "extension/server/frameworkAdapters.js",
+      "extension/server/gitService.js",
+      "extension/server/graphBuilder.js",
+      "extension/server/graphStore.js",
+      "extension/server/modelProvider.js",
+      "extension/server/registry.js",
+      "extension/server/retrievalService.js",
+      "extension/server/reuseAnalyzer.js",
+      "extension/server/semanticCalibration.js",
+      "extension/server/semanticStore.js",
+      "extension/server/server.js",
+      "extension/src/extension.ts",
+      "extension/src/hybridChat.ts",
+      "extension/src/responsePresentation.ts",
+      "extension/src/responsePreview.ts",
+      "extension/src/serverManager.ts",
+      "extension/src/sourceNavigation.ts",
+      "extension/test/hybridSuite.js",
+      "extension/test/presentation.test.js",
+      "extension/test/presentationSuite.js",
+      "extension/test/runTest.js",
+      "extension/test/runtime.test.js",
+      "extension/test/stabilization.test.js",
+      "extension/test/stabilizationRealSuite.js",
+      "extension/test/suite.js",
+      "extension/tsconfig.json",
+      "knowledge_base/README.md",
+      "knowledge_base/S1.md",
+      "knowledge_base/VALIDATION.md",
+      "knowledge_base/__init__.py",
+      "knowledge_base/benchmark_semantic.py",
+      "knowledge_base/chunking.py",
+      "knowledge_base/fixtures/phase8/expected.json",
+      "knowledge_base/fixtures/phase8/javascript/src/cache.js",
+      "knowledge_base/fixtures/phase8/javascript/src/consumer.js",
+      "knowledge_base/fixtures/phase8/javascript/src/events.js",
+      "knowledge_base/fixtures/phase8/javascript/tests/events.test.js",
+      "knowledge_base/fixtures/phase8/typescript/src/alternate.ts",
+      "knowledge_base/fixtures/phase8/typescript/src/ambiguous.ts",
+      "knowledge_base/fixtures/phase8/typescript/src/auth.ts",
+      "knowledge_base/fixtures/phase8/typescript/src/controller.ts",
+      "knowledge_base/fixtures/phase8/typescript/src/cycle_a.ts",
+      "knowledge_base/fixtures/phase8/typescript/src/cycle_b.ts",
+      "knowledge_base/fixtures/phase8/typescript/src/dynamic.ts",
+      "knowledge_base/fixtures/phase8/typescript/src/entry.ts",
+      "knowledge_base/fixtures/phase8/typescript/src/service.ts",
+      "knowledge_base/fixtures/phase8/typescript/tests/auth.test.ts",
+      "knowledge_base/fixtures/phase8/typescript/tsconfig.json",
+      "knowledge_base/graph.py",
+      "knowledge_base/identity.py",
+      "knowledge_base/metadata.py",
+      "knowledge_base/parser.py",
+      "knowledge_base/retrieval.py",
+      "knowledge_base/scanner.py",
+      "knowledge_base/semantic.py",
+      "knowledge_base/semantic_resolver.cjs",
+      "knowledge_base/synchronization.py",
+      "knowledge_base/test_graph.py",
+      "knowledge_base/test_metadata.py",
+      "knowledge_base/test_parser.py",
+      "knowledge_base/test_resolver_s1.py",
+      "knowledge_base/test_retrieval.py",
+      "knowledge_base/test_semantic.py",
+      "knowledge_base/test_semantic_resolver.cjs",
+      "knowledge_base/test_validation.py",
+      "knowledge_base/test_validation_runtime.py",
+      "knowledge_base/validation.py",
+      "knowledge_base/vector_store.py",
+      "knowledge_base/verify_resolver_s1.py",
+      "progress.md",
+      "project_plan.md",
+      "query_system/IMPROVEMENT_PHASE1_REPORT.md",
+      "query_system/IMPROVEMENT_PHASE2_BASELINE.md",
+      "query_system/IMPROVEMENT_PHASE2_REPORT.md",
+      "query_system/PHASE10.md",
+      "query_system/PHASE10_INTEGRATION_AUDIT.md",
+      "query_system/PHASE4.md",
+      "query_system/PHASE5.md",
+      "query_system/PHASE6.md",
+      "query_system/PHASE7.md",
+      "query_system/PHASE8.md",
+      "query_system/PHASE9.md",
+      "query_system/README.md",
+      "query_system/S2.md",
+      "query_system/S2_AUDIT.md",
+      "query_system/STABILIZATION_HUMAN_REVIEW.md",
+      "query_system/STABILIZATION_REPORT.md",
+      "query_system/__init__.py",
+      "query_system/benchmark_evidence.py",
+      "query_system/benchmark_execution.py",
+      "query_system/benchmark_generation.py",
+      "query_system/benchmark_hybrid.py",
+      "query_system/benchmark_presentation.py",
+      "query_system/benchmark_s2.py",
+      "query_system/benchmark_semantic.py",
+      "query_system/benchmark_understanding.py",
+      "query_system/contracts.py",
+      "query_system/evidence_aggregation.py",
+      "query_system/evidence_contracts.py",
+      "query_system/execution_contracts.py",
+      "query_system/executor.py",
+      "query_system/generation_contracts.py",
+      "query_system/generation_safety.py",
+      "query_system/graph_engine.py",
+      "query_system/graph_presentation.py",
+      "query_system/graph_rag.py",
+      "query_system/hybrid_contracts.py",
+      "query_system/local_ollama.py",
+      "query_system/orchestration.py",
+      "query_system/presentation_contracts.py",
+      "query_system/presentation_preview.py",
+      "query_system/qualify_phase3.py",
+      "query_system/qualify_stabilization.py",
+      "query_system/qualify_stabilization_live.py",
+      "query_system/query_understanding.py",
+      "query_system/response_presentation.py",
+      "query_system/router.py",
+      "query_system/rule_engine.py",
+      "query_system/rule_registry.py",
+      "query_system/semantic_engine.py",
+      "query_system/test_contracts.py",
+      "query_system/test_evidence.py",
+      "query_system/test_execution.py",
+      "query_system/test_generation.py",
+      "query_system/test_phase3_understanding.py",
+      "query_system/test_presentation.py",
+      "query_system/test_rules.py",
+      "query_system/test_s2_understanding.py",
+      "query_system/test_semantic.py",
+      "query_system/test_stabilization.py",
+      "query_system/test_understanding.py",
+      "start_codemind.py"
+    ],
+    "resolutionScope": "all included JS/TS files (conservative dependency invalidation)"
+  },
+  "repository_id": "2c702a00791022ef780f1bc5",
+  "snapshot_id": "ecd3144d9a844ca59505de0673fc90a3",
+  "initial_embedding_work": {
+    "calls": 188,
+    "texts": 4042,
+    "embedding_ms": 273583.92317600007
+  },
+  "publication_stages": {
+    "graph_ms": 3210.533124999529,
+    "semantic_index_ms": 295404.54908299947
+  },
+  "integrity": {
+    "graph": {
+      "nodes": 973,
+      "relationships": 2078,
+      "resolved": 1982,
+      "inferred": 96,
+      "unresolved": 2614
+    },
+    "typescript_version": "5.9.3",
+    "semantic_diagnostics": [],
+    "parsing": {},
+    "provenance_checked": 5539,
+    "provenance_valid": 5539,
+    "foreign_key_errors": [],
+    "dangling_references": [],
+    "languages": [
+      [
+        "javascript",
+        30
+      ],
+      [
+        "json",
+        4
+      ],
+      [
+        "typescript",
+        16
+      ]
+    ],
+    "ambiguous_symbol_names": [
+      [
+        "<anonymous:1>",
+        169
+      ],
+      [
+        "<anonymous:2>",
+        78
+      ],
+      [
+        "<anonymous:3>",
+        52
+      ],
+      [
+        "<anonymous:4>",
+        36
+      ],
+      [
+        "<anonymous:5>",
+        26
+      ],
+      [
+        "<anonymous:6>",
+        18
+      ],
+      [
+        "<anonymous:7>",
+        16
+      ],
+      [
+        "<anonymous:8>",
+        12
+      ]
+    ],
+    "chunk_provenance_checked": 4042,
+    "chunk_provenance_valid": 4042,
+    "sample_symbols": [
+      [
+        "hash",
+        "extension/server/chunker.js"
+      ],
+      [
+        "boundedText",
+        "extension/server/chunker.js"
+      ],
+      [
+        "terms",
+        "extension/server/chunker.js"
+      ],
+      [
+        "readSource",
+        "extension/server/chunker.js"
+      ],
+      [
+        "chunksForFile",
+        "extension/server/chunker.js"
+      ],
+      [
+        "commitChunks",
+        "extension/server/chunker.js"
+      ],
+      [
+        "stableId",
+        "extension/server/codeParser.js"
+      ],
+      [
+        "languageFor",
+        "extension/server/codeParser.js"
+      ],
+      [
+        "field",
+        "extension/server/codeParser.js"
+      ],
+      [
+        "text",
+        "extension/server/codeParser.js"
+      ],
+      [
+        "cleanString",
+        "extension/server/codeParser.js"
+      ],
+      [
+        "hasJsx",
+        "extension/server/codeParser.js"
+      ],
+      [
+        "nameOf",
+        "extension/server/codeParser.js"
+      ],
+      [
+        "isTestFile",
+        "extension/server/codeParser.js"
+      ],
+      [
+        "parseImports",
+        "extension/server/codeParser.js"
+      ],
+      [
+        "symbolKind",
+        "extension/server/codeParser.js"
+      ],
+      [
+        "signature",
+        "extension/server/codeParser.js"
+      ],
+      [
+        "docstring",
+        "extension/server/codeParser.js"
+      ],
+      [
+        "parseCode",
+        "extension/server/codeParser.js"
+      ],
+      [
+        "parseCode.addSymbol",
+        "extension/server/codeParser.js"
+      ],
+      [
+        "parseCode.addSymbol.identifiers",
+        "extension/server/codeParser.js"
+      ],
+      [
+        "parseCode.addSymbol.<anonymous:4>.tokens",
+        "extension/server/codeParser.js"
+      ],
+      [
+        "parseCode.visit",
+        "extension/server/codeParser.js"
+      ],
+      [
+        "planDocs",
+        "extension/server/docPlanner.js"
+      ],
+      [
+        "planDocs.add",
+        "extension/server/docPlanner.js"
+      ],
+      [
+        "planDocs.label",
+        "extension/server/docPlanner.js"
+      ],
+      [
+        "planDocs.related",
+        "extension/server/docPlanner.js"
+      ],
+      [
+        "sectionObject",
+        "extension/server/docStore.js"
+      ],
+      [
+        "status",
+        "extension/server/docStore.js"
+      ],
+      [
+        "overview",
+        "extension/server/docStore.js"
+      ]
+    ]
+  },
+  "ground_truth": [
+    {
+      "id": "A1",
+      "profile": "extension",
+      "family": "A",
+      "question": "Where is verifiedSourcePath defined?",
+      "rows": [
+        [
+          "SYMBOL_LOCATION",
+          [
+            "verifiedSourcePath"
+          ]
+        ]
+      ],
+      "operations": [
+        "graph.find_definition"
+      ],
+      "path": "extension/src/sourceNavigation.ts",
+      "anchor": "export function verifiedSourcePath",
+      "facts": [
+        "Returns the canonical real path only after containment, regular-file, size and SHA-256 checks."
+      ],
+      "llm": false,
+      "repository_id": "2c702a00791022ef780f1bc5",
+      "source_hash": "84dcabc85f12975121888b59fe0e9cef608bee2387c13c083b614124a711a66a",
+      "anchor_lines": [
+        12
+      ],
+      "difficulty": "bounded real-source",
+      "expected_coverage": "supported JS/TS within static evidence limits",
+      "source_review": "Assistant inspected original source; independent of engine output, not an independent human annotation"
+    },
+    {
+      "id": "B1",
+      "profile": "extension",
+      "family": "B",
+      "question": "Who calls verifiedSourcePath?",
+      "rows": [
+        [
+          "DIRECT_CALLERS",
+          [
+            "verifiedSourcePath"
+          ]
+        ]
+      ],
+      "operations": [
+        "graph.find_callers"
+      ],
+      "path": "extension/src/responsePreview.ts",
+      "anchor": "const file = verifiedSourcePath",
+      "facts": [
+        "verifiedPreviewSource directly calls verifiedSourcePath."
+      ],
+      "llm": false,
+      "repository_id": "2c702a00791022ef780f1bc5",
+      "source_hash": "5af85802f3940719993e21f3c734314b55a7ae8fbda7b097e7fb793148a887b5",
+      "anchor_lines": [
+        72
+      ],
+      "difficulty": "bounded real-source",
+      "expected_coverage": "supported JS/TS within static evidence limits",
+      "source_review": "Assistant inspected original source; independent of engine output, not an independent human annotation"
+    },
+    {
+      "id": "C1",
+      "profile": "extension",
+      "family": "C",
+      "question": "Find code that verifies source file hashes before opening citations",
+      "rows": [
+        [
+          "FEATURE_DISCOVERY",
+          [
+            "Find code that verifies source file hashes before opening citations"
+          ]
+        ]
+      ],
+      "operations": [
+        "semantic.hybrid_search"
+      ],
+      "path": "extension/src/sourceNavigation.ts",
+      "anchor": "createHash('sha256')",
+      "relevant_files": [
+        "extension/src/sourceNavigation.ts",
+        "extension/src/responsePreview.ts",
+        "extension/src/hybridChat.ts",
+        "extension/src/extension.ts"
+      ],
+      "relevance_scope": "Known-positive extension-file recall only; full mixed-corpus relevance is not exhaustively labeled, so precision is unmeasured.",
+      "facts": [
+        "Source navigation and UI navigation paths verify source identity/hash; extension.ts openDocSource also delegates verification."
+      ],
+      "llm": false,
+      "complete_relevance": false,
+      "repository_id": "2c702a00791022ef780f1bc5",
+      "source_hash": "84dcabc85f12975121888b59fe0e9cef608bee2387c13c083b614124a711a66a",
+      "anchor_lines": [
+        27
+      ],
+      "difficulty": "bounded real-source",
+      "expected_coverage": "supported JS/TS within static evidence limits",
+      "source_review": "Assistant inspected original source; independent of engine output, not an independent human annotation"
+    },
+    {
+      "id": "F1",
+      "profile": "extension",
+      "family": "F",
+      "question": "Impact of verifiedSourcePath",
+      "rows": [
+        [
+          "CHANGE_IMPACT",
+          [
+            "verifiedSourcePath"
+          ]
+        ]
+      ],
+      "operations": [
+        "rules.change_impact"
+      ],
+      "path": "extension/src/responsePreview.ts",
+      "anchor": "const file = verifiedSourcePath",
+      "facts": [
+        "Known references can guide impact; static references do not prove breakage."
+      ],
+      "llm": false,
+      "repository_id": "2c702a00791022ef780f1bc5",
+      "source_hash": "5af85802f3940719993e21f3c734314b55a7ae8fbda7b097e7fb793148a887b5",
+      "anchor_lines": [
+        72
+      ],
+      "difficulty": "bounded real-source",
+      "expected_coverage": "supported JS/TS within static evidence limits",
+      "source_review": "Assistant inspected original source; independent of engine output, not an independent human annotation"
+    },
+    {
+      "id": "F2",
+      "profile": "extension",
+      "family": "F",
+      "question": "Find tests for verifiedSourcePath",
+      "rows": [
+        [
+          "TEST_DISCOVERY",
+          [
+            "verifiedSourcePath"
+          ]
+        ]
+      ],
+      "operations": [
+        "rules.reference_test_analysis"
+      ],
+      "path": "extension/src/sourceNavigation.ts",
+      "anchor": "export function verifiedSourcePath",
+      "facts": [
+        "The small extension-source profile intentionally contains no test files; no tests must not mean globally untested."
+      ],
+      "llm": false,
+      "repository_id": "2c702a00791022ef780f1bc5",
+      "source_hash": "84dcabc85f12975121888b59fe0e9cef608bee2387c13c083b614124a711a66a",
+      "anchor_lines": [
+        12
+      ],
+      "difficulty": "bounded real-source",
+      "expected_coverage": "supported JS/TS within static evidence limits",
+      "source_review": "Assistant inspected original source; independent of engine output, not an independent human annotation"
+    },
+    {
+      "id": "F3",
+      "profile": "extension",
+      "family": "F",
+      "question": "Show dependencies of verifiedSourcePath",
+      "rows": [
+        [
+          "DEPENDENCY_PATH",
+          [
+            "verifiedSourcePath"
+          ]
+        ]
+      ],
+      "operations": [
+        "rules.dependency_summary"
+      ],
+      "path": "extension/src/sourceNavigation.ts",
+      "anchor": "import * as fs",
+      "facts": [
+        "Imports node:crypto, node:fs, node:path; external implementations are unavailable."
+      ],
+      "llm": false,
+      "repository_id": "2c702a00791022ef780f1bc5",
+      "source_hash": "84dcabc85f12975121888b59fe0e9cef608bee2387c13c083b614124a711a66a",
+      "anchor_lines": [
+        2
+      ],
+      "difficulty": "bounded real-source",
+      "expected_coverage": "supported JS/TS within static evidence limits",
+      "source_review": "Assistant inspected original source; independent of engine output, not an independent human annotation"
+    },
+    {
+      "id": "K1",
+      "profile": "extension",
+      "family": "K",
+      "question": "Where is verifiedSourcePath defined and explain verifiedSourcePath",
+      "rows": [
+        [
+          "SYMBOL_LOCATION",
+          [
+            "verifiedSourcePath"
+          ]
+        ],
+        [
+          "FUNCTION_EXPLANATION",
+          [
+            "verifiedSourcePath"
+          ]
+        ]
+      ],
+      "path": "extension/src/sourceNavigation.ts",
+      "anchor": "export function verifiedSourcePath",
+      "facts": [
+        "Preserve the location and explanation as two original requirements."
+      ],
+      "llm": true,
+      "repository_id": "2c702a00791022ef780f1bc5",
+      "source_hash": "84dcabc85f12975121888b59fe0e9cef608bee2387c13c083b614124a711a66a",
+      "anchor_lines": [
+        12
+      ],
+      "difficulty": "compound",
+      "expected_coverage": "supported JS/TS within static evidence limits",
+      "source_review": "Assistant inspected original source; independent of engine output, not an independent human annotation"
+    },
+    {
+      "id": "K2",
+      "profile": "extension",
+      "family": "K",
+      "question": "Who calls verifiedSourcePath and verifiedPreviewSource?",
+      "rows": [
+        [
+          "DIRECT_CALLERS",
+          [
+            "verifiedSourcePath",
+            "verifiedPreviewSource"
+          ]
+        ]
+      ],
+      "operations": [
+        "graph.find_callers",
+        "graph.find_callers"
+      ],
+      "path": "extension/src/responsePreview.ts",
+      "anchor": "const file = verifiedPreviewSource",
+      "facts": [
+        "Both caller targets must survive planning."
+      ],
+      "llm": false,
+      "repository_id": "2c702a00791022ef780f1bc5",
+      "source_hash": "5af85802f3940719993e21f3c734314b55a7ae8fbda7b097e7fb793148a887b5",
+      "anchor_lines": [
+        83
+      ],
+      "difficulty": "compound",
+      "expected_coverage": "supported JS/TS within static evidence limits",
+      "source_review": "Assistant inspected original source; independent of engine output, not an independent human annotation"
+    }
+  ],
+  "queries": [
+    {
+      "id": "A1",
+      "family": "A",
+      "question": "Where is verifiedSourcePath defined?",
+      "expected_rows": [
+        [
+          "SYMBOL_LOCATION",
+          [
+            "verifiedSourcePath"
+          ]
+        ]
+      ],
+      "actual_rows": [
+        [
+          "SYMBOL_LOCATION",
+          [
+            "verifiedSourcePath"
+          ]
+        ]
+      ],
+      "rows_correct": true,
+      "canonical_targets": [
+        {
+          "name": "verifiedSourcePath",
+          "resolution": "resolved",
+          "path": "extension/src/sourceNavigation.ts",
+          "symbol_id": "e3a19945c1a2794b1a102f7b55d8f3a989ccb4378a67561d0b116005ff0d083a"
+        }
+      ],
+      "canonical_target_paths_correct": true,
+      "status": "success",
+      "operations": [
+        "graph.find_definition"
+      ],
+      "expected_operations": [
+        "graph.find_definition"
+      ],
+      "operations_correct": true,
+      "no_model_calls": true,
+      "latency_ms": {
+        "median_ms": 365.423,
+        "p95_ms": 393.398
+      },
+      "samples_ms": [
+        364.48529200060875,
+        365.4233329998533,
+        393.3976670004995,
+        370.56412500078295,
+        351.3407090003966
+      ],
+      "stage_latency_ms": {
+        "understanding_ms": {
+          "median_ms": 62.136,
+          "p95_ms": 65.207
+        },
+        "planning_ms": {
+          "median_ms": 0.374,
+          "p95_ms": 0.424
+        },
+        "execution_ms": {
+          "median_ms": 152.206,
+          "p95_ms": 169.428
+        },
+        "aggregation_ms": {
+          "median_ms": 60.593,
+          "p95_ms": 65.719
+        },
+        "llm_preparation_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "llm_generation_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "generation_total_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "formatting_ms": {
+          "median_ms": 0.454,
+          "p95_ms": 0.53
+        },
+        "validation_ms": {
+          "median_ms": 59.273,
+          "p95_ms": 64.346
+        },
+        "total_ms": {
+          "median_ms": 364.937,
+          "p95_ms": 392.943
+        }
+      },
+      "response_bytes": 5150,
+      "source_paths": [
+        "extension/src/sourceNavigation.ts"
+      ],
+      "requirements": [
+        {
+          "requirement_id": "req-000",
+          "order": 0,
+          "original": {
+            "intent": "SYMBOL_LOCATION",
+            "order": 0,
+            "entity_indices": [
+              0
+            ],
+            "depends_on": [],
+            "required_capabilities": [
+              "graph.find_definition"
+            ],
+            "support": "supported",
+            "limitations": [],
+            "interpretation": null
+          },
+          "title": "Symbol location",
+          "state": "satisfied",
+          "supporting_requirement_ids": [
+            "req-000"
+          ],
+          "target_context": [
+            "verifiedSourcePath · extension/src/sourceNavigation.ts"
+          ],
+          "sections": [
+            {
+              "title": "Symbol location",
+              "item_ids": [
+                "5f4be268c5c4566993bd658e4d50a785"
+              ]
+            }
+          ],
+          "operations": [
+            {
+              "operation_id": "query-b2cb77f62ea7cdf3f2727f6b:req-000:op-00",
+              "execution_status": "success",
+              "coverage_state": "satisfied",
+              "limitations": []
+            }
+          ],
+          "limitations": [
+            "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+            "Semantic similarity establishes source relevance only, never a graph dependency."
+          ],
+          "hidden_items": 0
+        }
+      ],
+      "dependency_plan": [
+        []
+      ],
+      "presentation": {
+        "schema_version": "phase9-1",
+        "presentation_id": "24ed07779d3b19a6333f9912878ad497",
+        "query_id": "query-b2cb77f62ea7cdf3f2727f6b",
+        "package_id": "07692b17b6fd5d6a6c812daa52795a56",
+        "support_query_id": "query-b2cb77f62ea7cdf3f2727f6b",
+        "repository_id": "2c702a00791022ef780f1bc5",
+        "snapshot_id": "ecd3144d9a844ca59505de0673fc90a3",
+        "depth": "standard",
+        "status": "success",
+        "items": {
+          "5f4be268c5c4566993bd658e4d50a785": {
+            "item_id": "5f4be268c5c4566993bd658e4d50a785",
+            "origin": "finding",
+            "text": "verifiedSourcePath",
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:07692b17b6fd5d6a6c812daa52795a56:15537efad1da18d2e407903796e1d25b"
+            ],
+            "details": [
+              "Relationship: DEFINITION"
+            ],
+            "limitations": [
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          }
+        },
+        "requirements": [
+          {
+            "requirement_id": "req-000",
+            "order": 0,
+            "original": {
+              "intent": "SYMBOL_LOCATION",
+              "order": 0,
+              "entity_indices": [
+                0
+              ],
+              "depends_on": [],
+              "required_capabilities": [
+                "graph.find_definition"
+              ],
+              "support": "supported",
+              "limitations": [],
+              "interpretation": null
+            },
+            "title": "Symbol location",
+            "state": "satisfied",
+            "supporting_requirement_ids": [
+              "req-000"
+            ],
+            "target_context": [
+              "verifiedSourcePath · extension/src/sourceNavigation.ts"
+            ],
+            "sections": [
+              {
+                "title": "Symbol location",
+                "item_ids": [
+                  "5f4be268c5c4566993bd658e4d50a785"
+                ]
+              }
+            ],
+            "operations": [
+              {
+                "operation_id": "query-b2cb77f62ea7cdf3f2727f6b:req-000:op-00",
+                "execution_status": "success",
+                "coverage_state": "satisfied",
+                "limitations": []
+              }
+            ],
+            "limitations": [
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ],
+            "hidden_items": 0
+          }
+        ],
+        "sources": {
+          "cm7:07692b17b6fd5d6a6c812daa52795a56:15537efad1da18d2e407903796e1d25b": {
+            "citation": {
+              "reference": "cm7:07692b17b6fd5d6a6c812daa52795a56:15537efad1da18d2e407903796e1d25b",
+              "record_id": "15537efad1da18d2e407903796e1d25b",
+              "source": {
+                "evidence_id": "e3a19945c1a2794b1a102f7b55d8f3a989ccb4378a67561d0b116005ff0d083a",
+                "repository_id": "2c702a00791022ef780f1bc5",
+                "snapshot_id": "ecd3144d9a844ca59505de0673fc90a3",
+                "index_snapshot_id": "d955580c-f427-4563-b3c2-bca57cd3964b",
+                "evidence_type": "symbol_definition",
+                "file_id": "File:6e802151668a20c15e521dc78c94b817280b0811254112a62ffc9fcd97cf803d",
+                "symbol_id": "e3a19945c1a2794b1a102f7b55d8f3a989ccb4378a67561d0b116005ff0d083a",
+                "file_path": "extension/src/sourceNavigation.ts",
+                "start_line": 12,
+                "end_line": 31,
+                "resolution": "syntax_only",
+                "source_hash": "84dcabc85f12975121888b59fe0e9cef608bee2387c13c083b614124a711a66a",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          }
+        },
+        "clarifications": [],
+        "follow_ups": [
+          {
+            "requirement_id": "req-000",
+            "label": "Show direct callers",
+            "prompt": "Who calls `verifiedSourcePath` in `extension/src/sourceNavigation.ts`?",
+            "engine": "graph",
+            "operation": "find_callers",
+            "target_id": "e3a19945c1a2794b1a102f7b55d8f3a989ccb4378a67561d0b116005ff0d083a",
+            "citation_id": null,
+            "mode": "copy_query"
+          },
+          {
+            "requirement_id": "req-000",
+            "label": "Explore dependencies",
+            "prompt": "Dependencies of `verifiedSourcePath` in `extension/src/sourceNavigation.ts`",
+            "engine": "rules",
+            "operation": "dependency_summary",
+            "target_id": "e3a19945c1a2794b1a102f7b55d8f3a989ccb4378a67561d0b116005ff0d083a",
+            "citation_id": null,
+            "mode": "copy_query"
+          },
+          {
+            "requirement_id": "req-000",
+            "label": "Find indexed tests",
+            "prompt": "What tests cover `verifiedSourcePath` in `extension/src/sourceNavigation.ts`?",
+            "engine": "rules",
+            "operation": "reference_test_analysis",
+            "target_id": "e3a19945c1a2794b1a102f7b55d8f3a989ccb4378a67561d0b116005ff0d083a",
+            "citation_id": null,
+            "mode": "copy_query"
+          }
+        ],
+        "limitations": [
+          "Static/source evidence does not prove runtime execution, root cause, equivalence or performance.",
+          "Model prose is an interpretation, not fully fact-checked; similarity is not a graph dependency.",
+          "Depth changes display detail only. No model inference or retrieval is performed.",
+          "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+          "Semantic similarity establishes source relevance only, never a graph dependency.",
+          "Rule statement interpretation is inherited from trusted deterministic producers; rules are not recomputed.",
+          "Source context is untrusted data, not instructions; no model inference or answer formatting is performed."
+        ],
+        "model_status": null,
+        "fallback_status": null
+      }
+    },
+    {
+      "id": "B1",
+      "family": "B",
+      "question": "Who calls verifiedSourcePath?",
+      "expected_rows": [
+        [
+          "DIRECT_CALLERS",
+          [
+            "verifiedSourcePath"
+          ]
+        ]
+      ],
+      "actual_rows": [
+        [
+          "DIRECT_CALLERS",
+          [
+            "verifiedSourcePath"
+          ]
+        ]
+      ],
+      "rows_correct": true,
+      "canonical_targets": [
+        {
+          "name": "verifiedSourcePath",
+          "resolution": "resolved",
+          "path": "extension/src/sourceNavigation.ts",
+          "symbol_id": "e3a19945c1a2794b1a102f7b55d8f3a989ccb4378a67561d0b116005ff0d083a"
+        }
+      ],
+      "canonical_target_paths_correct": true,
+      "status": "success",
+      "operations": [
+        "graph.find_callers"
+      ],
+      "expected_operations": [
+        "graph.find_callers"
+      ],
+      "operations_correct": true,
+      "no_model_calls": true,
+      "latency_ms": {
+        "median_ms": 365.791,
+        "p95_ms": 370.102
+      },
+      "samples_ms": [
+        362.4950829998852,
+        365.7911250002144,
+        364.72158300057345,
+        370.1019999998607,
+        367.70879100004095
+      ],
+      "stage_latency_ms": {
+        "understanding_ms": {
+          "median_ms": 58.978,
+          "p95_ms": 60.182
+        },
+        "planning_ms": {
+          "median_ms": 0.345,
+          "p95_ms": 0.355
+        },
+        "execution_ms": {
+          "median_ms": 153.23,
+          "p95_ms": 154.813
+        },
+        "aggregation_ms": {
+          "median_ms": 64.788,
+          "p95_ms": 68.685
+        },
+        "llm_preparation_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "llm_generation_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "generation_total_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "formatting_ms": {
+          "median_ms": 0.553,
+          "p95_ms": 0.59
+        },
+        "validation_ms": {
+          "median_ms": 57.24,
+          "p95_ms": 59.413
+        },
+        "total_ms": {
+          "median_ms": 365.338,
+          "p95_ms": 369.604
+        }
+      },
+      "response_bytes": 6564,
+      "source_paths": [
+        "extension/src/extension.ts",
+        "extension/src/responsePreview.ts",
+        "extension/src/sourceNavigation.ts"
+      ],
+      "requirements": [
+        {
+          "requirement_id": "req-000",
+          "order": 0,
+          "original": {
+            "intent": "DIRECT_CALLERS",
+            "order": 0,
+            "entity_indices": [
+              0
+            ],
+            "depends_on": [],
+            "required_capabilities": [
+              "graph.find_callers"
+            ],
+            "support": "supported",
+            "limitations": [
+              "Known static graph relationships do not establish runtime behavior"
+            ],
+            "interpretation": null
+          },
+          "title": "Known direct callers",
+          "state": "satisfied",
+          "supporting_requirement_ids": [
+            "req-000"
+          ],
+          "target_context": [
+            "verifiedSourcePath · extension/src/sourceNavigation.ts"
+          ],
+          "sections": [
+            {
+              "title": "Known direct callers",
+              "item_ids": [
+                "245f4451ac161912d1b02407521a3301",
+                "c03e2922436e019bcb7238a2c4dca8ac"
+              ]
+            }
+          ],
+          "operations": [
+            {
+              "operation_id": "query-73300176c9d6c66a180da4c8:req-000:op-00",
+              "execution_status": "success",
+              "coverage_state": "satisfied",
+              "limitations": [
+                "Incoming relationships cover resolved static evidence; unresolved dynamic targets cannot be attributed here"
+              ]
+            }
+          ],
+          "limitations": [
+            "Known static graph relationships do not establish runtime behavior",
+            "Incoming relationships cover resolved static evidence; unresolved dynamic targets cannot be attributed here",
+            "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+            "Semantic similarity establishes source relevance only, never a graph dependency."
+          ],
+          "hidden_items": 0
+        }
+      ],
+      "dependency_plan": [
+        []
+      ],
+      "presentation": {
+        "schema_version": "phase9-1",
+        "presentation_id": "e98a8c0eef5eb458633e99c15d862eaa",
+        "query_id": "query-73300176c9d6c66a180da4c8",
+        "package_id": "efdd6c47cd9a6329e308f3c27c8ab943",
+        "support_query_id": "query-73300176c9d6c66a180da4c8",
+        "repository_id": "2c702a00791022ef780f1bc5",
+        "snapshot_id": "ecd3144d9a844ca59505de0673fc90a3",
+        "depth": "standard",
+        "status": "success",
+        "items": {
+          "245f4451ac161912d1b02407521a3301": {
+            "item_id": "245f4451ac161912d1b02407521a3301",
+            "origin": "finding",
+            "text": "Static CALLS: activate.openIndexedSource",
+            "classification": "verified_graph_relationship",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:efdd6c47cd9a6329e308f3c27c8ab943:3d40593e2d8adad39644db9d9c9157a3"
+            ],
+            "details": [
+              "Relationship: CALLS",
+              "activate.openIndexedSource → verifiedSourcePath"
+            ],
+            "limitations": [
+              "Incoming relationships cover resolved static evidence; unresolved dynamic targets cannot be attributed here",
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          },
+          "c03e2922436e019bcb7238a2c4dca8ac": {
+            "item_id": "c03e2922436e019bcb7238a2c4dca8ac",
+            "origin": "finding",
+            "text": "Static CALLS: verifiedPreviewSource",
+            "classification": "verified_graph_relationship",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:efdd6c47cd9a6329e308f3c27c8ab943:609579530bec5fc6c05b8c1c09a4bedd"
+            ],
+            "details": [
+              "Relationship: CALLS",
+              "verifiedPreviewSource → verifiedSourcePath"
+            ],
+            "limitations": [
+              "Incoming relationships cover resolved static evidence; unresolved dynamic targets cannot be attributed here",
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          }
+        },
+        "requirements": [
+          {
+            "requirement_id": "req-000",
+            "order": 0,
+            "original": {
+              "intent": "DIRECT_CALLERS",
+              "order": 0,
+              "entity_indices": [
+                0
+              ],
+              "depends_on": [],
+              "required_capabilities": [
+                "graph.find_callers"
+              ],
+              "support": "supported",
+              "limitations": [
+                "Known static graph relationships do not establish runtime behavior"
+              ],
+              "interpretation": null
+            },
+            "title": "Known direct callers",
+            "state": "satisfied",
+            "supporting_requirement_ids": [
+              "req-000"
+            ],
+            "target_context": [
+              "verifiedSourcePath · extension/src/sourceNavigation.ts"
+            ],
+            "sections": [
+              {
+                "title": "Known direct callers",
+                "item_ids": [
+                  "245f4451ac161912d1b02407521a3301",
+                  "c03e2922436e019bcb7238a2c4dca8ac"
+                ]
+              }
+            ],
+            "operations": [
+              {
+                "operation_id": "query-73300176c9d6c66a180da4c8:req-000:op-00",
+                "execution_status": "success",
+                "coverage_state": "satisfied",
+                "limitations": [
+                  "Incoming relationships cover resolved static evidence; unresolved dynamic targets cannot be attributed here"
+                ]
+              }
+            ],
+            "limitations": [
+              "Known static graph relationships do not establish runtime behavior",
+              "Incoming relationships cover resolved static evidence; unresolved dynamic targets cannot be attributed here",
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ],
+            "hidden_items": 0
+          }
+        ],
+        "sources": {
+          "cm7:efdd6c47cd9a6329e308f3c27c8ab943:3d40593e2d8adad39644db9d9c9157a3": {
+            "citation": {
+              "reference": "cm7:efdd6c47cd9a6329e308f3c27c8ab943:3d40593e2d8adad39644db9d9c9157a3",
+              "record_id": "3d40593e2d8adad39644db9d9c9157a3",
+              "source": {
+                "evidence_id": "rel:89395c2d3033b8509f709e9428f607c58616a827289217d5da1b27cd25b6e456",
+                "repository_id": "2c702a00791022ef780f1bc5",
+                "snapshot_id": "ecd3144d9a844ca59505de0673fc90a3",
+                "index_snapshot_id": "ddb65a68-54f9-42d0-99fd-4c9fb93d9626",
+                "evidence_type": "graph_relationship",
+                "file_id": "File:7aaca4ac05645c7f7eb6c6a49cf3f37997a705e1d068ffe4eebb3acc912eac55",
+                "symbol_id": null,
+                "file_path": "extension/src/extension.ts",
+                "start_line": 97,
+                "end_line": 97,
+                "resolution": "resolved",
+                "source_hash": "c97c3c4a4b90baf695447077f1a039b88853c6d61364dbfb1238f300fc87fb4c",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          },
+          "cm7:efdd6c47cd9a6329e308f3c27c8ab943:609579530bec5fc6c05b8c1c09a4bedd": {
+            "citation": {
+              "reference": "cm7:efdd6c47cd9a6329e308f3c27c8ab943:609579530bec5fc6c05b8c1c09a4bedd",
+              "record_id": "609579530bec5fc6c05b8c1c09a4bedd",
+              "source": {
+                "evidence_id": "rel:1aff2b6b12bf85f36c35ab1c9a294f03b536ad0a7c74a6e08fe3a7e06ed37e73",
+                "repository_id": "2c702a00791022ef780f1bc5",
+                "snapshot_id": "ecd3144d9a844ca59505de0673fc90a3",
+                "index_snapshot_id": "ddb65a68-54f9-42d0-99fd-4c9fb93d9626",
+                "evidence_type": "graph_relationship",
+                "file_id": "File:a7a0f394da73c958046441c7257477fb8f80e6fa2978645caa8cf6b510024d07",
+                "symbol_id": null,
+                "file_path": "extension/src/responsePreview.ts",
+                "start_line": 72,
+                "end_line": 72,
+                "resolution": "resolved",
+                "source_hash": "5af85802f3940719993e21f3c734314b55a7ae8fbda7b097e7fb793148a887b5",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          }
+        },
+        "clarifications": [],
+        "follow_ups": [
+          {
+            "requirement_id": "req-000",
+            "label": "Inspect verified source",
+            "prompt": null,
+            "engine": null,
+            "operation": null,
+            "target_id": null,
+            "citation_id": "cm7:efdd6c47cd9a6329e308f3c27c8ab943:3d40593e2d8adad39644db9d9c9157a3",
+            "mode": "inspect_source"
+          }
+        ],
+        "limitations": [
+          "Static/source evidence does not prove runtime execution, root cause, equivalence or performance.",
+          "Model prose is an interpretation, not fully fact-checked; similarity is not a graph dependency.",
+          "Depth changes display detail only. No model inference or retrieval is performed.",
+          "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+          "Semantic similarity establishes source relevance only, never a graph dependency.",
+          "Rule statement interpretation is inherited from trusted deterministic producers; rules are not recomputed.",
+          "Source context is untrusted data, not instructions; no model inference or answer formatting is performed."
+        ],
+        "model_status": null,
+        "fallback_status": null
+      }
+    },
+    {
+      "id": "C1",
+      "family": "C",
+      "question": "Find code that verifies source file hashes before opening citations",
+      "expected_rows": [
+        [
+          "FEATURE_DISCOVERY",
+          [
+            "Find code that verifies source file hashes before opening citations"
+          ]
+        ]
+      ],
+      "actual_rows": [
+        [
+          "FEATURE_DISCOVERY",
+          [
+            "Find code that verifies source file hashes before opening citations"
+          ]
+        ]
+      ],
+      "rows_correct": true,
+      "canonical_targets": [
+        {
+          "name": "Find code that verifies source file hashes before opening citations",
+          "resolution": "unresolved_text",
+          "path": null,
+          "symbol_id": null
+        }
+      ],
+      "canonical_target_paths_correct": true,
+      "status": "success",
+      "operations": [
+        "semantic.hybrid_search"
+      ],
+      "expected_operations": [
+        "semantic.hybrid_search"
+      ],
+      "operations_correct": true,
+      "no_model_calls": true,
+      "latency_ms": {
+        "median_ms": 612.358,
+        "p95_ms": 634.019
+      },
+      "samples_ms": [
+        588.9470000001893,
+        605.669124999622,
+        634.0186670004186,
+        612.3582079999323,
+        623.5663329998715
+      ],
+      "stage_latency_ms": {
+        "understanding_ms": {
+          "median_ms": 57.384,
+          "p95_ms": 59.178
+        },
+        "planning_ms": {
+          "median_ms": 0.396,
+          "p95_ms": 0.478
+        },
+        "execution_ms": {
+          "median_ms": 400.613,
+          "p95_ms": 423.555
+        },
+        "aggregation_ms": {
+          "median_ms": 62.373,
+          "p95_ms": 65.306
+        },
+        "llm_preparation_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "llm_generation_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "generation_total_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "formatting_ms": {
+          "median_ms": 0.648,
+          "p95_ms": 0.668
+        },
+        "validation_ms": {
+          "median_ms": 60.036,
+          "p95_ms": 61.483
+        },
+        "total_ms": {
+          "median_ms": 611.924,
+          "p95_ms": 633.559
+        }
+      },
+      "response_bytes": 11392,
+      "source_paths": [
+        "ai-engine/lexical_search.py",
+        "extension/src/responsePreview.ts",
+        "query_system/benchmark_hybrid.py"
+      ],
+      "requirements": [
+        {
+          "requirement_id": "req-000",
+          "order": 0,
+          "original": {
+            "intent": "FEATURE_DISCOVERY",
+            "order": 0,
+            "entity_indices": [
+              0
+            ],
+            "depends_on": [],
+            "required_capabilities": [
+              "semantic.hybrid_search"
+            ],
+            "support": "supported",
+            "limitations": [
+              "Semantic similarity is discovery evidence, not a structural dependency"
+            ],
+            "interpretation": null
+          },
+          "title": "Feature-location candidates (similarity, not dependency)",
+          "state": "satisfied",
+          "supporting_requirement_ids": [
+            "req-000"
+          ],
+          "target_context": [
+            "Find code that verifies source file hashes before opening citations"
+          ],
+          "sections": [
+            {
+              "title": "Feature-location candidates (similarity, not dependency)",
+              "item_ids": [
+                "d1d9c920b64dd813bdf0e4cf5d3463e1",
+                "6dd9548ee51b9b925232be9976c78494",
+                "cb52889ba2e7b23b994e22b6ee4a550c",
+                "b76888a0f609e1e82c74cd05fcc0380f",
+                "fd34aa840e18dff67eaad350f2628515"
+              ]
+            }
+          ],
+          "operations": [
+            {
+              "operation_id": "query-556bb24345e42040be1effce:req-000:op-00",
+              "execution_status": "success",
+              "coverage_state": "satisfied",
+              "limitations": []
+            }
+          ],
+          "limitations": [
+            "Semantic similarity is discovery evidence, not a structural dependency",
+            "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+            "Semantic similarity establishes source relevance only, never a graph dependency."
+          ],
+          "hidden_items": 0
+        }
+      ],
+      "dependency_plan": [
+        []
+      ],
+      "presentation": {
+        "schema_version": "phase9-1",
+        "presentation_id": "74e7bb6430efc572f80a88bfa832f0ab",
+        "query_id": "query-556bb24345e42040be1effce",
+        "package_id": "40658814e60dae826e6480f7adfed788",
+        "support_query_id": "query-556bb24345e42040be1effce",
+        "repository_id": "2c702a00791022ef780f1bc5",
+        "snapshot_id": "ecd3144d9a844ca59505de0673fc90a3",
+        "depth": "standard",
+        "status": "success",
+        "items": {
+          "6dd9548ee51b9b925232be9976c78494": {
+            "item_id": "6dd9548ee51b9b925232be9976c78494",
+            "origin": "finding",
+            "text": "Candidate 2: search_exact_code (similarity/keyword relevance, not a dependency)",
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:40658814e60dae826e6480f7adfed788:a2e197cf141a15d998f7c931c8a7f1b8"
+            ],
+            "details": [
+              "Retrieval methods: keyword/semantic",
+              "Ranking signals: {\"fusion\": 0.029273504273504274, \"keyword\": 10.526528596172641, \"retrieval\": 0.7426034212112427}"
+            ],
+            "limitations": [
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          },
+          "b76888a0f609e1e82c74cd05fcc0380f": {
+            "item_id": "b76888a0f609e1e82c74cd05fcc0380f",
+            "origin": "finding",
+            "text": "Candidate 4: search_exact_code (similarity/keyword relevance, not a dependency)",
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:40658814e60dae826e6480f7adfed788:f8dde5bd56cbe807d7b4c80ed4260c8a"
+            ],
+            "details": [
+              "Retrieval methods: keyword/semantic",
+              "Ranking signals: {\"fusion\": 0.028577260665441927, \"keyword\": 10.573169734515037, \"retrieval\": 0.7339246273040771}"
+            ],
+            "limitations": [
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          },
+          "cb52889ba2e7b23b994e22b6ee4a550c": {
+            "item_id": "cb52889ba2e7b23b994e22b6ee4a550c",
+            "origin": "finding",
+            "text": "Candidate 3: search_exact_code (similarity/keyword relevance, not a dependency)",
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:40658814e60dae826e6480f7adfed788:71d885ddf8751f05ac8146ae80fba698"
+            ],
+            "details": [
+              "Retrieval methods: keyword/semantic",
+              "Ranking signals: {\"fusion\": 0.028991596638655463, \"keyword\": 11.906193090572476, \"retrieval\": 0.7398608922958374}"
+            ],
+            "limitations": [
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          },
+          "d1d9c920b64dd813bdf0e4cf5d3463e1": {
+            "item_id": "d1d9c920b64dd813bdf0e4cf5d3463e1",
+            "origin": "finding",
+            "text": "Candidate 1: query_system/benchmark_hybrid.py (similarity/keyword relevance, not a dependency)",
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:40658814e60dae826e6480f7adfed788:ad93d2f7579b33148e5a00bb15bbe2bd"
+            ],
+            "details": [
+              "Retrieval methods: keyword/semantic",
+              "Ranking signals: {\"fusion\": 0.032266458495966696, \"keyword\": 23.46565456098862, \"retrieval\": 0.7661657929420471}"
+            ],
+            "limitations": [
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          },
+          "fd34aa840e18dff67eaad350f2628515": {
+            "item_id": "fd34aa840e18dff67eaad350f2628515",
+            "origin": "finding",
+            "text": "Candidate 5: verifiedPreviewSource (similarity/keyword relevance, not a dependency)",
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:40658814e60dae826e6480f7adfed788:44b12b0a50f5fe059360793a2ccd783e"
+            ],
+            "details": [
+              "Retrieval methods: semantic",
+              "Ranking signals: {\"fusion\": 0.015873015873015872, \"keyword\": null, \"retrieval\": 0.747047483921051}"
+            ],
+            "limitations": [
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          }
+        },
+        "requirements": [
+          {
+            "requirement_id": "req-000",
+            "order": 0,
+            "original": {
+              "intent": "FEATURE_DISCOVERY",
+              "order": 0,
+              "entity_indices": [
+                0
+              ],
+              "depends_on": [],
+              "required_capabilities": [
+                "semantic.hybrid_search"
+              ],
+              "support": "supported",
+              "limitations": [
+                "Semantic similarity is discovery evidence, not a structural dependency"
+              ],
+              "interpretation": null
+            },
+            "title": "Feature-location candidates (similarity, not dependency)",
+            "state": "satisfied",
+            "supporting_requirement_ids": [
+              "req-000"
+            ],
+            "target_context": [
+              "Find code that verifies source file hashes before opening citations"
+            ],
+            "sections": [
+              {
+                "title": "Feature-location candidates (similarity, not dependency)",
+                "item_ids": [
+                  "d1d9c920b64dd813bdf0e4cf5d3463e1",
+                  "6dd9548ee51b9b925232be9976c78494",
+                  "cb52889ba2e7b23b994e22b6ee4a550c",
+                  "b76888a0f609e1e82c74cd05fcc0380f",
+                  "fd34aa840e18dff67eaad350f2628515"
+                ]
+              }
+            ],
+            "operations": [
+              {
+                "operation_id": "query-556bb24345e42040be1effce:req-000:op-00",
+                "execution_status": "success",
+                "coverage_state": "satisfied",
+                "limitations": []
+              }
+            ],
+            "limitations": [
+              "Semantic similarity is discovery evidence, not a structural dependency",
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ],
+            "hidden_items": 0
+          }
+        ],
+        "sources": {
+          "cm7:40658814e60dae826e6480f7adfed788:44b12b0a50f5fe059360793a2ccd783e": {
+            "citation": {
+              "reference": "cm7:40658814e60dae826e6480f7adfed788:44b12b0a50f5fe059360793a2ccd783e",
+              "record_id": "44b12b0a50f5fe059360793a2ccd783e",
+              "source": {
+                "evidence_id": "c515d4e3-2015-51e2-bdd1-52f10378ad5f",
+                "repository_id": "2c702a00791022ef780f1bc5",
+                "snapshot_id": "ecd3144d9a844ca59505de0673fc90a3",
+                "index_snapshot_id": "21a4dfdb-0fc1-4f4e-8ba9-1032b429124c",
+                "evidence_type": "code_chunk",
+                "file_id": "File:a7a0f394da73c958046441c7257477fb8f80e6fa2978645caa8cf6b510024d07",
+                "symbol_id": "9c21b453e2a0c34564207970b061c04d22a4988851becceb07d54eac6c5a6d20",
+                "file_path": "extension/src/responsePreview.ts",
+                "start_line": 61,
+                "end_line": 74,
+                "resolution": "not_applicable",
+                "source_hash": "5af85802f3940719993e21f3c734314b55a7ae8fbda7b097e7fb793148a887b5",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          },
+          "cm7:40658814e60dae826e6480f7adfed788:71d885ddf8751f05ac8146ae80fba698": {
+            "citation": {
+              "reference": "cm7:40658814e60dae826e6480f7adfed788:71d885ddf8751f05ac8146ae80fba698",
+              "record_id": "71d885ddf8751f05ac8146ae80fba698",
+              "source": {
+                "evidence_id": "2a0ce193-f582-5808-871f-560bd5882a8e",
+                "repository_id": "2c702a00791022ef780f1bc5",
+                "snapshot_id": "ecd3144d9a844ca59505de0673fc90a3",
+                "index_snapshot_id": "21a4dfdb-0fc1-4f4e-8ba9-1032b429124c",
+                "evidence_type": "code_chunk",
+                "file_id": "File:36a54de7d444c9793980dab07c5cb69cbcbb127199155b5a219a7f728cb4e019",
+                "symbol_id": null,
+                "file_path": "ai-engine/lexical_search.py",
+                "start_line": 81,
+                "end_line": 98,
+                "resolution": "not_applicable",
+                "source_hash": "cf7f0e4852b6a2e09bbf760b31efc2e0f92a353acae27cc66d26e42943f83ebe",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          },
+          "cm7:40658814e60dae826e6480f7adfed788:a2e197cf141a15d998f7c931c8a7f1b8": {
+            "citation": {
+              "reference": "cm7:40658814e60dae826e6480f7adfed788:a2e197cf141a15d998f7c931c8a7f1b8",
+              "record_id": "a2e197cf141a15d998f7c931c8a7f1b8",
+              "source": {
+                "evidence_id": "31ff21ce-3e73-59a9-b526-1d6004cefe66",
+                "repository_id": "2c702a00791022ef780f1bc5",
+                "snapshot_id": "ecd3144d9a844ca59505de0673fc90a3",
+                "index_snapshot_id": "21a4dfdb-0fc1-4f4e-8ba9-1032b429124c",
+                "evidence_type": "code_chunk",
+                "file_id": "File:36a54de7d444c9793980dab07c5cb69cbcbb127199155b5a219a7f728cb4e019",
+                "symbol_id": null,
+                "file_path": "ai-engine/lexical_search.py",
+                "start_line": 16,
+                "end_line": 38,
+                "resolution": "not_applicable",
+                "source_hash": "cf7f0e4852b6a2e09bbf760b31efc2e0f92a353acae27cc66d26e42943f83ebe",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          },
+          "cm7:40658814e60dae826e6480f7adfed788:ad93d2f7579b33148e5a00bb15bbe2bd": {
+            "citation": {
+              "reference": "cm7:40658814e60dae826e6480f7adfed788:ad93d2f7579b33148e5a00bb15bbe2bd",
+              "record_id": "ad93d2f7579b33148e5a00bb15bbe2bd",
+              "source": {
+                "evidence_id": "0be0018f-57ea-5cf8-9d2c-16cabf084420",
+                "repository_id": "2c702a00791022ef780f1bc5",
+                "snapshot_id": "ecd3144d9a844ca59505de0673fc90a3",
+                "index_snapshot_id": "21a4dfdb-0fc1-4f4e-8ba9-1032b429124c",
+                "evidence_type": "code_chunk",
+                "file_id": "File:2362ba40db96bc8a9dc0fb05a56ef92eaa9a8954cffe5944b87c13f12cf27877",
+                "symbol_id": null,
+                "file_path": "query_system/benchmark_hybrid.py",
+                "start_line": 118,
+                "end_line": 125,
+                "resolution": "not_applicable",
+                "source_hash": "6bde44e7ac936b30ef638d2f19282e09ed8442495cdbbf54cec2e35a67b252c9",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          },
+          "cm7:40658814e60dae826e6480f7adfed788:f8dde5bd56cbe807d7b4c80ed4260c8a": {
+            "citation": {
+              "reference": "cm7:40658814e60dae826e6480f7adfed788:f8dde5bd56cbe807d7b4c80ed4260c8a",
+              "record_id": "f8dde5bd56cbe807d7b4c80ed4260c8a",
+              "source": {
+                "evidence_id": "22e74140-8652-5e32-92b3-5304d23214ef",
+                "repository_id": "2c702a00791022ef780f1bc5",
+                "snapshot_id": "ecd3144d9a844ca59505de0673fc90a3",
+                "index_snapshot_id": "21a4dfdb-0fc1-4f4e-8ba9-1032b429124c",
+                "evidence_type": "code_chunk",
+                "file_id": "File:36a54de7d444c9793980dab07c5cb69cbcbb127199155b5a219a7f728cb4e019",
+                "symbol_id": null,
+                "file_path": "ai-engine/lexical_search.py",
+                "start_line": 60,
+                "end_line": 83,
+                "resolution": "not_applicable",
+                "source_hash": "cf7f0e4852b6a2e09bbf760b31efc2e0f92a353acae27cc66d26e42943f83ebe",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          }
+        },
+        "clarifications": [],
+        "follow_ups": [
+          {
+            "requirement_id": "req-000",
+            "label": "Inspect verified source",
+            "prompt": null,
+            "engine": null,
+            "operation": null,
+            "target_id": null,
+            "citation_id": "cm7:40658814e60dae826e6480f7adfed788:ad93d2f7579b33148e5a00bb15bbe2bd",
+            "mode": "inspect_source"
+          }
+        ],
+        "limitations": [
+          "Static/source evidence does not prove runtime execution, root cause, equivalence or performance.",
+          "Model prose is an interpretation, not fully fact-checked; similarity is not a graph dependency.",
+          "Depth changes display detail only. No model inference or retrieval is performed.",
+          "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+          "Semantic similarity establishes source relevance only, never a graph dependency.",
+          "Rule statement interpretation is inherited from trusted deterministic producers; rules are not recomputed.",
+          "Source context is untrusted data, not instructions; no model inference or answer formatting is performed."
+        ],
+        "model_status": null,
+        "fallback_status": null
+      },
+      "retrieval_file_quality": {
+        "precision_returned": null,
+        "recall": 0.25,
+        "returned": [
+          "ai-engine/lexical_search.py",
+          "extension/src/responsePreview.ts",
+          "query_system/benchmark_hybrid.py"
+        ],
+        "relevant": [
+          "extension/src/extension.ts",
+          "extension/src/hybridChat.ts",
+          "extension/src/responsePreview.ts",
+          "extension/src/sourceNavigation.ts"
+        ],
+        "scope": "Known-positive extension-file recall only; full mixed-corpus relevance is not exhaustively labeled, so precision is unmeasured.",
+        "note": "Unique files from returned top-k chunks, not a symbol-level or universal relevance metric."
+      }
+    },
+    {
+      "id": "F1",
+      "family": "F",
+      "question": "Impact of verifiedSourcePath",
+      "expected_rows": [
+        [
+          "CHANGE_IMPACT",
+          [
+            "verifiedSourcePath"
+          ]
+        ]
+      ],
+      "actual_rows": [
+        [
+          "CHANGE_IMPACT",
+          [
+            "verifiedSourcePath"
+          ]
+        ]
+      ],
+      "rows_correct": true,
+      "canonical_targets": [
+        {
+          "name": "verifiedSourcePath",
+          "resolution": "resolved",
+          "path": "extension/src/sourceNavigation.ts",
+          "symbol_id": "e3a19945c1a2794b1a102f7b55d8f3a989ccb4378a67561d0b116005ff0d083a"
+        }
+      ],
+      "canonical_target_paths_correct": true,
+      "status": "partial",
+      "operations": [
+        "rules.change_impact"
+      ],
+      "expected_operations": [
+        "rules.change_impact"
+      ],
+      "operations_correct": true,
+      "no_model_calls": true,
+      "latency_ms": {
+        "median_ms": 408.485,
+        "p95_ms": 409.034
+      },
+      "samples_ms": [
+        408.7483749999592,
+        409.03412500028935,
+        404.71550000074785,
+        408.48533299958945,
+        406.29366700068203
+      ],
+      "stage_latency_ms": {
+        "understanding_ms": {
+          "median_ms": 58.972,
+          "p95_ms": 60.399
+        },
+        "planning_ms": {
+          "median_ms": 0.361,
+          "p95_ms": 0.389
+        },
+        "execution_ms": {
+          "median_ms": 204.011,
+          "p95_ms": 206.098
+        },
+        "aggregation_ms": {
+          "median_ms": 58.081,
+          "p95_ms": 58.38
+        },
+        "llm_preparation_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "llm_generation_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "generation_total_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "formatting_ms": {
+          "median_ms": 0.494,
+          "p95_ms": 0.506
+        },
+        "validation_ms": {
+          "median_ms": 56.032,
+          "p95_ms": 57.212
+        },
+        "total_ms": {
+          "median_ms": 408.031,
+          "p95_ms": 408.638
+        }
+      },
+      "response_bytes": 8422,
+      "source_paths": [
+        "extension/src/sourceNavigation.ts"
+      ],
+      "requirements": [
+        {
+          "requirement_id": "req-000",
+          "order": 0,
+          "original": {
+            "intent": "CHANGE_IMPACT",
+            "order": 0,
+            "entity_indices": [
+              0
+            ],
+            "depends_on": [],
+            "required_capabilities": [
+              "rules.change_impact"
+            ],
+            "support": "partial",
+            "limitations": [
+              "Static impact locations are hypotheses, not guaranteed breakage"
+            ],
+            "interpretation": null
+          },
+          "title": "Potential change impact",
+          "state": "partially_satisfied",
+          "supporting_requirement_ids": [
+            "req-000"
+          ],
+          "target_context": [
+            "verifiedSourcePath · extension/src/sourceNavigation.ts"
+          ],
+          "sections": [
+            {
+              "title": "Potential change impact",
+              "item_ids": [
+                "f2a14defa6761014744ba5cd66afdbdb",
+                "2711fefae1906d80d6e790e68d26e197"
+              ]
+            }
+          ],
+          "operations": [
+            {
+              "operation_id": "query-a73d65ac6fb9011074540dea:req-000:op-00",
+              "execution_status": "partial",
+              "coverage_state": "partially_satisfied",
+              "limitations": [
+                "JS/TS indexed static evidence only; dynamic targets may be unresolved.",
+                "Known test references follow the existing filename convention, not execution or coverage.",
+                "An impact location is a hypothesis, never a guarantee that a change breaks code.",
+                "Reverse discovery uses bounded candidate-to-target path queries, not a new traversal.",
+                "Graph footprint exceeds max_nodes/max_edges; relationship/path/test analysis omitted"
+              ]
+            }
+          ],
+          "limitations": [
+            "Static impact locations are hypotheses, not guaranteed breakage",
+            "JS/TS indexed static evidence only; dynamic targets may be unresolved.",
+            "Known test references follow the existing filename convention, not execution or coverage.",
+            "An impact location is a hypothesis, never a guarantee that a change breaks code.",
+            "Reverse discovery uses bounded candidate-to-target path queries, not a new traversal.",
+            "Graph footprint exceeds max_nodes/max_edges; relationship/path/test analysis omitted",
+            "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+            "Semantic similarity establishes source relevance only, never a graph dependency."
+          ],
+          "hidden_items": 0
+        }
+      ],
+      "dependency_plan": [
+        []
+      ],
+      "presentation": {
+        "schema_version": "phase9-1",
+        "presentation_id": "d0f99de74383812825bf576ac64a5a90",
+        "query_id": "query-a73d65ac6fb9011074540dea",
+        "package_id": "c7c005808c67192bb32cebe8f2a24038",
+        "support_query_id": "query-a73d65ac6fb9011074540dea",
+        "repository_id": "2c702a00791022ef780f1bc5",
+        "snapshot_id": "ecd3144d9a844ca59505de0673fc90a3",
+        "depth": "standard",
+        "status": "partial",
+        "items": {
+          "2711fefae1906d80d6e790e68d26e197": {
+            "item_id": "2711fefae1906d80d6e790e68d26e197",
+            "origin": "finding",
+            "text": "Indexed declaration is a possible contract, not a compatibility guarantee",
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:c7c005808c67192bb32cebe8f2a24038:15537efad1da18d2e407903796e1d25b"
+            ],
+            "details": [
+              "{\"declared_async\": false, \"exported\": true, \"kind\": \"function\", \"name\": \"verifiedSourcePath\", \"parameters\": [{\"name\": \"rootPath\", \"optional\": false, \"rest\": false, \"span\": {\"end_byte\": 406, \"end_column\": 52, \"end_line\": 12, \"start_byte\": 390, \"start_column\": 36, \"start_line\": 12}, \"type\": \": string\"}, {\"name\": \"relativePath\", \"optional\": false, \"rest\": false, \"span\": {\"end_byte\": 428, \"end_column\": 74, \"end_line\": 12, \"start_byte\": 408, \"start_column\": 54, \"start_line\": 12}, \"type\": \": string\"}, {\"name\": \"sourceHash\", \"optional\": false, \"rest\": false, \"span\": {\"end_byte\": 448, \"end_column\": 94, \"end_line\": 12, \"start_byte\": 430, \"start_column\": 76, \"start_line\": 12}, \"type\": \": string\"}], \"return_annotation\": \": string\"}"
+            ],
+            "limitations": [
+              "JS/TS indexed static evidence only; dynamic targets may be unresolved.",
+              "Known test references follow the existing filename convention, not execution or coverage.",
+              "An impact location is a hypothesis, never a guarantee that a change breaks code.",
+              "Reverse discovery uses bounded candidate-to-target path queries, not a new traversal.",
+              "Graph footprint exceeds max_nodes/max_edges; relationship/path/test analysis omitted",
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          },
+          "f2a14defa6761014744ba5cd66afdbdb": {
+            "item_id": "f2a14defa6761014744ba5cd66afdbdb",
+            "origin": "finding",
+            "text": "Preliminary static impact analysis; consequences are not proven",
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:c7c005808c67192bb32cebe8f2a24038:15537efad1da18d2e407903796e1d25b"
+            ],
+            "details": [],
+            "limitations": [
+              "JS/TS indexed static evidence only; dynamic targets may be unresolved.",
+              "Known test references follow the existing filename convention, not execution or coverage.",
+              "An impact location is a hypothesis, never a guarantee that a change breaks code.",
+              "Reverse discovery uses bounded candidate-to-target path queries, not a new traversal.",
+              "Graph footprint exceeds max_nodes/max_edges; relationship/path/test analysis omitted",
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          }
+        },
+        "requirements": [
+          {
+            "requirement_id": "req-000",
+            "order": 0,
+            "original": {
+              "intent": "CHANGE_IMPACT",
+              "order": 0,
+              "entity_indices": [
+                0
+              ],
+              "depends_on": [],
+              "required_capabilities": [
+                "rules.change_impact"
+              ],
+              "support": "partial",
+              "limitations": [
+                "Static impact locations are hypotheses, not guaranteed breakage"
+              ],
+              "interpretation": null
+            },
+            "title": "Potential change impact",
+            "state": "partially_satisfied",
+            "supporting_requirement_ids": [
+              "req-000"
+            ],
+            "target_context": [
+              "verifiedSourcePath · extension/src/sourceNavigation.ts"
+            ],
+            "sections": [
+              {
+                "title": "Potential change impact",
+                "item_ids": [
+                  "f2a14defa6761014744ba5cd66afdbdb",
+                  "2711fefae1906d80d6e790e68d26e197"
+                ]
+              }
+            ],
+            "operations": [
+              {
+                "operation_id": "query-a73d65ac6fb9011074540dea:req-000:op-00",
+                "execution_status": "partial",
+                "coverage_state": "partially_satisfied",
+                "limitations": [
+                  "JS/TS indexed static evidence only; dynamic targets may be unresolved.",
+                  "Known test references follow the existing filename convention, not execution or coverage.",
+                  "An impact location is a hypothesis, never a guarantee that a change breaks code.",
+                  "Reverse discovery uses bounded candidate-to-target path queries, not a new traversal.",
+                  "Graph footprint exceeds max_nodes/max_edges; relationship/path/test analysis omitted"
+                ]
+              }
+            ],
+            "limitations": [
+              "Static impact locations are hypotheses, not guaranteed breakage",
+              "JS/TS indexed static evidence only; dynamic targets may be unresolved.",
+              "Known test references follow the existing filename convention, not execution or coverage.",
+              "An impact location is a hypothesis, never a guarantee that a change breaks code.",
+              "Reverse discovery uses bounded candidate-to-target path queries, not a new traversal.",
+              "Graph footprint exceeds max_nodes/max_edges; relationship/path/test analysis omitted",
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ],
+            "hidden_items": 0
+          }
+        ],
+        "sources": {
+          "cm7:c7c005808c67192bb32cebe8f2a24038:15537efad1da18d2e407903796e1d25b": {
+            "citation": {
+              "reference": "cm7:c7c005808c67192bb32cebe8f2a24038:15537efad1da18d2e407903796e1d25b",
+              "record_id": "15537efad1da18d2e407903796e1d25b",
+              "source": {
+                "evidence_id": "e3a19945c1a2794b1a102f7b55d8f3a989ccb4378a67561d0b116005ff0d083a",
+                "repository_id": "2c702a00791022ef780f1bc5",
+                "snapshot_id": "ecd3144d9a844ca59505de0673fc90a3",
+                "index_snapshot_id": "d955580c-f427-4563-b3c2-bca57cd3964b",
+                "evidence_type": "symbol_definition",
+                "file_id": "File:6e802151668a20c15e521dc78c94b817280b0811254112a62ffc9fcd97cf803d",
+                "symbol_id": "e3a19945c1a2794b1a102f7b55d8f3a989ccb4378a67561d0b116005ff0d083a",
+                "file_path": "extension/src/sourceNavigation.ts",
+                "start_line": 12,
+                "end_line": 31,
+                "resolution": "syntax_only",
+                "source_hash": "84dcabc85f12975121888b59fe0e9cef608bee2387c13c083b614124a711a66a",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          }
+        },
+        "clarifications": [],
+        "follow_ups": [
+          {
+            "requirement_id": "req-000",
+            "label": "Show direct callers",
+            "prompt": "Who calls `verifiedSourcePath` in `extension/src/sourceNavigation.ts`?",
+            "engine": "graph",
+            "operation": "find_callers",
+            "target_id": "e3a19945c1a2794b1a102f7b55d8f3a989ccb4378a67561d0b116005ff0d083a",
+            "citation_id": null,
+            "mode": "copy_query"
+          },
+          {
+            "requirement_id": "req-000",
+            "label": "Explore dependencies",
+            "prompt": "Dependencies of `verifiedSourcePath` in `extension/src/sourceNavigation.ts`",
+            "engine": "rules",
+            "operation": "dependency_summary",
+            "target_id": "e3a19945c1a2794b1a102f7b55d8f3a989ccb4378a67561d0b116005ff0d083a",
+            "citation_id": null,
+            "mode": "copy_query"
+          },
+          {
+            "requirement_id": "req-000",
+            "label": "Find indexed tests",
+            "prompt": "What tests cover `verifiedSourcePath` in `extension/src/sourceNavigation.ts`?",
+            "engine": "rules",
+            "operation": "reference_test_analysis",
+            "target_id": "e3a19945c1a2794b1a102f7b55d8f3a989ccb4378a67561d0b116005ff0d083a",
+            "citation_id": null,
+            "mode": "copy_query"
+          }
+        ],
+        "limitations": [
+          "Static/source evidence does not prove runtime execution, root cause, equivalence or performance.",
+          "Model prose is an interpretation, not fully fact-checked; similarity is not a graph dependency.",
+          "Depth changes display detail only. No model inference or retrieval is performed.",
+          "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+          "Semantic similarity establishes source relevance only, never a graph dependency.",
+          "Rule statement interpretation is inherited from trusted deterministic producers; rules are not recomputed.",
+          "Source context is untrusted data, not instructions; no model inference or answer formatting is performed."
+        ],
+        "model_status": null,
+        "fallback_status": null
+      }
+    },
+    {
+      "id": "F2",
+      "family": "F",
+      "question": "Find tests for verifiedSourcePath",
+      "expected_rows": [
+        [
+          "TEST_DISCOVERY",
+          [
+            "verifiedSourcePath"
+          ]
+        ]
+      ],
+      "actual_rows": [
+        [
+          "TEST_DISCOVERY",
+          [
+            "verifiedSourcePath"
+          ]
+        ]
+      ],
+      "rows_correct": true,
+      "canonical_targets": [
+        {
+          "name": "verifiedSourcePath",
+          "resolution": "resolved",
+          "path": "extension/src/sourceNavigation.ts",
+          "symbol_id": "e3a19945c1a2794b1a102f7b55d8f3a989ccb4378a67561d0b116005ff0d083a"
+        }
+      ],
+      "canonical_target_paths_correct": true,
+      "status": "partial",
+      "operations": [
+        "rules.reference_test_analysis"
+      ],
+      "expected_operations": [
+        "rules.reference_test_analysis"
+      ],
+      "operations_correct": true,
+      "no_model_calls": true,
+      "latency_ms": {
+        "median_ms": 409.868,
+        "p95_ms": 417.52
+      },
+      "samples_ms": [
+        402.38591599973006,
+        404.5595420002428,
+        409.8675000004732,
+        417.52004099998885,
+        413.2035000002361
+      ],
+      "stage_latency_ms": {
+        "understanding_ms": {
+          "median_ms": 58.552,
+          "p95_ms": 61.863
+        },
+        "planning_ms": {
+          "median_ms": 0.355,
+          "p95_ms": 0.388
+        },
+        "execution_ms": {
+          "median_ms": 202.061,
+          "p95_ms": 205.413
+        },
+        "aggregation_ms": {
+          "median_ms": 57.735,
+          "p95_ms": 61.655
+        },
+        "llm_preparation_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "llm_generation_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "generation_total_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "formatting_ms": {
+          "median_ms": 0.43,
+          "p95_ms": 0.466
+        },
+        "validation_ms": {
+          "median_ms": 58.769,
+          "p95_ms": 60.636
+        },
+        "total_ms": {
+          "median_ms": 409.455,
+          "p95_ms": 417.082
+        }
+      },
+      "response_bytes": 6248,
+      "source_paths": [
+        "extension/src/sourceNavigation.ts"
+      ],
+      "requirements": [
+        {
+          "requirement_id": "req-000",
+          "order": 0,
+          "original": {
+            "intent": "TEST_DISCOVERY",
+            "order": 0,
+            "entity_indices": [
+              0
+            ],
+            "depends_on": [],
+            "required_capabilities": [
+              "rules.reference_test_analysis"
+            ],
+            "support": "partial",
+            "limitations": [
+              "Static test references do not establish execution or coverage"
+            ],
+            "interpretation": null
+          },
+          "title": "Indexed test/reference discovery",
+          "state": "partially_satisfied",
+          "supporting_requirement_ids": [
+            "req-000"
+          ],
+          "target_context": [
+            "verifiedSourcePath · extension/src/sourceNavigation.ts"
+          ],
+          "sections": [
+            {
+              "title": "Indexed test/reference discovery",
+              "item_ids": [
+                "edd98f41370f9208ce3bbd1a4e3b7838"
+              ]
+            }
+          ],
+          "operations": [
+            {
+              "operation_id": "query-26ee20f4e84bd92b07c57d8a:req-000:op-00",
+              "execution_status": "partial",
+              "coverage_state": "partially_satisfied",
+              "limitations": [
+                "JS/TS indexed static evidence only; dynamic targets may be unresolved.",
+                "Known test references follow the existing filename convention, not execution or coverage.",
+                "Unknown dynamic incoming targets cannot be attributed to a symbol.",
+                "Graph footprint exceeds max_nodes/max_edges; relationship/path/test analysis omitted"
+              ]
+            }
+          ],
+          "limitations": [
+            "Static test references do not establish execution or coverage",
+            "JS/TS indexed static evidence only; dynamic targets may be unresolved.",
+            "Known test references follow the existing filename convention, not execution or coverage.",
+            "Unknown dynamic incoming targets cannot be attributed to a symbol.",
+            "Graph footprint exceeds max_nodes/max_edges; relationship/path/test analysis omitted",
+            "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+            "Semantic similarity establishes source relevance only, never a graph dependency."
+          ],
+          "hidden_items": 0
+        }
+      ],
+      "dependency_plan": [
+        []
+      ],
+      "presentation": {
+        "schema_version": "phase9-1",
+        "presentation_id": "6d5879ab3ee0cec826dad3b86365afb2",
+        "query_id": "query-26ee20f4e84bd92b07c57d8a",
+        "package_id": "4aee60dbb71a414c1f37dfd3b7d9b6a7",
+        "support_query_id": "query-26ee20f4e84bd92b07c57d8a",
+        "repository_id": "2c702a00791022ef780f1bc5",
+        "snapshot_id": "ecd3144d9a844ca59505de0673fc90a3",
+        "depth": "standard",
+        "status": "partial",
+        "items": {
+          "edd98f41370f9208ce3bbd1a4e3b7838": {
+            "item_id": "edd98f41370f9208ce3bbd1a4e3b7838",
+            "origin": "finding",
+            "text": "Known indexed references; completeness and test coverage are not asserted",
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:4aee60dbb71a414c1f37dfd3b7d9b6a7:15537efad1da18d2e407903796e1d25b"
+            ],
+            "details": [],
+            "limitations": [
+              "JS/TS indexed static evidence only; dynamic targets may be unresolved.",
+              "Known test references follow the existing filename convention, not execution or coverage.",
+              "Unknown dynamic incoming targets cannot be attributed to a symbol.",
+              "Graph footprint exceeds max_nodes/max_edges; relationship/path/test analysis omitted",
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          }
+        },
+        "requirements": [
+          {
+            "requirement_id": "req-000",
+            "order": 0,
+            "original": {
+              "intent": "TEST_DISCOVERY",
+              "order": 0,
+              "entity_indices": [
+                0
+              ],
+              "depends_on": [],
+              "required_capabilities": [
+                "rules.reference_test_analysis"
+              ],
+              "support": "partial",
+              "limitations": [
+                "Static test references do not establish execution or coverage"
+              ],
+              "interpretation": null
+            },
+            "title": "Indexed test/reference discovery",
+            "state": "partially_satisfied",
+            "supporting_requirement_ids": [
+              "req-000"
+            ],
+            "target_context": [
+              "verifiedSourcePath · extension/src/sourceNavigation.ts"
+            ],
+            "sections": [
+              {
+                "title": "Indexed test/reference discovery",
+                "item_ids": [
+                  "edd98f41370f9208ce3bbd1a4e3b7838"
+                ]
+              }
+            ],
+            "operations": [
+              {
+                "operation_id": "query-26ee20f4e84bd92b07c57d8a:req-000:op-00",
+                "execution_status": "partial",
+                "coverage_state": "partially_satisfied",
+                "limitations": [
+                  "JS/TS indexed static evidence only; dynamic targets may be unresolved.",
+                  "Known test references follow the existing filename convention, not execution or coverage.",
+                  "Unknown dynamic incoming targets cannot be attributed to a symbol.",
+                  "Graph footprint exceeds max_nodes/max_edges; relationship/path/test analysis omitted"
+                ]
+              }
+            ],
+            "limitations": [
+              "Static test references do not establish execution or coverage",
+              "JS/TS indexed static evidence only; dynamic targets may be unresolved.",
+              "Known test references follow the existing filename convention, not execution or coverage.",
+              "Unknown dynamic incoming targets cannot be attributed to a symbol.",
+              "Graph footprint exceeds max_nodes/max_edges; relationship/path/test analysis omitted",
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ],
+            "hidden_items": 0
+          }
+        ],
+        "sources": {
+          "cm7:4aee60dbb71a414c1f37dfd3b7d9b6a7:15537efad1da18d2e407903796e1d25b": {
+            "citation": {
+              "reference": "cm7:4aee60dbb71a414c1f37dfd3b7d9b6a7:15537efad1da18d2e407903796e1d25b",
+              "record_id": "15537efad1da18d2e407903796e1d25b",
+              "source": {
+                "evidence_id": "e3a19945c1a2794b1a102f7b55d8f3a989ccb4378a67561d0b116005ff0d083a",
+                "repository_id": "2c702a00791022ef780f1bc5",
+                "snapshot_id": "ecd3144d9a844ca59505de0673fc90a3",
+                "index_snapshot_id": "d955580c-f427-4563-b3c2-bca57cd3964b",
+                "evidence_type": "symbol_definition",
+                "file_id": "File:6e802151668a20c15e521dc78c94b817280b0811254112a62ffc9fcd97cf803d",
+                "symbol_id": "e3a19945c1a2794b1a102f7b55d8f3a989ccb4378a67561d0b116005ff0d083a",
+                "file_path": "extension/src/sourceNavigation.ts",
+                "start_line": 12,
+                "end_line": 31,
+                "resolution": "syntax_only",
+                "source_hash": "84dcabc85f12975121888b59fe0e9cef608bee2387c13c083b614124a711a66a",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          }
+        },
+        "clarifications": [],
+        "follow_ups": [
+          {
+            "requirement_id": "req-000",
+            "label": "Show direct callers",
+            "prompt": "Who calls `verifiedSourcePath` in `extension/src/sourceNavigation.ts`?",
+            "engine": "graph",
+            "operation": "find_callers",
+            "target_id": "e3a19945c1a2794b1a102f7b55d8f3a989ccb4378a67561d0b116005ff0d083a",
+            "citation_id": null,
+            "mode": "copy_query"
+          },
+          {
+            "requirement_id": "req-000",
+            "label": "Explore dependencies",
+            "prompt": "Dependencies of `verifiedSourcePath` in `extension/src/sourceNavigation.ts`",
+            "engine": "rules",
+            "operation": "dependency_summary",
+            "target_id": "e3a19945c1a2794b1a102f7b55d8f3a989ccb4378a67561d0b116005ff0d083a",
+            "citation_id": null,
+            "mode": "copy_query"
+          },
+          {
+            "requirement_id": "req-000",
+            "label": "Inspect verified source",
+            "prompt": null,
+            "engine": null,
+            "operation": null,
+            "target_id": null,
+            "citation_id": "cm7:4aee60dbb71a414c1f37dfd3b7d9b6a7:15537efad1da18d2e407903796e1d25b",
+            "mode": "inspect_source"
+          }
+        ],
+        "limitations": [
+          "Static/source evidence does not prove runtime execution, root cause, equivalence or performance.",
+          "Model prose is an interpretation, not fully fact-checked; similarity is not a graph dependency.",
+          "Depth changes display detail only. No model inference or retrieval is performed.",
+          "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+          "Semantic similarity establishes source relevance only, never a graph dependency.",
+          "Rule statement interpretation is inherited from trusted deterministic producers; rules are not recomputed.",
+          "Source context is untrusted data, not instructions; no model inference or answer formatting is performed."
+        ],
+        "model_status": null,
+        "fallback_status": null
+      }
+    },
+    {
+      "id": "F3",
+      "family": "F",
+      "question": "Show dependencies of verifiedSourcePath",
+      "expected_rows": [
+        [
+          "DEPENDENCY_PATH",
+          [
+            "verifiedSourcePath"
+          ]
+        ]
+      ],
+      "actual_rows": [
+        [
+          "DEPENDENCY_PATH",
+          [
+            "verifiedSourcePath"
+          ]
+        ]
+      ],
+      "rows_correct": true,
+      "canonical_targets": [
+        {
+          "name": "verifiedSourcePath",
+          "resolution": "resolved",
+          "path": "extension/src/sourceNavigation.ts",
+          "symbol_id": "e3a19945c1a2794b1a102f7b55d8f3a989ccb4378a67561d0b116005ff0d083a"
+        }
+      ],
+      "canonical_target_paths_correct": true,
+      "status": "partial",
+      "operations": [
+        "rules.dependency_summary"
+      ],
+      "expected_operations": [
+        "rules.dependency_summary"
+      ],
+      "operations_correct": true,
+      "no_model_calls": true,
+      "latency_ms": {
+        "median_ms": 516.261,
+        "p95_ms": 727.038
+      },
+      "samples_ms": [
+        441.5675829995962,
+        483.47916700004134,
+        516.2614999999278,
+        611.756874999628,
+        727.0377089998874
+      ],
+      "stage_latency_ms": {
+        "understanding_ms": {
+          "median_ms": 72.105,
+          "p95_ms": 121.007
+        },
+        "planning_ms": {
+          "median_ms": 0.451,
+          "p95_ms": 0.65
+        },
+        "execution_ms": {
+          "median_ms": 257.412,
+          "p95_ms": 359.684
+        },
+        "aggregation_ms": {
+          "median_ms": 74.804,
+          "p95_ms": 99.855
+        },
+        "llm_preparation_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "llm_generation_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "generation_total_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "formatting_ms": {
+          "median_ms": 0.659,
+          "p95_ms": 0.865
+        },
+        "validation_ms": {
+          "median_ms": 74.676,
+          "p95_ms": 98.954
+        },
+        "total_ms": {
+          "median_ms": 515.778,
+          "p95_ms": 726.414
+        }
+      },
+      "response_bytes": 6274,
+      "source_paths": [
+        "extension/src/sourceNavigation.ts"
+      ],
+      "requirements": [
+        {
+          "requirement_id": "req-000",
+          "order": 0,
+          "original": {
+            "intent": "DEPENDENCY_PATH",
+            "order": 0,
+            "entity_indices": [
+              0
+            ],
+            "depends_on": [],
+            "required_capabilities": [
+              "rules.dependency_summary"
+            ],
+            "support": "supported",
+            "limitations": [
+              "Known static graph relationships do not establish runtime behavior"
+            ],
+            "interpretation": "direct_dependency_summary"
+          },
+          "title": "Static dependencies and paths",
+          "state": "partially_satisfied",
+          "supporting_requirement_ids": [
+            "req-000"
+          ],
+          "target_context": [
+            "verifiedSourcePath · extension/src/sourceNavigation.ts"
+          ],
+          "sections": [
+            {
+              "title": "Static dependencies and paths",
+              "item_ids": [
+                "d7be706b4528e40465497bf0d9cdd471"
+              ]
+            }
+          ],
+          "operations": [
+            {
+              "operation_id": "query-1ab67adf671ab1ae3645495a:req-000:op-00",
+              "execution_status": "partial",
+              "coverage_state": "partially_satisfied",
+              "limitations": [
+                "JS/TS indexed static evidence only; dynamic targets may be unresolved.",
+                "Known test references follow the existing filename convention, not execution or coverage.",
+                "Module dependencies are derived from resolved imports, not runtime loading.",
+                "Graph footprint exceeds max_nodes/max_edges; relationship/path/test analysis omitted"
+              ]
+            }
+          ],
+          "limitations": [
+            "Known static graph relationships do not establish runtime behavior",
+            "JS/TS indexed static evidence only; dynamic targets may be unresolved.",
+            "Known test references follow the existing filename convention, not execution or coverage.",
+            "Module dependencies are derived from resolved imports, not runtime loading.",
+            "Graph footprint exceeds max_nodes/max_edges; relationship/path/test analysis omitted",
+            "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+            "Semantic similarity establishes source relevance only, never a graph dependency."
+          ],
+          "hidden_items": 0
+        }
+      ],
+      "dependency_plan": [
+        []
+      ],
+      "presentation": {
+        "schema_version": "phase9-1",
+        "presentation_id": "1aa4a12e1a0502b92bd4927c5c9e5853",
+        "query_id": "query-1ab67adf671ab1ae3645495a",
+        "package_id": "83d0a12cb1132af8b439f3fc4bd4aa24",
+        "support_query_id": "query-1ab67adf671ab1ae3645495a",
+        "repository_id": "2c702a00791022ef780f1bc5",
+        "snapshot_id": "ecd3144d9a844ca59505de0673fc90a3",
+        "depth": "standard",
+        "status": "partial",
+        "items": {
+          "d7be706b4528e40465497bf0d9cdd471": {
+            "item_id": "d7be706b4528e40465497bf0d9cdd471",
+            "origin": "finding",
+            "text": "Static dependency summary for the resolved target",
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:83d0a12cb1132af8b439f3fc4bd4aa24:15537efad1da18d2e407903796e1d25b"
+            ],
+            "details": [],
+            "limitations": [
+              "JS/TS indexed static evidence only; dynamic targets may be unresolved.",
+              "Known test references follow the existing filename convention, not execution or coverage.",
+              "Module dependencies are derived from resolved imports, not runtime loading.",
+              "Graph footprint exceeds max_nodes/max_edges; relationship/path/test analysis omitted",
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          }
+        },
+        "requirements": [
+          {
+            "requirement_id": "req-000",
+            "order": 0,
+            "original": {
+              "intent": "DEPENDENCY_PATH",
+              "order": 0,
+              "entity_indices": [
+                0
+              ],
+              "depends_on": [],
+              "required_capabilities": [
+                "rules.dependency_summary"
+              ],
+              "support": "supported",
+              "limitations": [
+                "Known static graph relationships do not establish runtime behavior"
+              ],
+              "interpretation": "direct_dependency_summary"
+            },
+            "title": "Static dependencies and paths",
+            "state": "partially_satisfied",
+            "supporting_requirement_ids": [
+              "req-000"
+            ],
+            "target_context": [
+              "verifiedSourcePath · extension/src/sourceNavigation.ts"
+            ],
+            "sections": [
+              {
+                "title": "Static dependencies and paths",
+                "item_ids": [
+                  "d7be706b4528e40465497bf0d9cdd471"
+                ]
+              }
+            ],
+            "operations": [
+              {
+                "operation_id": "query-1ab67adf671ab1ae3645495a:req-000:op-00",
+                "execution_status": "partial",
+                "coverage_state": "partially_satisfied",
+                "limitations": [
+                  "JS/TS indexed static evidence only; dynamic targets may be unresolved.",
+                  "Known test references follow the existing filename convention, not execution or coverage.",
+                  "Module dependencies are derived from resolved imports, not runtime loading.",
+                  "Graph footprint exceeds max_nodes/max_edges; relationship/path/test analysis omitted"
+                ]
+              }
+            ],
+            "limitations": [
+              "Known static graph relationships do not establish runtime behavior",
+              "JS/TS indexed static evidence only; dynamic targets may be unresolved.",
+              "Known test references follow the existing filename convention, not execution or coverage.",
+              "Module dependencies are derived from resolved imports, not runtime loading.",
+              "Graph footprint exceeds max_nodes/max_edges; relationship/path/test analysis omitted",
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ],
+            "hidden_items": 0
+          }
+        ],
+        "sources": {
+          "cm7:83d0a12cb1132af8b439f3fc4bd4aa24:15537efad1da18d2e407903796e1d25b": {
+            "citation": {
+              "reference": "cm7:83d0a12cb1132af8b439f3fc4bd4aa24:15537efad1da18d2e407903796e1d25b",
+              "record_id": "15537efad1da18d2e407903796e1d25b",
+              "source": {
+                "evidence_id": "e3a19945c1a2794b1a102f7b55d8f3a989ccb4378a67561d0b116005ff0d083a",
+                "repository_id": "2c702a00791022ef780f1bc5",
+                "snapshot_id": "ecd3144d9a844ca59505de0673fc90a3",
+                "index_snapshot_id": "d955580c-f427-4563-b3c2-bca57cd3964b",
+                "evidence_type": "symbol_definition",
+                "file_id": "File:6e802151668a20c15e521dc78c94b817280b0811254112a62ffc9fcd97cf803d",
+                "symbol_id": "e3a19945c1a2794b1a102f7b55d8f3a989ccb4378a67561d0b116005ff0d083a",
+                "file_path": "extension/src/sourceNavigation.ts",
+                "start_line": 12,
+                "end_line": 31,
+                "resolution": "syntax_only",
+                "source_hash": "84dcabc85f12975121888b59fe0e9cef608bee2387c13c083b614124a711a66a",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          }
+        },
+        "clarifications": [],
+        "follow_ups": [
+          {
+            "requirement_id": "req-000",
+            "label": "Show direct callers",
+            "prompt": "Who calls `verifiedSourcePath` in `extension/src/sourceNavigation.ts`?",
+            "engine": "graph",
+            "operation": "find_callers",
+            "target_id": "e3a19945c1a2794b1a102f7b55d8f3a989ccb4378a67561d0b116005ff0d083a",
+            "citation_id": null,
+            "mode": "copy_query"
+          },
+          {
+            "requirement_id": "req-000",
+            "label": "Find indexed tests",
+            "prompt": "What tests cover `verifiedSourcePath` in `extension/src/sourceNavigation.ts`?",
+            "engine": "rules",
+            "operation": "reference_test_analysis",
+            "target_id": "e3a19945c1a2794b1a102f7b55d8f3a989ccb4378a67561d0b116005ff0d083a",
+            "citation_id": null,
+            "mode": "copy_query"
+          },
+          {
+            "requirement_id": "req-000",
+            "label": "Inspect verified source",
+            "prompt": null,
+            "engine": null,
+            "operation": null,
+            "target_id": null,
+            "citation_id": "cm7:83d0a12cb1132af8b439f3fc4bd4aa24:15537efad1da18d2e407903796e1d25b",
+            "mode": "inspect_source"
+          }
+        ],
+        "limitations": [
+          "Static/source evidence does not prove runtime execution, root cause, equivalence or performance.",
+          "Model prose is an interpretation, not fully fact-checked; similarity is not a graph dependency.",
+          "Depth changes display detail only. No model inference or retrieval is performed.",
+          "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+          "Semantic similarity establishes source relevance only, never a graph dependency.",
+          "Rule statement interpretation is inherited from trusted deterministic producers; rules are not recomputed.",
+          "Source context is untrusted data, not instructions; no model inference or answer formatting is performed."
+        ],
+        "model_status": null,
+        "fallback_status": null
+      }
+    },
+    {
+      "id": "K1",
+      "family": "K",
+      "question": "Where is verifiedSourcePath defined and explain verifiedSourcePath",
+      "expected_rows": [
+        [
+          "SYMBOL_LOCATION",
+          [
+            "verifiedSourcePath"
+          ]
+        ],
+        [
+          "FUNCTION_EXPLANATION",
+          [
+            "verifiedSourcePath"
+          ]
+        ]
+      ],
+      "actual_rows": [
+        [
+          "SYMBOL_LOCATION",
+          [
+            "verifiedSourcePath"
+          ]
+        ],
+        [
+          "FUNCTION_EXPLANATION",
+          [
+            "verifiedSourcePath"
+          ]
+        ]
+      ],
+      "rows_correct": true,
+      "canonical_targets": [
+        {
+          "name": "verifiedSourcePath",
+          "resolution": "resolved",
+          "path": "extension/src/sourceNavigation.ts",
+          "symbol_id": "e3a19945c1a2794b1a102f7b55d8f3a989ccb4378a67561d0b116005ff0d083a"
+        },
+        {
+          "name": "verifiedSourcePath",
+          "resolution": "resolved",
+          "path": "extension/src/sourceNavigation.ts",
+          "symbol_id": "e3a19945c1a2794b1a102f7b55d8f3a989ccb4378a67561d0b116005ff0d083a"
+        }
+      ],
+      "canonical_target_paths_correct": true,
+      "status": "partial",
+      "operations": [
+        "graph.find_definition"
+      ],
+      "expected_operations": null,
+      "operations_correct": null,
+      "no_model_calls": true,
+      "latency_ms": {
+        "median_ms": 726.636,
+        "p95_ms": 961.457
+      },
+      "samples_ms": [
+        961.4573340004426,
+        921.7260000004899,
+        726.6355840001779,
+        671.7229999994743,
+        647.0920419997128
+      ],
+      "stage_latency_ms": {
+        "understanding_ms": {
+          "median_ms": 76.628,
+          "p95_ms": 103.654
+        },
+        "planning_ms": {
+          "median_ms": 0.619,
+          "p95_ms": 0.835
+        },
+        "execution_ms": {
+          "median_ms": 447.122,
+          "p95_ms": 598.083
+        },
+        "aggregation_ms": {
+          "median_ms": 97.8,
+          "p95_ms": 121.212
+        },
+        "llm_preparation_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "llm_generation_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "generation_total_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "formatting_ms": {
+          "median_ms": 1.322,
+          "p95_ms": 1.85
+        },
+        "validation_ms": {
+          "median_ms": 64.374,
+          "p95_ms": 89.028
+        },
+        "total_ms": {
+          "median_ms": 726.101,
+          "p95_ms": 960.841
+        }
+      },
+      "response_bytes": 14798,
+      "source_paths": [
+        "extension/src/extension.ts",
+        "extension/src/responsePreview.ts",
+        "extension/src/sourceNavigation.ts"
+      ],
+      "requirements": [
+        {
+          "requirement_id": "req-000",
+          "order": 0,
+          "original": {
+            "intent": "SYMBOL_LOCATION",
+            "order": 0,
+            "entity_indices": [
+              0
+            ],
+            "depends_on": [],
+            "required_capabilities": [
+              "graph.find_definition"
+            ],
+            "support": "supported",
+            "limitations": [],
+            "interpretation": null
+          },
+          "title": "Symbol location",
+          "state": "satisfied",
+          "supporting_requirement_ids": [
+            "req-000"
+          ],
+          "target_context": [
+            "verifiedSourcePath · extension/src/sourceNavigation.ts"
+          ],
+          "sections": [
+            {
+              "title": "Symbol location",
+              "item_ids": [
+                "6a1fada3e3a876a731bc465b469d85fc"
+              ]
+            }
+          ],
+          "operations": [
+            {
+              "operation_id": "query-8d5059d50bbd3a85a034dd32:req-000:op-00",
+              "execution_status": "success",
+              "coverage_state": "satisfied",
+              "limitations": []
+            }
+          ],
+          "limitations": [
+            "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+            "Semantic similarity establishes source relevance only, never a graph dependency."
+          ],
+          "hidden_items": 0
+        },
+        {
+          "requirement_id": "req-001",
+          "order": 1,
+          "original": {
+            "intent": "FUNCTION_EXPLANATION",
+            "order": 1,
+            "entity_indices": [
+              1
+            ],
+            "depends_on": [],
+            "required_capabilities": [
+              "metadata.trace",
+              "existing_rag.answer_question"
+            ],
+            "support": "partial",
+            "limitations": [
+              "Existing grounded RAG is available but not invoked or claim-verified here"
+            ],
+            "interpretation": null
+          },
+          "title": "Function explanation",
+          "state": "deferred",
+          "supporting_requirement_ids": [
+            "req-000",
+            "req-002",
+            "req-003",
+            "req-004"
+          ],
+          "target_context": [
+            "verifiedSourcePath · extension/src/sourceNavigation.ts"
+          ],
+          "sections": [
+            {
+              "title": "Function explanation",
+              "item_ids": [
+                "6a1fada3e3a876a731bc465b469d85fc",
+                "c40007d2f34309354be53eebca6d713f",
+                "f63175679a5103b19b78cbcd2e8cc58b",
+                "f74819c4858800f7ba5e4be600863c8a",
+                "efedf72166223cb54dd88f86200e52d1",
+                "96ca468d4f7a567176dc7c79116ef77b"
+              ]
+            }
+          ],
+          "operations": [],
+          "limitations": [
+            "Existing grounded RAG is available but not invoked or claim-verified here",
+            "No Phase 6 deterministic explanation/workflow/behavior/comparison operation is implemented",
+            "Explanation deferred: optional generation disabled, insufficient time, or generation-call budget reached."
+          ],
+          "hidden_items": 0
+        }
+      ],
+      "dependency_plan": [
+        [],
+        []
+      ],
+      "presentation": {
+        "schema_version": "phase9-1",
+        "presentation_id": "e04ace7133206e3d009b3eb848e0d2d5",
+        "query_id": "query-dc1a46c05d39b14dff633f83",
+        "package_id": "78c322e889cd3cff8d6eb47ba98bd57f",
+        "support_query_id": "query-8d5059d50bbd3a85a034dd32",
+        "repository_id": "2c702a00791022ef780f1bc5",
+        "snapshot_id": "ecd3144d9a844ca59505de0673fc90a3",
+        "depth": "standard",
+        "status": "partial",
+        "items": {
+          "6a1fada3e3a876a731bc465b469d85fc": {
+            "item_id": "6a1fada3e3a876a731bc465b469d85fc",
+            "origin": "finding",
+            "text": "verifiedSourcePath",
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:78c322e889cd3cff8d6eb47ba98bd57f:15537efad1da18d2e407903796e1d25b"
+            ],
+            "details": [
+              "Relationship: DEFINITION"
+            ],
+            "limitations": [
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          },
+          "96ca468d4f7a567176dc7c79116ef77b": {
+            "item_id": "96ca468d4f7a567176dc7c79116ef77b",
+            "origin": "finding",
+            "text": "Static CALLS: verifiedPreviewSource",
+            "classification": "verified_graph_relationship",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:78c322e889cd3cff8d6eb47ba98bd57f:609579530bec5fc6c05b8c1c09a4bedd"
+            ],
+            "details": [
+              "Relationship: CALLS",
+              "verifiedPreviewSource → verifiedSourcePath"
+            ],
+            "limitations": [
+              "Incoming relationships cover resolved static evidence; unresolved dynamic targets cannot be attributed here",
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          },
+          "c40007d2f34309354be53eebca6d713f": {
+            "item_id": "c40007d2f34309354be53eebca6d713f",
+            "origin": "finding",
+            "text": "Declared function signature; no complete return/exception behavior claim",
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:78c322e889cd3cff8d6eb47ba98bd57f:15537efad1da18d2e407903796e1d25b"
+            ],
+            "details": [
+              "{\"declared_async\": false, \"exception_behavior\": \"not_indexed\", \"exported\": true, \"kind\": \"function\", \"name\": \"verifiedSourcePath\", \"parameters\": [{\"name\": \"rootPath\", \"optional\": false, \"rest\": false, \"span\": {\"end_byte\": 406, \"end_column\": 52, \"end_line\": 12, \"start_byte\": 390, \"start_column\": 36, \"start_line\": 12}, \"type\": \": string\"}, {\"name\": \"relativePath\", \"optional\": false, \"rest\": false, \"span\": {\"end_byte\": 428, \"end_column\": 74, \"end_line\": 12, \"start_byte\": 408, \"start_column\": 54, \"start_line\": 12}, \"type\": \": string\"}, {\"name\": \"sourceHash\", \"optional\": false, \"rest\": false, \"span\": {\"end_byte\": 448, \"end_column\": 94, \"end_line\": 12, \"start_byte\": 430, \"start_column\": 76, \"start_line\": 12}, \"type\": \": string\"}], \"return_annotation\": \": string\", \"return_behavior\": \"not_inferred\"}"
+            ],
+            "limitations": [
+              "JS/TS indexed static evidence only; dynamic targets may be unresolved.",
+              "Known test references follow the existing filename convention, not execution or coverage.",
+              "Return values and thrown exceptions are not comprehensively indexed.",
+              "Complete return-value and exception analysis is unavailable in the current metadata",
+              "Only indexed declarations are extracted.",
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          },
+          "efedf72166223cb54dd88f86200e52d1": {
+            "item_id": "efedf72166223cb54dd88f86200e52d1",
+            "origin": "finding",
+            "text": "Static CALLS: activate.openIndexedSource",
+            "classification": "verified_graph_relationship",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:78c322e889cd3cff8d6eb47ba98bd57f:3d40593e2d8adad39644db9d9c9157a3"
+            ],
+            "details": [
+              "Relationship: CALLS",
+              "activate.openIndexedSource → verifiedSourcePath"
+            ],
+            "limitations": [
+              "Incoming relationships cover resolved static evidence; unresolved dynamic targets cannot be attributed here",
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          },
+          "f63175679a5103b19b78cbcd2e8cc58b": {
+            "item_id": "f63175679a5103b19b78cbcd2e8cc58b",
+            "origin": "finding",
+            "text": "Static CALLS: isInside",
+            "classification": "verified_graph_relationship",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:78c322e889cd3cff8d6eb47ba98bd57f:0e3fce71482a02821027b7e2ab708fbb"
+            ],
+            "details": [
+              "Relationship: CALLS",
+              "verifiedSourcePath → isInside"
+            ],
+            "limitations": [
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          },
+          "f74819c4858800f7ba5e4be600863c8a": {
+            "item_id": "f74819c4858800f7ba5e4be600863c8a",
+            "origin": "finding",
+            "text": "Static CALLS: isInside",
+            "classification": "verified_graph_relationship",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:78c322e889cd3cff8d6eb47ba98bd57f:ca491c9a92d23229f4e0ac2dc5e641fd"
+            ],
+            "details": [
+              "Relationship: CALLS",
+              "verifiedSourcePath → isInside"
+            ],
+            "limitations": [
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          }
+        },
+        "requirements": [
+          {
+            "requirement_id": "req-000",
+            "order": 0,
+            "original": {
+              "intent": "SYMBOL_LOCATION",
+              "order": 0,
+              "entity_indices": [
+                0
+              ],
+              "depends_on": [],
+              "required_capabilities": [
+                "graph.find_definition"
+              ],
+              "support": "supported",
+              "limitations": [],
+              "interpretation": null
+            },
+            "title": "Symbol location",
+            "state": "satisfied",
+            "supporting_requirement_ids": [
+              "req-000"
+            ],
+            "target_context": [
+              "verifiedSourcePath · extension/src/sourceNavigation.ts"
+            ],
+            "sections": [
+              {
+                "title": "Symbol location",
+                "item_ids": [
+                  "6a1fada3e3a876a731bc465b469d85fc"
+                ]
+              }
+            ],
+            "operations": [
+              {
+                "operation_id": "query-8d5059d50bbd3a85a034dd32:req-000:op-00",
+                "execution_status": "success",
+                "coverage_state": "satisfied",
+                "limitations": []
+              }
+            ],
+            "limitations": [
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ],
+            "hidden_items": 0
+          },
+          {
+            "requirement_id": "req-001",
+            "order": 1,
+            "original": {
+              "intent": "FUNCTION_EXPLANATION",
+              "order": 1,
+              "entity_indices": [
+                1
+              ],
+              "depends_on": [],
+              "required_capabilities": [
+                "metadata.trace",
+                "existing_rag.answer_question"
+              ],
+              "support": "partial",
+              "limitations": [
+                "Existing grounded RAG is available but not invoked or claim-verified here"
+              ],
+              "interpretation": null
+            },
+            "title": "Function explanation",
+            "state": "deferred",
+            "supporting_requirement_ids": [
+              "req-000",
+              "req-002",
+              "req-003",
+              "req-004"
+            ],
+            "target_context": [
+              "verifiedSourcePath · extension/src/sourceNavigation.ts"
+            ],
+            "sections": [
+              {
+                "title": "Function explanation",
+                "item_ids": [
+                  "6a1fada3e3a876a731bc465b469d85fc",
+                  "c40007d2f34309354be53eebca6d713f",
+                  "f63175679a5103b19b78cbcd2e8cc58b",
+                  "f74819c4858800f7ba5e4be600863c8a",
+                  "efedf72166223cb54dd88f86200e52d1",
+                  "96ca468d4f7a567176dc7c79116ef77b"
+                ]
+              }
+            ],
+            "operations": [],
+            "limitations": [
+              "Existing grounded RAG is available but not invoked or claim-verified here",
+              "No Phase 6 deterministic explanation/workflow/behavior/comparison operation is implemented",
+              "Explanation deferred: optional generation disabled, insufficient time, or generation-call budget reached."
+            ],
+            "hidden_items": 0
+          }
+        ],
+        "sources": {
+          "cm7:78c322e889cd3cff8d6eb47ba98bd57f:0e3fce71482a02821027b7e2ab708fbb": {
+            "citation": {
+              "reference": "cm7:78c322e889cd3cff8d6eb47ba98bd57f:0e3fce71482a02821027b7e2ab708fbb",
+              "record_id": "0e3fce71482a02821027b7e2ab708fbb",
+              "source": {
+                "evidence_id": "rel:248ee8f788e9b833622cd3142f6bd72855e6d79c460ef5f90f6249a4ea850dd7",
+                "repository_id": "2c702a00791022ef780f1bc5",
+                "snapshot_id": "ecd3144d9a844ca59505de0673fc90a3",
+                "index_snapshot_id": "ddb65a68-54f9-42d0-99fd-4c9fb93d9626",
+                "evidence_type": "graph_relationship",
+                "file_id": "File:6e802151668a20c15e521dc78c94b817280b0811254112a62ffc9fcd97cf803d",
+                "symbol_id": null,
+                "file_path": "extension/src/sourceNavigation.ts",
+                "start_line": 18,
+                "end_line": 18,
+                "resolution": "resolved",
+                "source_hash": "84dcabc85f12975121888b59fe0e9cef608bee2387c13c083b614124a711a66a",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          },
+          "cm7:78c322e889cd3cff8d6eb47ba98bd57f:15537efad1da18d2e407903796e1d25b": {
+            "citation": {
+              "reference": "cm7:78c322e889cd3cff8d6eb47ba98bd57f:15537efad1da18d2e407903796e1d25b",
+              "record_id": "15537efad1da18d2e407903796e1d25b",
+              "source": {
+                "evidence_id": "e3a19945c1a2794b1a102f7b55d8f3a989ccb4378a67561d0b116005ff0d083a",
+                "repository_id": "2c702a00791022ef780f1bc5",
+                "snapshot_id": "ecd3144d9a844ca59505de0673fc90a3",
+                "index_snapshot_id": "d955580c-f427-4563-b3c2-bca57cd3964b",
+                "evidence_type": "symbol_definition",
+                "file_id": "File:6e802151668a20c15e521dc78c94b817280b0811254112a62ffc9fcd97cf803d",
+                "symbol_id": "e3a19945c1a2794b1a102f7b55d8f3a989ccb4378a67561d0b116005ff0d083a",
+                "file_path": "extension/src/sourceNavigation.ts",
+                "start_line": 12,
+                "end_line": 31,
+                "resolution": "syntax_only",
+                "source_hash": "84dcabc85f12975121888b59fe0e9cef608bee2387c13c083b614124a711a66a",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          },
+          "cm7:78c322e889cd3cff8d6eb47ba98bd57f:3d40593e2d8adad39644db9d9c9157a3": {
+            "citation": {
+              "reference": "cm7:78c322e889cd3cff8d6eb47ba98bd57f:3d40593e2d8adad39644db9d9c9157a3",
+              "record_id": "3d40593e2d8adad39644db9d9c9157a3",
+              "source": {
+                "evidence_id": "rel:89395c2d3033b8509f709e9428f607c58616a827289217d5da1b27cd25b6e456",
+                "repository_id": "2c702a00791022ef780f1bc5",
+                "snapshot_id": "ecd3144d9a844ca59505de0673fc90a3",
+                "index_snapshot_id": "ddb65a68-54f9-42d0-99fd-4c9fb93d9626",
+                "evidence_type": "graph_relationship",
+                "file_id": "File:7aaca4ac05645c7f7eb6c6a49cf3f37997a705e1d068ffe4eebb3acc912eac55",
+                "symbol_id": null,
+                "file_path": "extension/src/extension.ts",
+                "start_line": 97,
+                "end_line": 97,
+                "resolution": "resolved",
+                "source_hash": "c97c3c4a4b90baf695447077f1a039b88853c6d61364dbfb1238f300fc87fb4c",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          },
+          "cm7:78c322e889cd3cff8d6eb47ba98bd57f:609579530bec5fc6c05b8c1c09a4bedd": {
+            "citation": {
+              "reference": "cm7:78c322e889cd3cff8d6eb47ba98bd57f:609579530bec5fc6c05b8c1c09a4bedd",
+              "record_id": "609579530bec5fc6c05b8c1c09a4bedd",
+              "source": {
+                "evidence_id": "rel:1aff2b6b12bf85f36c35ab1c9a294f03b536ad0a7c74a6e08fe3a7e06ed37e73",
+                "repository_id": "2c702a00791022ef780f1bc5",
+                "snapshot_id": "ecd3144d9a844ca59505de0673fc90a3",
+                "index_snapshot_id": "ddb65a68-54f9-42d0-99fd-4c9fb93d9626",
+                "evidence_type": "graph_relationship",
+                "file_id": "File:a7a0f394da73c958046441c7257477fb8f80e6fa2978645caa8cf6b510024d07",
+                "symbol_id": null,
+                "file_path": "extension/src/responsePreview.ts",
+                "start_line": 72,
+                "end_line": 72,
+                "resolution": "resolved",
+                "source_hash": "5af85802f3940719993e21f3c734314b55a7ae8fbda7b097e7fb793148a887b5",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          },
+          "cm7:78c322e889cd3cff8d6eb47ba98bd57f:ca491c9a92d23229f4e0ac2dc5e641fd": {
+            "citation": {
+              "reference": "cm7:78c322e889cd3cff8d6eb47ba98bd57f:ca491c9a92d23229f4e0ac2dc5e641fd",
+              "record_id": "ca491c9a92d23229f4e0ac2dc5e641fd",
+              "source": {
+                "evidence_id": "rel:e56dd5222466cd978db0da76c7f0a34c2b2322066899d486073494936544a817",
+                "repository_id": "2c702a00791022ef780f1bc5",
+                "snapshot_id": "ecd3144d9a844ca59505de0673fc90a3",
+                "index_snapshot_id": "ddb65a68-54f9-42d0-99fd-4c9fb93d9626",
+                "evidence_type": "graph_relationship",
+                "file_id": "File:6e802151668a20c15e521dc78c94b817280b0811254112a62ffc9fcd97cf803d",
+                "symbol_id": null,
+                "file_path": "extension/src/sourceNavigation.ts",
+                "start_line": 22,
+                "end_line": 22,
+                "resolution": "resolved",
+                "source_hash": "84dcabc85f12975121888b59fe0e9cef608bee2387c13c083b614124a711a66a",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          }
+        },
+        "clarifications": [],
+        "follow_ups": [
+          {
+            "requirement_id": "req-000",
+            "label": "Show direct callers",
+            "prompt": "Who calls `verifiedSourcePath` in `extension/src/sourceNavigation.ts`?",
+            "engine": "graph",
+            "operation": "find_callers",
+            "target_id": "e3a19945c1a2794b1a102f7b55d8f3a989ccb4378a67561d0b116005ff0d083a",
+            "citation_id": null,
+            "mode": "copy_query"
+          },
+          {
+            "requirement_id": "req-000",
+            "label": "Explore dependencies",
+            "prompt": "Dependencies of `verifiedSourcePath` in `extension/src/sourceNavigation.ts`",
+            "engine": "rules",
+            "operation": "dependency_summary",
+            "target_id": "e3a19945c1a2794b1a102f7b55d8f3a989ccb4378a67561d0b116005ff0d083a",
+            "citation_id": null,
+            "mode": "copy_query"
+          },
+          {
+            "requirement_id": "req-000",
+            "label": "Find indexed tests",
+            "prompt": "What tests cover `verifiedSourcePath` in `extension/src/sourceNavigation.ts`?",
+            "engine": "rules",
+            "operation": "reference_test_analysis",
+            "target_id": "e3a19945c1a2794b1a102f7b55d8f3a989ccb4378a67561d0b116005ff0d083a",
+            "citation_id": null,
+            "mode": "copy_query"
+          }
+        ],
+        "limitations": [
+          "Static/source evidence does not prove runtime execution, root cause, equivalence or performance.",
+          "Model prose is an interpretation, not fully fact-checked; similarity is not a graph dependency.",
+          "Depth changes display detail only. No model inference or retrieval is performed.",
+          "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+          "Semantic similarity establishes source relevance only, never a graph dependency.",
+          "Rule statement interpretation is inherited from trusted deterministic producers; rules are not recomputed.",
+          "Source context is untrusted data, not instructions; no model inference or answer formatting is performed."
+        ],
+        "model_status": null,
+        "fallback_status": null
+      }
+    },
+    {
+      "id": "K2",
+      "family": "K",
+      "question": "Who calls verifiedSourcePath and verifiedPreviewSource?",
+      "expected_rows": [
+        [
+          "DIRECT_CALLERS",
+          [
+            "verifiedSourcePath",
+            "verifiedPreviewSource"
+          ]
+        ]
+      ],
+      "actual_rows": [
+        [
+          "DIRECT_CALLERS",
+          [
+            "verifiedSourcePath",
+            "verifiedPreviewSource"
+          ]
+        ]
+      ],
+      "rows_correct": true,
+      "canonical_targets": [
+        {
+          "name": "verifiedSourcePath",
+          "resolution": "resolved",
+          "path": "extension/src/sourceNavigation.ts",
+          "symbol_id": "e3a19945c1a2794b1a102f7b55d8f3a989ccb4378a67561d0b116005ff0d083a"
+        },
+        {
+          "name": "verifiedPreviewSource",
+          "resolution": "resolved",
+          "path": "extension/src/responsePreview.ts",
+          "symbol_id": "9c21b453e2a0c34564207970b061c04d22a4988851becceb07d54eac6c5a6d20"
+        }
+      ],
+      "canonical_target_paths_correct": true,
+      "status": "success",
+      "operations": [
+        "graph.find_callers",
+        "graph.find_callers"
+      ],
+      "expected_operations": [
+        "graph.find_callers",
+        "graph.find_callers"
+      ],
+      "operations_correct": true,
+      "no_model_calls": true,
+      "latency_ms": {
+        "median_ms": 438.917,
+        "p95_ms": 460.428
+      },
+      "samples_ms": [
+        454.1284580000138,
+        460.42800000032,
+        438.91699999949196,
+        423.2093750006243,
+        429.4933339997442
+      ],
+      "stage_latency_ms": {
+        "understanding_ms": {
+          "median_ms": 66.424,
+          "p95_ms": 69.299
+        },
+        "planning_ms": {
+          "median_ms": 0.421,
+          "p95_ms": 0.44
+        },
+        "execution_ms": {
+          "median_ms": 208.166,
+          "p95_ms": 218.14
+        },
+        "aggregation_ms": {
+          "median_ms": 71.557,
+          "p95_ms": 77.44
+        },
+        "llm_preparation_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "llm_generation_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "generation_total_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "formatting_ms": {
+          "median_ms": 0.745,
+          "p95_ms": 0.789
+        },
+        "validation_ms": {
+          "median_ms": 58.626,
+          "p95_ms": 62.828
+        },
+        "total_ms": {
+          "median_ms": 438.432,
+          "p95_ms": 459.97
+        }
+      },
+      "response_bytes": 10371,
+      "source_paths": [
+        "extension/src/extension.ts",
+        "extension/src/responsePreview.ts",
+        "extension/src/sourceNavigation.ts"
+      ],
+      "requirements": [
+        {
+          "requirement_id": "req-000",
+          "order": 0,
+          "original": {
+            "intent": "DIRECT_CALLERS",
+            "order": 0,
+            "entity_indices": [
+              0,
+              1
+            ],
+            "depends_on": [],
+            "required_capabilities": [
+              "graph.find_callers"
+            ],
+            "support": "supported",
+            "limitations": [
+              "Known static graph relationships do not establish runtime behavior"
+            ],
+            "interpretation": null
+          },
+          "title": "Known direct callers",
+          "state": "satisfied",
+          "supporting_requirement_ids": [
+            "req-000"
+          ],
+          "target_context": [
+            "verifiedSourcePath · extension/src/sourceNavigation.ts",
+            "verifiedPreviewSource · extension/src/responsePreview.ts"
+          ],
+          "sections": [
+            {
+              "title": "Known direct callers",
+              "item_ids": [
+                "dcc8fe78151b5a7c36a6579c9f7ecc3c",
+                "3343004db0c9db54fceba47294318f65",
+                "c6469a8972e81e681ed30d78d7d12d50",
+                "e948840c84d97588ab66b3e6249b5572"
+              ]
+            }
+          ],
+          "operations": [
+            {
+              "operation_id": "query-cdf536d27bdfd0a3799fd9bf:req-000:op-00",
+              "execution_status": "success",
+              "coverage_state": "satisfied",
+              "limitations": [
+                "Incoming relationships cover resolved static evidence; unresolved dynamic targets cannot be attributed here"
+              ]
+            },
+            {
+              "operation_id": "query-cdf536d27bdfd0a3799fd9bf:req-000:op-01",
+              "execution_status": "success",
+              "coverage_state": "satisfied",
+              "limitations": [
+                "Incoming relationships cover resolved static evidence; unresolved dynamic targets cannot be attributed here"
+              ]
+            }
+          ],
+          "limitations": [
+            "Known static graph relationships do not establish runtime behavior",
+            "Incoming relationships cover resolved static evidence; unresolved dynamic targets cannot be attributed here",
+            "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+            "Semantic similarity establishes source relevance only, never a graph dependency."
+          ],
+          "hidden_items": 0
+        }
+      ],
+      "dependency_plan": [
+        []
+      ],
+      "presentation": {
+        "schema_version": "phase9-1",
+        "presentation_id": "65db6c47f34c3a250ff82dc04763acdf",
+        "query_id": "query-cdf536d27bdfd0a3799fd9bf",
+        "package_id": "54202a67a152bd723f2bd0990a1d5d16",
+        "support_query_id": "query-cdf536d27bdfd0a3799fd9bf",
+        "repository_id": "2c702a00791022ef780f1bc5",
+        "snapshot_id": "ecd3144d9a844ca59505de0673fc90a3",
+        "depth": "standard",
+        "status": "success",
+        "items": {
+          "3343004db0c9db54fceba47294318f65": {
+            "item_id": "3343004db0c9db54fceba47294318f65",
+            "origin": "finding",
+            "text": "Static CALLS: verifiedPreviewSource",
+            "classification": "verified_graph_relationship",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:54202a67a152bd723f2bd0990a1d5d16:609579530bec5fc6c05b8c1c09a4bedd"
+            ],
+            "details": [
+              "Relationship: CALLS",
+              "verifiedPreviewSource → verifiedSourcePath"
+            ],
+            "limitations": [
+              "Incoming relationships cover resolved static evidence; unresolved dynamic targets cannot be attributed here",
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          },
+          "c6469a8972e81e681ed30d78d7d12d50": {
+            "item_id": "c6469a8972e81e681ed30d78d7d12d50",
+            "origin": "finding",
+            "text": "Static CALLS: openVerifiedPreviewSource",
+            "classification": "verified_graph_relationship",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:54202a67a152bd723f2bd0990a1d5d16:bdef5573ab22505301237fd643f9e9a7"
+            ],
+            "details": [
+              "Relationship: CALLS",
+              "openVerifiedPreviewSource → verifiedPreviewSource"
+            ],
+            "limitations": [
+              "Incoming relationships cover resolved static evidence; unresolved dynamic targets cannot be attributed here",
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          },
+          "dcc8fe78151b5a7c36a6579c9f7ecc3c": {
+            "item_id": "dcc8fe78151b5a7c36a6579c9f7ecc3c",
+            "origin": "finding",
+            "text": "Static CALLS: activate.openIndexedSource",
+            "classification": "verified_graph_relationship",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:54202a67a152bd723f2bd0990a1d5d16:3d40593e2d8adad39644db9d9c9157a3"
+            ],
+            "details": [
+              "Relationship: CALLS",
+              "activate.openIndexedSource → verifiedSourcePath"
+            ],
+            "limitations": [
+              "Incoming relationships cover resolved static evidence; unresolved dynamic targets cannot be attributed here",
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          },
+          "e948840c84d97588ab66b3e6249b5572": {
+            "item_id": "e948840c84d97588ab66b3e6249b5572",
+            "origin": "finding",
+            "text": "Static CALLS: openVerifiedPreviewSource",
+            "classification": "verified_graph_relationship",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:54202a67a152bd723f2bd0990a1d5d16:7fa34784428424da62bb69211b3deec1"
+            ],
+            "details": [
+              "Relationship: CALLS",
+              "openVerifiedPreviewSource → verifiedPreviewSource"
+            ],
+            "limitations": [
+              "Incoming relationships cover resolved static evidence; unresolved dynamic targets cannot be attributed here",
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          }
+        },
+        "requirements": [
+          {
+            "requirement_id": "req-000",
+            "order": 0,
+            "original": {
+              "intent": "DIRECT_CALLERS",
+              "order": 0,
+              "entity_indices": [
+                0,
+                1
+              ],
+              "depends_on": [],
+              "required_capabilities": [
+                "graph.find_callers"
+              ],
+              "support": "supported",
+              "limitations": [
+                "Known static graph relationships do not establish runtime behavior"
+              ],
+              "interpretation": null
+            },
+            "title": "Known direct callers",
+            "state": "satisfied",
+            "supporting_requirement_ids": [
+              "req-000"
+            ],
+            "target_context": [
+              "verifiedSourcePath · extension/src/sourceNavigation.ts",
+              "verifiedPreviewSource · extension/src/responsePreview.ts"
+            ],
+            "sections": [
+              {
+                "title": "Known direct callers",
+                "item_ids": [
+                  "dcc8fe78151b5a7c36a6579c9f7ecc3c",
+                  "3343004db0c9db54fceba47294318f65",
+                  "c6469a8972e81e681ed30d78d7d12d50",
+                  "e948840c84d97588ab66b3e6249b5572"
+                ]
+              }
+            ],
+            "operations": [
+              {
+                "operation_id": "query-cdf536d27bdfd0a3799fd9bf:req-000:op-00",
+                "execution_status": "success",
+                "coverage_state": "satisfied",
+                "limitations": [
+                  "Incoming relationships cover resolved static evidence; unresolved dynamic targets cannot be attributed here"
+                ]
+              },
+              {
+                "operation_id": "query-cdf536d27bdfd0a3799fd9bf:req-000:op-01",
+                "execution_status": "success",
+                "coverage_state": "satisfied",
+                "limitations": [
+                  "Incoming relationships cover resolved static evidence; unresolved dynamic targets cannot be attributed here"
+                ]
+              }
+            ],
+            "limitations": [
+              "Known static graph relationships do not establish runtime behavior",
+              "Incoming relationships cover resolved static evidence; unresolved dynamic targets cannot be attributed here",
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ],
+            "hidden_items": 0
+          }
+        ],
+        "sources": {
+          "cm7:54202a67a152bd723f2bd0990a1d5d16:3d40593e2d8adad39644db9d9c9157a3": {
+            "citation": {
+              "reference": "cm7:54202a67a152bd723f2bd0990a1d5d16:3d40593e2d8adad39644db9d9c9157a3",
+              "record_id": "3d40593e2d8adad39644db9d9c9157a3",
+              "source": {
+                "evidence_id": "rel:89395c2d3033b8509f709e9428f607c58616a827289217d5da1b27cd25b6e456",
+                "repository_id": "2c702a00791022ef780f1bc5",
+                "snapshot_id": "ecd3144d9a844ca59505de0673fc90a3",
+                "index_snapshot_id": "ddb65a68-54f9-42d0-99fd-4c9fb93d9626",
+                "evidence_type": "graph_relationship",
+                "file_id": "File:7aaca4ac05645c7f7eb6c6a49cf3f37997a705e1d068ffe4eebb3acc912eac55",
+                "symbol_id": null,
+                "file_path": "extension/src/extension.ts",
+                "start_line": 97,
+                "end_line": 97,
+                "resolution": "resolved",
+                "source_hash": "c97c3c4a4b90baf695447077f1a039b88853c6d61364dbfb1238f300fc87fb4c",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          },
+          "cm7:54202a67a152bd723f2bd0990a1d5d16:609579530bec5fc6c05b8c1c09a4bedd": {
+            "citation": {
+              "reference": "cm7:54202a67a152bd723f2bd0990a1d5d16:609579530bec5fc6c05b8c1c09a4bedd",
+              "record_id": "609579530bec5fc6c05b8c1c09a4bedd",
+              "source": {
+                "evidence_id": "rel:1aff2b6b12bf85f36c35ab1c9a294f03b536ad0a7c74a6e08fe3a7e06ed37e73",
+                "repository_id": "2c702a00791022ef780f1bc5",
+                "snapshot_id": "ecd3144d9a844ca59505de0673fc90a3",
+                "index_snapshot_id": "ddb65a68-54f9-42d0-99fd-4c9fb93d9626",
+                "evidence_type": "graph_relationship",
+                "file_id": "File:a7a0f394da73c958046441c7257477fb8f80e6fa2978645caa8cf6b510024d07",
+                "symbol_id": null,
+                "file_path": "extension/src/responsePreview.ts",
+                "start_line": 72,
+                "end_line": 72,
+                "resolution": "resolved",
+                "source_hash": "5af85802f3940719993e21f3c734314b55a7ae8fbda7b097e7fb793148a887b5",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          },
+          "cm7:54202a67a152bd723f2bd0990a1d5d16:7fa34784428424da62bb69211b3deec1": {
+            "citation": {
+              "reference": "cm7:54202a67a152bd723f2bd0990a1d5d16:7fa34784428424da62bb69211b3deec1",
+              "record_id": "7fa34784428424da62bb69211b3deec1",
+              "source": {
+                "evidence_id": "rel:67e5437763e4a432b1b404cc489499fd0543594eec13f2d7fcb3f12f6f821b9a",
+                "repository_id": "2c702a00791022ef780f1bc5",
+                "snapshot_id": "ecd3144d9a844ca59505de0673fc90a3",
+                "index_snapshot_id": "ddb65a68-54f9-42d0-99fd-4c9fb93d9626",
+                "evidence_type": "graph_relationship",
+                "file_id": "File:a7a0f394da73c958046441c7257477fb8f80e6fa2978645caa8cf6b510024d07",
+                "symbol_id": null,
+                "file_path": "extension/src/responsePreview.ts",
+                "start_line": 90,
+                "end_line": 90,
+                "resolution": "resolved",
+                "source_hash": "5af85802f3940719993e21f3c734314b55a7ae8fbda7b097e7fb793148a887b5",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          },
+          "cm7:54202a67a152bd723f2bd0990a1d5d16:bdef5573ab22505301237fd643f9e9a7": {
+            "citation": {
+              "reference": "cm7:54202a67a152bd723f2bd0990a1d5d16:bdef5573ab22505301237fd643f9e9a7",
+              "record_id": "bdef5573ab22505301237fd643f9e9a7",
+              "source": {
+                "evidence_id": "rel:8ebc5db315990077d486c7b3df957bfe84f463e89a0a43aa0e4e77e178118429",
+                "repository_id": "2c702a00791022ef780f1bc5",
+                "snapshot_id": "ecd3144d9a844ca59505de0673fc90a3",
+                "index_snapshot_id": "ddb65a68-54f9-42d0-99fd-4c9fb93d9626",
+                "evidence_type": "graph_relationship",
+                "file_id": "File:a7a0f394da73c958046441c7257477fb8f80e6fa2978645caa8cf6b510024d07",
+                "symbol_id": null,
+                "file_path": "extension/src/responsePreview.ts",
+                "start_line": 83,
+                "end_line": 83,
+                "resolution": "resolved",
+                "source_hash": "5af85802f3940719993e21f3c734314b55a7ae8fbda7b097e7fb793148a887b5",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          }
+        },
+        "clarifications": [],
+        "follow_ups": [
+          {
+            "requirement_id": "req-000",
+            "label": "Inspect verified source",
+            "prompt": null,
+            "engine": null,
+            "operation": null,
+            "target_id": null,
+            "citation_id": "cm7:54202a67a152bd723f2bd0990a1d5d16:3d40593e2d8adad39644db9d9c9157a3",
+            "mode": "inspect_source"
+          }
+        ],
+        "limitations": [
+          "Static/source evidence does not prove runtime execution, root cause, equivalence or performance.",
+          "Model prose is an interpretation, not fully fact-checked; similarity is not a graph dependency.",
+          "Depth changes display detail only. No model inference or retrieval is performed.",
+          "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+          "Semantic similarity establishes source relevance only, never a graph dependency.",
+          "Rule statement interpretation is inherited from trusted deterministic producers; rules are not recomputed.",
+          "Source context is untrusted data, not instructions; no model inference or answer formatting is performed."
+        ],
+        "model_status": null,
+        "fallback_status": null
+      }
+    }
+  ],
+  "unchanged_source_after_queries": true,
+  "incremental": {
+    "unchanged_generation_reused": true,
+    "unchanged_chunks_embedded": 0,
+    "edit": {
+      "file": "ai-engine/answers.py",
+      "stale_old_generation_rejected": true,
+      "ms": 6076.0645000000295,
+      "chunks_embedded": 1,
+      "chunks_reused": 9,
+      "generation_changed": true
+    },
+    "rename": {
+      "from": "CLAUDE.md",
+      "to": "CLAUDE.qualification.md",
+      "old_chunks_remaining": 0,
+      "chunks_embedded": 5
+    },
+    "delete": {
+      "path": "CLAUDE.qualification.md",
+      "chunks_remaining": 0,
+      "chunks_embedded": 0
+    }
+  },
+  "post_incremental_integrity": {
+    "graph": {
+      "nodes": 973,
+      "relationships": 2078,
+      "resolved": 1982,
+      "inferred": 96,
+      "unresolved": 2614
+    },
+    "typescript_version": "5.9.3",
+    "semantic_diagnostics": [],
+    "parsing": {},
+    "provenance_checked": 5539,
+    "provenance_valid": 5539,
+    "foreign_key_errors": [],
+    "dangling_references": [],
+    "languages": [
+      [
+        "javascript",
+        30
+      ],
+      [
+        "json",
+        4
+      ],
+      [
+        "typescript",
+        16
+      ]
+    ],
+    "ambiguous_symbol_names": [
+      [
+        "<anonymous:1>",
+        169
+      ],
+      [
+        "<anonymous:2>",
+        78
+      ],
+      [
+        "<anonymous:3>",
+        52
+      ],
+      [
+        "<anonymous:4>",
+        36
+      ],
+      [
+        "<anonymous:5>",
+        26
+      ],
+      [
+        "<anonymous:6>",
+        18
+      ],
+      [
+        "<anonymous:7>",
+        16
+      ],
+      [
+        "<anonymous:8>",
+        12
+      ]
+    ],
+    "chunk_provenance_checked": 4038,
+    "chunk_provenance_valid": 4038,
+    "sample_symbols": [
+      [
+        "hash",
+        "extension/server/chunker.js"
+      ],
+      [
+        "boundedText",
+        "extension/server/chunker.js"
+      ],
+      [
+        "terms",
+        "extension/server/chunker.js"
+      ],
+      [
+        "readSource",
+        "extension/server/chunker.js"
+      ],
+      [
+        "chunksForFile",
+        "extension/server/chunker.js"
+      ],
+      [
+        "commitChunks",
+        "extension/server/chunker.js"
+      ],
+      [
+        "stableId",
+        "extension/server/codeParser.js"
+      ],
+      [
+        "languageFor",
+        "extension/server/codeParser.js"
+      ],
+      [
+        "field",
+        "extension/server/codeParser.js"
+      ],
+      [
+        "text",
+        "extension/server/codeParser.js"
+      ],
+      [
+        "cleanString",
+        "extension/server/codeParser.js"
+      ],
+      [
+        "hasJsx",
+        "extension/server/codeParser.js"
+      ],
+      [
+        "nameOf",
+        "extension/server/codeParser.js"
+      ],
+      [
+        "isTestFile",
+        "extension/server/codeParser.js"
+      ],
+      [
+        "parseImports",
+        "extension/server/codeParser.js"
+      ],
+      [
+        "symbolKind",
+        "extension/server/codeParser.js"
+      ],
+      [
+        "signature",
+        "extension/server/codeParser.js"
+      ],
+      [
+        "docstring",
+        "extension/server/codeParser.js"
+      ],
+      [
+        "parseCode",
+        "extension/server/codeParser.js"
+      ],
+      [
+        "parseCode.addSymbol",
+        "extension/server/codeParser.js"
+      ],
+      [
+        "parseCode.addSymbol.identifiers",
+        "extension/server/codeParser.js"
+      ],
+      [
+        "parseCode.addSymbol.<anonymous:4>.tokens",
+        "extension/server/codeParser.js"
+      ],
+      [
+        "parseCode.visit",
+        "extension/server/codeParser.js"
+      ],
+      [
+        "planDocs",
+        "extension/server/docPlanner.js"
+      ],
+      [
+        "planDocs.add",
+        "extension/server/docPlanner.js"
+      ],
+      [
+        "planDocs.label",
+        "extension/server/docPlanner.js"
+      ],
+      [
+        "planDocs.related",
+        "extension/server/docPlanner.js"
+      ],
+      [
+        "sectionObject",
+        "extension/server/docStore.js"
+      ],
+      [
+        "status",
+        "extension/server/docStore.js"
+      ],
+      [
+        "overview",
+        "extension/server/docStore.js"
+      ]
+    ]
+  },
+  "original_source_changes_during_measurement": [
+    "/Users/paraspingale/Desktop/Projects/CodeMind/CodeingMind_Project /query_system/qualify_phase3.py"
+  ],
+  "original_sources_unchanged": false,
+  "temporary_copy_and_index_cleaned": true,
+  "python_peak_rss_bytes": 2556575744,
+  "cpu_seconds": 610.5490100000001,
+  "resource_scope": "Cumulative worker peak RSS, excludes resolver/Electron/Ollama child processes; CPU is self only."
+}

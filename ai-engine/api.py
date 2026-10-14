@@ -95,15 +95,18 @@ async def _require_session(x_codemind_session: str | None = Header(default=None)
 async def lifespan(_app: FastAPI):
     global _SESSION_TOKEN, _SYNC_MANAGER
     _SESSION_TOKEN = _issue_session_token()
-    _load_registry()
-    if os.environ.get('CODEMIND_AUTO_SYNC','1')!='0':
-        _SYNC_MANAGER = SyncManager(DEFAULT_DATA_DIR,lambda rid:_enqueue_job(rid,False,None))
-        for rid,entry in list(_REGISTERED_REPOS.items()): _SYNC_MANAGER.add(rid,entry['rootPath'])
     try:
+        _load_registry()
+        if os.environ.get('CODEMIND_AUTO_SYNC','1')!='0':
+            _SYNC_MANAGER = SyncManager(DEFAULT_DATA_DIR,lambda rid:_enqueue_job(rid,False,None))
+            for rid,entry in list(_REGISTERED_REPOS.items()): _SYNC_MANAGER.add(rid,entry['rootPath'])
         yield
     finally:
-        if _SYNC_MANAGER: _SYNC_MANAGER.close()
-        _SYNC_MANAGER = None
+        _SESSION_TOKEN = ""
+        try:
+            if _SYNC_MANAGER: _SYNC_MANAGER.close()
+        finally:
+            _SYNC_MANAGER = None
 
 
 app = FastAPI(title="Argus Python AI Engine", lifespan=lifespan,
@@ -352,10 +355,16 @@ def register_repo(req: RegisterRequest):
     with _REPOS_LOCK:
         if repo_id not in _REGISTERED_REPOS and len(_REGISTERED_REPOS) >= _MAX_REPOS:
             raise HTTPException(status_code=429, detail="Too many registered repositories.")
-        entry = _REGISTERED_REPOS.get(repo_id) or {"createdAt": _utc_now_iso()}
+        previous = _REGISTERED_REPOS.get(repo_id)
+        entry = dict(previous) if previous else {"createdAt": _utc_now_iso()}
         entry["rootPath"] = abs_root               # NOT realpath: the extension compares paths by prefix
         _REGISTERED_REPOS[repo_id] = entry
-        _save_registry()
+        try:
+            _save_registry()
+        except Exception:
+            if previous is None: _REGISTERED_REPOS.pop(repo_id, None)
+            else: _REGISTERED_REPOS[repo_id] = previous
+            raise
     if _SYNC_MANAGER: _SYNC_MANAGER.add(repo_id,abs_root)
     return {"repository": {"id": repo_id, "rootPath": abs_root, "defaultBranch": "main",
                            "createdAt": entry["createdAt"], "config": {}}}

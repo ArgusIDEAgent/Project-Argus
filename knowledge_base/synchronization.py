@@ -87,6 +87,12 @@ def observe_sources(root):
     return {'digest':digest,'files':sources,'revision':revision}
 
 
+def _incomplete_parsing(result):
+    graph = result.get('graph', {})
+    parsing = graph.get('parsing', {}) if isinstance(graph, dict) else None
+    return not isinstance(parsing, dict) or any(parsing.get(key, 0) != 0 for key in ('error', 'partial'))
+
+
 class SnapshotStore:
     def __init__(self,root,repo_id,data_dir):
         self.root = Path(root).resolve(strict=True)
@@ -177,6 +183,7 @@ class SnapshotStore:
         if managed:
             try:
                 fresh = bool(manifest and manifest.get('pipelineVersion')==PIPELINE_VERSION
+                             and not _incomplete_parsing(manifest['result'])
                              and manifest['sources']['digest']==observe_sources(self.root)['digest'])
             except (OSError,ValueError): fresh = False
             if manifest and not (self.data_for(manifest)/self.repo_id/'metadata.db').is_file(): fresh = False
@@ -201,7 +208,8 @@ class SnapshotStore:
                     expected_count = db.execute('SELECT count(*) FROM code_chunks WHERE repository_id=?',(self.repo_id,)).fetchone()[0]
                 store_ready = client.count(previous['collection'],exact=True).count==expected_count
             if (previous and previous.get('pipelineVersion')==PIPELINE_VERSION and not full
-                and store_ready and previous['sources']['digest']==before['digest']):
+                and store_ready and not _incomplete_parsing(previous['result'])
+                and previous['sources']['digest']==before['digest']):
                 _write_json(self.path/'sync_state.json',{'state':'ready','activeSnapshotId':previous['id'],
                     'lastError':None,'savedFilesOnly':True})
                 return {**previous['result'],'unchanged':True,'activeSnapshotId':previous['id'],
@@ -254,6 +262,8 @@ class SnapshotStore:
                         with closing(sqlite3.connect(database)) as db,db:
                             db.execute('UPDATE code_chunks SET collection_name=? WHERE repository_id=?',(new_collection,self.repo_id))
                 graph = build_graph(self.root,data_dir=staged,incremental=True)
+                if _incomplete_parsing({'graph': graph}):
+                    raise RuntimeError('Source parsing is incomplete; the previous snapshot remains published')
                 result = index_directory(str(self.root),repo_id=self.repo_id,data_dir=str(staged),collection=new_collection,
                     build_graph=False,full_reindex=full or bool(previous and not store_ready),on_progress=on_progress)
                 if result['files_failed']: raise RuntimeError('Some files failed indexing')

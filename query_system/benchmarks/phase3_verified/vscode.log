@@ -1,0 +1,266 @@
+
+> codemind-extension@0.4.1 test:integration
+> npm run compile && node test/runTest.js
+
+
+> codemind-extension@0.4.1 compile
+> tsc -p ./
+
+[90m[main 2026-10-14T15:55:16.593Z][0m [node-compile-cache] main: packaged cache inactive (status: disabled, configured: /Applications/Visual Studio Code.app/Contents/Resources/app/node-compile-cache/main, active: none)
+[90m[main 2026-10-14T15:55:16.623Z][0m StorageMainService: creating application shared storage
+[90m[main 2026-10-14T15:55:16.952Z][0m [shared storage] Creating shared storage database at ':memory:' (wasCreated: true)
+[90m[main 2026-10-14T15:55:16.953Z][0m [shared storage] Initializing fallback application storage (path: in-memory)
+[90m[main 2026-10-14T15:55:17.478Z][0m [shared storage] Fallback application storage initialized with 3 items
+[90m[main 2026-10-14T15:55:17.478Z][0m update#setState disabled
+[90m[main 2026-10-14T15:55:17.479Z][0m update#ctor - updates are disabled by the environment
+[RemoteAgentHost] Reconciling: desired=[], current=[]
+[AgentHost:renderer] Acquiring MessagePort to agent host...
+[90m[main 2026-10-14T15:55:18.487Z][0m AgentHostProcessManager: agent host started
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey=undefined conversationKey=undefined modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[AgentHost:renderer] MessagePort acquired, creating client...
+[RemoteAgentHostProtocol] Sending initialize: address=local clientId=bcd59d8a-a0d1-497a-86ae-3c7521cea367 requestId=1
+[RemoteAgentHostProtocol] Initialized: address=local clientId=bcd59d8a-a0d1-497a-86ae-3c7521cea367 durationMs=747
+[AgentHost:renderer] Protocol connection established; clientId=bcd59d8a-a0d1-497a-86ae-3c7521cea367
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzlkMDA0MmEtMTFhOC00Y2FmLThmYTQtNWE0ODg0MmZiMmZh" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+Started local extension host with pid 86461.
+Loading development extension at /Users/paraspingale/Desktop/Projects/CodeMind/CodeingMind_Project /extension
+[AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+SKIP: engine not running
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+Settings Sync: Account status changed from uninitialized to unavailable
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[RemoteAgentHost] Reconciling: desired=[], current=[]
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzlkMDA0MmEtMTFhOC00Y2FmLThmYTQtNWE0ODg0MmZiMmZh" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzlkMDA0MmEtMTFhOC00Y2FmLThmYTQtNWE0ODg0MmZiMmZh" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+Phase 9 VS Code preview, three depths, canonical navigation, dirty/stale/invalid/unauthorized rejection: PASS
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzlkMDA0MmEtMTFhOC00Y2FmLThmYTQtNWE0ODg0MmZiMmZh" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzlkMDA0MmEtMTFhOC00Y2FmLThmYTQtNWE0ODg0MmZiMmZh" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+Phase 10 real VS Code host + authenticated loopback API: opt-in, saved settings, deterministic/model routing, depths, verified editor navigation, stale guard, rollback PASS
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzlkMDA0MmEtMTFhOC00Y2FmLThmYTQtNWE0ODg0MmZiMmZh" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzlkMDA0MmEtMTFhOC00Y2FmLThmYTQtNWE0ODg0MmZiMmZh" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+PHASE3_REAL_HOST_SCENARIOS {"passed":["exact_lookup","canonical_navigation","depths","callers","target_list","foreign_repository_action","forged_action","semantic","function","workflow","impact","comparison","compound","ambiguous","missing","repository_switch_in_flight","unsupported_statistics","real_ollama_or_explicit_fallback","stale_source","query_markup_injection","legacy_hybrid_rollback","backend_restart_expired_handle"],"count":22,"fault_injected_actual_host":["model_unavailable","model_timeout","graph_failure"],"limits":["Generation-disabled scenarios are not successful model explanations.","Transport/model failure and source-injection scenarios are separately tested; not all are real-source host scenarios."]}
+Final real CodeMind VS Code + authenticated read-only backend: depths, both targets, context, canonical source opening, unsupported requests, real Ollama/fallback, repository scope, rollback and ephemeral restart PASS
+[90m[main 2026-10-14T15:55:47.704Z][0m Extension host with pid 86461 exited with code: 0, signal: unknown.
+Exit code:   0
+[91m[main 2026-10-14T15:55:19.198Z][0m [AgentHost:stderr] (node:86415) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `Code Helper --trace-deprecation ...` to show where the warning was created)
+
+Extension 'github.copilot-chat' appears in product.json but enables LESS API proposals than the extension wants.
+package.json (LOSES): agentSessionsWorkspace
+agentsWindowConfiguration
+chatDebug
+chatHooks
+envIsConnectionMetered
+extensionsAny
+newSymbolNamesProvider
+interactive
+codeActionAI
+activeComment
+commentReveal
+contribCommentThreadAdditionalMenu
+contribCommentsViewThreadMenus
+contribChatEditorInlineGutterMenu
+documentFiltersExclusive
+embeddings
+findTextInFiles
+findTextInFiles2
+languageModelToolSupportsModel
+findFiles2
+textSearchProvider
+terminalDataWriteEvent
+terminalExecuteCommandEvent
+terminalSelection
+terminalQuickFixProvider
+mappedEditsProvider
+aiRelatedInformation
+aiSettingsSearch
+chatParticipantAdditions
+defaultChatParticipant
+contribSourceControlInputBoxMenu
+authLearnMore
+authIssuers
+testObserver
+aiTextSearchProvider
+chatParticipantPrivate
+chatProvider
+contribDebugCreateConfiguration
+chatReferenceDiagnostic
+textSearchProvider2
+chatReferenceBinaryData
+languageModelSystem
+languageModelCapabilities
+languageModelPricing
+inlineCompletionsAdditions
+chatStatusItem
+chatInputNotification
+taskProblemMatcherStatus
+contribLanguageModelToolSets
+textDocumentChangeReason
+resolvers
+taskExecutionTerminal
+dataChannels
+languageModelThinkingPart
+chatSessionsProvider
+devDeviceId
+contribEditorContentMenu
+chatPromptFiles
+mcpServerDefinitions
+tabInputMultiDiff
+workspaceTrust
+environmentPower
+terminalTitle
+toolInvocationApproveCombination
+chatSessionCustomizationProvider
+product.json (WINS): agentSessionsWorkspace
+agentsWindowConfiguration
+interactive
+terminalDataWriteEvent
+terminalExecuteCommandEvent
+terminalSelection
+terminalQuickFixProvider
+chatParticipantAdditions
+defaultChatParticipant
+embeddings
+chatProvider
+mappedEditsProvider
+aiRelatedInformation
+aiSettingsSearch
+codeActionAI
+findTextInFiles
+findTextInFiles2
+textSearchProvider
+textSearchProvider2
+activeComment
+commentReveal
+contribSourceControlInputBoxMenu
+contribCommentEditorActionsMenu
+contribCommentThreadAdditionalMenu
+contribCommentsViewThreadMenus
+contribChatEditorInlineGutterMenu
+extensionAffinity
+newSymbolNamesProvider
+findFiles2
+chatReferenceDiagnostic
+extensionsAny
+authLearnMore
+testObserver
+aiTextSearchProvider
+documentFiltersExclusive
+chatParticipantPrivate
+contribDebugCreateConfiguration
+inlineCompletionsAdditions
+chatReferenceBinaryData
+languageModelSystem
+languageModelCapabilities
+languageModelThinkingPart
+languageModelToolSupportsModel
+chatStatusItem
+taskProblemMatcherStatus
+contribLanguageModelToolSets
+textDocumentChangeReason
+resolvers
+taskExecutionTerminal
+dataChannels
+chatSessionsProvider
+chatSessionCustomizationProvider
+devDeviceId
+contribEditorContentMenu
+tokenInformation
+toolInvocationApproveCombination
+chatPromptFiles
+mcpServerDefinitions
+tabInputMultiDiff
+workspaceTrust
+chatHooks
+chatDebug
+envIsConnectionMetered
+environmentPower
+terminalTitle
+languageModelPricing
+chatInputNotification
+DELTA: authIssuers
+Proceeding with EXTRA proposals (authIssuers) because extension is in development mode. Still, this EXTENSION WILL BE BROKEN unless product.json is updated.
+Unknown channel: agentHostClientByokLm
+Unknown channel: agentHostClientProxy
+Unknown channel: agentHostClientProxy
+Unknown channel: agentHostClientProxy
+(node:86461) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `Code Helper (Plugin) --trace-deprecation ...` to show where the warning was created)
+[File Watcher (node.js)] Watcher shutdown because watched path got deleted
+[File Watcher (node.js)] Watcher shutdown because watched path got deleted
+[File Watcher (node.js)] Watcher shutdown because watched path got deleted

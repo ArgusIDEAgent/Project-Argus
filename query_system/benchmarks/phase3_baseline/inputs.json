@@ -1,0 +1,760 @@
+[
+  {
+    "id": "A1",
+    "profile": "extension",
+    "family": "A",
+    "question": "Where is verifiedSourcePath defined?",
+    "rows": [
+      [
+        "SYMBOL_LOCATION",
+        [
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "operations": [
+      "graph.find_definition"
+    ],
+    "path": "extension/src/sourceNavigation.ts",
+    "anchor": "export function verifiedSourcePath",
+    "facts": [
+      "Returns the canonical real path only after containment, regular-file, size and SHA-256 checks."
+    ],
+    "llm": false
+  },
+  {
+    "id": "A2",
+    "profile": "extension",
+    "family": "A",
+    "question": "Find function verifiedPreviewSource",
+    "rows": [
+      [
+        "SYMBOL_LOCATION",
+        [
+          "verifiedPreviewSource"
+        ]
+      ]
+    ],
+    "operations": [
+      "graph.find_definition"
+    ],
+    "path": "extension/src/responsePreview.ts",
+    "anchor": "export function verifiedPreviewSource",
+    "facts": [
+      "Checks repository, generation, file identity and line ranges before navigation."
+    ],
+    "llm": false
+  },
+  {
+    "id": "A3",
+    "profile": "extension",
+    "family": "A",
+    "question": "Where is escapeDisplay defined?",
+    "rows": [
+      [
+        "SYMBOL_LOCATION",
+        [
+          "escapeDisplay"
+        ]
+      ]
+    ],
+    "operations": [
+      "graph.find_definition"
+    ],
+    "path": "extension/src/responsePresentation.ts",
+    "anchor": "export function escapeDisplay",
+    "facts": [
+      "Escapes text for HTML display."
+    ],
+    "llm": false
+  },
+  {
+    "id": "B1",
+    "profile": "extension",
+    "family": "B",
+    "question": "Who calls verifiedSourcePath?",
+    "rows": [
+      [
+        "DIRECT_CALLERS",
+        [
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "operations": [
+      "graph.find_callers"
+    ],
+    "path": "extension/src/responsePreview.ts",
+    "anchor": "const file = verifiedSourcePath",
+    "facts": [
+      "verifiedPreviewSource directly calls verifiedSourcePath."
+    ],
+    "llm": false
+  },
+  {
+    "id": "B2",
+    "profile": "extension",
+    "family": "B",
+    "question": "What does verifiedSourcePath call?",
+    "rows": [
+      [
+        "DIRECT_CALLEES",
+        [
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "operations": [
+      "graph.find_callees"
+    ],
+    "path": "extension/src/sourceNavigation.ts",
+    "anchor": "if (!isInside(root, file))",
+    "facts": [
+      "Calls the local isInside helper; filesystem and crypto calls are external, not repository implementations."
+    ],
+    "llm": false
+  },
+  {
+    "id": "B3",
+    "profile": "extension",
+    "family": "B",
+    "question": "Dependency path from openVerifiedPreviewSource to verifiedSourcePath",
+    "rows": [
+      [
+        "DEPENDENCY_PATH",
+        [
+          "openVerifiedPreviewSource",
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "operations": [
+      "graph.find_paths"
+    ],
+    "path": "extension/src/responsePreview.ts",
+    "anchor": "const file = verifiedPreviewSource",
+    "facts": [
+      "The static call path goes through verifiedPreviewSource; this does not prove runtime order."
+    ],
+    "llm": false
+  },
+  {
+    "id": "C1",
+    "profile": "extension",
+    "family": "C",
+    "question": "Find code that verifies source file hashes before opening citations",
+    "rows": [
+      [
+        "FEATURE_DISCOVERY",
+        [
+          "Find code that verifies source file hashes before opening citations"
+        ]
+      ]
+    ],
+    "operations": [
+      "semantic.hybrid_search"
+    ],
+    "path": "extension/src/sourceNavigation.ts",
+    "anchor": "createHash('sha256')",
+    "relevant_files": [
+      "extension/src/sourceNavigation.ts",
+      "extension/src/responsePreview.ts",
+      "extension/src/hybridChat.ts"
+    ],
+    "relevance_scope": "Complete implementation-file relevance judgments for the frozen extension profile; presentation-only rendering is not hash verification.",
+    "facts": [
+      "Source navigation and both UI navigation paths verify source identity/hash."
+    ],
+    "llm": false
+  },
+  {
+    "id": "C2",
+    "profile": "react",
+    "family": "C",
+    "question": "Find code that loads study logs and a summary from the backend",
+    "rows": [
+      [
+        "FEATURE_DISCOVERY",
+        [
+          "Find code that loads study logs and a summary from the backend"
+        ]
+      ]
+    ],
+    "operations": [
+      "semantic.hybrid_search"
+    ],
+    "path": "src/App.jsx",
+    "anchor": "const loadData = async",
+    "relevant_files": [
+      "src/App.jsx"
+    ],
+    "relevance_scope": "Complete implementation relevance among copied frontend files.",
+    "facts": [
+      "loadData fetches /api/logs and /api/summary concurrently and records errors."
+    ],
+    "llm": false
+  },
+  {
+    "id": "D1",
+    "profile": "extension",
+    "family": "D",
+    "question": "Explain verifiedSourcePath",
+    "rows": [
+      [
+        "FUNCTION_EXPLANATION",
+        [
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "path": "extension/src/sourceNavigation.ts",
+    "anchor": "export function verifiedSourcePath",
+    "facts": [
+      "Three string inputs; returns canonical path or throws; rejects size strictly greater than 5 MiB; NUL means U+0000."
+    ],
+    "llm": true
+  },
+  {
+    "id": "D2",
+    "profile": "extension",
+    "family": "D",
+    "question": "Explain verifiedSourcePath including inputs, outputs and errors",
+    "rows": [
+      [
+        "FUNCTION_EXPLANATION",
+        [
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "path": "extension/src/sourceNavigation.ts",
+    "anchor": "export function verifiedSourcePath",
+    "facts": [
+      "Root resolution, stat and reading may throw; hash mismatch does not prove which input changed."
+    ],
+    "llm": true
+  },
+  {
+    "id": "D3",
+    "profile": "extension",
+    "family": "D",
+    "question": "What does verifiedSourcePath return?",
+    "rows": [
+      [
+        "FUNCTION_CONTRACT",
+        [
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "operations": [
+      "rules.function_contract"
+    ],
+    "path": "extension/src/sourceNavigation.ts",
+    "anchor": "return real;",
+    "facts": [
+      "Declared return type is string; successful value is real."
+    ],
+    "llm": false
+  },
+  {
+    "id": "D4",
+    "profile": "extension",
+    "family": "D",
+    "question": "Contract of verifiedSourcePath",
+    "rows": [
+      [
+        "FUNCTION_CONTRACT",
+        [
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "operations": [
+      "rules.function_contract"
+    ],
+    "path": "extension/src/sourceNavigation.ts",
+    "anchor": "export function verifiedSourcePath",
+    "facts": [
+      "Three required string parameters and string return annotation."
+    ],
+    "llm": false
+  },
+  {
+    "id": "E1",
+    "profile": "extension",
+    "family": "E",
+    "question": "Explain the workflow from openVerifiedPreviewSource to verifiedSourcePath",
+    "rows": [
+      [
+        "WORKFLOW_EXPLANATION",
+        [
+          "openVerifiedPreviewSource",
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "path": "extension/src/responsePreview.ts",
+    "anchor": "export async function openVerifiedPreviewSource",
+    "facts": [
+      "Checks trust, verifies citation, opens document, rejects dirty/hash mismatch, rechecks disk then selects source."
+    ],
+    "llm": true
+  },
+  {
+    "id": "F1",
+    "profile": "extension",
+    "family": "F",
+    "question": "Impact of verifiedSourcePath",
+    "rows": [
+      [
+        "CHANGE_IMPACT",
+        [
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "operations": [
+      "rules.change_impact"
+    ],
+    "path": "extension/src/responsePreview.ts",
+    "anchor": "const file = verifiedSourcePath",
+    "facts": [
+      "Known references can guide impact; static references do not prove breakage."
+    ],
+    "llm": false
+  },
+  {
+    "id": "F2",
+    "profile": "extension",
+    "family": "F",
+    "question": "Find tests for verifiedSourcePath",
+    "rows": [
+      [
+        "TEST_DISCOVERY",
+        [
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "operations": [
+      "rules.reference_test_analysis"
+    ],
+    "path": "extension/src/sourceNavigation.ts",
+    "anchor": "export function verifiedSourcePath",
+    "facts": [
+      "The small extension-source profile intentionally contains no test files; no tests must not mean globally untested."
+    ],
+    "llm": false
+  },
+  {
+    "id": "F3",
+    "profile": "extension",
+    "family": "F",
+    "question": "Show dependencies of verifiedSourcePath",
+    "rows": [
+      [
+        "DEPENDENCY_PATH",
+        [
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "operations": [
+      "rules.dependency_summary"
+    ],
+    "path": "extension/src/sourceNavigation.ts",
+    "anchor": "import * as fs",
+    "facts": [
+      "Imports node:crypto, node:fs, node:path; external implementations are unavailable."
+    ],
+    "llm": false
+  },
+  {
+    "id": "G1",
+    "profile": "extension",
+    "family": "G",
+    "question": "Compare verifiedSourcePath and verifiedPreviewSource",
+    "rows": [
+      [
+        "CODE_COMPARISON",
+        [
+          "verifiedSourcePath",
+          "verifiedPreviewSource"
+        ]
+      ]
+    ],
+    "path": "extension/src/responsePreview.ts",
+    "anchor": "export function verifiedPreviewSource",
+    "facts": [
+      "The former verifies filesystem content; the latter also validates presentation/citation scope and delegates file checking."
+    ],
+    "llm": true
+  },
+  {
+    "id": "G2",
+    "profile": "extension",
+    "family": "G",
+    "question": "Compare verifiedSourcePath with extension/src/sourceNavigation.ts::isInside",
+    "rows": [
+      [
+        "CODE_COMPARISON",
+        [
+          "verifiedSourcePath",
+          "isInside"
+        ]
+      ]
+    ],
+    "path": "extension/src/sourceNavigation.ts",
+    "anchor": "function isInside",
+    "facts": [
+      "isInside is lexical containment only; verifiedSourcePath also resolves symlinks and checks content."
+    ],
+    "llm": true
+  },
+  {
+    "id": "H1",
+    "profile": "cnn",
+    "family": "H",
+    "question": "Which CNN architecture and hyperparameters are used?",
+    "rows": [
+      [
+        "FEATURE_DISCOVERY",
+        [
+          "Which CNN architecture and hyperparameters are used?"
+        ]
+      ]
+    ],
+    "operations": [
+      "semantic.hybrid_search"
+    ],
+    "path": "46_CNN_Surface_Crack_Detection.py",
+    "anchor": "model = Sequential()",
+    "facts": [
+      "Four Conv2D layers:32,64,128,256; Dense256,128,1; Adam, binary crossentropy; no proven accuracy from source."
+    ],
+    "llm": false,
+    "capability_limit": "Semantic discovery only; Python structural/model-parameter extraction and free-form ML explanation are not implemented."
+  },
+  {
+    "id": "H2",
+    "profile": "cnn",
+    "family": "H",
+    "question": "What hyperparameter tuning is actually performed?",
+    "rows": [
+      [
+        "FEATURE_DISCOVERY",
+        [
+          "What hyperparameter tuning is actually performed?"
+        ]
+      ]
+    ],
+    "operations": [
+      "semantic.hybrid_search"
+    ],
+    "path": "46_CNN_Surface_Crack_Detection.py",
+    "anchor": "reduce_lr = ReduceLROnPlateau",
+    "facts": [
+      "Fixed settings plus adaptive learning-rate callback; no hyperparameter search loop in this file."
+    ],
+    "llm": false,
+    "capability_limit": "Retrieval cannot establish that the whole repository performed no tuning."
+  },
+  {
+    "id": "H3",
+    "profile": "cnn",
+    "family": "H",
+    "question": "Find code that configures image size batch size and training epochs",
+    "rows": [
+      [
+        "FEATURE_DISCOVERY",
+        [
+          "Find code that configures image size batch size and training epochs"
+        ]
+      ]
+    ],
+    "operations": [
+      "semantic.hybrid_search"
+    ],
+    "path": "46_CNN_Surface_Crack_Detection.py",
+    "anchor": "IMAGE_SIZE = 128",
+    "facts": [
+      "Image size128, batch32, epochs15, seed42; source configuration, not measured training output."
+    ],
+    "llm": false
+  },
+  {
+    "id": "I1",
+    "profile": "extension",
+    "family": "I",
+    "question": "Why might verifiedSourcePath fail?",
+    "rows": [
+      [
+        "BEHAVIOR_INVESTIGATION",
+        [
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "path": "extension/src/sourceNavigation.ts",
+    "anchor": "if (!relativePath",
+    "facts": [
+      "Possible validation and filesystem failures are not a diagnosed runtime root cause."
+    ],
+    "llm": true
+  },
+  {
+    "id": "J1",
+    "profile": "extension",
+    "family": "J",
+    "question": "Where is phase3Nonexistent defined?",
+    "rows": [
+      [
+        "SYMBOL_LOCATION",
+        [
+          "phase3Nonexistent"
+        ]
+      ]
+    ],
+    "operations": [],
+    "path": "extension/src/sourceNavigation.ts",
+    "anchor": "export function verifiedSourcePath",
+    "resolution": "not_found",
+    "facts": [
+      "Missing symbol must not resolve by similarity."
+    ],
+    "llm": false
+  },
+  {
+    "id": "J2",
+    "profile": "extension",
+    "family": "J",
+    "question": "Compare verifiedSourcePath with isInside",
+    "rows": [
+      [
+        "CODE_COMPARISON",
+        [
+          "verifiedSourcePath",
+          "isInside"
+        ]
+      ]
+    ],
+    "path": "extension/src/sourceNavigation.ts",
+    "anchor": "function isInside",
+    "resolution": "ambiguous",
+    "facts": [
+      "isInside also exists inside activate in extension.ts; do not choose the first match."
+    ],
+    "llm": false
+  },
+  {
+    "id": "J3",
+    "profile": "extension",
+    "family": "J",
+    "question": "How many files are in this repository?",
+    "rows": [],
+    "operations": [],
+    "path": "extension/package.json",
+    "anchor": "\"name\"",
+    "facts": [
+      "Repository-wide statistics are explicitly unsupported by hybrid orchestration."
+    ],
+    "llm": false
+  },
+  {
+    "id": "J4",
+    "profile": "cnn",
+    "family": "J",
+    "question": "Who calls check_folder in 46_CNN_Surface_Crack_Detection.py?",
+    "rows": [
+      [
+        "DIRECT_CALLERS",
+        [
+          "check_folder"
+        ]
+      ]
+    ],
+    "operations": [],
+    "path": "46_CNN_Surface_Crack_Detection.py",
+    "anchor": "def check_folder",
+    "resolution": "unsupported",
+    "facts": [
+      "Python semantic indexing is available but modern structural graph is JS/TS-only."
+    ],
+    "llm": false
+  },
+  {
+    "id": "K1",
+    "profile": "extension",
+    "family": "K",
+    "question": "Where is verifiedSourcePath defined and explain verifiedSourcePath",
+    "rows": [
+      [
+        "SYMBOL_LOCATION",
+        [
+          "verifiedSourcePath"
+        ]
+      ],
+      [
+        "FUNCTION_EXPLANATION",
+        [
+          "verifiedSourcePath"
+        ]
+      ]
+    ],
+    "path": "extension/src/sourceNavigation.ts",
+    "anchor": "export function verifiedSourcePath",
+    "facts": [
+      "Preserve the location and explanation as two original requirements."
+    ],
+    "llm": true
+  },
+  {
+    "id": "K2",
+    "profile": "extension",
+    "family": "K",
+    "question": "Who calls verifiedSourcePath and verifiedPreviewSource?",
+    "rows": [
+      [
+        "DIRECT_CALLERS",
+        [
+          "verifiedSourcePath",
+          "verifiedPreviewSource"
+        ]
+      ]
+    ],
+    "operations": [
+      "graph.find_callers",
+      "graph.find_callers"
+    ],
+    "path": "extension/src/responsePreview.ts",
+    "anchor": "const file = verifiedPreviewSource",
+    "facts": [
+      "Both caller targets must survive planning."
+    ],
+    "llm": false
+  },
+  {
+    "id": "K3",
+    "profile": "extension",
+    "family": "K",
+    "question": "Find callers of verifiedSourcePath and explain verifiedPreviewSource",
+    "rows": [
+      [
+        "DIRECT_CALLERS",
+        [
+          "verifiedSourcePath"
+        ]
+      ],
+      [
+        "FUNCTION_EXPLANATION",
+        [
+          "verifiedPreviewSource"
+        ]
+      ]
+    ],
+    "path": "extension/src/responsePreview.ts",
+    "anchor": "export function verifiedPreviewSource",
+    "facts": [
+      "Independent targets and requirements must not be merged."
+    ],
+    "llm": true
+  },
+  {
+    "id": "K4",
+    "profile": "extension",
+    "family": "K",
+    "question": "Compare verifiedSourcePath and verifiedPreviewSource and find tests for both",
+    "rows": [
+      [
+        "CODE_COMPARISON",
+        [
+          "verifiedSourcePath",
+          "verifiedPreviewSource"
+        ]
+      ],
+      [
+        "TEST_DISCOVERY",
+        [
+          "verifiedSourcePath",
+          "verifiedPreviewSource"
+        ]
+      ]
+    ],
+    "path": "extension/src/responsePreview.ts",
+    "anchor": "export function verifiedPreviewSource",
+    "facts": [
+      "Comparison and both test targets retained; absent tests in subset are a coverage limit."
+    ],
+    "llm": true
+  },
+  {
+    "id": "A4",
+    "profile": "react",
+    "family": "A",
+    "question": "Where is readJson defined?",
+    "rows": [
+      [
+        "SYMBOL_LOCATION",
+        [
+          "readJson"
+        ]
+      ]
+    ],
+    "operations": [
+      "graph.find_definition"
+    ],
+    "path": "src/App.jsx",
+    "anchor": "async function readJson",
+    "facts": [
+      "Reads response text, returns JSON or a message containing non-JSON text."
+    ],
+    "llm": false
+  },
+  {
+    "id": "B4",
+    "profile": "react",
+    "family": "B",
+    "question": "What does emptyForm call?",
+    "rows": [
+      [
+        "DIRECT_CALLEES",
+        [
+          "emptyForm"
+        ]
+      ]
+    ],
+    "operations": [
+      "graph.find_callees"
+    ],
+    "path": "src/App.jsx",
+    "anchor": "logDate: todayIso()",
+    "facts": [
+      "emptyForm directly calls todayIso."
+    ],
+    "llm": false
+  },
+  {
+    "id": "D5",
+    "profile": "react",
+    "family": "D",
+    "question": "Contract of readJson",
+    "rows": [
+      [
+        "FUNCTION_CONTRACT",
+        [
+          "readJson"
+        ]
+      ]
+    ],
+    "operations": [
+      "rules.function_contract"
+    ],
+    "path": "src/App.jsx",
+    "anchor": "async function readJson",
+    "facts": [
+      "Async function with response parameter; no declared TypeScript return annotation."
+    ],
+    "llm": false
+  }
+]

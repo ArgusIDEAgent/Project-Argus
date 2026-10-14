@@ -1,0 +1,2 @@
+# Test tooling only; install runtime requirements separately.
+pytest==9.1.1

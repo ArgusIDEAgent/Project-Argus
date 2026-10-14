@@ -1,5 +1,9 @@
 """
-rag_pipeline.py — Graph-augmented RAG pipeline for CodeMind (Argus).
+rag_pipeline.py — Legacy CLI-only NetworkX RAG for CodeMind (Argus).
+
+Current /ask and opt-in hybrid chat use local Ollama through answers.py and the
+query_system integration. They do not call this module. Versioned repositories
+are refused here before retrieval/generation; see LEGACY_RAG.md for compatibility.
 
 Combines two retrieval strategies:
   1. **Semantic retrieval**: Top-K vector-similar code chunks from Qdrant.
@@ -76,18 +80,34 @@ MAX_CONTEXT_CHARS = 24_000
 # Structural query detection
 # ─────────────────────────────────────────────────────────────
 
-# Patterns that indicate the user is asking a structural/dependency question.
+# Match a complete single-target expression, never a prefix of an identifier or
+# a multi-target question. Keep quotes paired and preserve the original spelling.
+_STRUCTURAL_IDENTIFIER = r"[^\W\d]\w*(?:(?:\.|::)[^\W\d]\w*)*"
+_STRUCTURAL_TARGET = rf"(?P<quote>[`'\"]?)(?P<symbol>{_STRUCTURAL_IDENTIFIER})(?P=quote)"
+_STRUCTURAL_PREFIX = r"\s*(?:please\s+)?(?:(?:show(?:\s+me)?|find|list|tell\s+me\s+about)\s+)?"
+_STRUCTURAL_NON_TARGETS = {
+    "a", "an", "the", "if", "i", "we", "of", "on", "in", "to", "and", "or",
+    "it", "this", "that", "these", "those", "them", "function", "method", "class",
+    "code", "change", "changing", "modify", "modifying", "remove", "delete", "impact",
+}
+
+# Specific impact forms precede generic forms. Full matching also prevents a
+# generic pattern from consuming "if" or "impact" and ignoring the real operand.
 _STRUCTURAL_PATTERNS: list[tuple[str, str]] = [
     # (regex pattern, query_type)
-    (r"\b(?:what|which|who)\s+(?:functions?|methods?|code)?\s*(?:calls?|invokes?|uses?)\s+[`'\"]?(\w+)", "callers"),
-    (r"\b(?:what|which|who)\s+(?:depends?\s+on|relies?\s+on)\s+[`'\"]?(\w+)", "callers"),
-    (r"\b(?:callers?|upstream)\s+(?:of\s+)?[`'\"]?(\w+)", "callers"),
-    (r"\bcalled\s+by\s+[`'\"]?(\w+)", "callees"),
-    (r"\b(?:what|which)\s+(?:does|functions?|methods?)\s+[`'\"]?(\w+)[`'\"]?\s+(?:call|invoke|use)", "callees"),
-    (r"\b(?:callees?|downstream)\s+(?:of\s+)?[`'\"]?(\w+)", "callees"),
-    (r"\b(?:impact|affect|break|change|modif)\w*\s+(?:of\s+)?(?:changing\s+|modifying\s+)?[`'\"]?(\w+)", "impact"),
-    (r"\b(?:what\s+(?:happens|breaks|is\s+affected)|change.impact)\s+(?:if\s+(?:I|we)\s+)?(?:change|modify|remove|delete)\s+[`'\"]?(\w+)", "impact"),
-    (r"\b(?:members?|methods?|attributes?)\s+(?:of|in)\s+(?:class\s+)?[`'\"]?(\w+)", "members"),
+    (rf"what\s+(?:happens|breaks|is\s+affected)\s+(?:if\s+(?:I|we)\s+)?(?:change|modify|remove|delete)\s+{_STRUCTURAL_TARGET}", "impact"),
+    (rf"(?:what\s+is\s+the\s+)?(?:change[ -])?impact\s+(?:of\s+)?(?:(?:changing|modifying|removing|deleting)\s+)?{_STRUCTURAL_TARGET}", "impact"),
+    (rf"(?:affect(?:s|ed)?|break(?:s)?|chang(?:e|es|ing)|modif(?:y|ies|ying|ication))\s+(?:of\s+)?{_STRUCTURAL_TARGET}", "impact"),
+    (rf"(?:what|which|who)\s+(?:(?:functions?|methods?|code)\s+)?(?:calls?|invokes?|uses?)\s+{_STRUCTURAL_TARGET}", "callers"),
+    (rf"(?:what|which|who)\s+(?:depends?\s+on|relies?\s+on)\s+{_STRUCTURAL_TARGET}", "callers"),
+    (rf"(?:callers?|upstream|dependencies)\s+(?:of\s+)?{_STRUCTURAL_TARGET}", "callers"),
+    (rf"called\s+by\s+{_STRUCTURAL_TARGET}", "callees"),
+    (rf"(?:what|which)\s+(?:does\s+|(?:functions?|methods?)\s+(?:does\s+)?){_STRUCTURAL_TARGET}\s+(?:call|invoke|use)", "callees"),
+    (rf"(?:callees?|downstream)\s+(?:of\s+)?{_STRUCTURAL_TARGET}", "callees"),
+    (rf"(?:members?|methods?|attributes?)\s+(?:of|in)\s+(?:class\s+)?{_STRUCTURAL_TARGET}", "members"),
+    # Explicit single-target forms also cover generic quoted-symbol questions.
+    (rf"how\s+is\s+{_STRUCTURAL_TARGET}\s+(?:used|called|invoked)", "callers"),
+    (rf"(?:impact|effects?)\s+on\s+{_STRUCTURAL_TARGET}", "impact"),
 ]
 
 
@@ -100,50 +120,40 @@ def _detect_structural_query(
     Args:
         question:        The user's original question (preserving case).
         knowledge_graph: Optional loaded NetworkX graph.  When provided,
-                         the extracted symbol is validated against the graph
-                         to avoid false positives (e.g. treating the common
-                         word "the" as a code symbol).
+                         the extracted symbol must resolve uniquely in the
+                         graph. Missing or ambiguous targets stay unresolved.
 
     Returns:
         (is_structural, target_symbol, query_type)
         where query_type is one of: "callers", "callees", "impact", "members"
+        or (False, "", "") when no single valid target can be extracted.
     """
-    q_lower = question.lower()
+    if not isinstance(question, str) or re.search(r"[\x00-\x1f\x7f]", question):
+        return False, "", ""
 
     for pattern, query_type in _STRUCTURAL_PATTERNS:
         # Match against the ORIGINAL text (case-insensitively) so the captured
         # symbol keeps its casing and no offsets from a lowered copy are used.
-        match = re.search(pattern, question, re.IGNORECASE)
+        match = re.fullmatch(_STRUCTURAL_PREFIX + pattern + r"\s*[?.!]?\s*", question, re.IGNORECASE)
         if match:
-            symbol = match.group(1)
+            symbol = match.group("symbol")
+            if not match.group("quote") and symbol.casefold() in _STRUCTURAL_NON_TARGETS:
+                return False, "", ""
 
             # If a knowledge graph was supplied, verify the symbol
             # actually exists before committing to a structural query.
             if knowledge_graph is not None:
-                if graph_builder.find_node(knowledge_graph, symbol) is None:
-                    continue  # not a real symbol — try next pattern
-
-            return True, symbol, query_type
-
-    # Fallback: check for backtick-quoted symbols with structural keywords
-    structural_keywords = {
-        "depend", "call", "invoke", "use", "impact", "affect",
-        "break", "upstream", "downstream", "caller", "callee",
-    }
-    if any(kw in q_lower for kw in structural_keywords):
-        # Try to find a backtick-quoted symbol
-        backtick_match = re.search(r"`(\w+)`", question)
-        if backtick_match:
-            symbol = backtick_match.group(1)
-
-            if knowledge_graph is not None:
+                if symbol not in knowledge_graph:
+                    matches = [nid for nid, data in knowledge_graph.nodes(data=True)
+                               if data.get("name") == symbol]
+                    if not matches:
+                        matches = [nid for nid in knowledge_graph if symbol in nid]
+                    if len(matches) != 1:
+                        return False, "", ""
                 if graph_builder.find_node(knowledge_graph, symbol) is None:
                     return False, "", ""
 
-            # Default to "callers" for generic structural queries
-            if any(kw in q_lower for kw in ("impact", "affect", "break", "change", "modify")):
-                return True, symbol, "impact"
-            return True, symbol, "callers"
+            return True, symbol, query_type
 
     return False, "", ""
 

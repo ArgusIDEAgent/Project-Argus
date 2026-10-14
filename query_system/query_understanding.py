@@ -27,7 +27,7 @@ _IGNORE = STOP_WORDS | frozenset("logic code workflow feature functionality defi
 _PATTERNS = (
     ("DIRECT_CALLEES", r"\b(?:callees\b|what (?:functions? )?does\b(?:(?!\band\b)[^?,;])*?\bcall\b|which functions (?:are called by|does)\b|calls made by\b)"),
     ("DIRECT_CALLERS", r"\b(?:who calls|what calls|which functions call|callers of\b|(?:show|list|find|what are)\s+(?:(?:me|the|its|their|known|direct|all)\s+)*callers\b|calls to\b|where\b(?:(?!\band\b)[^?,;])*?\bcalled\b)|^(?:its|their) callers\b"),
-    ("FUNCTION_CONTRACT", r"\b(?:contract|signature|parameters|arguments|return (?:type|annotation)|declared async|throws|exceptions)\b"),
+    ("FUNCTION_CONTRACT", r"\b(?:contract|signature|parameters|arguments|return (?:type|annotation)|what does\s+(?:(?!\band\b)[^?,;])+?\s+return\b|declared async|throws|exceptions)\b"),
     ("CHANGE_IMPACT", r"\b(?:impact\b|affected\b|affect\b|break\b|breaks\b|what happens if\b)"),
     ("DEPENDENCY_PATH", r"\b(?:dependency path|call path|path from|dependencies|dependents|depends on|imports|importers)\b"),
     ("MODULE_OVERVIEW", r"\b(?:module overview|overview of|summarize (?:the )?module|list (?:the )?(?:exports|definitions))\b"),
@@ -78,6 +78,12 @@ _TARGET_LIST = re.compile(r"\b(?:who calls|what calls|callers of|callees of|test
 def _discovery_clause(base, masked):
     """A functional description is not a request for an exact symbol named by prose."""
     text = masked.strip()
+    # Architecture/algorithm questions describe functionality, not a canonical
+    # symbol named after an uppercase domain acronym (e.g. CNN). Keep explicit
+    # quoted/qualified code targets on their existing exact-resolution path.
+    if (re.match(r"(?:which|what)\s+(?!does\b|calls\b|happens\b)(?:\w+\s+){0,5}(?:architecture|algorithms?|hyperparameters?)\b", text, re.I)
+            and not (_QUOTES.search(base) or "::" in base or re.search(r"\w\.\w|[a-z][A-Z]", base))):
+        return True
     if not re.match(r"(?:find|locate|show|where (?:is|are)|which part)\b", text, re.I):
         return False
     if re.match(r"(?:find|locate|show)\s+(?:the\s+)?(?:callers|callees|tests?|dependencies|dependents|imports|exports)\b", text, re.I):

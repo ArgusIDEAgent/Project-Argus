@@ -1,0 +1,23 @@
+{
+  "profiles": [
+    {
+      "profile": "extension",
+      "state": "completed",
+      "copied_files": 9,
+      "copied_lines": 1720,
+      "indexing_ms": 16391.949249999925,
+      "python_peak_rss_bytes": 724074496
+    },
+    {
+      "profile": "node",
+      "state": "completed",
+      "copied_files": 16,
+      "copied_lines": 2719,
+      "indexing_ms": 34248.30375000056,
+      "python_peak_rss_bytes": 724074496
+    }
+  ],
+  "default_hybrid_changed": false,
+  "new_dependencies_or_models": false,
+  "user_indexes_modified": false
+}

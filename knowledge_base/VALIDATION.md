@@ -16,7 +16,8 @@ already installed:
 ```
 
 Choose a new/empty output directory outside the repository. The command runs six
-isolated workers, then both complete Python regression suites. It writes JSON,
+isolated workers, then all three complete Python regression suites (knowledge
+base, AI engine and query system). It writes JSON,
 Markdown and diagnostic logs and exits nonzero on failures. Structural-only or
 regression-skipping runs cannot claim a complete passing gate. Model download or
 missing dependencies are failures, not passing empty results.

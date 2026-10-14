@@ -119,6 +119,8 @@ def memory_usage():
 
 
 def run_case(language,extra_files=0,structural_only=False):
+    if language not in ('javascript', 'typescript') or type(extra_files) is not int or not 0 <= extra_files <= 1000:
+        raise ValueError('Expected JavaScript/TypeScript and 0–1000 extra files')
     started = time.perf_counter()
     with tempfile.TemporaryDirectory(prefix='cm-validation-') as temporary:
         root,data = Path(temporary)/'repo',Path(temporary)/'private'
@@ -272,21 +274,25 @@ def exercise_updates(root,store,publish,api,repo_id,language):
 
 def regression_tests(output):
     suites = (('knowledge_base',['discover','-s','knowledge_base','-p','test_*.py','-q']),
-              ('engine',['discover','-s','ai-engine/tests','-p','test_*.py','-q']))
+              ('engine',['discover','-s','ai-engine/tests','-p','test_*.py','-q']),
+              ('query_system',['discover','-s','query_system','-p','test_*.py','-q']))
     results = {}
     with tempfile.TemporaryDirectory(prefix='cm-regressions-') as private:
         for name,args in suites:
             try:
                 process = subprocess.run([sys.executable,'-m','unittest',*args],cwd=Path(__file__).resolve().parents[1],
                     capture_output=True,text=True,timeout=300,
-                    env={**os.environ,'CODEMIND_AUTO_SYNC':'0','CODEMIND_DATA_DIR':private})
-            except subprocess.TimeoutExpired:
-                (output/(name+'-tests.log')).write_text('Regression suite timed out after 300 seconds.\n')
+                    env={**os.environ,'CODEMIND_AUTO_SYNC':'0','CODEMIND_DATA_DIR':private,
+                         'PYTHONPATH':str(Path(__file__).resolve().parents[1]/'ai-engine'),
+                         'LITELLM_LOCAL_MODEL_COST_MAP':'True'})
+            except (subprocess.TimeoutExpired, OSError) as error:
+                message = 'Regression suite timed out after 300 seconds.' if isinstance(error, subprocess.TimeoutExpired) else 'Regression process could not start.'
+                (output/(name+'-tests.log')).write_text(message+'\n')
                 results[name] = {'passed':False,'tests':None,'exit_code':None,'log':name+'-tests.log'}
                 continue
             (output/(name+'-tests.log')).write_text(process.stdout+process.stderr)
             count = re.search(r'Ran (\d+) tests',process.stderr)
-            results[name] = {'passed':process.returncode==0,'tests':int(count[1]) if count else None,
+            results[name] = {'passed':process.returncode==0 and bool(count and int(count[1])>0),'tests':int(count[1]) if count else None,
                              'exit_code':process.returncode,'log':name+'-tests.log'}
     return results
 
@@ -307,8 +313,9 @@ def main():
     output = Path(args.output).expanduser().resolve()
     workspace = Path(__file__).resolve().parents[1]
     if output==workspace or workspace in output.parents: parser.error('Keep validation outputs outside the source repository')
-    if output.exists() and any(output.iterdir()): parser.error('Use a new or empty output directory; existing reports are never overwritten')
-    output.mkdir(parents=True,exist_ok=True,mode=0o700)
+    if output.exists() and (not output.is_dir() or any(output.iterdir())): parser.error('Use a new or empty output directory; existing reports are never overwritten')
+    try: output.mkdir(parents=True,exist_ok=True,mode=0o700)
+    except OSError: parser.error('Cannot create validation output directory')
     if args.worker:
         try: report = run_case(args.worker,sizes[0],args.structural_only)
         except Exception as error:
@@ -327,9 +334,29 @@ def main():
                 folder.mkdir(parents=True,exist_ok=True)
                 (folder/'worker.log').write_text(process.stdout+process.stderr)
                 case = json.loads((folder/'case.json').read_text())
+                if (not isinstance(case, dict) or case.get('language') != language or case.get('extra_files') != size
+                    or case.get('status') not in ('failed', 'partial' if args.structural_only else 'passed')):
+                    raise ValueError('Invalid worker report identity or status')
+                if case['status'] != 'failed' and (not isinstance(case.get('quality'), dict)
+                    or not isinstance(case.get('performance'), dict) or case['quality'].get('passed') is not True):
+                    raise ValueError('Worker did not supply successful measured gates')
+                if 'quality' in case:
+                    quality, performance = case['quality'], case['performance']
+                    if (type(quality['inventory']['expected']) is not int or quality['inventory']['expected'] < 0
+                        or any(not 0 <= quality[name][metric] <= 1 for name in ('symbols', 'relationships') for metric in ('precision', 'recall'))
+                        or not math.isfinite(performance['initial_index_seconds']) or performance['initial_index_seconds'] < 0):
+                        raise ValueError('Invalid worker measurements')
+                    latency = performance['retrieval_ms']['p95']
+                    if latency is not None and (not math.isfinite(latency) or latency < 0): raise ValueError('Invalid retrieval latency')
+                    for key, metric in (('retrieval', 'recall_at_5'), ('citations', 'accuracy')):
+                        if case[key] is not None and case[key][metric] is not None and not 0 <= case[key][metric] <= 1:
+                            raise ValueError('Invalid measured accuracy')
+                if case['status'] == 'passed' and any(not isinstance(case.get(key), dict) or case[key].get('passed') is not True
+                    for key in ('retrieval', 'citations', 'updates')):
+                    raise ValueError('Worker did not pass the complete quality gate')
                 if process.returncode != (1 if case['status']=='failed' else 0):
                     case.update(status='failed',error='Worker did not complete normally')
-            except (subprocess.TimeoutExpired,OSError,ValueError):
+            except (subprocess.TimeoutExpired,OSError,ValueError,KeyError,TypeError):
                 case = {'language':language,'extra_files':size,'status':'failed','error':'Benchmark worker failed or timed out'}
             cases.append(case)
     regressions = {} if args.skip_regressions else regression_tests(output)

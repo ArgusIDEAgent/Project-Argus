@@ -70,7 +70,9 @@ export function renderResponseBody(view: ResponsePresentation, sourceKeys: Recor
         body += '<article><p class="classification">' + e(CLASSES[item.classification] || item.classification) +
           (item.authoritative ? ' — within its recorded static/source scope' : ' — NON-AUTHORITATIVE') + '</p><p class="claim">' + e(item.text) + '</p>';
         if (item.details.length) body += '<pre>' + e(item.details.join('\n')) + '</pre>';
-        if (item.citation_ids.length) body += '<p>Sources: ' + item.citation_ids.map(reference => '<a href="#' + e(idPrefix) + 'source-' + number(reference) + '">[' + number(reference) + ']</a>').join(' ') + '</p>';
+        if (item.citation_ids.length) body += '<p>Sources: ' + item.citation_ids.map(reference => view.sources[reference]
+          ? '<a href="#' + e(idPrefix) + 'source-' + number(reference) + '">[' + number(reference) + ']</a>'
+          : '<span class="unavailable">Source unavailable</span>').join(' ') + '</p>';
         body += list(item.limitations) + '</article>';
       }
     }

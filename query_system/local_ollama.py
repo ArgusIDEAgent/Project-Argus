@@ -43,6 +43,13 @@ class LocalOllama:
         if remaining <= 0:
             raise LocalModelFailure("deadline", "timeout")
         schema = ModelAnswer.model_json_schema()
+        if context.core_ready:
+            # The backend requires exactly one coverage row per original order.
+            # The unconstrained array let the real model repeat order 0 even for
+            # a one-requirement task. Guide cardinality without trusting it:
+            # distinct-order validation remains mandatory after generation.
+            count = len(context.core_ready)
+            schema["properties"]["coverage"].update(minItems=count, maxItems=count, uniqueItems=True)
         if context.sources and context.facts:
             claim = schema["$defs"]["ModelClaim"]["properties"]
             claim["record_ids"]["items"]["enum"] = [source.record_id for source in context.sources]

@@ -180,6 +180,7 @@ export class ServerManager implements vscode.Disposable {
         response.on('end', () => {
           try {
             const result = JSON.parse(Buffer.concat(chunks).toString()) as T & { error?: string };
+            if (result === null || typeof result !== 'object' || Array.isArray(result)) throw new Error('Invalid response envelope');
             if (!response.statusCode || response.statusCode < 200 || response.statusCode >= 300) {
               reject(new Error(result.error ?? `Server returned ${response.statusCode}.`));
               return;

@@ -23,7 +23,7 @@ import uvicorn
 from knowledge_base.identity import repository_id
 from knowledge_base.synchronization import SnapshotStore
 from knowledge_base.vector_store import FaissClient
-from query_system.local_ollama import LocalOllama
+from query_system.local_ollama import LocalModelFailure, LocalOllama
 
 
 def main():
@@ -45,8 +45,15 @@ def main():
     @api.app.get("/test/stabilization/metrics")
     def metrics(): return counts
     token = secrets.token_hex(32); native = LocalOllama.generate
+    # Explicit failure injection belongs only to this disposable test server.
+    # It is never a production setting or real-model quality measurement.
+    fault = os.environ.get("CODEMIND_QUAL_FAULT", "")
+    if fault not in ("", "model_unavailable", "model_timeout", "graph_failure"):
+        raise ValueError("Unknown qualification fault")
     def measured(self, *args):
         counts["model"] += 1
+        if fault == "model_unavailable": raise LocalModelFailure("connection_unavailable", "unavailable")
+        if fault == "model_timeout": raise LocalModelFailure("socket_timeout", "timeout")
         return native(self, *args)  # Actual installed local model, not a producer mock.
     model = TextEmbedding(model_name=config.EMBEDDING_MODEL_NAME, cache_dir=os.environ.get("CODEMIND_QUAL_MODEL_CACHE", str(data / "models")), local_files_only=True, threads=2)
     sock = socket.socket(); sock.bind(("127.0.0.1", 0)); sock.listen(16)
@@ -60,6 +67,13 @@ def main():
             stack.enter_context(patch.object(api, "_SESSION_TOKEN", token))
             stack.enter_context(patch.dict(os.environ, {"CODEMIND_ENABLE_HYBRID": "1"}))
             stack.enter_context(patch.object(LocalOllama, "generate", measured))
+            if fault == "graph_failure":
+                from query_system.graph_engine import GraphQueryEngine
+                native_graph = GraphQueryEngine.execute
+                async def broken_definition(self, request, context):
+                    if request.name == "find_definition": raise RuntimeError("Injected qualification graph failure")
+                    return await native_graph(self, request, context)
+                stack.enter_context(patch.object(GraphQueryEngine, "execute", broken_definition))
             server = uvicorn.Server(uvicorn.Config(api.app, log_level="error", lifespan="off"))
             worker = threading.Thread(target=server.run, kwargs={"sockets": [sock]}, daemon=True); worker.start()
             print(json.dumps({"port": sock.getsockname()[1], "token": token, "repo": repo, "rootPath": str(root)}), flush=True)

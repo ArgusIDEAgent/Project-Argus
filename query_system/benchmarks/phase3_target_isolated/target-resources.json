@@ -1,0 +1,1853 @@
+[
+  {
+    "time_monotonic": 6943.12668775,
+    "processes": [
+      " 1119  11344   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132   8768   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 5337008   0.3 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 185360  68.8 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 27%",
+    "pressure_level_raw": "2",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     5662.\nPages active:                                 137872.\nPages inactive:                               133674.\nPages speculative:                              3269.\nPages throttled:                                   0.\nPages wired down:                             478174.\nPages purgeable:                                2906.\n\"Translation faults\":                      367930086.\nPages copy-on-write:                        36094684.\nPages zero filled:                         176246479.\nPages reactivated:                          22443110.\nPages purged:                                5773356.\nFile-backed pages:                             90183.\nAnonymous pages:                              184632.\nPages stored in compressor:                   473984.\nPages occupied by compressor:                 251216.\nDecompressions:                             24937507.\nCompressions:                               32311321.\nPageins:                                     6459104.\nPageouts:                                      15647.\nSwapins:                                      210184.\nSwapouts:                                     645881.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 6948.174567958,
+    "processes": [
+      " 1119  11344   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132   8848   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 5336992   0.3 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 524256 199.7 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 27%",
+    "pressure_level_raw": "2",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     5762.\nPages active:                                 138113.\nPages inactive:                               134508.\nPages speculative:                              2980.\nPages throttled:                                   0.\nPages wired down:                             468020.\nPages purgeable:                                   2.\n\"Translation faults\":                      368050448.\nPages copy-on-write:                        36099547.\nPages zero filled:                         176312009.\nPages reactivated:                          22505969.\nPages purged:                                5796482.\nFile-backed pages:                             96184.\nAnonymous pages:                              179417.\nPages stored in compressor:                   491948.\nPages occupied by compressor:                 260484.\nDecompressions:                             24965663.\nCompressions:                               32361199.\nPageins:                                     6468608.\nPageouts:                                      15647.\nSwapins:                                      210416.\nSwapouts:                                     645881.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 6953.233018291,
+    "processes": [
+      " 1119  11248   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132   8848   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 5336992   0.3 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 720384 197.5 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 24%",
+    "pressure_level_raw": "2",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                    16403.\nPages active:                                 119483.\nPages inactive:                               117754.\nPages speculative:                               880.\nPages throttled:                                   0.\nPages wired down:                             470877.\nPages purgeable:                                1590.\n\"Translation faults\":                      368214103.\nPages copy-on-write:                        36113401.\nPages zero filled:                         176399664.\nPages reactivated:                          22573248.\nPages purged:                                5808763.\nFile-backed pages:                             90892.\nAnonymous pages:                              147225.\nPages stored in compressor:                   536464.\nPages occupied by compressor:                 284470.\nDecompressions:                             25003743.\nCompressions:                               32459627.\nPageins:                                     6469780.\nPageouts:                                      15648.\nSwapins:                                      210436.\nSwapouts:                                     645881.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 6958.298443708,
+    "processes": [
+      " 1119  11248   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  10880   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 5337552   0.3 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 727184 195.1 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 25%",
+    "pressure_level_raw": "2",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     7222.\nPages active:                                 126435.\nPages inactive:                               125055.\nPages speculative:                               463.\nPages throttled:                                   0.\nPages wired down:                             476346.\nPages purgeable:                                2751.\n\"Translation faults\":                      368280401.\nPages copy-on-write:                        36117245.\nPages zero filled:                         176424495.\nPages reactivated:                          22573249.\nPages purged:                                5812617.\nFile-backed pages:                             83164.\nAnonymous pages:                              168789.\nPages stored in compressor:                   517810.\nPages occupied by compressor:                 274346.\nDecompressions:                             25020748.\nCompressions:                               32459627.\nPageins:                                     6470174.\nPageouts:                                      15648.\nSwapins:                                      210436.\nSwapouts:                                     645881.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 6963.366557666,
+    "processes": [
+      " 1119  14048   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  10400   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 5337056   0.3 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 565184 189.0 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 23%",
+    "pressure_level_raw": "2",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     7319.\nPages active:                                 117042.\nPages inactive:                               116873.\nPages speculative:                              1879.\nPages throttled:                                   0.\nPages wired down:                             471903.\nPages purgeable:                                 130.\n\"Translation faults\":                      368470718.\nPages copy-on-write:                        36130406.\nPages zero filled:                         176506609.\nPages reactivated:                          22631106.\nPages purged:                                5829877.\nFile-backed pages:                             86036.\nAnonymous pages:                              149758.\nPages stored in compressor:                   554891.\nPages occupied by compressor:                 294851.\nDecompressions:                             25056612.\nCompressions:                               32547655.\nPageins:                                     6474929.\nPageouts:                                      15650.\nSwapins:                                      210572.\nSwapouts:                                     645881.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 6968.429866125,
+    "processes": [
+      " 1119  14128   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  10848   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 5337072   0.3 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 623824 187.7 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 25%",
+    "pressure_level_raw": "2",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     5969.\nPages active:                                 127642.\nPages inactive:                               124963.\nPages speculative:                              2160.\nPages throttled:                                   0.\nPages wired down:                             470703.\nPages purgeable:                                1897.\n\"Translation faults\":                      368560395.\nPages copy-on-write:                        36134383.\nPages zero filled:                         176517602.\nPages reactivated:                          22631383.\nPages purged:                                5832470.\nFile-backed pages:                             85561.\nAnonymous pages:                              169204.\nPages stored in compressor:                   516676.\nPages occupied by compressor:                 278430.\nDecompressions:                             25091911.\nCompressions:                               32548319.\nPageins:                                     6475311.\nPageouts:                                      15650.\nSwapins:                                      210602.\nSwapouts:                                     645881.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 6973.48974775,
+    "processes": [
+      " 1119   9696   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132   9984   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 5336896   0.3 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 480064 189.5 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 23%",
+    "pressure_level_raw": "2",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     5191.\nPages active:                                 115230.\nPages inactive:                               111903.\nPages speculative:                              2322.\nPages throttled:                                   0.\nPages wired down:                             484187.\nPages purgeable:                                   0.\n\"Translation faults\":                      368884091.\nPages copy-on-write:                        36149853.\nPages zero filled:                         176630149.\nPages reactivated:                          22789703.\nPages purged:                                5845386.\nFile-backed pages:                             85920.\nAnonymous pages:                              143536.\nPages stored in compressor:                   555353.\nPages occupied by compressor:                 291033.\nDecompressions:                             25205462.\nCompressions:                               32723701.\nPageins:                                     6479050.\nPageouts:                                      15654.\nSwapins:                                      210666.\nSwapouts:                                     645881.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 6978.763858541,
+    "processes": [
+      " 1119  11424   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  13216   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 5337056   0.3 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 505520 194.6 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 24%",
+    "pressure_level_raw": "2",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     6338.\nPages active:                                 122544.\nPages inactive:                               121000.\nPages speculative:                              1342.\nPages throttled:                                   0.\nPages wired down:                             482013.\nPages purgeable:                                   2.\n\"Translation faults\":                      369130281.\nPages copy-on-write:                        36169429.\nPages zero filled:                         176690846.\nPages reactivated:                          22811061.\nPages purged:                                5851193.\nFile-backed pages:                             83178.\nAnonymous pages:                              161708.\nPages stored in compressor:                   529156.\nPages occupied by compressor:                 276630.\nDecompressions:                             25255662.\nCompressions:                               32750002.\nPageins:                                     6483815.\nPageouts:                                      15663.\nSwapins:                                      210734.\nSwapouts:                                     645881.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 6983.824288833,
+    "processes": [
+      " 1119  11424   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  12624   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 5337072   0.3 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 513552 198.0 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 23%",
+    "pressure_level_raw": "2",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     5984.\nPages active:                                 118225.\nPages inactive:                               117394.\nPages speculative:                               624.\nPages throttled:                                   0.\nPages wired down:                             473696.\nPages purgeable:                                1655.\n\"Translation faults\":                      369269656.\nPages copy-on-write:                        36180931.\nPages zero filled:                         176759136.\nPages reactivated:                          22883518.\nPages purged:                                5859119.\nFile-backed pages:                             81331.\nAnonymous pages:                              154912.\nPages stored in compressor:                   562184.\nPages occupied by compressor:                 293944.\nDecompressions:                             25281078.\nCompressions:                               32823737.\nPageins:                                     6484724.\nPageouts:                                      15663.\nSwapins:                                      210746.\nSwapouts:                                     645881.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 6988.885657708,
+    "processes": [
+      " 1119  11408   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  13040   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 5337056   0.3 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 521440 182.8 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 22%",
+    "pressure_level_raw": "2",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     7639.\nPages active:                                 112593.\nPages inactive:                               111843.\nPages speculative:                               549.\nPages throttled:                                   0.\nPages wired down:                             487020.\nPages purgeable:                                 869.\n\"Translation faults\":                      369359231.\nPages copy-on-write:                        36185652.\nPages zero filled:                         176822068.\nPages reactivated:                          22889939.\nPages purged:                                5870063.\nFile-backed pages:                             78381.\nAnonymous pages:                              146604.\nPages stored in compressor:                   547315.\nPages occupied by compressor:                 290223.\nDecompressions:                             25294150.\nCompressions:                               32835049.\nPageins:                                     6486169.\nPageouts:                                      15663.\nSwapins:                                      210774.\nSwapouts:                                     645881.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 6993.9511945,
+    "processes": [
+      " 1119  11408   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  13040   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 5337056   0.3 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 520848 200.0 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 22%",
+    "pressure_level_raw": "2",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     7627.\nPages active:                                 111333.\nPages inactive:                               110796.\nPages speculative:                              1718.\nPages throttled:                                   0.\nPages wired down:                             485635.\nPages purgeable:                                 706.\n\"Translation faults\":                      369487479.\nPages copy-on-write:                        36199675.\nPages zero filled:                         176901070.\nPages reactivated:                          22919757.\nPages purged:                                5895434.\nFile-backed pages:                             81646.\nAnonymous pages:                              142201.\nPages stored in compressor:                   566381.\nPages occupied by compressor:                 292758.\nDecompressions:                             25309945.\nCompressions:                               32885898.\nPageins:                                     6488661.\nPageouts:                                      15663.\nSwapins:                                      210847.\nSwapouts:                                     645881.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 6999.020906083,
+    "processes": [
+      " 1119   9952   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  10544   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 5337072   0.3 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 535328 194.9 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 22%",
+    "pressure_level_raw": "2",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     5350.\nPages active:                                 111336.\nPages inactive:                               108718.\nPages speculative:                              1519.\nPages throttled:                                   0.\nPages wired down:                             486364.\nPages purgeable:                                   0.\n\"Translation faults\":                      369665454.\nPages copy-on-write:                        36205523.\nPages zero filled:                         177028756.\nPages reactivated:                          23011926.\nPages purged:                                5919011.\nFile-backed pages:                             79449.\nAnonymous pages:                              142125.\nPages stored in compressor:                   562778.\nPages occupied by compressor:                 296578.\nDecompressions:                             25371961.\nCompressions:                               32963882.\nPageins:                                     6491728.\nPageouts:                                      15663.\nSwapins:                                      211079.\nSwapouts:                                     645881.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 7004.110880375,
+    "processes": [
+      " 1119  13824   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  10112   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 5337040   0.3 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 521872 198.1 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 21%",
+    "pressure_level_raw": "2",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     5295.\nPages active:                                 108625.\nPages inactive:                               106137.\nPages speculative:                              1264.\nPages throttled:                                   0.\nPages wired down:                             479134.\nPages purgeable:                                 522.\n\"Translation faults\":                      369838832.\nPages copy-on-write:                        36217226.\nPages zero filled:                         177211181.\nPages reactivated:                          23100989.\nPages purged:                                5948637.\nFile-backed pages:                             82135.\nAnonymous pages:                              133891.\nPages stored in compressor:                   588688.\nPages occupied by compressor:                 309412.\nDecompressions:                             25414961.\nCompressions:                               33048813.\nPageins:                                     6495254.\nPageouts:                                      15666.\nSwapins:                                      211175.\nSwapouts:                                     645913.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 7009.183638375,
+    "processes": [
+      " 1119  11440   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  10912   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 5337008   0.3 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 551072 178.6 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 21%",
+    "pressure_level_raw": "2",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     6176.\nPages active:                                 108359.\nPages inactive:                               105323.\nPages speculative:                              2563.\nPages throttled:                                   0.\nPages wired down:                             483645.\nPages purgeable:                                   2.\n\"Translation faults\":                      369937653.\nPages copy-on-write:                        36224461.\nPages zero filled:                         177346235.\nPages reactivated:                          23126287.\nPages purged:                                5960111.\nFile-backed pages:                             84859.\nAnonymous pages:                              131386.\nPages stored in compressor:                   567629.\nPages occupied by compressor:                 303801.\nDecompressions:                             25443699.\nCompressions:                               33063397.\nPageins:                                     6501458.\nPageouts:                                      15683.\nSwapins:                                      211199.\nSwapouts:                                     645913.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 7014.250943625,
+    "processes": [
+      " 1119  10560   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132   9744   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 5337008   0.3 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 510240 199.9 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 21%",
+    "pressure_level_raw": "2",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     6113.\nPages active:                                 108907.\nPages inactive:                               107606.\nPages speculative:                               484.\nPages throttled:                                   0.\nPages wired down:                             478722.\nPages purgeable:                                   2.\n\"Translation faults\":                      370079223.\nPages copy-on-write:                        36236735.\nPages zero filled:                         177494613.\nPages reactivated:                          23170576.\nPages purged:                                5962952.\nFile-backed pages:                             80697.\nAnonymous pages:                              136300.\nPages stored in compressor:                   587183.\nPages occupied by compressor:                 308035.\nDecompressions:                             25475200.\nCompressions:                               33118558.\nPageins:                                     6502179.\nPageouts:                                      15685.\nSwapins:                                      211267.\nSwapouts:                                     645913.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 7019.331726333,
+    "processes": [
+      " 1119  10512   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132   9616   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 5336992   0.3 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 511744 197.6 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 20%",
+    "pressure_level_raw": "2",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     6127.\nPages active:                                 103946.\nPages inactive:                               102347.\nPages speculative:                              1033.\nPages throttled:                                   0.\nPages wired down:                             496385.\nPages purgeable:                                   2.\n\"Translation faults\":                      370185443.\nPages copy-on-write:                        36241246.\nPages zero filled:                         177643601.\nPages reactivated:                          23215803.\nPages purged:                                5966925.\nFile-backed pages:                             75500.\nAnonymous pages:                              131826.\nPages stored in compressor:                   570560.\nPages occupied by compressor:                 300029.\nDecompressions:                             25515051.\nCompressions:                               33148535.\nPageins:                                     6504744.\nPageouts:                                      15758.\nSwapins:                                      211902.\nSwapouts:                                     645913.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 7024.405103875,
+    "processes": [
+      " 1119  10160   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132   8640   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 5336960   0.3 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 554384 192.3 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 22%",
+    "pressure_level_raw": "2",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     8169.\nPages active:                                 110083.\nPages inactive:                               110026.\nPages speculative:                               768.\nPages throttled:                                   0.\nPages wired down:                             481149.\nPages purgeable:                                   8.\n\"Translation faults\":                      370352260.\nPages copy-on-write:                        36254745.\nPages zero filled:                         177814424.\nPages reactivated:                          23270776.\nPages purged:                                5993674.\nFile-backed pages:                             73016.\nAnonymous pages:                              147861.\nPages stored in compressor:                   572615.\nPages occupied by compressor:                 299671.\nDecompressions:                             25549465.\nCompressions:                               33197278.\nPageins:                                     6506858.\nPageouts:                                      15758.\nSwapins:                                      212086.\nSwapouts:                                     646733.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 7029.497328291,
+    "processes": [
+      " 1119  10032   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132   8640   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 5336960   0.3 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 492528 186.2 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 24%",
+    "pressure_level_raw": "2",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     7129.\nPages active:                                 122044.\nPages inactive:                               119125.\nPages speculative:                              2595.\nPages throttled:                                   0.\nPages wired down:                             475491.\nPages purgeable:                                 368.\n\"Translation faults\":                      370534439.\nPages copy-on-write:                        36261602.\nPages zero filled:                         177949245.\nPages reactivated:                          23331594.\nPages purged:                                6000336.\nFile-backed pages:                             84078.\nAnonymous pages:                              159686.\nPages stored in compressor:                   541948.\nPages occupied by compressor:                 283483.\nDecompressions:                             25626762.\nCompressions:                               33255553.\nPageins:                                     6513743.\nPageouts:                                      15758.\nSwapins:                                      212450.\nSwapouts:                                     646733.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 7034.588828208,
+    "processes": [
+      " 1119  10160   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132   8640   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 5336928   0.3 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 466560 181.4 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 21%",
+    "pressure_level_raw": "2",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     6319.\nPages active:                                 103660.\nPages inactive:                               100876.\nPages speculative:                              1625.\nPages throttled:                                   0.\nPages wired down:                             486684.\nPages purgeable:                                   2.\n\"Translation faults\":                      370715913.\nPages copy-on-write:                        36274909.\nPages zero filled:                         178128253.\nPages reactivated:                          23430971.\nPages purged:                                6014252.\nFile-backed pages:                             77738.\nAnonymous pages:                              128423.\nPages stored in compressor:                   588272.\nPages occupied by compressor:                 310703.\nDecompressions:                             25685667.\nCompressions:                               33367074.\nPageins:                                     6517598.\nPageouts:                                      15759.\nSwapins:                                      212849.\nSwapouts:                                     646733.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 7039.711324583,
+    "processes": [
+      " 1119   9600   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132   8752   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 5336960   0.3 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 408784 196.0 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 21%",
+    "pressure_level_raw": "2",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     6187.\nPages active:                                 109369.\nPages inactive:                                97892.\nPages speculative:                             10535.\nPages throttled:                                   0.\nPages wired down:                             482737.\nPages purgeable:                                   2.\n\"Translation faults\":                      370864000.\nPages copy-on-write:                        36280577.\nPages zero filled:                         178281731.\nPages reactivated:                          23490688.\nPages purged:                                6022554.\nFile-backed pages:                             80582.\nAnonymous pages:                              137214.\nPages stored in compressor:                   569088.\nPages occupied by compressor:                 303147.\nDecompressions:                             25748967.\nCompressions:                               33434876.\nPageins:                                     6530540.\nPageouts:                                      15783.\nSwapins:                                      213145.\nSwapouts:                                     648557.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 7044.794229916,
+    "processes": [
+      " 1119   9600   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132   8752   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 5336976   0.3 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 401216 197.8 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 22%",
+    "pressure_level_raw": "2",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     5202.\nPages active:                                 112700.\nPages inactive:                               101887.\nPages speculative:                             10253.\nPages throttled:                                   0.\nPages wired down:                             472863.\nPages purgeable:                                   2.\n\"Translation faults\":                      370985275.\nPages copy-on-write:                        36293060.\nPages zero filled:                         178434646.\nPages reactivated:                          23534812.\nPages purged:                                6041687.\nFile-backed pages:                             81455.\nAnonymous pages:                              143385.\nPages stored in compressor:                   575874.\nPages occupied by compressor:                 306960.\nDecompressions:                             25767263.\nCompressions:                               33464874.\nPageins:                                     6538554.\nPageouts:                                      15785.\nSwapins:                                      213193.\nSwapouts:                                     648557.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 7049.880123375,
+    "processes": [
+      " 1119   9600   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132   8752   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 5336960   0.3 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 509264 195.2 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 22%",
+    "pressure_level_raw": "2",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     7726.\nPages active:                                 112069.\nPages inactive:                               102421.\nPages speculative:                              9692.\nPages throttled:                                   0.\nPages wired down:                             480505.\nPages purgeable:                                   2.\n\"Translation faults\":                      371237087.\nPages copy-on-write:                        36297957.\nPages zero filled:                         178586166.\nPages reactivated:                          23575622.\nPages purged:                                6047029.\nFile-backed pages:                             78465.\nAnonymous pages:                              145717.\nPages stored in compressor:                   556798.\nPages occupied by compressor:                 297454.\nDecompressions:                             25886123.\nCompressions:                               33582416.\nPageins:                                     6540178.\nPageouts:                                      15844.\nSwapins:                                      213217.\nSwapouts:                                     648925.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 7054.959948166,
+    "processes": [
+      " 1119  10416   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132   8752   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 5336928   0.3 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 490816 197.7 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 23%",
+    "pressure_level_raw": "2",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     6870.\nPages active:                                 115074.\nPages inactive:                               111007.\nPages speculative:                              3586.\nPages throttled:                                   0.\nPages wired down:                             477925.\nPages purgeable:                                6535.\n\"Translation faults\":                      371467954.\nPages copy-on-write:                        36311308.\nPages zero filled:                         178675776.\nPages reactivated:                          23689399.\nPages purged:                                6061885.\nFile-backed pages:                             77668.\nAnonymous pages:                              151999.\nPages stored in compressor:                   559619.\nPages occupied by compressor:                 295405.\nDecompressions:                             25975304.\nCompressions:                               33687177.\nPageins:                                     6546805.\nPageouts:                                      15855.\nSwapins:                                      213305.\nSwapouts:                                     648925.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 7060.027576,
+    "processes": [
+      " 1119  11664   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132   8752   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 5336912   0.4 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 504576 195.5 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 21%",
+    "pressure_level_raw": "2",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     5558.\nPages active:                                 106240.\nPages inactive:                               104304.\nPages speculative:                               880.\nPages throttled:                                   0.\nPages wired down:                             503643.\nPages purgeable:                                4636.\n\"Translation faults\":                      371693123.\nPages copy-on-write:                        36315556.\nPages zero filled:                         178793586.\nPages reactivated:                          23808875.\nPages purged:                                6075471.\nFile-backed pages:                             72805.\nAnonymous pages:                              138619.\nPages stored in compressor:                   547585.\nPages occupied by compressor:                 289242.\nDecompressions:                             26063585.\nCompressions:                               33827651.\nPageins:                                     6549556.\nPageouts:                                      15856.\nSwapins:                                      213416.\nSwapouts:                                     670765.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 7065.117971083,
+    "processes": [
+      " 1119  10368   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132   8752   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 5336944   0.3 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 518976 187.4 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 23%",
+    "pressure_level_raw": "2",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     5972.\nPages active:                                 115497.\nPages inactive:                               112984.\nPages speculative:                              1540.\nPages throttled:                                   0.\nPages wired down:                             495163.\nPages purgeable:                                   6.\n\"Translation faults\":                      371823965.\nPages copy-on-write:                        36317178.\nPages zero filled:                         178819421.\nPages reactivated:                          23872783.\nPages purged:                                6090090.\nFile-backed pages:                             77802.\nAnonymous pages:                              152219.\nPages stored in compressor:                   534839.\nPages occupied by compressor:                 278711.\nDecompressions:                             26118043.\nCompressions:                               33874828.\nPageins:                                     6553636.\nPageouts:                                      15856.\nSwapins:                                      213602.\nSwapouts:                                     670765.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 7070.183643208,
+    "processes": [
+      " 1119  11616   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132   8752   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 5336848   0.4 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 498608 196.4 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 23%",
+    "pressure_level_raw": "2",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                    13364.\nPages active:                                 114966.\nPages inactive:                               113819.\nPages speculative:                              1662.\nPages throttled:                                   0.\nPages wired down:                             489393.\nPages purgeable:                                2683.\n\"Translation faults\":                      372050858.\nPages copy-on-write:                        36329602.\nPages zero filled:                         178895132.\nPages reactivated:                          23937035.\nPages purged:                                6094816.\nFile-backed pages:                             77649.\nAnonymous pages:                              152798.\nPages stored in compressor:                   537099.\nPages occupied by compressor:                 276663.\nDecompressions:                             26203252.\nCompressions:                               33992526.\nPageins:                                     6555799.\nPageouts:                                      15872.\nSwapins:                                      213694.\nSwapouts:                                     670765.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 7075.271293833,
+    "processes": [
+      " 1119  11616   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132   9824   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 5336880   0.3 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 525936 197.6 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 22%",
+    "pressure_level_raw": "2",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     6829.\nPages active:                                 109513.\nPages inactive:                               108606.\nPages speculative:                               703.\nPages throttled:                                   0.\nPages wired down:                             505908.\nPages purgeable:                                   2.\n\"Translation faults\":                      372137109.\nPages copy-on-write:                        36334610.\nPages zero filled:                         178917674.\nPages reactivated:                          23958177.\nPages purged:                                6102610.\nFile-backed pages:                             77283.\nAnonymous pages:                              141539.\nPages stored in compressor:                   534539.\nPages occupied by compressor:                 278308.\nDecompressions:                             26230403.\nCompressions:                               34021019.\nPageins:                                     6556991.\nPageouts:                                      15872.\nSwapins:                                      213714.\nSwapouts:                                     670765.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 7080.348381958,
+    "processes": [
+      " 1119  11616   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  10768   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 5336992   0.3 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 518240 196.7 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 23%",
+    "pressure_level_raw": "2",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                    28174.\nPages active:                                 107659.\nPages inactive:                               105848.\nPages speculative:                              1254.\nPages throttled:                                   0.\nPages wired down:                             486470.\nPages purgeable:                                  10.\n\"Translation faults\":                      372273588.\nPages copy-on-write:                        36347845.\nPages zero filled:                         178964126.\nPages reactivated:                          23971896.\nPages purged:                                6118957.\nFile-backed pages:                             78529.\nAnonymous pages:                              136232.\nPages stored in compressor:                   539223.\nPages occupied by compressor:                 280462.\nDecompressions:                             26252750.\nCompressions:                               34060575.\nPageins:                                     6558375.\nPageouts:                                      15872.\nSwapins:                                      213775.\nSwapouts:                                     670765.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 7085.4159355,
+    "processes": [
+      " 1119  11616   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  10816   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 5337008   0.4 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 542576 199.7 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 25%",
+    "pressure_level_raw": "2",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     6533.\nPages active:                                 128204.\nPages inactive:                               126343.\nPages speculative:                              1040.\nPages throttled:                                   0.\nPages wired down:                             485628.\nPages purgeable:                                   2.\n\"Translation faults\":                      372379784.\nPages copy-on-write:                        36353832.\nPages zero filled:                         178982205.\nPages reactivated:                          23972965.\nPages purged:                                6122938.\nFile-backed pages:                             79956.\nAnonymous pages:                              175631.\nPages stored in compressor:                   506545.\nPages occupied by compressor:                 262119.\nDecompressions:                             26290687.\nCompressions:                               34064873.\nPageins:                                     6561522.\nPageouts:                                      15872.\nSwapins:                                      214437.\nSwapouts:                                     670765.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 7090.498098708,
+    "processes": [
+      " 1119  11616   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  10816   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 5243648   0.1 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 526992 180.0 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 57%",
+    "pressure_level_raw": "1",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     7592.\nPages active:                                 286000.\nPages inactive:                               285478.\nPages speculative:                               483.\nPages throttled:                                   0.\nPages wired down:                             147300.\nPages purgeable:                                  26.\n\"Translation faults\":                      372527702.\nPages copy-on-write:                        36366383.\nPages zero filled:                         179028207.\nPages reactivated:                          24028055.\nPages purged:                                6122988.\nFile-backed pages:                             80546.\nAnonymous pages:                              491415.\nPages stored in compressor:                   543297.\nPages occupied by compressor:                 283014.\nDecompressions:                             26323895.\nCompressions:                               34155271.\nPageins:                                     6562208.\nPageouts:                                      15872.\nSwapins:                                      214534.\nSwapouts:                                     670765.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 7095.573192083,
+    "processes": [
+      " 1119  11616   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  18464   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 5238112   0.1 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 579456 168.1 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 58%",
+    "pressure_level_raw": "1",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     6511.\nPages active:                                 291634.\nPages inactive:                               290510.\nPages speculative:                              1153.\nPages throttled:                                   0.\nPages wired down:                             139821.\nPages purgeable:                                4158.\n\"Translation faults\":                      372603253.\nPages copy-on-write:                        36372626.\nPages zero filled:                         179041713.\nPages reactivated:                          24028411.\nPages purged:                                6122998.\nFile-backed pages:                             82485.\nAnonymous pages:                              500812.\nPages stored in compressor:                   528210.\nPages occupied by compressor:                 280238.\nDecompressions:                             26339643.\nCompressions:                               34161343.\nPageins:                                     6563880.\nPageouts:                                      15872.\nSwapins:                                      214558.\nSwapouts:                                     670765.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 7100.639097333,
+    "processes": [
+      " 1119  11616   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  18464   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 4350064   0.1 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 743184 169.2 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 56%",
+    "pressure_level_raw": "1",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     6838.\nPages active:                                 283144.\nPages inactive:                               281479.\nPages speculative:                              1354.\nPages throttled:                                   0.\nPages wired down:                             146000.\nPages purgeable:                                1936.\n\"Translation faults\":                      372748350.\nPages copy-on-write:                        36388185.\nPages zero filled:                         179088029.\nPages reactivated:                          24034044.\nPages purged:                                6123081.\nFile-backed pages:                             84582.\nAnonymous pages:                              481395.\nPages stored in compressor:                   535361.\nPages occupied by compressor:                 291052.\nDecompressions:                             26360789.\nCompressions:                               34230723.\nPageins:                                     6565832.\nPageouts:                                      15872.\nSwapins:                                      214786.\nSwapouts:                                     670765.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 7105.718083708,
+    "processes": [
+      " 1119  12448   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  18480   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 4350064   0.1 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 769904 199.6 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 57%",
+    "pressure_level_raw": "1",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     7619.\nPages active:                                 285850.\nPages inactive:                               282438.\nPages speculative:                              2605.\nPages throttled:                                   0.\nPages wired down:                             146004.\nPages purgeable:                               13568.\n\"Translation faults\":                      372813850.\nPages copy-on-write:                        36391944.\nPages zero filled:                         179113270.\nPages reactivated:                          24034048.\nPages purged:                                6123081.\nFile-backed pages:                             85422.\nAnonymous pages:                              485471.\nPages stored in compressor:                   520307.\nPages occupied by compressor:                 285351.\nDecompressions:                             26378387.\nCompressions:                               34230723.\nPageins:                                     6567263.\nPageouts:                                      15872.\nSwapins:                                      214818.\nSwapouts:                                     670765.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 7110.789587458,
+    "processes": [
+      " 1119  12128   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  13696   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 2401376   0.1 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 666560 187.8 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 44%",
+    "pressure_level_raw": "1",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     7286.\nPages active:                                 221249.\nPages inactive:                               219950.\nPages speculative:                              1266.\nPages throttled:                                   0.\nPages wired down:                             139851.\nPages purgeable:                               13276.\n\"Translation faults\":                      372925427.\nPages copy-on-write:                        36404947.\nPages zero filled:                         179155770.\nPages reactivated:                          24066736.\nPages purged:                                6123738.\nFile-backed pages:                             82251.\nAnonymous pages:                              360214.\nPages stored in compressor:                   670163.\nPages occupied by compressor:                 420265.\nDecompressions:                             26382043.\nCompressions:                               34392946.\nPageins:                                     6567911.\nPageouts:                                      15880.\nSwapins:                                      214846.\nSwapouts:                                     670765.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 7115.868929125,
+    "processes": [
+      " 1119  12688   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  13696   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 2401376   0.1 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 683568 196.9 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 44%",
+    "pressure_level_raw": "1",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                    23902.\nPages active:                                 215512.\nPages inactive:                               214556.\nPages speculative:                              1073.\nPages throttled:                                   0.\nPages wired down:                             139785.\nPages purgeable:                               12791.\n\"Translation faults\":                      373000995.\nPages copy-on-write:                        36410401.\nPages zero filled:                         179166709.\nPages reactivated:                          24070637.\nPages purged:                                6123742.\nFile-backed pages:                             85227.\nAnonymous pages:                              345914.\nPages stored in compressor:                   654721.\nPages occupied by compressor:                 415039.\nDecompressions:                             26401788.\nCompressions:                               34398475.\nPageins:                                     6569442.\nPageouts:                                      15883.\nSwapins:                                      214866.\nSwapouts:                                     670765.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 7120.935052583,
+    "processes": [
+      " 1119  11760   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  13536   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 786864   0.1 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 611232 169.4 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 34%",
+    "pressure_level_raw": "2",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     6312.\nPages active:                                 172443.\nPages inactive:                               167220.\nPages speculative:                              4659.\nPages throttled:                                   0.\nPages wired down:                             147276.\nPages purgeable:                                   2.\n\"Translation faults\":                      373152496.\nPages copy-on-write:                        36424359.\nPages zero filled:                         179212466.\nPages reactivated:                          24087320.\nPages purged:                                6133483.\nFile-backed pages:                             90743.\nAnonymous pages:                              253579.\nPages stored in compressor:                   754636.\nPages occupied by compressor:                 511957.\nDecompressions:                             26425947.\nCompressions:                               34530333.\nPageins:                                     6575795.\nPageouts:                                      15883.\nSwapins:                                      215261.\nSwapouts:                                     670765.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 7126.022950291,
+    "processes": [
+      " 1119  11760   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  13536   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 786864   0.1 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 636256 181.8 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 35%",
+    "pressure_level_raw": "2",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                    23938.\nPages active:                                 169849.\nPages inactive:                               165174.\nPages speculative:                              4578.\nPages throttled:                                   0.\nPages wired down:                             147036.\nPages purgeable:                                 859.\n\"Translation faults\":                      373234328.\nPages copy-on-write:                        36429422.\nPages zero filled:                         179227770.\nPages reactivated:                          24087422.\nPages purged:                                6133501.\nFile-backed pages:                             93547.\nAnonymous pages:                              246054.\nPages stored in compressor:                   734008.\nPages occupied by compressor:                 499292.\nDecompressions:                             26442583.\nCompressions:                               34533524.\nPageins:                                     6577040.\nPageouts:                                      15883.\nSwapins:                                      215665.\nSwapouts:                                     670765.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 7131.089666291,
+    "processes": [
+      " 1119  11760   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  13536   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 786864   0.1 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 620336 198.2 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 35%",
+    "pressure_level_raw": "2",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     7188.\nPages active:                                 178467.\nPages inactive:                               178417.\nPages speculative:                               546.\nPages throttled:                                   0.\nPages wired down:                             145971.\nPages purgeable:                                   2.\n\"Translation faults\":                      373351316.\nPages copy-on-write:                        36443832.\nPages zero filled:                         179276376.\nPages reactivated:                          24093822.\nPages purged:                                6141954.\nFile-backed pages:                             85736.\nAnonymous pages:                              271694.\nPages stored in compressor:                   735213.\nPages occupied by compressor:                 499278.\nDecompressions:                             26451289.\nCompressions:                               34543970.\nPageins:                                     6577870.\nPageouts:                                      15891.\nSwapins:                                      215799.\nSwapouts:                                     670765.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 7136.183643875,
+    "processes": [
+      " 1119  11760   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  13568   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 402944   0.1 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 627664 199.0 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 34%",
+    "pressure_level_raw": "2",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                    20553.\nPages active:                                 164706.\nPages inactive:                               161333.\nPages speculative:                              2242.\nPages throttled:                                   0.\nPages wired down:                             145863.\nPages purgeable:                               12235.\n\"Translation faults\":                      373402176.\nPages copy-on-write:                        36446361.\nPages zero filled:                         179304839.\nPages reactivated:                          24095323.\nPages purged:                                6141990.\nFile-backed pages:                             93736.\nAnonymous pages:                              234545.\nPages stored in compressor:                   746517.\nPages occupied by compressor:                 515170.\nDecompressions:                             26459075.\nCompressions:                               34575539.\nPageins:                                     6580442.\nPageouts:                                      15891.\nSwapins:                                      216032.\nSwapouts:                                     680189.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 7141.251028625,
+    "processes": [
+      " 1119  11760   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  13568   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419 270320   0.1 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 602704 193.8 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 33%",
+    "pressure_level_raw": "2",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     6224.\nPages active:                                 168534.\nPages inactive:                               163457.\nPages speculative:                              3346.\nPages throttled:                                   0.\nPages wired down:                             162009.\nPages purgeable:                                  34.\n\"Translation faults\":                      373522921.\nPages copy-on-write:                        36461146.\nPages zero filled:                         179355603.\nPages reactivated:                          24099174.\nPages purged:                                6154460.\nFile-backed pages:                             95016.\nAnonymous pages:                              240321.\nPages stored in compressor:                   710133.\nPages occupied by compressor:                 506296.\nDecompressions:                             26471882.\nCompressions:                               34585407.\nPageins:                                     6587312.\nPageouts:                                      15891.\nSwapins:                                      216186.\nSwapouts:                                     692041.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 7146.370906208,
+    "processes": [
+      " 1119  11760   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  13872   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419  36208   0.1 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 672352 189.5 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 34%",
+    "pressure_level_raw": "2",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                    35809.\nPages active:                                 158579.\nPages inactive:                               157550.\nPages speculative:                               858.\nPages throttled:                                   0.\nPages wired down:                             153200.\nPages purgeable:                                  34.\n\"Translation faults\":                      373720494.\nPages copy-on-write:                        36466520.\nPages zero filled:                         179398356.\nPages reactivated:                          24114986.\nPages purged:                                6172239.\nFile-backed pages:                             90749.\nAnonymous pages:                              226238.\nPages stored in compressor:                   685905.\nPages occupied by compressor:                 503871.\nDecompressions:                             26543261.\nCompressions:                               34656499.\nPageins:                                     6588023.\nPageouts:                                      15897.\nSwapins:                                      216313.\nSwapouts:                                     704213.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 7151.429129291,
+    "processes": [
+      " 1119  11760   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  13872   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419  36208   0.1 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 603904 198.6 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 34%",
+    "pressure_level_raw": "2",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     6691.\nPages active:                                 174373.\nPages inactive:                               169066.\nPages speculative:                              4626.\nPages throttled:                                   0.\nPages wired down:                             152480.\nPages purgeable:                                  42.\n\"Translation faults\":                      373874313.\nPages copy-on-write:                        36478506.\nPages zero filled:                         179432687.\nPages reactivated:                          24115047.\nPages purged:                                6173643.\nFile-backed pages:                            100590.\nAnonymous pages:                              247475.\nPages stored in compressor:                   683128.\nPages occupied by compressor:                 502631.\nDecompressions:                             26573188.\nCompressions:                               34680935.\nPageins:                                     6595604.\nPageouts:                                      15897.\nSwapins:                                      217723.\nSwapouts:                                     704213.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 7156.51580425,
+    "processes": [
+      " 1119  11888   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  13744   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419  11840   0.1 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 642368 199.6 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 34%",
+    "pressure_level_raw": "2",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                    37191.\nPages active:                                 157687.\nPages inactive:                               151956.\nPages speculative:                              4828.\nPages throttled:                                   0.\nPages wired down:                             150362.\nPages purgeable:                                 765.\n\"Translation faults\":                      373941202.\nPages copy-on-write:                        36482799.\nPages zero filled:                         179458691.\nPages reactivated:                          24128228.\nPages purged:                                6176190.\nFile-backed pages:                            101062.\nAnonymous pages:                              213409.\nPages stored in compressor:                   699333.\nPages occupied by compressor:                 507843.\nDecompressions:                             26576791.\nCompressions:                               34703711.\nPageins:                                     6596071.\nPageouts:                                      15897.\nSwapins:                                      217881.\nSwapouts:                                     704213.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 7161.580769708,
+    "processes": [
+      " 1119  11888   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  13744   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419  11840   0.1 /Applications/Ollama.app/Contents/Resources/llama-server",
+      "89029 633712 197.7 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 35%",
+    "pressure_level_raw": "2",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                    29164.\nPages active:                                 165695.\nPages inactive:                               159294.\nPages speculative:                              5548.\nPages throttled:                                   0.\nPages wired down:                             146116.\nPages purgeable:                                4069.\n\"Translation faults\":                      374023688.\nPages copy-on-write:                        36492473.\nPages zero filled:                         179473535.\nPages reactivated:                          24128230.\nPages purged:                                6176201.\nFile-backed pages:                            103265.\nAnonymous pages:                              227272.\nPages stored in compressor:                   691608.\nPages occupied by compressor:                 504050.\nDecompressions:                             26583832.\nCompressions:                               34703711.\nPageins:                                     6597290.\nPageouts:                                      15897.\nSwapins:                                      218019.\nSwapouts:                                     704213.\n",
+    "ollama": {
+      "models": [
+        {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "size": 5561647103,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0"
+          },
+          "expires_at": "2026-10-14T21:31:12.067525+05:30",
+          "size_vram": 5561647103,
+          "context_length": 8192,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  {
+    "time_monotonic": 7166.659117583,
+    "processes": [
+      " 1119  12688   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  14000   0.1 /Applications/Ollama.app/Contents/Resources/ollama",
+      "82419      0   0.0 (llama-server)",
+      "89029 650608 196.6 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 53%",
+    "pressure_level_raw": "1",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                   247377.\nPages active:                                 157014.\nPages inactive:                               155394.\nPages speculative:                               909.\nPages throttled:                                   0.\nPages wired down:                             150273.\nPages purgeable:                               13815.\n\"Translation faults\":                      374132341.\nPages copy-on-write:                        36502818.\nPages zero filled:                         179538948.\nPages reactivated:                          24149005.\nPages purged:                                6180435.\nFile-backed pages:                             97861.\nAnonymous pages:                              215456.\nPages stored in compressor:                   480334.\nPages occupied by compressor:                 298900.\nDecompressions:                             26590552.\nCompressions:                               34727144.\nPageins:                                     6597952.\nPageouts:                                      15897.\nSwapins:                                      218229.\nSwapouts:                                     714897.\n",
+    "ollama": {
+      "models": []
+    }
+  },
+  {
+    "time_monotonic": 7171.914165,
+    "processes": [
+      " 1119  18096   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  14336   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "89029 699424 185.1 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 70%",
+    "pressure_level_raw": "1",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                   380423.\nPages active:                                 168934.\nPages inactive:                               167117.\nPages speculative:                              1544.\nPages throttled:                                   0.\nPages wired down:                             149554.\nPages purgeable:                               22011.\n\"Translation faults\":                      374194726.\nPages copy-on-write:                        36508165.\nPages zero filled:                         179568218.\nPages reactivated:                          24149007.\nPages purged:                                6180435.\nFile-backed pages:                             99413.\nAnonymous pages:                              238182.\nPages stored in compressor:                   315321.\nPages occupied by compressor:                 142295.\nDecompressions:                             26597338.\nCompressions:                               34727144.\nPageins:                                     6598825.\nPageouts:                                      15897.\nSwapins:                                      218293.\nSwapouts:                                     714897.\n",
+    "ollama": {
+      "models": []
+    }
+  },
+  {
+    "time_monotonic": 7176.976214916,
+    "processes": [
+      " 1119  18144   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  14336   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "89029 727280 198.7 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 71%",
+    "pressure_level_raw": "1",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                   374644.\nPages active:                                 175750.\nPages inactive:                               173726.\nPages speculative:                              1935.\nPages throttled:                                   0.\nPages wired down:                             142552.\nPages purgeable:                               23867.\n\"Translation faults\":                      374309257.\nPages copy-on-write:                        36521236.\nPages zero filled:                         179611748.\nPages reactivated:                          24149009.\nPages purged:                                6180435.\nFile-backed pages:                            100154.\nAnonymous pages:                              251257.\nPages stored in compressor:                   311115.\nPages occupied by compressor:                 141257.\nDecompressions:                             26602176.\nCompressions:                               34727144.\nPageins:                                     6599452.\nPageouts:                                      15897.\nSwapins:                                      218579.\nSwapouts:                                     714897.\n",
+    "ollama": {
+      "models": []
+    }
+  },
+  {
+    "time_monotonic": 7182.039688458,
+    "processes": [
+      " 1119  18144   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  14336   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "89029 761072 200.0 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 71%",
+    "pressure_level_raw": "1",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                   360440.\nPages active:                                 184454.\nPages inactive:                               181378.\nPages speculative:                              2738.\nPages throttled:                                   0.\nPages wired down:                             142522.\nPages purgeable:                               23308.\n\"Translation faults\":                      374380332.\nPages copy-on-write:                        36526756.\nPages zero filled:                         179622638.\nPages reactivated:                          24149074.\nPages purged:                                6180759.\nFile-backed pages:                            101804.\nAnonymous pages:                              266766.\nPages stored in compressor:                   301664.\nPages occupied by compressor:                 138335.\nDecompressions:                             26614580.\nCompressions:                               34727144.\nPageins:                                     6600608.\nPageouts:                                      15897.\nSwapins:                                      219651.\nSwapouts:                                     714897.\n",
+    "ollama": {
+      "models": []
+    }
+  },
+  {
+    "time_monotonic": 7187.109752041,
+    "processes": [
+      " 1119  18144   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  14336   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "89029 876576 193.1 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 71%",
+    "pressure_level_raw": "1",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                   353257.\nPages active:                                 185896.\nPages inactive:                               182300.\nPages speculative:                              2788.\nPages throttled:                                   0.\nPages wired down:                             149663.\nPages purgeable:                               20959.\n\"Translation faults\":                      374497922.\nPages copy-on-write:                        36542360.\nPages zero filled:                         179667333.\nPages reactivated:                          24149075.\nPages purged:                                6180759.\nFile-backed pages:                            102112.\nAnonymous pages:                              268872.\nPages stored in compressor:                   296761.\nPages occupied by compressor:                 135963.\nDecompressions:                             26619651.\nCompressions:                               34727144.\nPageins:                                     6600910.\nPageouts:                                      15897.\nSwapins:                                      219691.\nSwapouts:                                     714897.\n",
+    "ollama": {
+      "models": []
+    }
+  },
+  {
+    "time_monotonic": 7192.177481416,
+    "processes": [
+      " 1119  18144   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  14336   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "89029 906784 200.5 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 71%",
+    "pressure_level_raw": "1",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                   347778.\nPages active:                                 190582.\nPages inactive:                               186632.\nPages speculative:                              2797.\nPages throttled:                                   0.\nPages wired down:                             148631.\nPages purgeable:                               20959.\n\"Translation faults\":                      374554512.\nPages copy-on-write:                        36548578.\nPages zero filled:                         179675009.\nPages reactivated:                          24149075.\nPages purged:                                6180759.\nFile-backed pages:                            102201.\nAnonymous pages:                              277810.\nPages stored in compressor:                   290863.\nPages occupied by compressor:                 133447.\nDecompressions:                             26625657.\nCompressions:                               34727144.\nPageins:                                     6600947.\nPageouts:                                      15897.\nSwapins:                                      219719.\nSwapouts:                                     714897.\n",
+    "ollama": {
+      "models": []
+    }
+  },
+  {
+    "time_monotonic": 7197.244748458,
+    "processes": [
+      " 1119  18144   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  14736   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "89029 936400 198.5 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 71%",
+    "pressure_level_raw": "1",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                   304375.\nPages active:                                 212776.\nPages inactive:                               208740.\nPages speculative:                              2947.\nPages throttled:                                   0.\nPages wired down:                             148673.\nPages purgeable:                               25699.\n\"Translation faults\":                      374660475.\nPages copy-on-write:                        36560842.\nPages zero filled:                         179725667.\nPages reactivated:                          24149075.\nPages purged:                                6180765.\nFile-backed pages:                            103543.\nAnonymous pages:                              320920.\nPages stored in compressor:                   287703.\nPages occupied by compressor:                 132356.\nDecompressions:                             26629111.\nCompressions:                               34727144.\nPageins:                                     6601322.\nPageouts:                                      15897.\nSwapins:                                      219735.\nSwapouts:                                     714897.\n",
+    "ollama": {
+      "models": []
+    }
+  },
+  {
+    "time_monotonic": 7202.311628208,
+    "processes": [
+      " 1119  18144   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  14736   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "89029 972672 199.3 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 71%",
+    "pressure_level_raw": "1",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                   337601.\nPages active:                                 195070.\nPages inactive:                               191764.\nPages speculative:                              2954.\nPages throttled:                                   0.\nPages wired down:                             150686.\nPages purgeable:                               22922.\n\"Translation faults\":                      374708984.\nPages copy-on-write:                        36566439.\nPages zero filled:                         179732955.\nPages reactivated:                          24149075.\nPages purged:                                6180765.\nFile-backed pages:                            102655.\nAnonymous pages:                              287133.\nPages stored in compressor:                   286600.\nPages occupied by compressor:                 131792.\nDecompressions:                             26630311.\nCompressions:                               34727144.\nPageins:                                     6601363.\nPageouts:                                      15897.\nSwapins:                                      219775.\nSwapouts:                                     714897.\n",
+    "ollama": {
+      "models": []
+    }
+  },
+  {
+    "time_monotonic": 7207.378215833,
+    "processes": [
+      " 1119  18144   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  14736   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "89029 886128 199.0 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 72%",
+    "pressure_level_raw": "1",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                   301016.\nPages active:                                 217111.\nPages inactive:                               212792.\nPages speculative:                              3274.\nPages throttled:                                   0.\nPages wired down:                             148685.\nPages purgeable:                               22553.\n\"Translation faults\":                      374848916.\nPages copy-on-write:                        36581399.\nPages zero filled:                         179780451.\nPages reactivated:                          24149075.\nPages purged:                                6181133.\nFile-backed pages:                            105005.\nAnonymous pages:                              328172.\nPages stored in compressor:                   277043.\nPages occupied by compressor:                 126989.\nDecompressions:                             26640870.\nCompressions:                               34727144.\nPageins:                                     6602839.\nPageouts:                                      15897.\nSwapins:                                      220247.\nSwapouts:                                     714897.\n",
+    "ollama": {
+      "models": []
+    }
+  },
+  {
+    "time_monotonic": 7212.456737125,
+    "processes": [
+      " 1119  18144   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  14736   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "89029 924576 100.1 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 72%",
+    "pressure_level_raw": "1",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                   328123.\nPages active:                                 205440.\nPages inactive:                               200803.\nPages speculative:                              3529.\nPages throttled:                                   0.\nPages wired down:                             148592.\nPages purgeable:                               22561.\n\"Translation faults\":                      374893621.\nPages copy-on-write:                        36584042.\nPages zero filled:                         179789997.\nPages reactivated:                          24149124.\nPages purged:                                6181150.\nFile-backed pages:                            105398.\nAnonymous pages:                              304374.\nPages stored in compressor:                   270883.\nPages occupied by compressor:                 123380.\nDecompressions:                             26647328.\nCompressions:                               34727144.\nPageins:                                     6603621.\nPageouts:                                      15897.\nSwapins:                                      220374.\nSwapouts:                                     714897.\n",
+    "ollama": {
+      "models": []
+    }
+  },
+  {
+    "time_monotonic": 7217.506458708,
+    "processes": [
+      " 1119  18240   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  19008   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "89029 682896  70.6 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 72%",
+    "pressure_level_raw": "1",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                   310405.\nPages active:                                 214198.\nPages inactive:                               209887.\nPages speculative:                              3596.\nPages throttled:                                   0.\nPages wired down:                             148658.\nPages purgeable:                               22571.\n\"Translation faults\":                      375039440.\nPages copy-on-write:                        36603355.\nPages zero filled:                         179832732.\nPages reactivated:                          24149124.\nPages purged:                                6181150.\nFile-backed pages:                            106608.\nAnonymous pages:                              321073.\nPages stored in compressor:                   270064.\nPages occupied by compressor:                 123123.\nDecompressions:                             26648420.\nCompressions:                               34727144.\nPageins:                                     6604266.\nPageouts:                                      15897.\nSwapins:                                      220398.\nSwapouts:                                     714897.\n",
+    "ollama": {
+      "models": []
+    }
+  },
+  {
+    "time_monotonic": 7222.55324025,
+    "processes": [
+      " 1119  18240   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  19008   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "89029 683968  70.7 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 72%",
+    "pressure_level_raw": "1",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                   341620.\nPages active:                                 198320.\nPages inactive:                               194634.\nPages speculative:                              3620.\nPages throttled:                                   0.\nPages wired down:                             148603.\nPages purgeable:                               22571.\n\"Translation faults\":                      375328074.\nPages copy-on-write:                        36641563.\nPages zero filled:                         179852854.\nPages reactivated:                          24149124.\nPages purged:                                6181150.\nFile-backed pages:                            105727.\nAnonymous pages:                              290847.\nPages stored in compressor:                   269918.\nPages occupied by compressor:                 123070.\nDecompressions:                             26649233.\nCompressions:                               34727144.\nPageins:                                     6605384.\nPageouts:                                      15897.\nSwapins:                                      220430.\nSwapouts:                                     714897.\n",
+    "ollama": {
+      "models": []
+    }
+  },
+  {
+    "time_monotonic": 7227.617021,
+    "processes": [
+      " 1119  18240   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  19008   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "89029 684032  54.0 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 73%",
+    "pressure_level_raw": "1",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                   306785.\nPages active:                                 219337.\nPages inactive:                               214763.\nPages speculative:                              3627.\nPages throttled:                                   0.\nPages wired down:                             142594.\nPages purgeable:                               26641.\n\"Translation faults\":                      375689138.\nPages copy-on-write:                        36690130.\nPages zero filled:                         179910305.\nPages reactivated:                          24149124.\nPages purged:                                6181152.\nFile-backed pages:                            106833.\nAnonymous pages:                              330894.\nPages stored in compressor:                   269254.\nPages occupied by compressor:                 122761.\nDecompressions:                             26650571.\nCompressions:                               34727144.\nPageins:                                     6606736.\nPageouts:                                      15897.\nSwapins:                                      220438.\nSwapouts:                                     714897.\n",
+    "ollama": {
+      "models": []
+    }
+  },
+  {
+    "time_monotonic": 7232.663709958,
+    "processes": [
+      " 1119  18240   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  19008   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "89029 684800  88.8 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 74%",
+    "pressure_level_raw": "1",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                   297747.\nPages active:                                 229946.\nPages inactive:                               224872.\nPages speculative:                              4068.\nPages throttled:                                   0.\nPages wired down:                             148235.\nPages purgeable:                               24116.\n\"Translation faults\":                      376127474.\nPages copy-on-write:                        36738501.\nPages zero filled:                         179948176.\nPages reactivated:                          24149126.\nPages purged:                                6181152.\nFile-backed pages:                            106789.\nAnonymous pages:                              352097.\nPages stored in compressor:                   226507.\nPages occupied by compressor:                 104998.\nDecompressions:                             26706338.\nCompressions:                               34727144.\nPageins:                                     6608678.\nPageouts:                                      15897.\nSwapins:                                      228081.\nSwapouts:                                     714897.\n",
+    "ollama": {
+      "models": []
+    }
+  },
+  {
+    "time_monotonic": 7237.73598575,
+    "processes": [
+      " 1119  18240   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  19008   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "89029 685024  85.2 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 74%",
+    "pressure_level_raw": "1",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                   249943.\nPages active:                                 252255.\nPages inactive:                               248092.\nPages speculative:                              5787.\nPages throttled:                                   0.\nPages wired down:                             149249.\nPages purgeable:                               26956.\n\"Translation faults\":                      376499255.\nPages copy-on-write:                        36787521.\nPages zero filled:                         180044156.\nPages reactivated:                          24149128.\nPages purged:                                6181152.\nFile-backed pages:                            114631.\nAnonymous pages:                              391503.\nPages stored in compressor:                   226300.\nPages occupied by compressor:                 104541.\nDecompressions:                             26713098.\nCompressions:                               34727144.\nPageins:                                     6616792.\nPageouts:                                      15897.\nSwapins:                                      232015.\nSwapouts:                                     714897.\n",
+    "ollama": {
+      "models": []
+    }
+  },
+  {
+    "time_monotonic": 7242.784755041,
+    "processes": [
+      " 1119  18912   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  19008   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "89029 777328 103.0 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 74%",
+    "pressure_level_raw": "1",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                   265195.\nPages active:                                 244513.\nPages inactive:                               238660.\nPages speculative:                              6752.\nPages throttled:                                   0.\nPages wired down:                             150561.\nPages purgeable:                               25201.\n\"Translation faults\":                      376619335.\nPages copy-on-write:                        36800229.\nPages zero filled:                         180075711.\nPages reactivated:                          24149183.\nPages purged:                                6181190.\nFile-backed pages:                            121588.\nAnonymous pages:                              368337.\nPages stored in compressor:                   225264.\nPages occupied by compressor:                 104186.\nDecompressions:                             26715383.\nCompressions:                               34727144.\nPageins:                                     6621118.\nPageouts:                                      15897.\nSwapins:                                      232382.\nSwapouts:                                     714897.\n",
+    "ollama": {
+      "models": []
+    }
+  },
+  {
+    "time_monotonic": 7247.832827208,
+    "processes": [
+      " 1119  19024   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  19008   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "89029 783792 100.0 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 74%",
+    "pressure_level_raw": "1",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                   231644.\nPages active:                                 263613.\nPages inactive:                               255387.\nPages speculative:                              7022.\nPages throttled:                                   0.\nPages wired down:                             148224.\nPages purgeable:                               26264.\n\"Translation faults\":                      376727121.\nPages copy-on-write:                        36810051.\nPages zero filled:                         180130020.\nPages reactivated:                          24149183.\nPages purged:                                6181190.\nFile-backed pages:                            123942.\nAnonymous pages:                              402080.\nPages stored in compressor:                   224599.\nPages occupied by compressor:                 103977.\nDecompressions:                             26716365.\nCompressions:                               34727144.\nPageins:                                     6621669.\nPageouts:                                      15897.\nSwapins:                                      232485.\nSwapouts:                                     714897.\n",
+    "ollama": {
+      "models": []
+    }
+  },
+  {
+    "time_monotonic": 7252.883926875,
+    "processes": [
+      " 1119  19024   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  19008   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "89029 790080  67.8 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 74%",
+    "pressure_level_raw": "1",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                   258407.\nPages active:                                 248841.\nPages inactive:                               242824.\nPages speculative:                              7038.\nPages throttled:                                   0.\nPages wired down:                             149046.\nPages purgeable:                               26010.\n\"Translation faults\":                      376787729.\nPages copy-on-write:                        36813429.\nPages zero filled:                         180151077.\nPages reactivated:                          24149183.\nPages purged:                                6181422.\nFile-backed pages:                            125280.\nAnonymous pages:                              373423.\nPages stored in compressor:                   223996.\nPages occupied by compressor:                 103711.\nDecompressions:                             26717019.\nCompressions:                               34727144.\nPageins:                                     6621904.\nPageouts:                                      15897.\nSwapins:                                      232497.\nSwapouts:                                     714897.\n",
+    "ollama": {
+      "models": []
+    }
+  },
+  {
+    "time_monotonic": 7257.930372791,
+    "processes": [
+      " 1119  19024   0.0 /Applications/Ollama.app/Contents/MacOS/Ollama",
+      " 1132  19008   0.0 /Applications/Ollama.app/Contents/Resources/ollama",
+      "89029 788064 100.0 /opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "pressure": "The system has 17179869184 (1048576 pages with a page size of 16384).\nSystem-wide memory free percentage: 74%",
+    "pressure_level_raw": "1",
+    "vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                   229472.\nPages active:                                 259826.\nPages inactive:                               254001.\nPages speculative:                              7070.\nPages throttled:                                   0.\nPages wired down:                             156065.\nPages purgeable:                               25976.\n\"Translation faults\":                      376865577.\nPages copy-on-write:                        36823669.\nPages zero filled:                         180196211.\nPages reactivated:                          24149187.\nPages purged:                                6181837.\nFile-backed pages:                            121191.\nAnonymous pages:                              399706.\nPages stored in compressor:                   223599.\nPages occupied by compressor:                 103433.\nDecompressions:                             26717206.\nCompressions:                               34727144.\nPageins:                                     6622145.\nPageouts:                                      15897.\nSwapins:                                      232549.\nSwapouts:                                     714897.\n",
+    "ollama": {
+      "models": []
+    }
+  }
+]

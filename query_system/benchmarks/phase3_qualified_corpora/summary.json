@@ -1,0 +1,47 @@
+{
+  "profiles": [
+    {
+      "profile": "extension",
+      "state": "completed",
+      "copied_files": 9,
+      "copied_lines": 1720,
+      "indexing_ms": 14359.460250000666,
+      "python_peak_rss_bytes": 732577792
+    },
+    {
+      "profile": "react",
+      "state": "completed",
+      "copied_files": 5,
+      "copied_lines": 2142,
+      "indexing_ms": 7322.878541999671,
+      "python_peak_rss_bytes": 1212940288
+    },
+    {
+      "profile": "cnn",
+      "state": "completed",
+      "copied_files": 2,
+      "copied_lines": 448,
+      "indexing_ms": 1474.423999999999,
+      "python_peak_rss_bytes": 1559953408
+    },
+    {
+      "profile": "node",
+      "state": "completed",
+      "copied_files": 16,
+      "copied_lines": 2719,
+      "indexing_ms": 28700.03162500052,
+      "python_peak_rss_bytes": 2064056320
+    },
+    {
+      "profile": "target",
+      "state": "completed",
+      "copied_files": 189,
+      "copied_lines": 36153,
+      "indexing_ms": 300503.7131250001,
+      "python_peak_rss_bytes": 2556575744
+    }
+  ],
+  "default_hybrid_changed": false,
+  "new_dependencies_or_models": false,
+  "user_indexes_modified": false
+}

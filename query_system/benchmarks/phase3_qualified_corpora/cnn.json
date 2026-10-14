@@ -1,0 +1,1908 @@
+{
+  "profile": "cnn",
+  "original_source": "/Users/paraspingale/Desktop/Projects/CNN_CrackDataset_CaseStudy",
+  "state": "completed",
+  "embedding_batch_size": 8,
+  "embedding_threads": 2,
+  "benchmark_only_overrides": true,
+  "copied_files": 2,
+  "copied_bytes": 13617,
+  "copied_lines": 448,
+  "inventory": [
+    [
+      "README.md",
+      1947,
+      "3b1559ba2649ab9fc67a45094994261b44fad43860ab6c7a055edf1fd3b1375a"
+    ],
+    [
+      "46_CNN_Surface_Crack_Detection.py",
+      11670,
+      "989492d0f6cfe981f3012b070f836878810e283aa9a146249aa858775b2a146d"
+    ]
+  ],
+  "frozen_digest": "06987daf700f20dd6d69ea19689387bf6a03ef38e6ec818c8ea6b37bb50d5b71",
+  "indexing_ms": 1474.423999999999,
+  "publication": {
+    "files_indexed": 2,
+    "files_skipped": 0,
+    "files_pruned": 0,
+    "points_upserted": 21,
+    "graph_nodes": 0,
+    "files_failed": 0,
+    "chunks_embedded": 21,
+    "chunks_reused": 0,
+    "metadata_database": "/private/var/folders/yh/wmczyxhs0cd7kx2xmtzb18fh0000gn/T/cm-phase3-cnn-lwu7ebny/private/2805f97c5bef2966dfb9b41b/generations/a45ed1c7fabe46a1804dd3c7b071e550/2805f97c5bef2966dfb9b41b/metadata.db",
+    "snapshot_id": "67065fba-3621-48c2-b269-bcd007787fba",
+    "schema_version": 6,
+    "activeSnapshotId": "a45ed1c7fabe46a1804dd3c7b071e550",
+    "graph": {
+      "repository_id": "2805f97c5bef2966dfb9b41b",
+      "root_path": "/private/var/folders/yh/wmczyxhs0cd7kx2xmtzb18fh0000gn/T/cm-phase3-cnn-lwu7ebny/repository",
+      "git_revision": null,
+      "database": "/private/var/folders/yh/wmczyxhs0cd7kx2xmtzb18fh0000gn/T/cm-phase3-cnn-lwu7ebny/private/2805f97c5bef2966dfb9b41b/generations/a45ed1c7fabe46a1804dd3c7b071e550/2805f97c5bef2966dfb9b41b/metadata.db",
+      "scanned_at": "2026-10-14T15:42:50.940144+00:00",
+      "snapshot_id": "909091fc-b16a-487f-bf85-b44bd4f99f98",
+      "statistics": {
+        "included": 0,
+        "unsupported": 2,
+        "ignored": 0,
+        "skipped": 0,
+        "error": 0,
+        "ignored_directories": 0,
+        "error_directories": 0,
+        "source_files": 0,
+        "config_files": 0
+      },
+      "parsing": {
+        "parsed": 0,
+        "partial": 0,
+        "error": 0,
+        "symbols": 0,
+        "references": 0,
+        "comments": 0
+      },
+      "syntax_snapshot_id": "0af4f883-7df5-4599-b1e1-9c9ff8a6ce1d",
+      "graph": {
+        "nodes": 1,
+        "relationships": 0,
+        "resolved": 0,
+        "inferred": 0,
+        "unresolved": 0
+      },
+      "semantic_diagnostics": [],
+      "typescript_version": "5.9.3",
+      "graph_snapshot_id": "3c924098-07f6-4011-a691-bafeac9a8ad4"
+    },
+    "unchanged": false,
+    "chunk_count": 21,
+    "changed_files": [
+      "46_CNN_Surface_Crack_Detection.py",
+      "README.md"
+    ],
+    "affected_files": [
+      "46_CNN_Surface_Crack_Detection.py",
+      "README.md"
+    ],
+    "resolutionScope": "all included JS/TS files (conservative dependency invalidation)"
+  },
+  "repository_id": "2805f97c5bef2966dfb9b41b",
+  "snapshot_id": "a45ed1c7fabe46a1804dd3c7b071e550",
+  "initial_embedding_work": {
+    "calls": 2,
+    "texts": 21,
+    "embedding_ms": 1248.2885000008537
+  },
+  "publication_stages": {
+    "graph_ms": 158.72712500004127,
+    "semantic_index_ms": 1281.9722909998745
+  },
+  "integrity": {
+    "graph": {
+      "nodes": 1,
+      "relationships": 0,
+      "resolved": 0,
+      "inferred": 0,
+      "unresolved": 0
+    },
+    "typescript_version": "5.9.3",
+    "semantic_diagnostics": [],
+    "parsing": {},
+    "provenance_checked": 0,
+    "provenance_valid": 0,
+    "foreign_key_errors": [],
+    "dangling_references": [],
+    "languages": [],
+    "ambiguous_symbol_names": [],
+    "chunk_provenance_checked": 21,
+    "chunk_provenance_valid": 21,
+    "sample_symbols": []
+  },
+  "ground_truth": [
+    {
+      "id": "H1",
+      "profile": "cnn",
+      "family": "H",
+      "question": "Which CNN architecture and hyperparameters are used?",
+      "rows": [
+        [
+          "FEATURE_DISCOVERY",
+          [
+            "Which CNN architecture and hyperparameters are used?"
+          ]
+        ]
+      ],
+      "operations": [
+        "semantic.hybrid_search"
+      ],
+      "path": "46_CNN_Surface_Crack_Detection.py",
+      "anchor": "model = Sequential()",
+      "facts": [
+        "Four Conv2D layers:32,64,128,256; Dense256,128,1; Adam, binary crossentropy; no proven accuracy from source."
+      ],
+      "llm": false,
+      "capability_limit": "Semantic discovery only; Python structural/model-parameter extraction and free-form ML explanation are not implemented.",
+      "repository_id": "2805f97c5bef2966dfb9b41b",
+      "source_hash": "989492d0f6cfe981f3012b070f836878810e283aa9a146249aa858775b2a146d",
+      "anchor_lines": [
+        219
+      ],
+      "difficulty": "bounded real-source",
+      "expected_coverage": "Semantic discovery only; Python structural/model-parameter extraction and free-form ML explanation are not implemented.",
+      "source_review": "Assistant inspected original source; independent of engine output, not an independent human annotation"
+    },
+    {
+      "id": "H2",
+      "profile": "cnn",
+      "family": "H",
+      "question": "What hyperparameter tuning is actually performed?",
+      "rows": [
+        [
+          "FEATURE_DISCOVERY",
+          [
+            "What hyperparameter tuning is actually performed?"
+          ]
+        ]
+      ],
+      "operations": [
+        "semantic.hybrid_search"
+      ],
+      "path": "46_CNN_Surface_Crack_Detection.py",
+      "anchor": "reduce_lr = ReduceLROnPlateau",
+      "facts": [
+        "Fixed settings plus adaptive learning-rate callback; no hyperparameter search loop in this file."
+      ],
+      "llm": false,
+      "capability_limit": "Retrieval cannot establish that the whole repository performed no tuning.",
+      "repository_id": "2805f97c5bef2966dfb9b41b",
+      "source_hash": "989492d0f6cfe981f3012b070f836878810e283aa9a146249aa858775b2a146d",
+      "anchor_lines": [
+        279
+      ],
+      "difficulty": "bounded real-source",
+      "expected_coverage": "Retrieval cannot establish that the whole repository performed no tuning.",
+      "source_review": "Assistant inspected original source; independent of engine output, not an independent human annotation"
+    },
+    {
+      "id": "H3",
+      "profile": "cnn",
+      "family": "H",
+      "question": "Find code that configures image size batch size and training epochs",
+      "rows": [
+        [
+          "FEATURE_DISCOVERY",
+          [
+            "Find code that configures image size batch size and training epochs"
+          ]
+        ]
+      ],
+      "operations": [
+        "semantic.hybrid_search"
+      ],
+      "path": "46_CNN_Surface_Crack_Detection.py",
+      "anchor": "IMAGE_SIZE = 128",
+      "facts": [
+        "Image size128, batch32, epochs15, seed42; source configuration, not measured training output."
+      ],
+      "llm": false,
+      "repository_id": "2805f97c5bef2966dfb9b41b",
+      "source_hash": "989492d0f6cfe981f3012b070f836878810e283aa9a146249aa858775b2a146d",
+      "anchor_lines": [
+        30
+      ],
+      "difficulty": "bounded real-source",
+      "expected_coverage": "supported JS/TS within static evidence limits",
+      "source_review": "Assistant inspected original source; independent of engine output, not an independent human annotation"
+    },
+    {
+      "id": "J4",
+      "profile": "cnn",
+      "family": "J",
+      "question": "Who calls check_folder in 46_CNN_Surface_Crack_Detection.py?",
+      "rows": [
+        [
+          "DIRECT_CALLERS",
+          [
+            "check_folder"
+          ]
+        ]
+      ],
+      "operations": [],
+      "path": "46_CNN_Surface_Crack_Detection.py",
+      "anchor": "def check_folder",
+      "resolution": "unsupported",
+      "facts": [
+        "Python semantic indexing is available but modern structural graph is JS/TS-only."
+      ],
+      "llm": false,
+      "repository_id": "2805f97c5bef2966dfb9b41b",
+      "source_hash": "989492d0f6cfe981f3012b070f836878810e283aa9a146249aa858775b2a146d",
+      "anchor_lines": [
+        44
+      ],
+      "difficulty": "bounded real-source",
+      "expected_coverage": "supported JS/TS within static evidence limits",
+      "source_review": "Assistant inspected original source; independent of engine output, not an independent human annotation"
+    }
+  ],
+  "queries": [
+    {
+      "id": "H1",
+      "family": "H",
+      "question": "Which CNN architecture and hyperparameters are used?",
+      "expected_rows": [
+        [
+          "FEATURE_DISCOVERY",
+          [
+            "Which CNN architecture and hyperparameters are used?"
+          ]
+        ]
+      ],
+      "actual_rows": [
+        [
+          "FEATURE_DISCOVERY",
+          [
+            "Which CNN architecture and hyperparameters are used?"
+          ]
+        ]
+      ],
+      "rows_correct": true,
+      "canonical_targets": [
+        {
+          "name": "Which CNN architecture and hyperparameters are used?",
+          "resolution": "unresolved_text",
+          "path": null,
+          "symbol_id": null
+        }
+      ],
+      "canonical_target_paths_correct": true,
+      "status": "success",
+      "operations": [
+        "semantic.hybrid_search"
+      ],
+      "expected_operations": [
+        "semantic.hybrid_search"
+      ],
+      "operations_correct": true,
+      "no_model_calls": true,
+      "latency_ms": {
+        "median_ms": 203.835,
+        "p95_ms": 207.834
+      },
+      "samples_ms": [
+        207.45220800017705,
+        201.61295800062362,
+        198.88845800051058,
+        203.83487500021147,
+        207.83408300030715
+      ],
+      "stage_latency_ms": {
+        "understanding_ms": {
+          "median_ms": 19.256,
+          "p95_ms": 21.462
+        },
+        "planning_ms": {
+          "median_ms": 0.42,
+          "p95_ms": 0.43
+        },
+        "execution_ms": {
+          "median_ms": 124.003,
+          "p95_ms": 124.147
+        },
+        "aggregation_ms": {
+          "median_ms": 26.395,
+          "p95_ms": 27.834
+        },
+        "llm_preparation_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "llm_generation_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "generation_total_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "formatting_ms": {
+          "median_ms": 0.662,
+          "p95_ms": 0.682
+        },
+        "validation_ms": {
+          "median_ms": 22.628,
+          "p95_ms": 23.084
+        },
+        "total_ms": {
+          "median_ms": 203.464,
+          "p95_ms": 207.415
+        }
+      },
+      "response_bytes": 11442,
+      "source_paths": [
+        "46_CNN_Surface_Crack_Detection.py"
+      ],
+      "requirements": [
+        {
+          "requirement_id": "req-000",
+          "order": 0,
+          "original": {
+            "intent": "FEATURE_DISCOVERY",
+            "order": 0,
+            "entity_indices": [
+              0
+            ],
+            "depends_on": [],
+            "required_capabilities": [
+              "semantic.hybrid_search"
+            ],
+            "support": "supported",
+            "limitations": [
+              "Semantic similarity is discovery evidence, not a structural dependency"
+            ],
+            "interpretation": null
+          },
+          "title": "Feature-location candidates (similarity, not dependency)",
+          "state": "satisfied",
+          "supporting_requirement_ids": [
+            "req-000"
+          ],
+          "target_context": [
+            "Which CNN architecture and hyperparameters are used?"
+          ],
+          "sections": [
+            {
+              "title": "Feature-location candidates (similarity, not dependency)",
+              "item_ids": [
+                "4c75950619bc5d55ee2c0be6d6c7fef2",
+                "53990f22211e68b222ce13158bd52e7b",
+                "0e3b2987bcb2b9b34ecd8502d891d05c",
+                "0b44f655854a2d474a6cfb6874e8a6f2",
+                "daba31547a2757eb044499fc7271610f"
+              ]
+            }
+          ],
+          "operations": [
+            {
+              "operation_id": "query-a9d928650eb64ecca337c6b0:req-000:op-00",
+              "execution_status": "success",
+              "coverage_state": "satisfied",
+              "limitations": []
+            }
+          ],
+          "limitations": [
+            "Semantic similarity is discovery evidence, not a structural dependency",
+            "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+            "Semantic similarity establishes source relevance only, never a graph dependency."
+          ],
+          "hidden_items": 0
+        }
+      ],
+      "dependency_plan": [
+        []
+      ],
+      "presentation": {
+        "schema_version": "phase9-1",
+        "presentation_id": "5bc26938a60ce04f460bfc880e3c25ee",
+        "query_id": "query-a9d928650eb64ecca337c6b0",
+        "package_id": "3e8bef464ca9046ed467ba46e6ccd776",
+        "support_query_id": "query-a9d928650eb64ecca337c6b0",
+        "repository_id": "2805f97c5bef2966dfb9b41b",
+        "snapshot_id": "a45ed1c7fabe46a1804dd3c7b071e550",
+        "depth": "standard",
+        "status": "success",
+        "items": {
+          "0b44f655854a2d474a6cfb6874e8a6f2": {
+            "item_id": "0b44f655854a2d474a6cfb6874e8a6f2",
+            "origin": "finding",
+            "text": "Candidate 4: 46_CNN_Surface_Crack_Detection.py (similarity/keyword relevance, not a dependency)",
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:3e8bef464ca9046ed467ba46e6ccd776:afcfa462255322bfea3a36859fba8ee8"
+            ],
+            "details": [
+              "Retrieval methods: keyword/semantic",
+              "Ranking signals: {\"fusion\": 0.030330882352941176, \"keyword\": 1.4034263408992337e-06, \"retrieval\": 0.6004964709281921}"
+            ],
+            "limitations": [
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          },
+          "0e3b2987bcb2b9b34ecd8502d891d05c": {
+            "item_id": "0e3b2987bcb2b9b34ecd8502d891d05c",
+            "origin": "finding",
+            "text": "Candidate 3: 46_CNN_Surface_Crack_Detection.py (similarity/keyword relevance, not a dependency)",
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:3e8bef464ca9046ed467ba46e6ccd776:a8a37e62e2d3ee3e130b9daa377898db"
+            ],
+            "details": [
+              "Retrieval methods: keyword/semantic",
+              "Ranking signals: {\"fusion\": 0.030621785881252923, \"keyword\": 1.3011862475705384e-06, \"retrieval\": 0.6620006561279297}"
+            ],
+            "limitations": [
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          },
+          "4c75950619bc5d55ee2c0be6d6c7fef2": {
+            "item_id": "4c75950619bc5d55ee2c0be6d6c7fef2",
+            "origin": "finding",
+            "text": "Candidate 1: 46_CNN_Surface_Crack_Detection.py (similarity/keyword relevance, not a dependency)",
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:3e8bef464ca9046ed467ba46e6ccd776:717841e4d4a7b77d2e73ab8fe6837c0d"
+            ],
+            "details": [
+              "Retrieval methods: keyword/semantic",
+              "Ranking signals: {\"fusion\": 0.031024531024531024, \"keyword\": 1.3783188981967913e-06, \"retrieval\": 0.6211332678794861}"
+            ],
+            "limitations": [
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          },
+          "53990f22211e68b222ce13158bd52e7b": {
+            "item_id": "53990f22211e68b222ce13158bd52e7b",
+            "origin": "finding",
+            "text": "Candidate 2: 46_CNN_Surface_Crack_Detection.py (similarity/keyword relevance, not a dependency)",
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:3e8bef464ca9046ed467ba46e6ccd776:42e9b47030bb59e9477a1185093f40fb"
+            ],
+            "details": [
+              "Retrieval methods: keyword/semantic",
+              "Ranking signals: {\"fusion\": 0.030798389007344232, \"keyword\": 1.5173303114376147e-06, \"retrieval\": 0.6040661334991455}"
+            ],
+            "limitations": [
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          },
+          "daba31547a2757eb044499fc7271610f": {
+            "item_id": "daba31547a2757eb044499fc7271610f",
+            "origin": "finding",
+            "text": "Candidate 5: 46_CNN_Surface_Crack_Detection.py (similarity/keyword relevance, not a dependency)",
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:3e8bef464ca9046ed467ba46e6ccd776:62e0f60a508c431e443d05aaeb66c698"
+            ],
+            "details": [
+              "Retrieval methods: keyword/semantic",
+              "Ranking signals: {\"fusion\": 0.03009207275993712, \"keyword\": 1.1614273322764934e-06, \"retrieval\": 0.67140132188797}"
+            ],
+            "limitations": [
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          }
+        },
+        "requirements": [
+          {
+            "requirement_id": "req-000",
+            "order": 0,
+            "original": {
+              "intent": "FEATURE_DISCOVERY",
+              "order": 0,
+              "entity_indices": [
+                0
+              ],
+              "depends_on": [],
+              "required_capabilities": [
+                "semantic.hybrid_search"
+              ],
+              "support": "supported",
+              "limitations": [
+                "Semantic similarity is discovery evidence, not a structural dependency"
+              ],
+              "interpretation": null
+            },
+            "title": "Feature-location candidates (similarity, not dependency)",
+            "state": "satisfied",
+            "supporting_requirement_ids": [
+              "req-000"
+            ],
+            "target_context": [
+              "Which CNN architecture and hyperparameters are used?"
+            ],
+            "sections": [
+              {
+                "title": "Feature-location candidates (similarity, not dependency)",
+                "item_ids": [
+                  "4c75950619bc5d55ee2c0be6d6c7fef2",
+                  "53990f22211e68b222ce13158bd52e7b",
+                  "0e3b2987bcb2b9b34ecd8502d891d05c",
+                  "0b44f655854a2d474a6cfb6874e8a6f2",
+                  "daba31547a2757eb044499fc7271610f"
+                ]
+              }
+            ],
+            "operations": [
+              {
+                "operation_id": "query-a9d928650eb64ecca337c6b0:req-000:op-00",
+                "execution_status": "success",
+                "coverage_state": "satisfied",
+                "limitations": []
+              }
+            ],
+            "limitations": [
+              "Semantic similarity is discovery evidence, not a structural dependency",
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ],
+            "hidden_items": 0
+          }
+        ],
+        "sources": {
+          "cm7:3e8bef464ca9046ed467ba46e6ccd776:42e9b47030bb59e9477a1185093f40fb": {
+            "citation": {
+              "reference": "cm7:3e8bef464ca9046ed467ba46e6ccd776:42e9b47030bb59e9477a1185093f40fb",
+              "record_id": "42e9b47030bb59e9477a1185093f40fb",
+              "source": {
+                "evidence_id": "20601233-89b6-5d7d-8bc3-0570b4bd3730",
+                "repository_id": "2805f97c5bef2966dfb9b41b",
+                "snapshot_id": "a45ed1c7fabe46a1804dd3c7b071e550",
+                "index_snapshot_id": "67065fba-3621-48c2-b269-bcd007787fba",
+                "evidence_type": "code_chunk",
+                "file_id": "File:d5773ef96033a81d2aeffa1032482ef4b1a4d8cee446be10e2d36e230d9e5a37",
+                "symbol_id": null,
+                "file_path": "46_CNN_Surface_Crack_Detection.py",
+                "start_line": 50,
+                "end_line": 51,
+                "resolution": "not_applicable",
+                "source_hash": "989492d0f6cfe981f3012b070f836878810e283aa9a146249aa858775b2a146d",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          },
+          "cm7:3e8bef464ca9046ed467ba46e6ccd776:62e0f60a508c431e443d05aaeb66c698": {
+            "citation": {
+              "reference": "cm7:3e8bef464ca9046ed467ba46e6ccd776:62e0f60a508c431e443d05aaeb66c698",
+              "record_id": "62e0f60a508c431e443d05aaeb66c698",
+              "source": {
+                "evidence_id": "1e6443de-e64a-5502-a684-934c884f440e",
+                "repository_id": "2805f97c5bef2966dfb9b41b",
+                "snapshot_id": "a45ed1c7fabe46a1804dd3c7b071e550",
+                "index_snapshot_id": "67065fba-3621-48c2-b269-bcd007787fba",
+                "evidence_type": "code_chunk",
+                "file_id": "File:d5773ef96033a81d2aeffa1032482ef4b1a4d8cee446be10e2d36e230d9e5a37",
+                "symbol_id": null,
+                "file_path": "46_CNN_Surface_Crack_Detection.py",
+                "start_line": 215,
+                "end_line": 258,
+                "resolution": "not_applicable",
+                "source_hash": "989492d0f6cfe981f3012b070f836878810e283aa9a146249aa858775b2a146d",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          },
+          "cm7:3e8bef464ca9046ed467ba46e6ccd776:717841e4d4a7b77d2e73ab8fe6837c0d": {
+            "citation": {
+              "reference": "cm7:3e8bef464ca9046ed467ba46e6ccd776:717841e4d4a7b77d2e73ab8fe6837c0d",
+              "record_id": "717841e4d4a7b77d2e73ab8fe6837c0d",
+              "source": {
+                "evidence_id": "9b25d821-3e23-59ad-9550-463d7b127197",
+                "repository_id": "2805f97c5bef2966dfb9b41b",
+                "snapshot_id": "a45ed1c7fabe46a1804dd3c7b071e550",
+                "index_snapshot_id": "67065fba-3621-48c2-b269-bcd007787fba",
+                "evidence_type": "code_chunk",
+                "file_id": "File:d5773ef96033a81d2aeffa1032482ef4b1a4d8cee446be10e2d36e230d9e5a37",
+                "symbol_id": null,
+                "file_path": "46_CNN_Surface_Crack_Detection.py",
+                "start_line": 169,
+                "end_line": 217,
+                "resolution": "not_applicable",
+                "source_hash": "989492d0f6cfe981f3012b070f836878810e283aa9a146249aa858775b2a146d",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          },
+          "cm7:3e8bef464ca9046ed467ba46e6ccd776:a8a37e62e2d3ee3e130b9daa377898db": {
+            "citation": {
+              "reference": "cm7:3e8bef464ca9046ed467ba46e6ccd776:a8a37e62e2d3ee3e130b9daa377898db",
+              "record_id": "a8a37e62e2d3ee3e130b9daa377898db",
+              "source": {
+                "evidence_id": "8de08562-1149-5da1-831a-c59f0a4d5f54",
+                "repository_id": "2805f97c5bef2966dfb9b41b",
+                "snapshot_id": "a45ed1c7fabe46a1804dd3c7b071e550",
+                "index_snapshot_id": "67065fba-3621-48c2-b269-bcd007787fba",
+                "evidence_type": "code_chunk",
+                "file_id": "File:d5773ef96033a81d2aeffa1032482ef4b1a4d8cee446be10e2d36e230d9e5a37",
+                "symbol_id": null,
+                "file_path": "46_CNN_Surface_Crack_Detection.py",
+                "start_line": 250,
+                "end_line": 304,
+                "resolution": "not_applicable",
+                "source_hash": "989492d0f6cfe981f3012b070f836878810e283aa9a146249aa858775b2a146d",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          },
+          "cm7:3e8bef464ca9046ed467ba46e6ccd776:afcfa462255322bfea3a36859fba8ee8": {
+            "citation": {
+              "reference": "cm7:3e8bef464ca9046ed467ba46e6ccd776:afcfa462255322bfea3a36859fba8ee8",
+              "record_id": "afcfa462255322bfea3a36859fba8ee8",
+              "source": {
+                "evidence_id": "17731d75-b22f-5c77-952b-19f455b9ce37",
+                "repository_id": "2805f97c5bef2966dfb9b41b",
+                "snapshot_id": "a45ed1c7fabe46a1804dd3c7b071e550",
+                "index_snapshot_id": "67065fba-3621-48c2-b269-bcd007787fba",
+                "evidence_type": "code_chunk",
+                "file_id": "File:d5773ef96033a81d2aeffa1032482ef4b1a4d8cee446be10e2d36e230d9e5a37",
+                "symbol_id": null,
+                "file_path": "46_CNN_Surface_Crack_Detection.py",
+                "start_line": 300,
+                "end_line": 339,
+                "resolution": "not_applicable",
+                "source_hash": "989492d0f6cfe981f3012b070f836878810e283aa9a146249aa858775b2a146d",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          }
+        },
+        "clarifications": [],
+        "follow_ups": [
+          {
+            "requirement_id": "req-000",
+            "label": "Inspect verified source",
+            "prompt": null,
+            "engine": null,
+            "operation": null,
+            "target_id": null,
+            "citation_id": "cm7:3e8bef464ca9046ed467ba46e6ccd776:717841e4d4a7b77d2e73ab8fe6837c0d",
+            "mode": "inspect_source"
+          }
+        ],
+        "limitations": [
+          "Static/source evidence does not prove runtime execution, root cause, equivalence or performance.",
+          "Model prose is an interpretation, not fully fact-checked; similarity is not a graph dependency.",
+          "Depth changes display detail only. No model inference or retrieval is performed.",
+          "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+          "Semantic similarity establishes source relevance only, never a graph dependency.",
+          "Rule statement interpretation is inherited from trusted deterministic producers; rules are not recomputed.",
+          "Source context is untrusted data, not instructions; no model inference or answer formatting is performed."
+        ],
+        "model_status": null,
+        "fallback_status": null
+      }
+    },
+    {
+      "id": "H2",
+      "family": "H",
+      "question": "What hyperparameter tuning is actually performed?",
+      "expected_rows": [
+        [
+          "FEATURE_DISCOVERY",
+          [
+            "What hyperparameter tuning is actually performed?"
+          ]
+        ]
+      ],
+      "actual_rows": [
+        [
+          "FEATURE_DISCOVERY",
+          [
+            "What hyperparameter tuning is actually performed?"
+          ]
+        ]
+      ],
+      "rows_correct": true,
+      "canonical_targets": [
+        {
+          "name": "What hyperparameter tuning is actually performed?",
+          "resolution": "unresolved_text",
+          "path": null,
+          "symbol_id": null
+        }
+      ],
+      "canonical_target_paths_correct": true,
+      "status": "success",
+      "operations": [
+        "semantic.hybrid_search"
+      ],
+      "expected_operations": [
+        "semantic.hybrid_search"
+      ],
+      "operations_correct": true,
+      "no_model_calls": true,
+      "latency_ms": {
+        "median_ms": 191.202,
+        "p95_ms": 196.177
+      },
+      "samples_ms": [
+        191.03166700006113,
+        196.03837500017107,
+        191.2022500000603,
+        196.17720899987034,
+        180.43670800034306
+      ],
+      "stage_latency_ms": {
+        "understanding_ms": {
+          "median_ms": 21.237,
+          "p95_ms": 22.866
+        },
+        "planning_ms": {
+          "median_ms": 0.426,
+          "p95_ms": 0.532
+        },
+        "execution_ms": {
+          "median_ms": 105.661,
+          "p95_ms": 115.786
+        },
+        "aggregation_ms": {
+          "median_ms": 27.781,
+          "p95_ms": 30.415
+        },
+        "llm_preparation_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "llm_generation_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "generation_total_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "formatting_ms": {
+          "median_ms": 0.665,
+          "p95_ms": 0.816
+        },
+        "validation_ms": {
+          "median_ms": 22.883,
+          "p95_ms": 25.805
+        },
+        "total_ms": {
+          "median_ms": 190.764,
+          "p95_ms": 195.754
+        }
+      },
+      "response_bytes": 11668,
+      "source_paths": [
+        "46_CNN_Surface_Crack_Detection.py"
+      ],
+      "requirements": [
+        {
+          "requirement_id": "req-000",
+          "order": 0,
+          "original": {
+            "intent": "FEATURE_DISCOVERY",
+            "order": 0,
+            "entity_indices": [
+              0
+            ],
+            "depends_on": [],
+            "required_capabilities": [
+              "semantic.hybrid_search"
+            ],
+            "support": "supported",
+            "limitations": [
+              "Semantic similarity is discovery evidence, not a structural dependency"
+            ],
+            "interpretation": null
+          },
+          "title": "Feature-location candidates (similarity, not dependency)",
+          "state": "satisfied",
+          "supporting_requirement_ids": [
+            "req-000"
+          ],
+          "target_context": [
+            "What hyperparameter tuning is actually performed?"
+          ],
+          "sections": [
+            {
+              "title": "Feature-location candidates (similarity, not dependency)",
+              "item_ids": [
+                "4048fbcb4e34bdd7df8983fdcb166468",
+                "5bba4d38529b1b868e5512ec2d3b5681",
+                "7ae56538b1c80c93fea93e46531c5a29",
+                "80385a5578092366c1ca0b9c21e2da8c",
+                "d80bb1dc4e5502a9d83029c9f120bbf5"
+              ]
+            }
+          ],
+          "operations": [
+            {
+              "operation_id": "query-5153d77d7121d88c351f1d14:req-000:op-00",
+              "execution_status": "success",
+              "coverage_state": "satisfied",
+              "limitations": [
+                "No keyword evidence matched the query and filters."
+              ]
+            }
+          ],
+          "limitations": [
+            "Semantic similarity is discovery evidence, not a structural dependency",
+            "No keyword evidence matched the query and filters.",
+            "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+            "Semantic similarity establishes source relevance only, never a graph dependency."
+          ],
+          "hidden_items": 0
+        }
+      ],
+      "dependency_plan": [
+        []
+      ],
+      "presentation": {
+        "schema_version": "phase9-1",
+        "presentation_id": "2a3d1cf8294468974ffeb80931ee2817",
+        "query_id": "query-5153d77d7121d88c351f1d14",
+        "package_id": "46f790efc1637b181d72462dd324f48e",
+        "support_query_id": "query-5153d77d7121d88c351f1d14",
+        "repository_id": "2805f97c5bef2966dfb9b41b",
+        "snapshot_id": "a45ed1c7fabe46a1804dd3c7b071e550",
+        "depth": "standard",
+        "status": "success",
+        "items": {
+          "4048fbcb4e34bdd7df8983fdcb166468": {
+            "item_id": "4048fbcb4e34bdd7df8983fdcb166468",
+            "origin": "finding",
+            "text": "Candidate 1: 46_CNN_Surface_Crack_Detection.py (similarity/keyword relevance, not a dependency)",
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:46f790efc1637b181d72462dd324f48e:a8a37e62e2d3ee3e130b9daa377898db"
+            ],
+            "details": [
+              "Retrieval methods: semantic",
+              "Ranking signals: {\"fusion\": 0.01639344262295082, \"keyword\": null, \"retrieval\": 0.6360124349594116}"
+            ],
+            "limitations": [
+              "No keyword evidence matched the query and filters.",
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          },
+          "5bba4d38529b1b868e5512ec2d3b5681": {
+            "item_id": "5bba4d38529b1b868e5512ec2d3b5681",
+            "origin": "finding",
+            "text": "Candidate 2: 46_CNN_Surface_Crack_Detection.py (similarity/keyword relevance, not a dependency)",
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:46f790efc1637b181d72462dd324f48e:62e0f60a508c431e443d05aaeb66c698"
+            ],
+            "details": [
+              "Retrieval methods: semantic",
+              "Ranking signals: {\"fusion\": 0.016129032258064516, \"keyword\": null, \"retrieval\": 0.6032634973526001}"
+            ],
+            "limitations": [
+              "No keyword evidence matched the query and filters.",
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          },
+          "7ae56538b1c80c93fea93e46531c5a29": {
+            "item_id": "7ae56538b1c80c93fea93e46531c5a29",
+            "origin": "finding",
+            "text": "Candidate 3: 46_CNN_Surface_Crack_Detection.py (similarity/keyword relevance, not a dependency)",
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:46f790efc1637b181d72462dd324f48e:a5a43bd790e16598c073b27cafdf8500"
+            ],
+            "details": [
+              "Retrieval methods: semantic",
+              "Ranking signals: {\"fusion\": 0.015873015873015872, \"keyword\": null, \"retrieval\": 0.6002840995788574}"
+            ],
+            "limitations": [
+              "No keyword evidence matched the query and filters.",
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          },
+          "80385a5578092366c1ca0b9c21e2da8c": {
+            "item_id": "80385a5578092366c1ca0b9c21e2da8c",
+            "origin": "finding",
+            "text": "Candidate 4: 46_CNN_Surface_Crack_Detection.py (similarity/keyword relevance, not a dependency)",
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:46f790efc1637b181d72462dd324f48e:97c68ca91bbf9da61e2697ca6c8b974a"
+            ],
+            "details": [
+              "Retrieval methods: semantic",
+              "Ranking signals: {\"fusion\": 0.015625, \"keyword\": null, \"retrieval\": 0.5959531664848328}"
+            ],
+            "limitations": [
+              "No keyword evidence matched the query and filters.",
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          },
+          "d80bb1dc4e5502a9d83029c9f120bbf5": {
+            "item_id": "d80bb1dc4e5502a9d83029c9f120bbf5",
+            "origin": "finding",
+            "text": "Candidate 5: 46_CNN_Surface_Crack_Detection.py (similarity/keyword relevance, not a dependency)",
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:46f790efc1637b181d72462dd324f48e:717841e4d4a7b77d2e73ab8fe6837c0d"
+            ],
+            "details": [
+              "Retrieval methods: semantic",
+              "Ranking signals: {\"fusion\": 0.015384615384615385, \"keyword\": null, \"retrieval\": 0.5943838953971863}"
+            ],
+            "limitations": [
+              "No keyword evidence matched the query and filters.",
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          }
+        },
+        "requirements": [
+          {
+            "requirement_id": "req-000",
+            "order": 0,
+            "original": {
+              "intent": "FEATURE_DISCOVERY",
+              "order": 0,
+              "entity_indices": [
+                0
+              ],
+              "depends_on": [],
+              "required_capabilities": [
+                "semantic.hybrid_search"
+              ],
+              "support": "supported",
+              "limitations": [
+                "Semantic similarity is discovery evidence, not a structural dependency"
+              ],
+              "interpretation": null
+            },
+            "title": "Feature-location candidates (similarity, not dependency)",
+            "state": "satisfied",
+            "supporting_requirement_ids": [
+              "req-000"
+            ],
+            "target_context": [
+              "What hyperparameter tuning is actually performed?"
+            ],
+            "sections": [
+              {
+                "title": "Feature-location candidates (similarity, not dependency)",
+                "item_ids": [
+                  "4048fbcb4e34bdd7df8983fdcb166468",
+                  "5bba4d38529b1b868e5512ec2d3b5681",
+                  "7ae56538b1c80c93fea93e46531c5a29",
+                  "80385a5578092366c1ca0b9c21e2da8c",
+                  "d80bb1dc4e5502a9d83029c9f120bbf5"
+                ]
+              }
+            ],
+            "operations": [
+              {
+                "operation_id": "query-5153d77d7121d88c351f1d14:req-000:op-00",
+                "execution_status": "success",
+                "coverage_state": "satisfied",
+                "limitations": [
+                  "No keyword evidence matched the query and filters."
+                ]
+              }
+            ],
+            "limitations": [
+              "Semantic similarity is discovery evidence, not a structural dependency",
+              "No keyword evidence matched the query and filters.",
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ],
+            "hidden_items": 0
+          }
+        ],
+        "sources": {
+          "cm7:46f790efc1637b181d72462dd324f48e:62e0f60a508c431e443d05aaeb66c698": {
+            "citation": {
+              "reference": "cm7:46f790efc1637b181d72462dd324f48e:62e0f60a508c431e443d05aaeb66c698",
+              "record_id": "62e0f60a508c431e443d05aaeb66c698",
+              "source": {
+                "evidence_id": "1e6443de-e64a-5502-a684-934c884f440e",
+                "repository_id": "2805f97c5bef2966dfb9b41b",
+                "snapshot_id": "a45ed1c7fabe46a1804dd3c7b071e550",
+                "index_snapshot_id": "67065fba-3621-48c2-b269-bcd007787fba",
+                "evidence_type": "code_chunk",
+                "file_id": "File:d5773ef96033a81d2aeffa1032482ef4b1a4d8cee446be10e2d36e230d9e5a37",
+                "symbol_id": null,
+                "file_path": "46_CNN_Surface_Crack_Detection.py",
+                "start_line": 215,
+                "end_line": 258,
+                "resolution": "not_applicable",
+                "source_hash": "989492d0f6cfe981f3012b070f836878810e283aa9a146249aa858775b2a146d",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          },
+          "cm7:46f790efc1637b181d72462dd324f48e:717841e4d4a7b77d2e73ab8fe6837c0d": {
+            "citation": {
+              "reference": "cm7:46f790efc1637b181d72462dd324f48e:717841e4d4a7b77d2e73ab8fe6837c0d",
+              "record_id": "717841e4d4a7b77d2e73ab8fe6837c0d",
+              "source": {
+                "evidence_id": "9b25d821-3e23-59ad-9550-463d7b127197",
+                "repository_id": "2805f97c5bef2966dfb9b41b",
+                "snapshot_id": "a45ed1c7fabe46a1804dd3c7b071e550",
+                "index_snapshot_id": "67065fba-3621-48c2-b269-bcd007787fba",
+                "evidence_type": "code_chunk",
+                "file_id": "File:d5773ef96033a81d2aeffa1032482ef4b1a4d8cee446be10e2d36e230d9e5a37",
+                "symbol_id": null,
+                "file_path": "46_CNN_Surface_Crack_Detection.py",
+                "start_line": 169,
+                "end_line": 217,
+                "resolution": "not_applicable",
+                "source_hash": "989492d0f6cfe981f3012b070f836878810e283aa9a146249aa858775b2a146d",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          },
+          "cm7:46f790efc1637b181d72462dd324f48e:97c68ca91bbf9da61e2697ca6c8b974a": {
+            "citation": {
+              "reference": "cm7:46f790efc1637b181d72462dd324f48e:97c68ca91bbf9da61e2697ca6c8b974a",
+              "record_id": "97c68ca91bbf9da61e2697ca6c8b974a",
+              "source": {
+                "evidence_id": "1f0e91f5-4177-529a-9797-c19a0d6a7e0d",
+                "repository_id": "2805f97c5bef2966dfb9b41b",
+                "snapshot_id": "a45ed1c7fabe46a1804dd3c7b071e550",
+                "index_snapshot_id": "67065fba-3621-48c2-b269-bcd007787fba",
+                "evidence_type": "code_chunk",
+                "file_id": "File:d5773ef96033a81d2aeffa1032482ef4b1a4d8cee446be10e2d36e230d9e5a37",
+                "symbol_id": null,
+                "file_path": "46_CNN_Surface_Crack_Detection.py",
+                "start_line": 334,
+                "end_line": 373,
+                "resolution": "not_applicable",
+                "source_hash": "989492d0f6cfe981f3012b070f836878810e283aa9a146249aa858775b2a146d",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          },
+          "cm7:46f790efc1637b181d72462dd324f48e:a5a43bd790e16598c073b27cafdf8500": {
+            "citation": {
+              "reference": "cm7:46f790efc1637b181d72462dd324f48e:a5a43bd790e16598c073b27cafdf8500",
+              "record_id": "a5a43bd790e16598c073b27cafdf8500",
+              "source": {
+                "evidence_id": "fde8c0c2-d1b5-5792-adb3-5bd2cda8e953",
+                "repository_id": "2805f97c5bef2966dfb9b41b",
+                "snapshot_id": "a45ed1c7fabe46a1804dd3c7b071e550",
+                "index_snapshot_id": "67065fba-3621-48c2-b269-bcd007787fba",
+                "evidence_type": "code_chunk",
+                "file_id": "File:d5773ef96033a81d2aeffa1032482ef4b1a4d8cee446be10e2d36e230d9e5a37",
+                "symbol_id": null,
+                "file_path": "46_CNN_Surface_Crack_Detection.py",
+                "start_line": 1,
+                "end_line": 40,
+                "resolution": "not_applicable",
+                "source_hash": "989492d0f6cfe981f3012b070f836878810e283aa9a146249aa858775b2a146d",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          },
+          "cm7:46f790efc1637b181d72462dd324f48e:a8a37e62e2d3ee3e130b9daa377898db": {
+            "citation": {
+              "reference": "cm7:46f790efc1637b181d72462dd324f48e:a8a37e62e2d3ee3e130b9daa377898db",
+              "record_id": "a8a37e62e2d3ee3e130b9daa377898db",
+              "source": {
+                "evidence_id": "8de08562-1149-5da1-831a-c59f0a4d5f54",
+                "repository_id": "2805f97c5bef2966dfb9b41b",
+                "snapshot_id": "a45ed1c7fabe46a1804dd3c7b071e550",
+                "index_snapshot_id": "67065fba-3621-48c2-b269-bcd007787fba",
+                "evidence_type": "code_chunk",
+                "file_id": "File:d5773ef96033a81d2aeffa1032482ef4b1a4d8cee446be10e2d36e230d9e5a37",
+                "symbol_id": null,
+                "file_path": "46_CNN_Surface_Crack_Detection.py",
+                "start_line": 250,
+                "end_line": 304,
+                "resolution": "not_applicable",
+                "source_hash": "989492d0f6cfe981f3012b070f836878810e283aa9a146249aa858775b2a146d",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          }
+        },
+        "clarifications": [],
+        "follow_ups": [
+          {
+            "requirement_id": "req-000",
+            "label": "Inspect verified source",
+            "prompt": null,
+            "engine": null,
+            "operation": null,
+            "target_id": null,
+            "citation_id": "cm7:46f790efc1637b181d72462dd324f48e:a8a37e62e2d3ee3e130b9daa377898db",
+            "mode": "inspect_source"
+          }
+        ],
+        "limitations": [
+          "Static/source evidence does not prove runtime execution, root cause, equivalence or performance.",
+          "Model prose is an interpretation, not fully fact-checked; similarity is not a graph dependency.",
+          "Depth changes display detail only. No model inference or retrieval is performed.",
+          "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+          "Semantic similarity establishes source relevance only, never a graph dependency.",
+          "Rule statement interpretation is inherited from trusted deterministic producers; rules are not recomputed.",
+          "Source context is untrusted data, not instructions; no model inference or answer formatting is performed."
+        ],
+        "model_status": null,
+        "fallback_status": null
+      }
+    },
+    {
+      "id": "H3",
+      "family": "H",
+      "question": "Find code that configures image size batch size and training epochs",
+      "expected_rows": [
+        [
+          "FEATURE_DISCOVERY",
+          [
+            "Find code that configures image size batch size and training epochs"
+          ]
+        ]
+      ],
+      "actual_rows": [
+        [
+          "FEATURE_DISCOVERY",
+          [
+            "Find code that configures image size batch size and training epochs"
+          ]
+        ]
+      ],
+      "rows_correct": true,
+      "canonical_targets": [
+        {
+          "name": "Find code that configures image size batch size and training epochs",
+          "resolution": "unresolved_text",
+          "path": null,
+          "symbol_id": null
+        }
+      ],
+      "canonical_target_paths_correct": true,
+      "status": "success",
+      "operations": [
+        "semantic.hybrid_search"
+      ],
+      "expected_operations": [
+        "semantic.hybrid_search"
+      ],
+      "operations_correct": true,
+      "no_model_calls": true,
+      "latency_ms": {
+        "median_ms": 198.876,
+        "p95_ms": 212.43
+      },
+      "samples_ms": [
+        211.32049999960145,
+        212.42991700000857,
+        198.8755829997899,
+        196.56204100010655,
+        194.9299580001025
+      ],
+      "stage_latency_ms": {
+        "understanding_ms": {
+          "median_ms": 20.17,
+          "p95_ms": 21.576
+        },
+        "planning_ms": {
+          "median_ms": 0.414,
+          "p95_ms": 0.429
+        },
+        "execution_ms": {
+          "median_ms": 118.723,
+          "p95_ms": 125.574
+        },
+        "aggregation_ms": {
+          "median_ms": 25.15,
+          "p95_ms": 28.827
+        },
+        "llm_preparation_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "llm_generation_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "generation_total_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "formatting_ms": {
+          "median_ms": 0.692,
+          "p95_ms": 0.753
+        },
+        "validation_ms": {
+          "median_ms": 22.257,
+          "p95_ms": 24.607
+        },
+        "total_ms": {
+          "median_ms": 198.456,
+          "p95_ms": 212.022
+        }
+      },
+      "response_bytes": 11432,
+      "source_paths": [
+        "46_CNN_Surface_Crack_Detection.py"
+      ],
+      "requirements": [
+        {
+          "requirement_id": "req-000",
+          "order": 0,
+          "original": {
+            "intent": "FEATURE_DISCOVERY",
+            "order": 0,
+            "entity_indices": [
+              0
+            ],
+            "depends_on": [],
+            "required_capabilities": [
+              "semantic.hybrid_search"
+            ],
+            "support": "supported",
+            "limitations": [
+              "Semantic similarity is discovery evidence, not a structural dependency"
+            ],
+            "interpretation": null
+          },
+          "title": "Feature-location candidates (similarity, not dependency)",
+          "state": "satisfied",
+          "supporting_requirement_ids": [
+            "req-000"
+          ],
+          "target_context": [
+            "Find code that configures image size batch size and training epochs"
+          ],
+          "sections": [
+            {
+              "title": "Feature-location candidates (similarity, not dependency)",
+              "item_ids": [
+                "11e08f57338758956cb574436f76001c",
+                "43be7e0b928750396b4cc57c99df9a66",
+                "f46c2b51827e800a9da99cbcdb2485c1",
+                "5893f6bfc2b9914b4d5baca245beaed0",
+                "71fce2a8a1280fa2fcd0fce7926ea937"
+              ]
+            }
+          ],
+          "operations": [
+            {
+              "operation_id": "query-ebeaf12b2dcb68f83e8a4ecb:req-000:op-00",
+              "execution_status": "success",
+              "coverage_state": "satisfied",
+              "limitations": []
+            }
+          ],
+          "limitations": [
+            "Semantic similarity is discovery evidence, not a structural dependency",
+            "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+            "Semantic similarity establishes source relevance only, never a graph dependency."
+          ],
+          "hidden_items": 0
+        }
+      ],
+      "dependency_plan": [
+        []
+      ],
+      "presentation": {
+        "schema_version": "phase9-1",
+        "presentation_id": "5bec93647bd9126150364105892929fb",
+        "query_id": "query-ebeaf12b2dcb68f83e8a4ecb",
+        "package_id": "d649e390ac7595f3ce92b870f384fb76",
+        "support_query_id": "query-ebeaf12b2dcb68f83e8a4ecb",
+        "repository_id": "2805f97c5bef2966dfb9b41b",
+        "snapshot_id": "a45ed1c7fabe46a1804dd3c7b071e550",
+        "depth": "standard",
+        "status": "success",
+        "items": {
+          "11e08f57338758956cb574436f76001c": {
+            "item_id": "11e08f57338758956cb574436f76001c",
+            "origin": "finding",
+            "text": "Candidate 1: 46_CNN_Surface_Crack_Detection.py (similarity/keyword relevance, not a dependency)",
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:d649e390ac7595f3ce92b870f384fb76:717841e4d4a7b77d2e73ab8fe6837c0d"
+            ],
+            "details": [
+              "Retrieval methods: keyword/semantic",
+              "Ranking signals: {\"fusion\": 0.03278688524590164, \"keyword\": 5.501488452311066, \"retrieval\": 0.7374821901321411}"
+            ],
+            "limitations": [
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          },
+          "43be7e0b928750396b4cc57c99df9a66": {
+            "item_id": "43be7e0b928750396b4cc57c99df9a66",
+            "origin": "finding",
+            "text": "Candidate 2: 46_CNN_Surface_Crack_Detection.py (similarity/keyword relevance, not a dependency)",
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:d649e390ac7595f3ce92b870f384fb76:a5a43bd790e16598c073b27cafdf8500"
+            ],
+            "details": [
+              "Retrieval methods: keyword/semantic",
+              "Ranking signals: {\"fusion\": 0.0315136476426799, \"keyword\": 3.94477841486066, \"retrieval\": 0.6989426612854004}"
+            ],
+            "limitations": [
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          },
+          "5893f6bfc2b9914b4d5baca245beaed0": {
+            "item_id": "5893f6bfc2b9914b4d5baca245beaed0",
+            "origin": "finding",
+            "text": "Candidate 4: 46_CNN_Surface_Crack_Detection.py (similarity/keyword relevance, not a dependency)",
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:d649e390ac7595f3ce92b870f384fb76:62e0f60a508c431e443d05aaeb66c698"
+            ],
+            "details": [
+              "Retrieval methods: keyword/semantic",
+              "Ranking signals: {\"fusion\": 0.031024531024531024, \"keyword\": 1.8619502325714423, \"retrieval\": 0.7074331641197205}"
+            ],
+            "limitations": [
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          },
+          "71fce2a8a1280fa2fcd0fce7926ea937": {
+            "item_id": "71fce2a8a1280fa2fcd0fce7926ea937",
+            "origin": "finding",
+            "text": "Candidate 5: 46_CNN_Surface_Crack_Detection.py (similarity/keyword relevance, not a dependency)",
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:d649e390ac7595f3ce92b870f384fb76:370c3dcd0f60093d7fda56361919bc7a"
+            ],
+            "details": [
+              "Retrieval methods: keyword/semantic",
+              "Ranking signals: {\"fusion\": 0.03036576949620428, \"keyword\": 3.7728898138310196, \"retrieval\": 0.6740109920501709}"
+            ],
+            "limitations": [
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          },
+          "f46c2b51827e800a9da99cbcdb2485c1": {
+            "item_id": "f46c2b51827e800a9da99cbcdb2485c1",
+            "origin": "finding",
+            "text": "Candidate 3: 46_CNN_Surface_Crack_Detection.py (similarity/keyword relevance, not a dependency)",
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:d649e390ac7595f3ce92b870f384fb76:a8a37e62e2d3ee3e130b9daa377898db"
+            ],
+            "details": [
+              "Retrieval methods: keyword/semantic",
+              "Ranking signals: {\"fusion\": 0.0315136476426799, \"keyword\": 2.775480488125746, \"retrieval\": 0.7107456922531128}"
+            ],
+            "limitations": [
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          }
+        },
+        "requirements": [
+          {
+            "requirement_id": "req-000",
+            "order": 0,
+            "original": {
+              "intent": "FEATURE_DISCOVERY",
+              "order": 0,
+              "entity_indices": [
+                0
+              ],
+              "depends_on": [],
+              "required_capabilities": [
+                "semantic.hybrid_search"
+              ],
+              "support": "supported",
+              "limitations": [
+                "Semantic similarity is discovery evidence, not a structural dependency"
+              ],
+              "interpretation": null
+            },
+            "title": "Feature-location candidates (similarity, not dependency)",
+            "state": "satisfied",
+            "supporting_requirement_ids": [
+              "req-000"
+            ],
+            "target_context": [
+              "Find code that configures image size batch size and training epochs"
+            ],
+            "sections": [
+              {
+                "title": "Feature-location candidates (similarity, not dependency)",
+                "item_ids": [
+                  "11e08f57338758956cb574436f76001c",
+                  "43be7e0b928750396b4cc57c99df9a66",
+                  "f46c2b51827e800a9da99cbcdb2485c1",
+                  "5893f6bfc2b9914b4d5baca245beaed0",
+                  "71fce2a8a1280fa2fcd0fce7926ea937"
+                ]
+              }
+            ],
+            "operations": [
+              {
+                "operation_id": "query-ebeaf12b2dcb68f83e8a4ecb:req-000:op-00",
+                "execution_status": "success",
+                "coverage_state": "satisfied",
+                "limitations": []
+              }
+            ],
+            "limitations": [
+              "Semantic similarity is discovery evidence, not a structural dependency",
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ],
+            "hidden_items": 0
+          }
+        ],
+        "sources": {
+          "cm7:d649e390ac7595f3ce92b870f384fb76:370c3dcd0f60093d7fda56361919bc7a": {
+            "citation": {
+              "reference": "cm7:d649e390ac7595f3ce92b870f384fb76:370c3dcd0f60093d7fda56361919bc7a",
+              "record_id": "370c3dcd0f60093d7fda56361919bc7a",
+              "source": {
+                "evidence_id": "6646ce4c-644e-5ffc-8f66-f580dc7de0b6",
+                "repository_id": "2805f97c5bef2966dfb9b41b",
+                "snapshot_id": "a45ed1c7fabe46a1804dd3c7b071e550",
+                "index_snapshot_id": "67065fba-3621-48c2-b269-bcd007787fba",
+                "evidence_type": "code_chunk",
+                "file_id": "File:d5773ef96033a81d2aeffa1032482ef4b1a4d8cee446be10e2d36e230d9e5a37",
+                "symbol_id": null,
+                "file_path": "46_CNN_Surface_Crack_Detection.py",
+                "start_line": 133,
+                "end_line": 174,
+                "resolution": "not_applicable",
+                "source_hash": "989492d0f6cfe981f3012b070f836878810e283aa9a146249aa858775b2a146d",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          },
+          "cm7:d649e390ac7595f3ce92b870f384fb76:62e0f60a508c431e443d05aaeb66c698": {
+            "citation": {
+              "reference": "cm7:d649e390ac7595f3ce92b870f384fb76:62e0f60a508c431e443d05aaeb66c698",
+              "record_id": "62e0f60a508c431e443d05aaeb66c698",
+              "source": {
+                "evidence_id": "1e6443de-e64a-5502-a684-934c884f440e",
+                "repository_id": "2805f97c5bef2966dfb9b41b",
+                "snapshot_id": "a45ed1c7fabe46a1804dd3c7b071e550",
+                "index_snapshot_id": "67065fba-3621-48c2-b269-bcd007787fba",
+                "evidence_type": "code_chunk",
+                "file_id": "File:d5773ef96033a81d2aeffa1032482ef4b1a4d8cee446be10e2d36e230d9e5a37",
+                "symbol_id": null,
+                "file_path": "46_CNN_Surface_Crack_Detection.py",
+                "start_line": 215,
+                "end_line": 258,
+                "resolution": "not_applicable",
+                "source_hash": "989492d0f6cfe981f3012b070f836878810e283aa9a146249aa858775b2a146d",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          },
+          "cm7:d649e390ac7595f3ce92b870f384fb76:717841e4d4a7b77d2e73ab8fe6837c0d": {
+            "citation": {
+              "reference": "cm7:d649e390ac7595f3ce92b870f384fb76:717841e4d4a7b77d2e73ab8fe6837c0d",
+              "record_id": "717841e4d4a7b77d2e73ab8fe6837c0d",
+              "source": {
+                "evidence_id": "9b25d821-3e23-59ad-9550-463d7b127197",
+                "repository_id": "2805f97c5bef2966dfb9b41b",
+                "snapshot_id": "a45ed1c7fabe46a1804dd3c7b071e550",
+                "index_snapshot_id": "67065fba-3621-48c2-b269-bcd007787fba",
+                "evidence_type": "code_chunk",
+                "file_id": "File:d5773ef96033a81d2aeffa1032482ef4b1a4d8cee446be10e2d36e230d9e5a37",
+                "symbol_id": null,
+                "file_path": "46_CNN_Surface_Crack_Detection.py",
+                "start_line": 169,
+                "end_line": 217,
+                "resolution": "not_applicable",
+                "source_hash": "989492d0f6cfe981f3012b070f836878810e283aa9a146249aa858775b2a146d",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          },
+          "cm7:d649e390ac7595f3ce92b870f384fb76:a5a43bd790e16598c073b27cafdf8500": {
+            "citation": {
+              "reference": "cm7:d649e390ac7595f3ce92b870f384fb76:a5a43bd790e16598c073b27cafdf8500",
+              "record_id": "a5a43bd790e16598c073b27cafdf8500",
+              "source": {
+                "evidence_id": "fde8c0c2-d1b5-5792-adb3-5bd2cda8e953",
+                "repository_id": "2805f97c5bef2966dfb9b41b",
+                "snapshot_id": "a45ed1c7fabe46a1804dd3c7b071e550",
+                "index_snapshot_id": "67065fba-3621-48c2-b269-bcd007787fba",
+                "evidence_type": "code_chunk",
+                "file_id": "File:d5773ef96033a81d2aeffa1032482ef4b1a4d8cee446be10e2d36e230d9e5a37",
+                "symbol_id": null,
+                "file_path": "46_CNN_Surface_Crack_Detection.py",
+                "start_line": 1,
+                "end_line": 40,
+                "resolution": "not_applicable",
+                "source_hash": "989492d0f6cfe981f3012b070f836878810e283aa9a146249aa858775b2a146d",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          },
+          "cm7:d649e390ac7595f3ce92b870f384fb76:a8a37e62e2d3ee3e130b9daa377898db": {
+            "citation": {
+              "reference": "cm7:d649e390ac7595f3ce92b870f384fb76:a8a37e62e2d3ee3e130b9daa377898db",
+              "record_id": "a8a37e62e2d3ee3e130b9daa377898db",
+              "source": {
+                "evidence_id": "8de08562-1149-5da1-831a-c59f0a4d5f54",
+                "repository_id": "2805f97c5bef2966dfb9b41b",
+                "snapshot_id": "a45ed1c7fabe46a1804dd3c7b071e550",
+                "index_snapshot_id": "67065fba-3621-48c2-b269-bcd007787fba",
+                "evidence_type": "code_chunk",
+                "file_id": "File:d5773ef96033a81d2aeffa1032482ef4b1a4d8cee446be10e2d36e230d9e5a37",
+                "symbol_id": null,
+                "file_path": "46_CNN_Surface_Crack_Detection.py",
+                "start_line": 250,
+                "end_line": 304,
+                "resolution": "not_applicable",
+                "source_hash": "989492d0f6cfe981f3012b070f836878810e283aa9a146249aa858775b2a146d",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          }
+        },
+        "clarifications": [],
+        "follow_ups": [
+          {
+            "requirement_id": "req-000",
+            "label": "Inspect verified source",
+            "prompt": null,
+            "engine": null,
+            "operation": null,
+            "target_id": null,
+            "citation_id": "cm7:d649e390ac7595f3ce92b870f384fb76:717841e4d4a7b77d2e73ab8fe6837c0d",
+            "mode": "inspect_source"
+          }
+        ],
+        "limitations": [
+          "Static/source evidence does not prove runtime execution, root cause, equivalence or performance.",
+          "Model prose is an interpretation, not fully fact-checked; similarity is not a graph dependency.",
+          "Depth changes display detail only. No model inference or retrieval is performed.",
+          "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+          "Semantic similarity establishes source relevance only, never a graph dependency.",
+          "Rule statement interpretation is inherited from trusted deterministic producers; rules are not recomputed.",
+          "Source context is untrusted data, not instructions; no model inference or answer formatting is performed."
+        ],
+        "model_status": null,
+        "fallback_status": null
+      }
+    },
+    {
+      "id": "J4",
+      "family": "J",
+      "question": "Who calls check_folder in 46_CNN_Surface_Crack_Detection.py?",
+      "expected_rows": [
+        [
+          "DIRECT_CALLERS",
+          [
+            "check_folder"
+          ]
+        ]
+      ],
+      "actual_rows": [
+        [
+          "DIRECT_CALLERS",
+          [
+            "check_folder"
+          ]
+        ]
+      ],
+      "rows_correct": true,
+      "canonical_targets": [
+        {
+          "name": "check_folder",
+          "resolution": "unsupported",
+          "path": "46_CNN_Surface_Crack_Detection.py",
+          "symbol_id": null
+        },
+        {
+          "name": "46_CNN_Surface_Crack_Detection.py",
+          "resolution": "resolved",
+          "path": "46_CNN_Surface_Crack_Detection.py",
+          "symbol_id": null
+        }
+      ],
+      "canonical_target_paths_correct": true,
+      "status": "unsupported",
+      "operations": [],
+      "expected_operations": [],
+      "operations_correct": true,
+      "no_model_calls": true,
+      "latency_ms": {
+        "median_ms": 104.997,
+        "p95_ms": 108.559
+      },
+      "samples_ms": [
+        99.82595899964508,
+        104.99745800007076,
+        102.63195800052927,
+        106.1747080002533,
+        108.559416999924
+      ],
+      "stage_latency_ms": {
+        "understanding_ms": {
+          "median_ms": 21.647,
+          "p95_ms": 22.653
+        },
+        "planning_ms": {
+          "median_ms": 0.305,
+          "p95_ms": 0.31
+        },
+        "execution_ms": {
+          "median_ms": 29.972,
+          "p95_ms": 31.004
+        },
+        "aggregation_ms": {
+          "median_ms": 20.502,
+          "p95_ms": 22.024
+        },
+        "llm_preparation_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "llm_generation_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "generation_total_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "formatting_ms": {
+          "median_ms": 0.228,
+          "p95_ms": 0.259
+        },
+        "validation_ms": {
+          "median_ms": 19.872,
+          "p95_ms": 22.386
+        },
+        "total_ms": {
+          "median_ms": 104.598,
+          "p95_ms": 108.14
+        }
+      },
+      "response_bytes": 2639,
+      "source_paths": [],
+      "requirements": [
+        {
+          "requirement_id": "req-000",
+          "order": 0,
+          "original": {
+            "intent": "DIRECT_CALLERS",
+            "order": 0,
+            "entity_indices": [
+              0
+            ],
+            "depends_on": [],
+            "required_capabilities": [
+              "graph.find_callers"
+            ],
+            "support": "unsupported",
+            "limitations": [
+              "JS/TS graph/static analysis is unavailable for this language; semantic code discovery remains separate",
+              "Known static graph relationships do not establish runtime behavior"
+            ],
+            "interpretation": null
+          },
+          "title": "Known direct callers",
+          "state": "unsupported",
+          "supporting_requirement_ids": [
+            "req-000"
+          ],
+          "target_context": [
+            "check_folder · 46_CNN_Surface_Crack_Detection.py"
+          ],
+          "sections": [
+            {
+              "title": "Known direct callers",
+              "item_ids": []
+            }
+          ],
+          "operations": [],
+          "limitations": [
+            "JS/TS graph/static analysis is unavailable for this language; semantic code discovery remains separate",
+            "Known static graph relationships do not establish runtime behavior",
+            "Canonical symbol analysis is JS/TS only; use semantic discovery for other languages"
+          ],
+          "hidden_items": 0
+        }
+      ],
+      "dependency_plan": [
+        []
+      ],
+      "presentation": {
+        "schema_version": "phase9-1",
+        "presentation_id": "c516a6a56f38777fbcaae8165bd25c76",
+        "query_id": "query-7e46bf2843e4e650ed446140",
+        "package_id": "30bdc7fc49bef020d2e9fc6f3c7e6578",
+        "support_query_id": "query-7e46bf2843e4e650ed446140",
+        "repository_id": "2805f97c5bef2966dfb9b41b",
+        "snapshot_id": "a45ed1c7fabe46a1804dd3c7b071e550",
+        "depth": "standard",
+        "status": "unsupported",
+        "items": {},
+        "requirements": [
+          {
+            "requirement_id": "req-000",
+            "order": 0,
+            "original": {
+              "intent": "DIRECT_CALLERS",
+              "order": 0,
+              "entity_indices": [
+                0
+              ],
+              "depends_on": [],
+              "required_capabilities": [
+                "graph.find_callers"
+              ],
+              "support": "unsupported",
+              "limitations": [
+                "JS/TS graph/static analysis is unavailable for this language; semantic code discovery remains separate",
+                "Known static graph relationships do not establish runtime behavior"
+              ],
+              "interpretation": null
+            },
+            "title": "Known direct callers",
+            "state": "unsupported",
+            "supporting_requirement_ids": [
+              "req-000"
+            ],
+            "target_context": [
+              "check_folder · 46_CNN_Surface_Crack_Detection.py"
+            ],
+            "sections": [
+              {
+                "title": "Known direct callers",
+                "item_ids": []
+              }
+            ],
+            "operations": [],
+            "limitations": [
+              "JS/TS graph/static analysis is unavailable for this language; semantic code discovery remains separate",
+              "Known static graph relationships do not establish runtime behavior",
+              "Canonical symbol analysis is JS/TS only; use semantic discovery for other languages"
+            ],
+            "hidden_items": 0
+          }
+        ],
+        "sources": {},
+        "clarifications": [],
+        "follow_ups": [],
+        "limitations": [
+          "Static/source evidence does not prove runtime execution, root cause, equivalence or performance.",
+          "Model prose is an interpretation, not fully fact-checked; similarity is not a graph dependency.",
+          "Depth changes display detail only. No model inference or retrieval is performed.",
+          "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+          "Semantic similarity establishes source relevance only, never a graph dependency.",
+          "Rule statement interpretation is inherited from trusted deterministic producers; rules are not recomputed.",
+          "Source context is untrusted data, not instructions; no model inference or answer formatting is performed."
+        ],
+        "model_status": null,
+        "fallback_status": null
+      }
+    }
+  ],
+  "unchanged_source_after_queries": true,
+  "incremental": {
+    "unchanged_generation_reused": true,
+    "unchanged_chunks_embedded": 0,
+    "edit": {
+      "file": "46_CNN_Surface_Crack_Detection.py",
+      "stale_old_generation_rejected": true,
+      "ms": 220.97087499969348,
+      "chunks_embedded": 1,
+      "chunks_reused": 15,
+      "generation_changed": true
+    },
+    "rename": {
+      "from": "README.md",
+      "to": "README.qualification.md",
+      "old_chunks_remaining": 0,
+      "chunks_embedded": 5
+    },
+    "delete": {
+      "path": "README.qualification.md",
+      "chunks_remaining": 0,
+      "chunks_embedded": 0
+    }
+  },
+  "post_incremental_integrity": {
+    "graph": {
+      "nodes": 1,
+      "relationships": 0,
+      "resolved": 0,
+      "inferred": 0,
+      "unresolved": 0
+    },
+    "typescript_version": "5.9.3",
+    "semantic_diagnostics": [],
+    "parsing": {},
+    "provenance_checked": 0,
+    "provenance_valid": 0,
+    "foreign_key_errors": [],
+    "dangling_references": [],
+    "languages": [],
+    "ambiguous_symbol_names": [],
+    "chunk_provenance_checked": 16,
+    "chunk_provenance_valid": 16,
+    "sample_symbols": []
+  },
+  "original_source_changes_during_measurement": [],
+  "original_sources_unchanged": true,
+  "temporary_copy_and_index_cleaned": true,
+  "python_peak_rss_bytes": 1559953408,
+  "cpu_seconds": 5.687826999999997,
+  "resource_scope": "Cumulative worker peak RSS, excludes resolver/Electron/Ollama child processes; CPU is self only."
+}

@@ -345,8 +345,12 @@ class SemanticIndex:
         git, revision = _git_context(self.root)
         if not git and _has_gitignore(self.root):
             raise ValueError('A Git repository is required to evaluate .gitignore rules')
-        self.entries = {r[0]: r for r in _inventory(self.root, git, (), 1_000_000)
+        inventory = _inventory(self.root, git, (), 1_000_000)
+        if any(row[2] == 'error' for row in inventory):
+            raise OSError('Repository inventory contains unreadable paths')
+        self.entries = {r[0]: r for r in inventory
                         if r[1] != 'directory' and r[2] in ('included', 'unsupported')}
+        self.failed = False
         self.database = base / repo_id / 'metadata.db'
         self.db = _prepare_database(self.database)
         with self.db:
@@ -362,11 +366,12 @@ class SemanticIndex:
             with self.db:
                 if error:
                     self.error(None, type(error).__name__)
-                finish_snapshot(self.db,self.snapshot,failed=error is not None)
+                finish_snapshot(self.db,self.snapshot,failed=error is not None or self.failed)
         finally:
             self.db.close()
 
     def error(self, path, kind):
+        self.failed = True
         self.db.execute("INSERT INTO index_errors(repository_id,snapshot_id,relative_path,stage,kind) VALUES (?,?,?,'semantic',?)",
                         (self.repo_id,self.snapshot,path,kind))
 

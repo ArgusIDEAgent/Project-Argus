@@ -1,0 +1,267 @@
+{
+  "classification": "Development-ready",
+  "metrics": {
+    "intent_only": {
+      "correct": 41,
+      "total": 41,
+      "rate": 1.0
+    },
+    "intent_and_requirement_rows": {
+      "correct": 41,
+      "total": 41,
+      "rate": 1.0
+    },
+    "target_resolution_and_path": {
+      "correct": 34,
+      "total": 34,
+      "rate": 1.0
+    },
+    "comparison_operands": {
+      "correct": 4,
+      "total": 4,
+      "rate": 1.0
+    },
+    "original_requirement_count": {
+      "correct": 40,
+      "total": 40,
+      "rate": 1.0
+    },
+    "engine_operations": {
+      "correct": 31,
+      "total": 31,
+      "rate": 1.0
+    },
+    "semantic_routing": {
+      "correct": 6,
+      "total": 6,
+      "rate": 1.0
+    },
+    "ambiguity": {
+      "correct": 2,
+      "total": 2,
+      "rate": 1.0
+    },
+    "unsupported": {
+      "correct": 2,
+      "total": 2,
+      "rate": 1.0
+    },
+    "nontrivial_dependency_plan": {
+      "correct": 1,
+      "total": 1,
+      "rate": 1.0
+    },
+    "llm_necessity_probe": {
+      "correct": 39,
+      "total": 41,
+      "rate": 0.9512195121951219
+    }
+  },
+  "missing_labels": [],
+  "stale_label_inputs": [],
+  "by_family_latency": {
+    "A": {
+      "median_ms": 140.913,
+      "p95_ms": 172.254,
+      "samples": 25,
+      "max_ms": 193.51879199984978
+    },
+    "B": {
+      "median_ms": 175.755,
+      "p95_ms": 198.039,
+      "samples": 30,
+      "max_ms": 200.4342500003986
+    },
+    "C": {
+      "median_ms": 231.423,
+      "p95_ms": 284.944,
+      "samples": 15,
+      "max_ms": 284.94374999991123
+    },
+    "D": {
+      "median_ms": 181.816,
+      "p95_ms": 280.991,
+      "samples": 30,
+      "max_ms": 313.6805829999503
+    },
+    "E": {
+      "median_ms": 382.456,
+      "p95_ms": 387.735,
+      "samples": 5,
+      "max_ms": 387.73516599940194
+    },
+    "F": {
+      "median_ms": 267.269,
+      "p95_ms": 492.873,
+      "samples": 20,
+      "max_ms": 513.7438749998182
+    },
+    "G": {
+      "median_ms": 328.868,
+      "p95_ms": 359.315,
+      "samples": 10,
+      "max_ms": 359.31479200007743
+    },
+    "I": {
+      "median_ms": 218.184,
+      "p95_ms": 235.611,
+      "samples": 5,
+      "max_ms": 235.61087500002031
+    },
+    "J": {
+      "median_ms": 110.371,
+      "p95_ms": 237.021,
+      "samples": 25,
+      "max_ms": 256.54033299997536
+    },
+    "K": {
+      "median_ms": 284.595,
+      "p95_ms": 573.194,
+      "samples": 25,
+      "max_ms": 617.4752500000977
+    },
+    "H": {
+      "median_ms": 190.807,
+      "p95_ms": 215.957,
+      "samples": 15,
+      "max_ms": 215.9565419997307
+    }
+  },
+  "model": {
+    "positive_tasks": 13,
+    "attempted": 13,
+    "accepted": 7,
+    "acceptance": {
+      "correct": 7,
+      "total": 13,
+      "rate": 0.5384615384615384
+    },
+    "warm_ms": {
+      "median_ms": 18120.31,
+      "p95_ms": 30672.486
+    },
+    "warm_samples": 12,
+    "cold_ms": {
+      "median_ms": 30341.998,
+      "p95_ms": 30341.998
+    },
+    "cold_samples": 1,
+    "fallback": {
+      "correct": 6,
+      "total": 13,
+      "rate": 0.46153846153846156
+    },
+    "timeouts": {
+      "correct": 4,
+      "total": 13,
+      "rate": 0.3076923076923077
+    },
+    "structured_coverage_rejections": 0,
+    "human_review": "pending",
+    "factuality_rate": null,
+    "note": "Latency of rejected/fallback results is not latency of a successful explanation; small warm/cold cohorts do not qualify all tasks."
+  },
+  "profiles": [
+    {
+      "profile": "extension",
+      "state": "completed",
+      "copied_files": 9,
+      "copied_lines": 1720,
+      "copied_bytes": 96497,
+      "indexing_ms": 16391.949249999925,
+      "publication_stages": {
+        "graph_ms": 436.5957090003576,
+        "semantic_index_ms": 15806.735916999969
+      },
+      "initial_embedding_work": {
+        "calls": 9,
+        "texts": 266,
+        "embedding_ms": 15614.162168000803
+      },
+      "python_peak_rss_bytes": 724074496,
+      "original_sources_unchanged": true
+    },
+    {
+      "profile": "react",
+      "state": "completed",
+      "copied_files": 5,
+      "copied_lines": 2142,
+      "copied_bytes": 70814,
+      "indexing_ms": 7760.979041999235,
+      "publication_stages": {
+        "graph_ms": 207.39741699981096,
+        "semantic_index_ms": 7460.9739159996025
+      },
+      "initial_embedding_work": {
+        "calls": 5,
+        "texts": 123,
+        "embedding_ms": 7386.65545800086
+      },
+      "python_peak_rss_bytes": 812007424,
+      "original_sources_unchanged": true
+    },
+    {
+      "profile": "cnn",
+      "state": "completed",
+      "copied_files": 2,
+      "copied_lines": 448,
+      "copied_bytes": 13617,
+      "indexing_ms": 1598.1777080005486,
+      "publication_stages": {
+        "graph_ms": 146.09170899984747,
+        "semantic_index_ms": 1418.0868339999506
+      },
+      "initial_embedding_work": {
+        "calls": 2,
+        "texts": 21,
+        "embedding_ms": 1389.0678759998991
+      },
+      "python_peak_rss_bytes": 812482560,
+      "original_sources_unchanged": true
+    },
+    {
+      "profile": "node",
+      "state": "completed",
+      "copied_files": 16,
+      "copied_lines": 2719,
+      "copied_bytes": 142521,
+      "indexing_ms": 30682.29550000069,
+      "publication_stages": {
+        "graph_ms": 1039.2904169993926,
+        "semantic_index_ms": 29374.494167000194
+      },
+      "initial_embedding_work": {
+        "calls": 16,
+        "texts": 505,
+        "embedding_ms": 28957.6052909988
+      },
+      "python_peak_rss_bytes": 836763648,
+      "original_sources_unchanged": true
+    },
+    {
+      "profile": "target",
+      "state": "completed",
+      "copied_files": 190,
+      "copied_lines": 36338,
+      "copied_bytes": 2086542,
+      "indexing_ms": 269417.2317920002,
+      "publication_stages": {
+        "graph_ms": 3010.896999999204,
+        "semantic_index_ms": 264471.43183299975
+      },
+      "initial_embedding_work": {
+        "calls": 189,
+        "texts": 4063,
+        "embedding_ms": 245628.33871200087
+      },
+      "python_peak_rss_bytes": 1039515648,
+      "original_sources_unchanged": false
+    }
+  ],
+  "limitations": [
+    "Hand-labeled development cases, not held-out employee sampling; percentages have small denominators.",
+    "Generation necessity is an injected transport probe, not a real-model quality score.",
+    "Human usefulness and independent factuality remain unqualified until actually reviewed.",
+    "Full mixed-corpus semantic precision is unmeasured; known-positive file recall is not universal recall."
+  ]
+}

@@ -1,0 +1,3356 @@
+{
+  "profile": "node",
+  "original_source": "/Users/paraspingale/Desktop/Projects/CodeMind/CodeingMind_Project /extension/server",
+  "state": "completed",
+  "embedding_batch_size": 8,
+  "embedding_threads": 2,
+  "benchmark_only_overrides": true,
+  "copied_files": 16,
+  "copied_bytes": 142521,
+  "copied_lines": 2719,
+  "inventory": [
+    [
+      "embeddingProvider.js",
+      2919,
+      "9bfbf723ad6cb8826342907912a232f5f236d8a5105880b449a8a1a27bf7fe6e"
+    ],
+    [
+      "semanticStore.js",
+      5965,
+      "5bc0b621530c8c2ace35056315dd9e888d643567451edf3d36d7dfddd53b78d8"
+    ],
+    [
+      "registry.js",
+      32059,
+      "125980158364c7fb281c1cbd85ec104b6cfcc7bb4f7b4752a7051a703b91fd26"
+    ],
+    [
+      "frameworkAdapters.js",
+      6055,
+      "ccce4df36c55c875003fcd035d1785b11e60ac8198b59f7cdcf175a3a821b584"
+    ],
+    [
+      "server.js",
+      12655,
+      "d98f3ba92cd732f7082727eed1b5f9c2ab64312e0cfc63be6db0301a21503889"
+    ],
+    [
+      "graphStore.js",
+      16109,
+      "f1bed81bd1e6993877e31d306eca2b6d0dfe154bce482f739278377632367e2a"
+    ],
+    [
+      "chunker.js",
+      4507,
+      "04ed21c867e8bb1f552d5e239c46258cd89cc21383e571eeff9c2154370e46d6"
+    ],
+    [
+      "reuseAnalyzer.js",
+      5654,
+      "44f190be72d524c64e082ca08edba3895b97c0ea991fbc8543b25d03130836bd"
+    ],
+    [
+      "docStore.js",
+      13724,
+      "cbb79270ec4e23dc08133c5b166ee1f1f27af6abb67ec322e9be665c87ee3825"
+    ],
+    [
+      "codeParser.js",
+      12532,
+      "e805a5c26034e7e3a55aa84ae02292d39107ac2fcb88d414ae2a793f3a8f323c"
+    ],
+    [
+      "semanticCalibration.js",
+      3533,
+      "3358ef3d8369cc57ba875705700b8567a1e198f66192d6ef3b7278c2b1d295d1"
+    ],
+    [
+      "docPlanner.js",
+      7294,
+      "d2b43504220b4781037d5ccd471ddb6fe01632a335f95bd666b22568ddb923a2"
+    ],
+    [
+      "modelProvider.js",
+      2334,
+      "fab8203c8b740b291ee7438c72910a72aeac263b5bf8ba0cf8234eaa26fb071f"
+    ],
+    [
+      "graphBuilder.js",
+      2038,
+      "81d01b3637e88143ef40ba3a28c67e69a5d37d12e46ac3f3320c6488d2b1ff03"
+    ],
+    [
+      "retrievalService.js",
+      7301,
+      "ffc36b82e53794d9c698a7f961309dd9861069a2a6837c2f85539d79282cd8dd"
+    ],
+    [
+      "gitService.js",
+      7842,
+      "27cba7dddb0681f9721b113fa2ca6971180ac69596ed307544da89dae04f59bf"
+    ]
+  ],
+  "frozen_digest": "0161756774935f5d8917b35fc2b467f3f4b5ece31c52d00a3c4a54bac8b414e2",
+  "indexing_ms": 30682.29550000069,
+  "publication": {
+    "files_indexed": 16,
+    "files_skipped": 0,
+    "files_pruned": 0,
+    "points_upserted": 505,
+    "graph_nodes": 0,
+    "files_failed": 0,
+    "chunks_embedded": 505,
+    "chunks_reused": 0,
+    "metadata_database": "/private/var/folders/yh/wmczyxhs0cd7kx2xmtzb18fh0000gn/T/cm-phase3-node-79yfe554/private/07c17d89f3f49d0b9f8f3e5d/generations/c452d8a7ba594aa787f5eaa82997452b/07c17d89f3f49d0b9f8f3e5d/metadata.db",
+    "snapshot_id": "4a23a02b-7d1a-4d5b-9049-c569fdbd4ef8",
+    "schema_version": 6,
+    "activeSnapshotId": "c452d8a7ba594aa787f5eaa82997452b",
+    "graph": {
+      "repository_id": "07c17d89f3f49d0b9f8f3e5d",
+      "root_path": "/private/var/folders/yh/wmczyxhs0cd7kx2xmtzb18fh0000gn/T/cm-phase3-node-79yfe554/repository",
+      "git_revision": null,
+      "database": "/private/var/folders/yh/wmczyxhs0cd7kx2xmtzb18fh0000gn/T/cm-phase3-node-79yfe554/private/07c17d89f3f49d0b9f8f3e5d/generations/c452d8a7ba594aa787f5eaa82997452b/07c17d89f3f49d0b9f8f3e5d/metadata.db",
+      "scanned_at": "2026-10-14T16:05:04.166835+00:00",
+      "snapshot_id": "f9439935-3c81-470c-9bf7-9d582d681944",
+      "statistics": {
+        "included": 16,
+        "unsupported": 0,
+        "ignored": 0,
+        "skipped": 0,
+        "error": 0,
+        "ignored_directories": 0,
+        "error_directories": 0,
+        "source_files": 16,
+        "config_files": 0
+      },
+      "parsing": {
+        "parsed": 16,
+        "partial": 0,
+        "error": 0,
+        "symbols": 371,
+        "references": 1777,
+        "comments": 8
+      },
+      "syntax_snapshot_id": "6c958731-be5a-4e40-bbe8-98451caadcf9",
+      "graph": {
+        "nodes": 413,
+        "relationships": 993,
+        "resolved": 972,
+        "inferred": 21,
+        "unresolved": 1128
+      },
+      "semantic_diagnostics": [],
+      "typescript_version": "5.9.3",
+      "graph_snapshot_id": "b50993bf-b8b0-45c5-9895-a38605b1bcc6"
+    },
+    "unchanged": false,
+    "chunk_count": 505,
+    "changed_files": [
+      "chunker.js",
+      "codeParser.js",
+      "docPlanner.js",
+      "docStore.js",
+      "embeddingProvider.js",
+      "frameworkAdapters.js",
+      "gitService.js",
+      "graphBuilder.js",
+      "graphStore.js",
+      "modelProvider.js",
+      "registry.js",
+      "retrievalService.js",
+      "reuseAnalyzer.js",
+      "semanticCalibration.js",
+      "semanticStore.js",
+      "server.js"
+    ],
+    "affected_files": [
+      "chunker.js",
+      "codeParser.js",
+      "docPlanner.js",
+      "docStore.js",
+      "embeddingProvider.js",
+      "frameworkAdapters.js",
+      "gitService.js",
+      "graphBuilder.js",
+      "graphStore.js",
+      "modelProvider.js",
+      "registry.js",
+      "retrievalService.js",
+      "reuseAnalyzer.js",
+      "semanticCalibration.js",
+      "semanticStore.js",
+      "server.js"
+    ],
+    "resolutionScope": "all included JS/TS files (conservative dependency invalidation)"
+  },
+  "repository_id": "07c17d89f3f49d0b9f8f3e5d",
+  "snapshot_id": "c452d8a7ba594aa787f5eaa82997452b",
+  "initial_embedding_work": {
+    "calls": 16,
+    "texts": 505,
+    "embedding_ms": 28957.6052909988
+  },
+  "publication_stages": {
+    "graph_ms": 1039.2904169993926,
+    "semantic_index_ms": 29374.494167000194
+  },
+  "integrity": {
+    "graph": {
+      "nodes": 413,
+      "relationships": 993,
+      "resolved": 972,
+      "inferred": 21,
+      "unresolved": 1128
+    },
+    "typescript_version": "5.9.3",
+    "semantic_diagnostics": [],
+    "parsing": {},
+    "provenance_checked": 2492,
+    "provenance_valid": 2492,
+    "foreign_key_errors": [],
+    "dangling_references": [],
+    "languages": [
+      [
+        "javascript",
+        16
+      ]
+    ],
+    "ambiguous_symbol_names": [
+      [
+        "<anonymous:1>",
+        85
+      ],
+      [
+        "<anonymous:2>",
+        31
+      ],
+      [
+        "<anonymous:3>",
+        20
+      ],
+      [
+        "<anonymous:4>",
+        15
+      ],
+      [
+        "<anonymous:5>",
+        10
+      ],
+      [
+        "<anonymous:7>",
+        7
+      ],
+      [
+        "<anonymous:6>",
+        7
+      ],
+      [
+        "extract",
+        5
+      ]
+    ],
+    "chunk_provenance_checked": 505,
+    "chunk_provenance_valid": 505,
+    "sample_symbols": [
+      [
+        "hash",
+        "chunker.js"
+      ],
+      [
+        "boundedText",
+        "chunker.js"
+      ],
+      [
+        "terms",
+        "chunker.js"
+      ],
+      [
+        "readSource",
+        "chunker.js"
+      ],
+      [
+        "chunksForFile",
+        "chunker.js"
+      ],
+      [
+        "commitChunks",
+        "chunker.js"
+      ],
+      [
+        "stableId",
+        "codeParser.js"
+      ],
+      [
+        "languageFor",
+        "codeParser.js"
+      ],
+      [
+        "field",
+        "codeParser.js"
+      ],
+      [
+        "text",
+        "codeParser.js"
+      ],
+      [
+        "cleanString",
+        "codeParser.js"
+      ],
+      [
+        "hasJsx",
+        "codeParser.js"
+      ],
+      [
+        "nameOf",
+        "codeParser.js"
+      ],
+      [
+        "isTestFile",
+        "codeParser.js"
+      ],
+      [
+        "parseImports",
+        "codeParser.js"
+      ],
+      [
+        "symbolKind",
+        "codeParser.js"
+      ],
+      [
+        "signature",
+        "codeParser.js"
+      ],
+      [
+        "docstring",
+        "codeParser.js"
+      ],
+      [
+        "parseCode",
+        "codeParser.js"
+      ],
+      [
+        "parseCode.addSymbol",
+        "codeParser.js"
+      ],
+      [
+        "parseCode.addSymbol.identifiers",
+        "codeParser.js"
+      ],
+      [
+        "parseCode.addSymbol.<anonymous:4>.tokens",
+        "codeParser.js"
+      ],
+      [
+        "parseCode.visit",
+        "codeParser.js"
+      ],
+      [
+        "planDocs",
+        "docPlanner.js"
+      ],
+      [
+        "planDocs.add",
+        "docPlanner.js"
+      ],
+      [
+        "planDocs.label",
+        "docPlanner.js"
+      ],
+      [
+        "planDocs.related",
+        "docPlanner.js"
+      ],
+      [
+        "sectionObject",
+        "docStore.js"
+      ],
+      [
+        "status",
+        "docStore.js"
+      ],
+      [
+        "overview",
+        "docStore.js"
+      ]
+    ]
+  },
+  "ground_truth": [
+    {
+      "id": "A5",
+      "profile": "node",
+      "family": "A",
+      "question": "Where is readSource in chunker.js defined?",
+      "rows": [
+        [
+          "SYMBOL_LOCATION",
+          [
+            "readSource"
+          ]
+        ]
+      ],
+      "operations": [
+        "graph.find_definition"
+      ],
+      "path": "chunker.js",
+      "anchor": "function readSource",
+      "facts": [
+        "Canonical resolution must point to chunker.js, not the distinct registry.js implementation. Historical unqualified input was ambiguous, correctly refused by CodeMind."
+      ],
+      "llm": false,
+      "repository_id": "07c17d89f3f49d0b9f8f3e5d",
+      "source_hash": "04ed21c867e8bb1f552d5e239c46258cd89cc21383e571eeff9c2154370e46d6",
+      "anchor_lines": [
+        26
+      ],
+      "difficulty": "bounded real-source",
+      "expected_coverage": "supported JS/TS within static evidence limits",
+      "source_review": "Assistant inspected original source; independent of engine output, not an independent human annotation"
+    },
+    {
+      "id": "B5",
+      "profile": "node",
+      "family": "B",
+      "question": "What does readSource in chunker.js call?",
+      "rows": [
+        [
+          "DIRECT_CALLEES",
+          [
+            "readSource"
+          ]
+        ]
+      ],
+      "operations": [
+        "graph.find_callees"
+      ],
+      "path": "chunker.js",
+      "anchor": "if (hash(bytes)",
+      "facts": [
+        "Resolved repository direct call to hash; node filesystem/path/crypto calls are external."
+      ],
+      "llm": false,
+      "repository_id": "07c17d89f3f49d0b9f8f3e5d",
+      "source_hash": "04ed21c867e8bb1f552d5e239c46258cd89cc21383e571eeff9c2154370e46d6",
+      "anchor_lines": [
+        36
+      ],
+      "difficulty": "bounded real-source",
+      "expected_coverage": "supported JS/TS within static evidence limits",
+      "source_review": "Assistant inspected original source; independent of engine output, not an independent human annotation"
+    },
+    {
+      "id": "B6",
+      "profile": "node",
+      "family": "B",
+      "question": "Who calls chunksForFile?",
+      "rows": [
+        [
+          "DIRECT_CALLERS",
+          [
+            "chunksForFile"
+          ]
+        ]
+      ],
+      "operations": [
+        "graph.find_callers"
+      ],
+      "path": "chunker.js",
+      "anchor": "function chunksForFile",
+      "facts": [
+        "Callers must follow the destructured CommonJS import, not infer all modules as callers."
+      ],
+      "llm": false,
+      "repository_id": "07c17d89f3f49d0b9f8f3e5d",
+      "source_hash": "04ed21c867e8bb1f552d5e239c46258cd89cc21383e571eeff9c2154370e46d6",
+      "anchor_lines": [
+        41
+      ],
+      "difficulty": "bounded real-source",
+      "expected_coverage": "supported JS/TS within static evidence limits",
+      "source_review": "Assistant inspected original source; independent of engine output, not an independent human annotation"
+    },
+    {
+      "id": "D6",
+      "profile": "node",
+      "family": "D",
+      "question": "Contract of readSource in chunker.js",
+      "rows": [
+        [
+          "FUNCTION_CONTRACT",
+          [
+            "readSource"
+          ]
+        ]
+      ],
+      "operations": [
+        "rules.function_contract"
+      ],
+      "path": "chunker.js",
+      "anchor": "function readSource",
+      "facts": [
+        "Three parameters; no TypeScript annotations; closes the file descriptor in finally."
+      ],
+      "llm": false,
+      "repository_id": "07c17d89f3f49d0b9f8f3e5d",
+      "source_hash": "04ed21c867e8bb1f552d5e239c46258cd89cc21383e571eeff9c2154370e46d6",
+      "anchor_lines": [
+        26
+      ],
+      "difficulty": "bounded real-source",
+      "expected_coverage": "supported JS/TS within static evidence limits",
+      "source_review": "Assistant inspected original source; independent of engine output, not an independent human annotation"
+    },
+    {
+      "id": "F4",
+      "profile": "node",
+      "family": "F",
+      "question": "Show dependencies of chunker.js",
+      "rows": [
+        [
+          "DEPENDENCY_PATH",
+          [
+            "chunker.js"
+          ]
+        ]
+      ],
+      "operations": [
+        "rules.dependency_summary"
+      ],
+      "path": "chunker.js",
+      "anchor": "require('./codeParser')",
+      "facts": [
+        "CommonJS imports codeParser plus external node:fs, node:path, node:crypto."
+      ],
+      "llm": false,
+      "repository_id": "07c17d89f3f49d0b9f8f3e5d",
+      "source_hash": "04ed21c867e8bb1f552d5e239c46258cd89cc21383e571eeff9c2154370e46d6",
+      "anchor_lines": [
+        6
+      ],
+      "difficulty": "bounded real-source",
+      "expected_coverage": "supported JS/TS within static evidence limits",
+      "source_review": "Assistant inspected original source; independent of engine output, not an independent human annotation"
+    },
+    {
+      "id": "C3",
+      "profile": "node",
+      "family": "C",
+      "question": "Find code that authenticates local HTTP requests before dispatching routes",
+      "rows": [
+        [
+          "FEATURE_DISCOVERY",
+          [
+            "Find code that authenticates local HTTP requests before dispatching routes"
+          ]
+        ]
+      ],
+      "operations": [
+        "semantic.hybrid_search"
+      ],
+      "path": "server.js",
+      "anchor": "request.headers['x-codemind-session']",
+      "facts": [
+        "handleRequest checks the session header before route dispatch; this is retained Node code, not the active Python launch path."
+      ],
+      "llm": false,
+      "repository_id": "07c17d89f3f49d0b9f8f3e5d",
+      "source_hash": "d98f3ba92cd732f7082727eed1b5f9c2ab64312e0cfc63be6db0301a21503889",
+      "anchor_lines": [
+        44
+      ],
+      "difficulty": "bounded real-source",
+      "expected_coverage": "supported JS/TS within static evidence limits",
+      "source_review": "Assistant inspected original source; independent of engine output, not an independent human annotation"
+    },
+    {
+      "id": "J5",
+      "profile": "node",
+      "family": "J",
+      "question": "Where is readSource defined?",
+      "rows": [
+        [
+          "SYMBOL_LOCATION",
+          [
+            "readSource"
+          ]
+        ]
+      ],
+      "operations": [],
+      "resolution": "ambiguous",
+      "path": "registry.js",
+      "anchor": "function readSource",
+      "facts": [
+        "Independent source inspection confirms distinct readSource declarations in chunker.js and registry.js; ask for scope, never pick the first."
+      ],
+      "llm": false,
+      "repository_id": "07c17d89f3f49d0b9f8f3e5d",
+      "source_hash": "125980158364c7fb281c1cbd85ec104b6cfcc7bb4f7b4752a7051a703b91fd26",
+      "anchor_lines": [
+        81
+      ],
+      "difficulty": "bounded real-source",
+      "expected_coverage": "supported JS/TS within static evidence limits",
+      "source_review": "Assistant inspected original source; independent of engine output, not an independent human annotation"
+    }
+  ],
+  "queries": [
+    {
+      "id": "A5",
+      "family": "A",
+      "question": "Where is readSource in chunker.js defined?",
+      "expected_rows": [
+        [
+          "SYMBOL_LOCATION",
+          [
+            "readSource"
+          ]
+        ]
+      ],
+      "actual_rows": [
+        [
+          "SYMBOL_LOCATION",
+          [
+            "readSource"
+          ]
+        ]
+      ],
+      "rows_correct": true,
+      "canonical_targets": [
+        {
+          "name": "readSource",
+          "kind": "function",
+          "resolution": "resolved",
+          "path": "chunker.js",
+          "symbol_id": "097fb06051cf130e12f9ae7e1d08caf6bbf8a999b2e9da7cb257ee1d729a2b4a"
+        },
+        {
+          "name": "chunker.js",
+          "kind": "file",
+          "resolution": "resolved",
+          "path": "chunker.js",
+          "symbol_id": null
+        }
+      ],
+      "canonical_target_paths_correct": true,
+      "status": "success",
+      "operations": [
+        "graph.find_definition"
+      ],
+      "expected_operations": [
+        "graph.find_definition"
+      ],
+      "operations_correct": true,
+      "no_model_calls": true,
+      "latency_ms": {
+        "median_ms": 163.38,
+        "p95_ms": 193.519
+      },
+      "samples_ms": [
+        193.51879199984978,
+        172.2540000000663,
+        163.38004199951683,
+        159.8852920005811,
+        162.89845900064392
+      ],
+      "stage_latency_ms": {
+        "understanding_ms": {
+          "median_ms": 29.774,
+          "p95_ms": 31.506
+        },
+        "planning_ms": {
+          "median_ms": 0.425,
+          "p95_ms": 0.601
+        },
+        "execution_ms": {
+          "median_ms": 68.535,
+          "p95_ms": 80.701
+        },
+        "aggregation_ms": {
+          "median_ms": 28.227,
+          "p95_ms": 34.665
+        },
+        "llm_preparation_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "llm_generation_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "generation_total_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "formatting_ms": {
+          "median_ms": 0.483,
+          "p95_ms": 0.727
+        },
+        "validation_ms": {
+          "median_ms": 25.661,
+          "p95_ms": 28.217
+        },
+        "total_ms": {
+          "median_ms": 162.942,
+          "p95_ms": 192.66
+        }
+      },
+      "response_bytes": 4997,
+      "source_paths": [
+        "chunker.js"
+      ],
+      "requirements": [
+        {
+          "requirement_id": "req-000",
+          "order": 0,
+          "original": {
+            "intent": "SYMBOL_LOCATION",
+            "order": 0,
+            "entity_indices": [
+              0
+            ],
+            "depends_on": [],
+            "required_capabilities": [
+              "graph.find_definition"
+            ],
+            "support": "supported",
+            "limitations": [],
+            "interpretation": null
+          },
+          "title": "Symbol location",
+          "state": "satisfied",
+          "supporting_requirement_ids": [
+            "req-000"
+          ],
+          "target_context": [
+            "readSource · chunker.js"
+          ],
+          "sections": [
+            {
+              "title": "Symbol location",
+              "item_ids": [
+                "a847282004fd028c8788ad7802ac7d5e"
+              ]
+            }
+          ],
+          "operations": [
+            {
+              "operation_id": "query-c59e57ca038094ae3c8e608d:req-000:op-00",
+              "execution_status": "success",
+              "coverage_state": "satisfied",
+              "limitations": []
+            }
+          ],
+          "limitations": [
+            "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+            "Semantic similarity establishes source relevance only, never a graph dependency."
+          ],
+          "hidden_items": 0
+        }
+      ],
+      "dependency_plan": [
+        []
+      ],
+      "presentation": {
+        "schema_version": "phase9-1",
+        "presentation_id": "93ee4f8cf13095ea9a0433081f179913",
+        "query_id": "query-c59e57ca038094ae3c8e608d",
+        "package_id": "c0c69c106aa510aeb8428e72c93ae3df",
+        "support_query_id": "query-c59e57ca038094ae3c8e608d",
+        "repository_id": "07c17d89f3f49d0b9f8f3e5d",
+        "snapshot_id": "c452d8a7ba594aa787f5eaa82997452b",
+        "depth": "standard",
+        "status": "success",
+        "items": {
+          "a847282004fd028c8788ad7802ac7d5e": {
+            "item_id": "a847282004fd028c8788ad7802ac7d5e",
+            "origin": "finding",
+            "text": "readSource",
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:c0c69c106aa510aeb8428e72c93ae3df:14ff7924aaed0baf52d3db377130ecac"
+            ],
+            "details": [
+              "Relationship: DEFINITION"
+            ],
+            "limitations": [
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          }
+        },
+        "requirements": [
+          {
+            "requirement_id": "req-000",
+            "order": 0,
+            "original": {
+              "intent": "SYMBOL_LOCATION",
+              "order": 0,
+              "entity_indices": [
+                0
+              ],
+              "depends_on": [],
+              "required_capabilities": [
+                "graph.find_definition"
+              ],
+              "support": "supported",
+              "limitations": [],
+              "interpretation": null
+            },
+            "title": "Symbol location",
+            "state": "satisfied",
+            "supporting_requirement_ids": [
+              "req-000"
+            ],
+            "target_context": [
+              "readSource · chunker.js"
+            ],
+            "sections": [
+              {
+                "title": "Symbol location",
+                "item_ids": [
+                  "a847282004fd028c8788ad7802ac7d5e"
+                ]
+              }
+            ],
+            "operations": [
+              {
+                "operation_id": "query-c59e57ca038094ae3c8e608d:req-000:op-00",
+                "execution_status": "success",
+                "coverage_state": "satisfied",
+                "limitations": []
+              }
+            ],
+            "limitations": [
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ],
+            "hidden_items": 0
+          }
+        ],
+        "sources": {
+          "cm7:c0c69c106aa510aeb8428e72c93ae3df:14ff7924aaed0baf52d3db377130ecac": {
+            "citation": {
+              "reference": "cm7:c0c69c106aa510aeb8428e72c93ae3df:14ff7924aaed0baf52d3db377130ecac",
+              "record_id": "14ff7924aaed0baf52d3db377130ecac",
+              "source": {
+                "evidence_id": "097fb06051cf130e12f9ae7e1d08caf6bbf8a999b2e9da7cb257ee1d729a2b4a",
+                "repository_id": "07c17d89f3f49d0b9f8f3e5d",
+                "snapshot_id": "c452d8a7ba594aa787f5eaa82997452b",
+                "index_snapshot_id": "6c958731-be5a-4e40-bbe8-98451caadcf9",
+                "evidence_type": "symbol_definition",
+                "file_id": "File:724fd7549d2ec7edb7866b067d4c2fbdd7118149c4e7ec88d8be7cf481658a91",
+                "symbol_id": "097fb06051cf130e12f9ae7e1d08caf6bbf8a999b2e9da7cb257ee1d729a2b4a",
+                "file_path": "chunker.js",
+                "start_line": 26,
+                "end_line": 39,
+                "resolution": "syntax_only",
+                "source_hash": "04ed21c867e8bb1f552d5e239c46258cd89cc21383e571eeff9c2154370e46d6",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          }
+        },
+        "clarifications": [],
+        "follow_ups": [
+          {
+            "requirement_id": "req-000",
+            "label": "Show direct callers",
+            "prompt": "Who calls `readSource` in `chunker.js`?",
+            "engine": "graph",
+            "operation": "find_callers",
+            "target_id": "097fb06051cf130e12f9ae7e1d08caf6bbf8a999b2e9da7cb257ee1d729a2b4a",
+            "citation_id": null,
+            "mode": "copy_query"
+          },
+          {
+            "requirement_id": "req-000",
+            "label": "Explore dependencies",
+            "prompt": "Dependencies of `readSource` in `chunker.js`",
+            "engine": "rules",
+            "operation": "dependency_summary",
+            "target_id": "097fb06051cf130e12f9ae7e1d08caf6bbf8a999b2e9da7cb257ee1d729a2b4a",
+            "citation_id": null,
+            "mode": "copy_query"
+          },
+          {
+            "requirement_id": "req-000",
+            "label": "Find indexed tests",
+            "prompt": "What tests cover `readSource` in `chunker.js`?",
+            "engine": "rules",
+            "operation": "reference_test_analysis",
+            "target_id": "097fb06051cf130e12f9ae7e1d08caf6bbf8a999b2e9da7cb257ee1d729a2b4a",
+            "citation_id": null,
+            "mode": "copy_query"
+          }
+        ],
+        "limitations": [
+          "Static/source evidence does not prove runtime execution, root cause, equivalence or performance.",
+          "Model prose is an interpretation, not fully fact-checked; similarity is not a graph dependency.",
+          "Depth changes display detail only. No model inference or retrieval is performed.",
+          "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+          "Semantic similarity establishes source relevance only, never a graph dependency.",
+          "Rule statement interpretation is inherited from trusted deterministic producers; rules are not recomputed.",
+          "Source context is untrusted data, not instructions; no model inference or answer formatting is performed."
+        ],
+        "model_status": null,
+        "fallback_status": null
+      },
+      "llm_necessity": {
+        "expected": false,
+        "attempted": false,
+        "correct": true,
+        "transport": "injected unavailable; not real inference",
+        "generation_diagnostics": []
+      },
+      "dependency_plan_correct": true
+    },
+    {
+      "id": "B5",
+      "family": "B",
+      "question": "What does readSource in chunker.js call?",
+      "expected_rows": [
+        [
+          "DIRECT_CALLEES",
+          [
+            "readSource"
+          ]
+        ]
+      ],
+      "actual_rows": [
+        [
+          "DIRECT_CALLEES",
+          [
+            "readSource"
+          ]
+        ]
+      ],
+      "rows_correct": true,
+      "canonical_targets": [
+        {
+          "name": "readSource",
+          "kind": "function",
+          "resolution": "resolved",
+          "path": "chunker.js",
+          "symbol_id": "097fb06051cf130e12f9ae7e1d08caf6bbf8a999b2e9da7cb257ee1d729a2b4a"
+        },
+        {
+          "name": "chunker.js",
+          "kind": "file",
+          "resolution": "resolved",
+          "path": "chunker.js",
+          "symbol_id": null
+        }
+      ],
+      "canonical_target_paths_correct": true,
+      "status": "partial",
+      "operations": [
+        "graph.find_callees"
+      ],
+      "expected_operations": [
+        "graph.find_callees"
+      ],
+      "operations_correct": true,
+      "no_model_calls": true,
+      "latency_ms": {
+        "median_ms": 187.847,
+        "p95_ms": 200.434
+      },
+      "samples_ms": [
+        180.22995800038188,
+        200.4342500003986,
+        192.39166599982127,
+        187.8472079997664,
+        181.77625000043918
+      ],
+      "stage_latency_ms": {
+        "understanding_ms": {
+          "median_ms": 28.609,
+          "p95_ms": 31.739
+        },
+        "planning_ms": {
+          "median_ms": 0.411,
+          "p95_ms": 0.542
+        },
+        "execution_ms": {
+          "median_ms": 83.472,
+          "p95_ms": 88.86
+        },
+        "aggregation_ms": {
+          "median_ms": 36.266,
+          "p95_ms": 40.197
+        },
+        "llm_preparation_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "llm_generation_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "generation_total_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "formatting_ms": {
+          "median_ms": 0.686,
+          "p95_ms": 0.72
+        },
+        "validation_ms": {
+          "median_ms": 24.542,
+          "p95_ms": 25.957
+        },
+        "total_ms": {
+          "median_ms": 187.4,
+          "p95_ms": 199.958
+        }
+      },
+      "response_bytes": 5326,
+      "source_paths": [
+        "chunker.js"
+      ],
+      "requirements": [
+        {
+          "requirement_id": "req-000",
+          "order": 0,
+          "original": {
+            "intent": "DIRECT_CALLEES",
+            "order": 0,
+            "entity_indices": [
+              0
+            ],
+            "depends_on": [],
+            "required_capabilities": [
+              "graph.find_callees"
+            ],
+            "support": "supported",
+            "limitations": [
+              "Known static graph relationships do not establish runtime behavior"
+            ],
+            "interpretation": null
+          },
+          "title": "Known direct callees",
+          "state": "partially_satisfied",
+          "supporting_requirement_ids": [
+            "req-000"
+          ],
+          "target_context": [
+            "readSource · chunker.js"
+          ],
+          "sections": [
+            {
+              "title": "Known direct callees",
+              "item_ids": [
+                "015f6e801bcc43d462642792a390944a"
+              ]
+            }
+          ],
+          "operations": [
+            {
+              "operation_id": "query-ef65f7249a36d1884eb27cc9:req-000:op-00",
+              "execution_status": "partial",
+              "coverage_state": "partially_satisfied",
+              "limitations": [
+                "path.resolve: target_not_uniquely_indexed",
+                "absolute.startsWith: target_not_uniquely_indexed",
+                "fs.realpathSync: target_not_uniquely_indexed",
+                "fs.openSync: target_not_uniquely_indexed",
+                "fs.fstatSync: target_not_uniquely_indexed",
+                "stat.isFile: target_not_uniquely_indexed",
+                "fs.readFileSync: target_not_uniquely_indexed",
+                "bytes.toString: target_not_uniquely_indexed",
+                "fs.closeSync: target_not_uniquely_indexed"
+              ]
+            }
+          ],
+          "limitations": [
+            "Known static graph relationships do not establish runtime behavior",
+            "path.resolve: target_not_uniquely_indexed",
+            "absolute.startsWith: target_not_uniquely_indexed",
+            "fs.realpathSync: target_not_uniquely_indexed",
+            "fs.openSync: target_not_uniquely_indexed",
+            "fs.fstatSync: target_not_uniquely_indexed",
+            "stat.isFile: target_not_uniquely_indexed",
+            "fs.readFileSync: target_not_uniquely_indexed",
+            "bytes.toString: target_not_uniquely_indexed",
+            "fs.closeSync: target_not_uniquely_indexed",
+            "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+            "Semantic similarity establishes source relevance only, never a graph dependency."
+          ],
+          "hidden_items": 0
+        }
+      ],
+      "dependency_plan": [
+        []
+      ],
+      "presentation": {
+        "schema_version": "phase9-1",
+        "presentation_id": "f4a2cebb5e827e8a5ab728a752ef8e44",
+        "query_id": "query-ef65f7249a36d1884eb27cc9",
+        "package_id": "9bf013e27b0691135043f78d32988fb5",
+        "support_query_id": "query-ef65f7249a36d1884eb27cc9",
+        "repository_id": "07c17d89f3f49d0b9f8f3e5d",
+        "snapshot_id": "c452d8a7ba594aa787f5eaa82997452b",
+        "depth": "standard",
+        "status": "partial",
+        "items": {
+          "015f6e801bcc43d462642792a390944a": {
+            "item_id": "015f6e801bcc43d462642792a390944a",
+            "origin": "finding",
+            "text": "Static CALLS: hash",
+            "classification": "verified_graph_relationship",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:9bf013e27b0691135043f78d32988fb5:5d868318b4988d3955c0b0c9267453d8"
+            ],
+            "details": [
+              "Relationship: CALLS",
+              "readSource → hash"
+            ],
+            "limitations": [
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          }
+        },
+        "requirements": [
+          {
+            "requirement_id": "req-000",
+            "order": 0,
+            "original": {
+              "intent": "DIRECT_CALLEES",
+              "order": 0,
+              "entity_indices": [
+                0
+              ],
+              "depends_on": [],
+              "required_capabilities": [
+                "graph.find_callees"
+              ],
+              "support": "supported",
+              "limitations": [
+                "Known static graph relationships do not establish runtime behavior"
+              ],
+              "interpretation": null
+            },
+            "title": "Known direct callees",
+            "state": "partially_satisfied",
+            "supporting_requirement_ids": [
+              "req-000"
+            ],
+            "target_context": [
+              "readSource · chunker.js"
+            ],
+            "sections": [
+              {
+                "title": "Known direct callees",
+                "item_ids": [
+                  "015f6e801bcc43d462642792a390944a"
+                ]
+              }
+            ],
+            "operations": [
+              {
+                "operation_id": "query-ef65f7249a36d1884eb27cc9:req-000:op-00",
+                "execution_status": "partial",
+                "coverage_state": "partially_satisfied",
+                "limitations": [
+                  "path.resolve: target_not_uniquely_indexed",
+                  "absolute.startsWith: target_not_uniquely_indexed",
+                  "fs.realpathSync: target_not_uniquely_indexed",
+                  "fs.openSync: target_not_uniquely_indexed",
+                  "fs.fstatSync: target_not_uniquely_indexed",
+                  "stat.isFile: target_not_uniquely_indexed",
+                  "fs.readFileSync: target_not_uniquely_indexed",
+                  "bytes.toString: target_not_uniquely_indexed",
+                  "fs.closeSync: target_not_uniquely_indexed"
+                ]
+              }
+            ],
+            "limitations": [
+              "Known static graph relationships do not establish runtime behavior",
+              "path.resolve: target_not_uniquely_indexed",
+              "absolute.startsWith: target_not_uniquely_indexed",
+              "fs.realpathSync: target_not_uniquely_indexed",
+              "fs.openSync: target_not_uniquely_indexed",
+              "fs.fstatSync: target_not_uniquely_indexed",
+              "stat.isFile: target_not_uniquely_indexed",
+              "fs.readFileSync: target_not_uniquely_indexed",
+              "bytes.toString: target_not_uniquely_indexed",
+              "fs.closeSync: target_not_uniquely_indexed",
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ],
+            "hidden_items": 0
+          }
+        ],
+        "sources": {
+          "cm7:9bf013e27b0691135043f78d32988fb5:5d868318b4988d3955c0b0c9267453d8": {
+            "citation": {
+              "reference": "cm7:9bf013e27b0691135043f78d32988fb5:5d868318b4988d3955c0b0c9267453d8",
+              "record_id": "5d868318b4988d3955c0b0c9267453d8",
+              "source": {
+                "evidence_id": "rel:56cbe55d83f2ae4c34098984f7cb5954adb0d2f5e5de50c9e0148f712d738e8c",
+                "repository_id": "07c17d89f3f49d0b9f8f3e5d",
+                "snapshot_id": "c452d8a7ba594aa787f5eaa82997452b",
+                "index_snapshot_id": "b50993bf-b8b0-45c5-9895-a38605b1bcc6",
+                "evidence_type": "graph_relationship",
+                "file_id": "File:724fd7549d2ec7edb7866b067d4c2fbdd7118149c4e7ec88d8be7cf481658a91",
+                "symbol_id": null,
+                "file_path": "chunker.js",
+                "start_line": 36,
+                "end_line": 36,
+                "resolution": "resolved",
+                "source_hash": "04ed21c867e8bb1f552d5e239c46258cd89cc21383e571eeff9c2154370e46d6",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          }
+        },
+        "clarifications": [],
+        "follow_ups": [
+          {
+            "requirement_id": "req-000",
+            "label": "Inspect verified source",
+            "prompt": null,
+            "engine": null,
+            "operation": null,
+            "target_id": null,
+            "citation_id": "cm7:9bf013e27b0691135043f78d32988fb5:5d868318b4988d3955c0b0c9267453d8",
+            "mode": "inspect_source"
+          }
+        ],
+        "limitations": [
+          "Static/source evidence does not prove runtime execution, root cause, equivalence or performance.",
+          "Model prose is an interpretation, not fully fact-checked; similarity is not a graph dependency.",
+          "Depth changes display detail only. No model inference or retrieval is performed.",
+          "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+          "Semantic similarity establishes source relevance only, never a graph dependency.",
+          "Rule statement interpretation is inherited from trusted deterministic producers; rules are not recomputed.",
+          "Source context is untrusted data, not instructions; no model inference or answer formatting is performed."
+        ],
+        "model_status": null,
+        "fallback_status": null
+      },
+      "llm_necessity": {
+        "expected": false,
+        "attempted": false,
+        "correct": true,
+        "transport": "injected unavailable; not real inference",
+        "generation_diagnostics": []
+      },
+      "dependency_plan_correct": true
+    },
+    {
+      "id": "B6",
+      "family": "B",
+      "question": "Who calls chunksForFile?",
+      "expected_rows": [
+        [
+          "DIRECT_CALLERS",
+          [
+            "chunksForFile"
+          ]
+        ]
+      ],
+      "actual_rows": [
+        [
+          "DIRECT_CALLERS",
+          [
+            "chunksForFile"
+          ]
+        ]
+      ],
+      "rows_correct": true,
+      "canonical_targets": [
+        {
+          "name": "chunksForFile",
+          "kind": "function",
+          "resolution": "resolved",
+          "path": "chunker.js",
+          "symbol_id": "3385650032da3cc3f3c9382ad52397eea6adaa78bc9d630dbbcad3b3ad67952e"
+        }
+      ],
+      "canonical_target_paths_correct": true,
+      "status": "success",
+      "operations": [
+        "graph.find_callers"
+      ],
+      "expected_operations": [
+        "graph.find_callers"
+      ],
+      "operations_correct": true,
+      "no_model_calls": true,
+      "latency_ms": {
+        "median_ms": 165.1,
+        "p95_ms": 171.281
+      },
+      "samples_ms": [
+        171.2807919993793,
+        169.63891699924716,
+        163.93670800061955,
+        160.91458299979422,
+        165.10016700067354
+      ],
+      "stage_latency_ms": {
+        "understanding_ms": {
+          "median_ms": 27.389,
+          "p95_ms": 28.202
+        },
+        "planning_ms": {
+          "median_ms": 0.364,
+          "p95_ms": 0.373
+        },
+        "execution_ms": {
+          "median_ms": 70.356,
+          "p95_ms": 72.683
+        },
+        "aggregation_ms": {
+          "median_ms": 29.848,
+          "p95_ms": 30.446
+        },
+        "llm_preparation_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "llm_generation_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "generation_total_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "formatting_ms": {
+          "median_ms": 0.483,
+          "p95_ms": 0.559
+        },
+        "validation_ms": {
+          "median_ms": 24.063,
+          "p95_ms": 25.709
+        },
+        "total_ms": {
+          "median_ms": 164.662,
+          "p95_ms": 170.823
+        }
+      },
+      "response_bytes": 4849,
+      "source_paths": [
+        "chunker.js",
+        "semanticStore.js"
+      ],
+      "requirements": [
+        {
+          "requirement_id": "req-000",
+          "order": 0,
+          "original": {
+            "intent": "DIRECT_CALLERS",
+            "order": 0,
+            "entity_indices": [
+              0
+            ],
+            "depends_on": [],
+            "required_capabilities": [
+              "graph.find_callers"
+            ],
+            "support": "supported",
+            "limitations": [
+              "Known static graph relationships do not establish runtime behavior"
+            ],
+            "interpretation": null
+          },
+          "title": "Known direct callers",
+          "state": "satisfied",
+          "supporting_requirement_ids": [
+            "req-000"
+          ],
+          "target_context": [
+            "chunksForFile · chunker.js"
+          ],
+          "sections": [
+            {
+              "title": "Known direct callers",
+              "item_ids": [
+                "a45c0849c58bb2d7e178e2c8e1289d20"
+              ]
+            }
+          ],
+          "operations": [
+            {
+              "operation_id": "query-295fcec94f582569890cdb79:req-000:op-00",
+              "execution_status": "success",
+              "coverage_state": "satisfied",
+              "limitations": [
+                "Incoming relationships cover resolved static evidence; unresolved dynamic targets cannot be attributed here"
+              ]
+            }
+          ],
+          "limitations": [
+            "Known static graph relationships do not establish runtime behavior",
+            "Incoming relationships cover resolved static evidence; unresolved dynamic targets cannot be attributed here",
+            "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+            "Semantic similarity establishes source relevance only, never a graph dependency."
+          ],
+          "hidden_items": 0
+        }
+      ],
+      "dependency_plan": [
+        []
+      ],
+      "presentation": {
+        "schema_version": "phase9-1",
+        "presentation_id": "702d3ab542474ba289e181640e670076",
+        "query_id": "query-295fcec94f582569890cdb79",
+        "package_id": "1d7c5be5f7d5df689aa8e36cfb368bea",
+        "support_query_id": "query-295fcec94f582569890cdb79",
+        "repository_id": "07c17d89f3f49d0b9f8f3e5d",
+        "snapshot_id": "c452d8a7ba594aa787f5eaa82997452b",
+        "depth": "standard",
+        "status": "success",
+        "items": {
+          "a45c0849c58bb2d7e178e2c8e1289d20": {
+            "item_id": "a45c0849c58bb2d7e178e2c8e1289d20",
+            "origin": "finding",
+            "text": "Static CALLS: prepareSemantic",
+            "classification": "verified_graph_relationship",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:1d7c5be5f7d5df689aa8e36cfb368bea:728a4be2c4bbde40cad5fe344d3a09ae"
+            ],
+            "details": [
+              "Relationship: CALLS",
+              "prepareSemantic → chunksForFile"
+            ],
+            "limitations": [
+              "Incoming relationships cover resolved static evidence; unresolved dynamic targets cannot be attributed here",
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          }
+        },
+        "requirements": [
+          {
+            "requirement_id": "req-000",
+            "order": 0,
+            "original": {
+              "intent": "DIRECT_CALLERS",
+              "order": 0,
+              "entity_indices": [
+                0
+              ],
+              "depends_on": [],
+              "required_capabilities": [
+                "graph.find_callers"
+              ],
+              "support": "supported",
+              "limitations": [
+                "Known static graph relationships do not establish runtime behavior"
+              ],
+              "interpretation": null
+            },
+            "title": "Known direct callers",
+            "state": "satisfied",
+            "supporting_requirement_ids": [
+              "req-000"
+            ],
+            "target_context": [
+              "chunksForFile · chunker.js"
+            ],
+            "sections": [
+              {
+                "title": "Known direct callers",
+                "item_ids": [
+                  "a45c0849c58bb2d7e178e2c8e1289d20"
+                ]
+              }
+            ],
+            "operations": [
+              {
+                "operation_id": "query-295fcec94f582569890cdb79:req-000:op-00",
+                "execution_status": "success",
+                "coverage_state": "satisfied",
+                "limitations": [
+                  "Incoming relationships cover resolved static evidence; unresolved dynamic targets cannot be attributed here"
+                ]
+              }
+            ],
+            "limitations": [
+              "Known static graph relationships do not establish runtime behavior",
+              "Incoming relationships cover resolved static evidence; unresolved dynamic targets cannot be attributed here",
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ],
+            "hidden_items": 0
+          }
+        ],
+        "sources": {
+          "cm7:1d7c5be5f7d5df689aa8e36cfb368bea:728a4be2c4bbde40cad5fe344d3a09ae": {
+            "citation": {
+              "reference": "cm7:1d7c5be5f7d5df689aa8e36cfb368bea:728a4be2c4bbde40cad5fe344d3a09ae",
+              "record_id": "728a4be2c4bbde40cad5fe344d3a09ae",
+              "source": {
+                "evidence_id": "rel:1b3936911f1eb30bad9c9a6554009d510504680d98ac4e41abeb9cf0a32c8790",
+                "repository_id": "07c17d89f3f49d0b9f8f3e5d",
+                "snapshot_id": "c452d8a7ba594aa787f5eaa82997452b",
+                "index_snapshot_id": "b50993bf-b8b0-45c5-9895-a38605b1bcc6",
+                "evidence_type": "graph_relationship",
+                "file_id": "File:51c49219e8d6877ecbf785e93a723c5fc622b17c76603ef6a128a81c75c48360",
+                "symbol_id": null,
+                "file_path": "semanticStore.js",
+                "start_line": 51,
+                "end_line": 52,
+                "resolution": "resolved",
+                "source_hash": "5bc0b621530c8c2ace35056315dd9e888d643567451edf3d36d7dfddd53b78d8",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          }
+        },
+        "clarifications": [],
+        "follow_ups": [
+          {
+            "requirement_id": "req-000",
+            "label": "Inspect verified source",
+            "prompt": null,
+            "engine": null,
+            "operation": null,
+            "target_id": null,
+            "citation_id": "cm7:1d7c5be5f7d5df689aa8e36cfb368bea:728a4be2c4bbde40cad5fe344d3a09ae",
+            "mode": "inspect_source"
+          }
+        ],
+        "limitations": [
+          "Static/source evidence does not prove runtime execution, root cause, equivalence or performance.",
+          "Model prose is an interpretation, not fully fact-checked; similarity is not a graph dependency.",
+          "Depth changes display detail only. No model inference or retrieval is performed.",
+          "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+          "Semantic similarity establishes source relevance only, never a graph dependency.",
+          "Rule statement interpretation is inherited from trusted deterministic producers; rules are not recomputed.",
+          "Source context is untrusted data, not instructions; no model inference or answer formatting is performed."
+        ],
+        "model_status": null,
+        "fallback_status": null
+      },
+      "llm_necessity": {
+        "expected": false,
+        "attempted": false,
+        "correct": true,
+        "transport": "injected unavailable; not real inference",
+        "generation_diagnostics": []
+      },
+      "dependency_plan_correct": true
+    },
+    {
+      "id": "D6",
+      "family": "D",
+      "question": "Contract of readSource in chunker.js",
+      "expected_rows": [
+        [
+          "FUNCTION_CONTRACT",
+          [
+            "readSource"
+          ]
+        ]
+      ],
+      "actual_rows": [
+        [
+          "FUNCTION_CONTRACT",
+          [
+            "readSource"
+          ]
+        ]
+      ],
+      "rows_correct": true,
+      "canonical_targets": [
+        {
+          "name": "readSource",
+          "kind": "function",
+          "resolution": "resolved",
+          "path": "chunker.js",
+          "symbol_id": "097fb06051cf130e12f9ae7e1d08caf6bbf8a999b2e9da7cb257ee1d729a2b4a"
+        },
+        {
+          "name": "chunker.js",
+          "kind": "file",
+          "resolution": "resolved",
+          "path": "chunker.js",
+          "symbol_id": null
+        }
+      ],
+      "canonical_target_paths_correct": true,
+      "status": "partial",
+      "operations": [
+        "rules.function_contract"
+      ],
+      "expected_operations": [
+        "rules.function_contract"
+      ],
+      "operations_correct": true,
+      "no_model_calls": true,
+      "latency_ms": {
+        "median_ms": 200.74,
+        "p95_ms": 209.258
+      },
+      "samples_ms": [
+        200.73958299963124,
+        202.97237500017218,
+        209.25791599984223,
+        180.1926670004832,
+        188.12770800013823
+      ],
+      "stage_latency_ms": {
+        "understanding_ms": {
+          "median_ms": 29.176,
+          "p95_ms": 38.155
+        },
+        "planning_ms": {
+          "median_ms": 0.43,
+          "p95_ms": 0.699
+        },
+        "execution_ms": {
+          "median_ms": 95.936,
+          "p95_ms": 102.787
+        },
+        "aggregation_ms": {
+          "median_ms": 27.982,
+          "p95_ms": 29.355
+        },
+        "llm_preparation_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "llm_generation_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "generation_total_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "formatting_ms": {
+          "median_ms": 0.503,
+          "p95_ms": 0.526
+        },
+        "validation_ms": {
+          "median_ms": 24.778,
+          "p95_ms": 30.896
+        },
+        "total_ms": {
+          "median_ms": 200.29,
+          "p95_ms": 208.836
+        }
+      },
+      "response_bytes": 7147,
+      "source_paths": [
+        "chunker.js"
+      ],
+      "requirements": [
+        {
+          "requirement_id": "req-000",
+          "order": 0,
+          "original": {
+            "intent": "FUNCTION_CONTRACT",
+            "order": 0,
+            "entity_indices": [
+              0
+            ],
+            "depends_on": [],
+            "required_capabilities": [
+              "rules.function_contract"
+            ],
+            "support": "partial",
+            "limitations": [
+              "Declared contracts only; complete return/exception behavior is unavailable"
+            ],
+            "interpretation": null
+          },
+          "title": "Indexed function contract",
+          "state": "partially_satisfied",
+          "supporting_requirement_ids": [
+            "req-000"
+          ],
+          "target_context": [
+            "readSource · chunker.js"
+          ],
+          "sections": [
+            {
+              "title": "Indexed function contract",
+              "item_ids": [
+                "f022da8d8fc94c71e9344ea1ec6e5808"
+              ]
+            }
+          ],
+          "operations": [
+            {
+              "operation_id": "query-1d5f4bc32e0745ae6f990388:req-000:op-00",
+              "execution_status": "partial",
+              "coverage_state": "partially_satisfied",
+              "limitations": [
+                "JS/TS indexed static evidence only; dynamic targets may be unresolved.",
+                "Known test references follow the existing filename convention, not execution or coverage.",
+                "Return values and thrown exceptions are not comprehensively indexed.",
+                "Complete return-value and exception analysis is unavailable in the current metadata"
+              ]
+            }
+          ],
+          "limitations": [
+            "Declared contracts only; complete return/exception behavior is unavailable",
+            "JS/TS indexed static evidence only; dynamic targets may be unresolved.",
+            "Known test references follow the existing filename convention, not execution or coverage.",
+            "Return values and thrown exceptions are not comprehensively indexed.",
+            "Complete return-value and exception analysis is unavailable in the current metadata",
+            "Only indexed declarations are extracted.",
+            "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+            "Semantic similarity establishes source relevance only, never a graph dependency."
+          ],
+          "hidden_items": 0
+        }
+      ],
+      "dependency_plan": [
+        []
+      ],
+      "presentation": {
+        "schema_version": "phase9-1",
+        "presentation_id": "a22dde05439ac30374ccd197bd2a23fd",
+        "query_id": "query-1d5f4bc32e0745ae6f990388",
+        "package_id": "440e28b90fad846e25b9cf66e10f0253",
+        "support_query_id": "query-1d5f4bc32e0745ae6f990388",
+        "repository_id": "07c17d89f3f49d0b9f8f3e5d",
+        "snapshot_id": "c452d8a7ba594aa787f5eaa82997452b",
+        "depth": "standard",
+        "status": "partial",
+        "items": {
+          "f022da8d8fc94c71e9344ea1ec6e5808": {
+            "item_id": "f022da8d8fc94c71e9344ea1ec6e5808",
+            "origin": "finding",
+            "text": "Declared function signature; no complete return/exception behavior claim",
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:440e28b90fad846e25b9cf66e10f0253:14ff7924aaed0baf52d3db377130ecac"
+            ],
+            "details": [
+              "{\"declared_async\": false, \"exception_behavior\": \"not_indexed\", \"exported\": false, \"kind\": \"function\", \"name\": \"readSource\", \"parameters\": [{\"name\": \"root\", \"optional\": false, \"rest\": false, \"span\": {\"end_byte\": 730, \"end_column\": 25, \"end_line\": 26, \"start_byte\": 726, \"start_column\": 21, \"start_line\": 26}, \"type\": null}, {\"name\": \"relativePath\", \"optional\": false, \"rest\": false, \"span\": {\"end_byte\": 744, \"end_column\": 39, \"end_line\": 26, \"start_byte\": 732, \"start_column\": 27, \"start_line\": 26}, \"type\": null}, {\"name\": \"expectedHash\", \"optional\": false, \"rest\": false, \"span\": {\"end_byte\": 758, \"end_column\": 53, \"end_line\": 26, \"start_byte\": 746, \"start_column\": 41, \"start_line\": 26}, \"type\": null}], \"return_annotation\": null, \"return_behavior\": \"not_inferred\"}"
+            ],
+            "limitations": [
+              "JS/TS indexed static evidence only; dynamic targets may be unresolved.",
+              "Known test references follow the existing filename convention, not execution or coverage.",
+              "Return values and thrown exceptions are not comprehensively indexed.",
+              "Complete return-value and exception analysis is unavailable in the current metadata",
+              "Only indexed declarations are extracted.",
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          }
+        },
+        "requirements": [
+          {
+            "requirement_id": "req-000",
+            "order": 0,
+            "original": {
+              "intent": "FUNCTION_CONTRACT",
+              "order": 0,
+              "entity_indices": [
+                0
+              ],
+              "depends_on": [],
+              "required_capabilities": [
+                "rules.function_contract"
+              ],
+              "support": "partial",
+              "limitations": [
+                "Declared contracts only; complete return/exception behavior is unavailable"
+              ],
+              "interpretation": null
+            },
+            "title": "Indexed function contract",
+            "state": "partially_satisfied",
+            "supporting_requirement_ids": [
+              "req-000"
+            ],
+            "target_context": [
+              "readSource · chunker.js"
+            ],
+            "sections": [
+              {
+                "title": "Indexed function contract",
+                "item_ids": [
+                  "f022da8d8fc94c71e9344ea1ec6e5808"
+                ]
+              }
+            ],
+            "operations": [
+              {
+                "operation_id": "query-1d5f4bc32e0745ae6f990388:req-000:op-00",
+                "execution_status": "partial",
+                "coverage_state": "partially_satisfied",
+                "limitations": [
+                  "JS/TS indexed static evidence only; dynamic targets may be unresolved.",
+                  "Known test references follow the existing filename convention, not execution or coverage.",
+                  "Return values and thrown exceptions are not comprehensively indexed.",
+                  "Complete return-value and exception analysis is unavailable in the current metadata"
+                ]
+              }
+            ],
+            "limitations": [
+              "Declared contracts only; complete return/exception behavior is unavailable",
+              "JS/TS indexed static evidence only; dynamic targets may be unresolved.",
+              "Known test references follow the existing filename convention, not execution or coverage.",
+              "Return values and thrown exceptions are not comprehensively indexed.",
+              "Complete return-value and exception analysis is unavailable in the current metadata",
+              "Only indexed declarations are extracted.",
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ],
+            "hidden_items": 0
+          }
+        ],
+        "sources": {
+          "cm7:440e28b90fad846e25b9cf66e10f0253:14ff7924aaed0baf52d3db377130ecac": {
+            "citation": {
+              "reference": "cm7:440e28b90fad846e25b9cf66e10f0253:14ff7924aaed0baf52d3db377130ecac",
+              "record_id": "14ff7924aaed0baf52d3db377130ecac",
+              "source": {
+                "evidence_id": "097fb06051cf130e12f9ae7e1d08caf6bbf8a999b2e9da7cb257ee1d729a2b4a",
+                "repository_id": "07c17d89f3f49d0b9f8f3e5d",
+                "snapshot_id": "c452d8a7ba594aa787f5eaa82997452b",
+                "index_snapshot_id": "6c958731-be5a-4e40-bbe8-98451caadcf9",
+                "evidence_type": "symbol_definition",
+                "file_id": "File:724fd7549d2ec7edb7866b067d4c2fbdd7118149c4e7ec88d8be7cf481658a91",
+                "symbol_id": "097fb06051cf130e12f9ae7e1d08caf6bbf8a999b2e9da7cb257ee1d729a2b4a",
+                "file_path": "chunker.js",
+                "start_line": 26,
+                "end_line": 39,
+                "resolution": "syntax_only",
+                "source_hash": "04ed21c867e8bb1f552d5e239c46258cd89cc21383e571eeff9c2154370e46d6",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          }
+        },
+        "clarifications": [],
+        "follow_ups": [
+          {
+            "requirement_id": "req-000",
+            "label": "Show direct callers",
+            "prompt": "Who calls `readSource` in `chunker.js`?",
+            "engine": "graph",
+            "operation": "find_callers",
+            "target_id": "097fb06051cf130e12f9ae7e1d08caf6bbf8a999b2e9da7cb257ee1d729a2b4a",
+            "citation_id": null,
+            "mode": "copy_query"
+          },
+          {
+            "requirement_id": "req-000",
+            "label": "Explore dependencies",
+            "prompt": "Dependencies of `readSource` in `chunker.js`",
+            "engine": "rules",
+            "operation": "dependency_summary",
+            "target_id": "097fb06051cf130e12f9ae7e1d08caf6bbf8a999b2e9da7cb257ee1d729a2b4a",
+            "citation_id": null,
+            "mode": "copy_query"
+          },
+          {
+            "requirement_id": "req-000",
+            "label": "Find indexed tests",
+            "prompt": "What tests cover `readSource` in `chunker.js`?",
+            "engine": "rules",
+            "operation": "reference_test_analysis",
+            "target_id": "097fb06051cf130e12f9ae7e1d08caf6bbf8a999b2e9da7cb257ee1d729a2b4a",
+            "citation_id": null,
+            "mode": "copy_query"
+          }
+        ],
+        "limitations": [
+          "Static/source evidence does not prove runtime execution, root cause, equivalence or performance.",
+          "Model prose is an interpretation, not fully fact-checked; similarity is not a graph dependency.",
+          "Depth changes display detail only. No model inference or retrieval is performed.",
+          "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+          "Semantic similarity establishes source relevance only, never a graph dependency.",
+          "Rule statement interpretation is inherited from trusted deterministic producers; rules are not recomputed.",
+          "Source context is untrusted data, not instructions; no model inference or answer formatting is performed."
+        ],
+        "model_status": null,
+        "fallback_status": null
+      },
+      "llm_necessity": {
+        "expected": false,
+        "attempted": false,
+        "correct": true,
+        "transport": "injected unavailable; not real inference",
+        "generation_diagnostics": []
+      },
+      "dependency_plan_correct": true
+    },
+    {
+      "id": "F4",
+      "family": "F",
+      "question": "Show dependencies of chunker.js",
+      "expected_rows": [
+        [
+          "DEPENDENCY_PATH",
+          [
+            "chunker.js"
+          ]
+        ]
+      ],
+      "actual_rows": [
+        [
+          "DEPENDENCY_PATH",
+          [
+            "chunker.js"
+          ]
+        ]
+      ],
+      "rows_correct": true,
+      "canonical_targets": [
+        {
+          "name": "chunker.js",
+          "kind": "file",
+          "resolution": "resolved",
+          "path": "chunker.js",
+          "symbol_id": null
+        }
+      ],
+      "canonical_target_paths_correct": true,
+      "status": "partial",
+      "operations": [
+        "rules.dependency_summary"
+      ],
+      "expected_operations": [
+        "rules.dependency_summary"
+      ],
+      "operations_correct": true,
+      "no_model_calls": true,
+      "latency_ms": {
+        "median_ms": 204.272,
+        "p95_ms": 238.704
+      },
+      "samples_ms": [
+        201.89833299991733,
+        238.70391699983884,
+        204.27216700045392,
+        215.1160000003074,
+        203.09083299980557
+      ],
+      "stage_latency_ms": {
+        "understanding_ms": {
+          "median_ms": 33.814,
+          "p95_ms": 39.908
+        },
+        "planning_ms": {
+          "median_ms": 0.475,
+          "p95_ms": 0.854
+        },
+        "execution_ms": {
+          "median_ms": 87.525,
+          "p95_ms": 101.463
+        },
+        "aggregation_ms": {
+          "median_ms": 36.205,
+          "p95_ms": 39.393
+        },
+        "llm_preparation_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "llm_generation_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "generation_total_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "formatting_ms": {
+          "median_ms": 0.528,
+          "p95_ms": 0.617
+        },
+        "validation_ms": {
+          "median_ms": 33.01,
+          "p95_ms": 40.753
+        },
+        "total_ms": {
+          "median_ms": 203.725,
+          "p95_ms": 238.118
+        }
+      },
+      "response_bytes": 5536,
+      "source_paths": [
+        "chunker.js"
+      ],
+      "requirements": [
+        {
+          "requirement_id": "req-000",
+          "order": 0,
+          "original": {
+            "intent": "DEPENDENCY_PATH",
+            "order": 0,
+            "entity_indices": [
+              0
+            ],
+            "depends_on": [],
+            "required_capabilities": [
+              "rules.dependency_summary"
+            ],
+            "support": "supported",
+            "limitations": [
+              "Known static graph relationships do not establish runtime behavior"
+            ],
+            "interpretation": "direct_dependency_summary"
+          },
+          "title": "Static dependencies and paths",
+          "state": "partially_satisfied",
+          "supporting_requirement_ids": [
+            "req-000"
+          ],
+          "target_context": [
+            "chunker.js · chunker.js"
+          ],
+          "sections": [
+            {
+              "title": "Static dependencies and paths",
+              "item_ids": [
+                "ef98ee8876a6c096cca2d9f58d0b6bca"
+              ]
+            }
+          ],
+          "operations": [
+            {
+              "operation_id": "query-f449c53e49ceae25ce10e423:req-000:op-00",
+              "execution_status": "partial",
+              "coverage_state": "partially_satisfied",
+              "limitations": [
+                "JS/TS indexed static evidence only; dynamic targets may be unresolved.",
+                "Known test references follow the existing filename convention, not execution or coverage.",
+                "Module dependencies are derived from resolved imports, not runtime loading.",
+                "Graph footprint exceeds max_nodes/max_edges; relationship/path/test analysis omitted"
+              ]
+            }
+          ],
+          "limitations": [
+            "Known static graph relationships do not establish runtime behavior",
+            "JS/TS indexed static evidence only; dynamic targets may be unresolved.",
+            "Known test references follow the existing filename convention, not execution or coverage.",
+            "Module dependencies are derived from resolved imports, not runtime loading.",
+            "Graph footprint exceeds max_nodes/max_edges; relationship/path/test analysis omitted",
+            "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+            "Semantic similarity establishes source relevance only, never a graph dependency."
+          ],
+          "hidden_items": 0
+        }
+      ],
+      "dependency_plan": [
+        []
+      ],
+      "presentation": {
+        "schema_version": "phase9-1",
+        "presentation_id": "48b03559790f72307f44231864af5de4",
+        "query_id": "query-f449c53e49ceae25ce10e423",
+        "package_id": "d062f2fb7e5d13df087bfe58fb23b480",
+        "support_query_id": "query-f449c53e49ceae25ce10e423",
+        "repository_id": "07c17d89f3f49d0b9f8f3e5d",
+        "snapshot_id": "c452d8a7ba594aa787f5eaa82997452b",
+        "depth": "standard",
+        "status": "partial",
+        "items": {
+          "ef98ee8876a6c096cca2d9f58d0b6bca": {
+            "item_id": "ef98ee8876a6c096cca2d9f58d0b6bca",
+            "origin": "finding",
+            "text": "Static dependency summary for the resolved target",
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:d062f2fb7e5d13df087bfe58fb23b480:856de02a58b20e43ffb4959b831bd307"
+            ],
+            "details": [],
+            "limitations": [
+              "JS/TS indexed static evidence only; dynamic targets may be unresolved.",
+              "Known test references follow the existing filename convention, not execution or coverage.",
+              "Module dependencies are derived from resolved imports, not runtime loading.",
+              "Graph footprint exceeds max_nodes/max_edges; relationship/path/test analysis omitted",
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          }
+        },
+        "requirements": [
+          {
+            "requirement_id": "req-000",
+            "order": 0,
+            "original": {
+              "intent": "DEPENDENCY_PATH",
+              "order": 0,
+              "entity_indices": [
+                0
+              ],
+              "depends_on": [],
+              "required_capabilities": [
+                "rules.dependency_summary"
+              ],
+              "support": "supported",
+              "limitations": [
+                "Known static graph relationships do not establish runtime behavior"
+              ],
+              "interpretation": "direct_dependency_summary"
+            },
+            "title": "Static dependencies and paths",
+            "state": "partially_satisfied",
+            "supporting_requirement_ids": [
+              "req-000"
+            ],
+            "target_context": [
+              "chunker.js · chunker.js"
+            ],
+            "sections": [
+              {
+                "title": "Static dependencies and paths",
+                "item_ids": [
+                  "ef98ee8876a6c096cca2d9f58d0b6bca"
+                ]
+              }
+            ],
+            "operations": [
+              {
+                "operation_id": "query-f449c53e49ceae25ce10e423:req-000:op-00",
+                "execution_status": "partial",
+                "coverage_state": "partially_satisfied",
+                "limitations": [
+                  "JS/TS indexed static evidence only; dynamic targets may be unresolved.",
+                  "Known test references follow the existing filename convention, not execution or coverage.",
+                  "Module dependencies are derived from resolved imports, not runtime loading.",
+                  "Graph footprint exceeds max_nodes/max_edges; relationship/path/test analysis omitted"
+                ]
+              }
+            ],
+            "limitations": [
+              "Known static graph relationships do not establish runtime behavior",
+              "JS/TS indexed static evidence only; dynamic targets may be unresolved.",
+              "Known test references follow the existing filename convention, not execution or coverage.",
+              "Module dependencies are derived from resolved imports, not runtime loading.",
+              "Graph footprint exceeds max_nodes/max_edges; relationship/path/test analysis omitted",
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ],
+            "hidden_items": 0
+          }
+        ],
+        "sources": {
+          "cm7:d062f2fb7e5d13df087bfe58fb23b480:856de02a58b20e43ffb4959b831bd307": {
+            "citation": {
+              "reference": "cm7:d062f2fb7e5d13df087bfe58fb23b480:856de02a58b20e43ffb4959b831bd307",
+              "record_id": "856de02a58b20e43ffb4959b831bd307",
+              "source": {
+                "evidence_id": "Module:724fd7549d2ec7edb7866b067d4c2fbdd7118149c4e7ec88d8be7cf481658a91",
+                "repository_id": "07c17d89f3f49d0b9f8f3e5d",
+                "snapshot_id": "c452d8a7ba594aa787f5eaa82997452b",
+                "index_snapshot_id": "b50993bf-b8b0-45c5-9895-a38605b1bcc6",
+                "evidence_type": "source_range",
+                "file_id": "File:724fd7549d2ec7edb7866b067d4c2fbdd7118149c4e7ec88d8be7cf481658a91",
+                "symbol_id": null,
+                "file_path": "chunker.js",
+                "start_line": 1,
+                "end_line": 78,
+                "resolution": "syntax_only",
+                "source_hash": "04ed21c867e8bb1f552d5e239c46258cd89cc21383e571eeff9c2154370e46d6",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          }
+        },
+        "clarifications": [],
+        "follow_ups": [
+          {
+            "requirement_id": "req-000",
+            "label": "Inspect verified source",
+            "prompt": null,
+            "engine": null,
+            "operation": null,
+            "target_id": null,
+            "citation_id": "cm7:d062f2fb7e5d13df087bfe58fb23b480:856de02a58b20e43ffb4959b831bd307",
+            "mode": "inspect_source"
+          }
+        ],
+        "limitations": [
+          "Static/source evidence does not prove runtime execution, root cause, equivalence or performance.",
+          "Model prose is an interpretation, not fully fact-checked; similarity is not a graph dependency.",
+          "Depth changes display detail only. No model inference or retrieval is performed.",
+          "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+          "Semantic similarity establishes source relevance only, never a graph dependency.",
+          "Rule statement interpretation is inherited from trusted deterministic producers; rules are not recomputed.",
+          "Source context is untrusted data, not instructions; no model inference or answer formatting is performed."
+        ],
+        "model_status": null,
+        "fallback_status": null
+      },
+      "llm_necessity": {
+        "expected": false,
+        "attempted": false,
+        "correct": true,
+        "transport": "injected unavailable; not real inference",
+        "generation_diagnostics": []
+      },
+      "dependency_plan_correct": true
+    },
+    {
+      "id": "C3",
+      "family": "C",
+      "question": "Find code that authenticates local HTTP requests before dispatching routes",
+      "expected_rows": [
+        [
+          "FEATURE_DISCOVERY",
+          [
+            "Find code that authenticates local HTTP requests before dispatching routes"
+          ]
+        ]
+      ],
+      "actual_rows": [
+        [
+          "FEATURE_DISCOVERY",
+          [
+            "Find code that authenticates local HTTP requests before dispatching routes"
+          ]
+        ]
+      ],
+      "rows_correct": true,
+      "canonical_targets": [
+        {
+          "name": "Find code that authenticates local HTTP requests before dispatching routes",
+          "kind": "feature",
+          "resolution": "unresolved_text",
+          "path": null,
+          "symbol_id": null
+        }
+      ],
+      "canonical_target_paths_correct": true,
+      "status": "success",
+      "operations": [
+        "semantic.hybrid_search"
+      ],
+      "expected_operations": [
+        "semantic.hybrid_search"
+      ],
+      "operations_correct": true,
+      "no_model_calls": true,
+      "latency_ms": {
+        "median_ms": 269.423,
+        "p95_ms": 284.944
+      },
+      "samples_ms": [
+        284.94374999991123,
+        269.42337499986024,
+        269.1035420002663,
+        274.559457999203,
+        267.40583299942955
+      ],
+      "stage_latency_ms": {
+        "understanding_ms": {
+          "median_ms": 25.703,
+          "p95_ms": 28.8
+        },
+        "planning_ms": {
+          "median_ms": 0.449,
+          "p95_ms": 0.47
+        },
+        "execution_ms": {
+          "median_ms": 164.619,
+          "p95_ms": 174.489
+        },
+        "aggregation_ms": {
+          "median_ms": 33.641,
+          "p95_ms": 34.338
+        },
+        "llm_preparation_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "llm_generation_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "generation_total_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "formatting_ms": {
+          "median_ms": 0.728,
+          "p95_ms": 0.774
+        },
+        "validation_ms": {
+          "median_ms": 29.846,
+          "p95_ms": 30.683
+        },
+        "total_ms": {
+          "median_ms": 268.978,
+          "p95_ms": 284.476
+        }
+      },
+      "response_bytes": 11470,
+      "source_paths": [
+        "frameworkAdapters.js",
+        "server.js"
+      ],
+      "requirements": [
+        {
+          "requirement_id": "req-000",
+          "order": 0,
+          "original": {
+            "intent": "FEATURE_DISCOVERY",
+            "order": 0,
+            "entity_indices": [
+              0
+            ],
+            "depends_on": [],
+            "required_capabilities": [
+              "semantic.hybrid_search"
+            ],
+            "support": "supported",
+            "limitations": [
+              "Semantic similarity is discovery evidence, not a structural dependency"
+            ],
+            "interpretation": null
+          },
+          "title": "Feature-location candidates (similarity, not dependency)",
+          "state": "satisfied",
+          "supporting_requirement_ids": [
+            "req-000"
+          ],
+          "target_context": [
+            "Find code that authenticates local HTTP requests before dispatching routes"
+          ],
+          "sections": [
+            {
+              "title": "Feature-location candidates (similarity, not dependency)",
+              "item_ids": [
+                "7e475749425e73aa461f3dd5f4726ea0",
+                "c75302b7e3a1ce8d987ce375d9bb7acc",
+                "c10a1cdb895ea6f3d234e1d0940917dc",
+                "369833d2182bc27e44037092e9efbe61",
+                "3e9e37d194abf2ac88cc8320915f9fdf"
+              ]
+            }
+          ],
+          "operations": [
+            {
+              "operation_id": "query-66cb5785a4efbb4255f4e577:req-000:op-00",
+              "execution_status": "success",
+              "coverage_state": "satisfied",
+              "limitations": []
+            }
+          ],
+          "limitations": [
+            "Semantic similarity is discovery evidence, not a structural dependency",
+            "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+            "Semantic similarity establishes source relevance only, never a graph dependency."
+          ],
+          "hidden_items": 0
+        }
+      ],
+      "dependency_plan": [
+        []
+      ],
+      "presentation": {
+        "schema_version": "phase9-1",
+        "presentation_id": "0e400e98a6f6bda1b03c763604e2c611",
+        "query_id": "query-66cb5785a4efbb4255f4e577",
+        "package_id": "7154cc466fb74301ddfa31a7e125f478",
+        "support_query_id": "query-66cb5785a4efbb4255f4e577",
+        "repository_id": "07c17d89f3f49d0b9f8f3e5d",
+        "snapshot_id": "c452d8a7ba594aa787f5eaa82997452b",
+        "depth": "standard",
+        "status": "success",
+        "items": {
+          "369833d2182bc27e44037092e9efbe61": {
+            "item_id": "369833d2182bc27e44037092e9efbe61",
+            "origin": "finding",
+            "text": "Candidate 4: handleRequest (similarity/keyword relevance, not a dependency)",
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:7154cc466fb74301ddfa31a7e125f478:c50bfa669f522910c35b1daa32b3ce28"
+            ],
+            "details": [
+              "Retrieval methods: keyword/semantic",
+              "Ranking signals: {\"fusion\": 0.027222222222222224, \"keyword\": 4.432348123711323, \"retrieval\": 0.6610493659973145}"
+            ],
+            "limitations": [
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          },
+          "3e9e37d194abf2ac88cc8320915f9fdf": {
+            "item_id": "3e9e37d194abf2ac88cc8320915f9fdf",
+            "origin": "finding",
+            "text": "Candidate 5: handleRequest (similarity/keyword relevance, not a dependency)",
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:7154cc466fb74301ddfa31a7e125f478:b1f4bd6f982e0e7d2256d734ce86920e"
+            ],
+            "details": [
+              "Retrieval methods: semantic",
+              "Ranking signals: {\"fusion\": 0.01639344262295082, \"keyword\": null, \"retrieval\": 0.6866106390953064}"
+            ],
+            "limitations": [
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          },
+          "7e475749425e73aa461f3dd5f4726ea0": {
+            "item_id": "7e475749425e73aa461f3dd5f4726ea0",
+            "origin": "finding",
+            "text": "Candidate 1: frameworkAdapters.js (similarity/keyword relevance, not a dependency)",
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:7154cc466fb74301ddfa31a7e125f478:3f6afc07a914268ea4ccb39de72972d1"
+            ],
+            "details": [
+              "Retrieval methods: keyword/semantic",
+              "Ranking signals: {\"fusion\": 0.03177805800756621, \"keyword\": 11.97236360052326, \"retrieval\": 0.6775562763214111}"
+            ],
+            "limitations": [
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          },
+          "c10a1cdb895ea6f3d234e1d0940917dc": {
+            "item_id": "c10a1cdb895ea6f3d234e1d0940917dc",
+            "origin": "finding",
+            "text": "Candidate 3: extract (similarity/keyword relevance, not a dependency)",
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:7154cc466fb74301ddfa31a7e125f478:3be38fd6c446f2efa338f3cea1d6f7c7"
+            ],
+            "details": [
+              "Retrieval methods: keyword/semantic",
+              "Ranking signals: {\"fusion\": 0.02946236559139785, \"keyword\": 8.662628689248473, \"retrieval\": 0.6475008130073547}"
+            ],
+            "limitations": [
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          },
+          "c75302b7e3a1ce8d987ce375d9bb7acc": {
+            "item_id": "c75302b7e3a1ce8d987ce375d9bb7acc",
+            "origin": "finding",
+            "text": "Candidate 2: extract (similarity/keyword relevance, not a dependency)",
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "citation_ids": [
+              "cm7:7154cc466fb74301ddfa31a7e125f478:98a069ef5def6e5fecf106b78cef872c"
+            ],
+            "details": [
+              "Retrieval methods: keyword/semantic",
+              "Ranking signals: {\"fusion\": 0.03055037313432836, \"keyword\": 7.171101100667131, \"retrieval\": 0.6784865260124207}"
+            ],
+            "limitations": [
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ]
+          }
+        },
+        "requirements": [
+          {
+            "requirement_id": "req-000",
+            "order": 0,
+            "original": {
+              "intent": "FEATURE_DISCOVERY",
+              "order": 0,
+              "entity_indices": [
+                0
+              ],
+              "depends_on": [],
+              "required_capabilities": [
+                "semantic.hybrid_search"
+              ],
+              "support": "supported",
+              "limitations": [
+                "Semantic similarity is discovery evidence, not a structural dependency"
+              ],
+              "interpretation": null
+            },
+            "title": "Feature-location candidates (similarity, not dependency)",
+            "state": "satisfied",
+            "supporting_requirement_ids": [
+              "req-000"
+            ],
+            "target_context": [
+              "Find code that authenticates local HTTP requests before dispatching routes"
+            ],
+            "sections": [
+              {
+                "title": "Feature-location candidates (similarity, not dependency)",
+                "item_ids": [
+                  "7e475749425e73aa461f3dd5f4726ea0",
+                  "c75302b7e3a1ce8d987ce375d9bb7acc",
+                  "c10a1cdb895ea6f3d234e1d0940917dc",
+                  "369833d2182bc27e44037092e9efbe61",
+                  "3e9e37d194abf2ac88cc8320915f9fdf"
+                ]
+              }
+            ],
+            "operations": [
+              {
+                "operation_id": "query-66cb5785a4efbb4255f4e577:req-000:op-00",
+                "execution_status": "success",
+                "coverage_state": "satisfied",
+                "limitations": []
+              }
+            ],
+            "limitations": [
+              "Semantic similarity is discovery evidence, not a structural dependency",
+              "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+              "Semantic similarity establishes source relevance only, never a graph dependency."
+            ],
+            "hidden_items": 0
+          }
+        ],
+        "sources": {
+          "cm7:7154cc466fb74301ddfa31a7e125f478:3be38fd6c446f2efa338f3cea1d6f7c7": {
+            "citation": {
+              "reference": "cm7:7154cc466fb74301ddfa31a7e125f478:3be38fd6c446f2efa338f3cea1d6f7c7",
+              "record_id": "3be38fd6c446f2efa338f3cea1d6f7c7",
+              "source": {
+                "evidence_id": "90642a1c-75fd-5dac-bb07-e27e3f12adb2",
+                "repository_id": "07c17d89f3f49d0b9f8f3e5d",
+                "snapshot_id": "c452d8a7ba594aa787f5eaa82997452b",
+                "index_snapshot_id": "4a23a02b-7d1a-4d5b-9049-c569fdbd4ef8",
+                "evidence_type": "code_chunk",
+                "file_id": "File:481c4284bc6388f452c168cbad80fe543905d08567104831409e806716bbd547",
+                "symbol_id": "fea8f9ab31a5311bf44d8564471dd324ba630ad35910a777c7d0ab6b3ae63125",
+                "file_path": "frameworkAdapters.js",
+                "start_line": 20,
+                "end_line": 38,
+                "resolution": "not_applicable",
+                "source_hash": "ccce4df36c55c875003fcd035d1785b11e60ac8198b59f7cdcf175a3a821b584",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          },
+          "cm7:7154cc466fb74301ddfa31a7e125f478:3f6afc07a914268ea4ccb39de72972d1": {
+            "citation": {
+              "reference": "cm7:7154cc466fb74301ddfa31a7e125f478:3f6afc07a914268ea4ccb39de72972d1",
+              "record_id": "3f6afc07a914268ea4ccb39de72972d1",
+              "source": {
+                "evidence_id": "d3ac8cdb-0729-5a1d-8e24-57f7e14c4a61",
+                "repository_id": "07c17d89f3f49d0b9f8f3e5d",
+                "snapshot_id": "c452d8a7ba594aa787f5eaa82997452b",
+                "index_snapshot_id": "4a23a02b-7d1a-4d5b-9049-c569fdbd4ef8",
+                "evidence_type": "code_chunk",
+                "file_id": "File:481c4284bc6388f452c168cbad80fe543905d08567104831409e806716bbd547",
+                "symbol_id": null,
+                "file_path": "frameworkAdapters.js",
+                "start_line": 17,
+                "end_line": 19,
+                "resolution": "not_applicable",
+                "source_hash": "ccce4df36c55c875003fcd035d1785b11e60ac8198b59f7cdcf175a3a821b584",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          },
+          "cm7:7154cc466fb74301ddfa31a7e125f478:98a069ef5def6e5fecf106b78cef872c": {
+            "citation": {
+              "reference": "cm7:7154cc466fb74301ddfa31a7e125f478:98a069ef5def6e5fecf106b78cef872c",
+              "record_id": "98a069ef5def6e5fecf106b78cef872c",
+              "source": {
+                "evidence_id": "d111faed-56d0-53de-9ae2-d336b1adf493",
+                "repository_id": "07c17d89f3f49d0b9f8f3e5d",
+                "snapshot_id": "c452d8a7ba594aa787f5eaa82997452b",
+                "index_snapshot_id": "4a23a02b-7d1a-4d5b-9049-c569fdbd4ef8",
+                "evidence_type": "code_chunk",
+                "file_id": "File:481c4284bc6388f452c168cbad80fe543905d08567104831409e806716bbd547",
+                "symbol_id": "fea8f9ab31a5311bf44d8564471dd324ba630ad35910a777c7d0ab6b3ae63125",
+                "file_path": "frameworkAdapters.js",
+                "start_line": 37,
+                "end_line": 45,
+                "resolution": "not_applicable",
+                "source_hash": "ccce4df36c55c875003fcd035d1785b11e60ac8198b59f7cdcf175a3a821b584",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          },
+          "cm7:7154cc466fb74301ddfa31a7e125f478:b1f4bd6f982e0e7d2256d734ce86920e": {
+            "citation": {
+              "reference": "cm7:7154cc466fb74301ddfa31a7e125f478:b1f4bd6f982e0e7d2256d734ce86920e",
+              "record_id": "b1f4bd6f982e0e7d2256d734ce86920e",
+              "source": {
+                "evidence_id": "05562dce-5df9-577a-9d03-667c522509c6",
+                "repository_id": "07c17d89f3f49d0b9f8f3e5d",
+                "snapshot_id": "c452d8a7ba594aa787f5eaa82997452b",
+                "index_snapshot_id": "4a23a02b-7d1a-4d5b-9049-c569fdbd4ef8",
+                "evidence_type": "code_chunk",
+                "file_id": "File:6a9bd8ee9b36e14f919cb39758f3f040fac8fbf120ea67dff7247d72892189f7",
+                "symbol_id": "b67872df5c20e3ac9c99e41478e11beabea0ef1ab96b1ac9a96d66357d9ab679",
+                "file_path": "server.js",
+                "start_line": 80,
+                "end_line": 106,
+                "resolution": "not_applicable",
+                "source_hash": "d98f3ba92cd732f7082727eed1b5f9c2ab64312e0cfc63be6db0301a21503889",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          },
+          "cm7:7154cc466fb74301ddfa31a7e125f478:c50bfa669f522910c35b1daa32b3ce28": {
+            "citation": {
+              "reference": "cm7:7154cc466fb74301ddfa31a7e125f478:c50bfa669f522910c35b1daa32b3ce28",
+              "record_id": "c50bfa669f522910c35b1daa32b3ce28",
+              "source": {
+                "evidence_id": "96ce4934-1102-58be-922e-404a06ae526a",
+                "repository_id": "07c17d89f3f49d0b9f8f3e5d",
+                "snapshot_id": "c452d8a7ba594aa787f5eaa82997452b",
+                "index_snapshot_id": "4a23a02b-7d1a-4d5b-9049-c569fdbd4ef8",
+                "evidence_type": "code_chunk",
+                "file_id": "File:6a9bd8ee9b36e14f919cb39758f3f040fac8fbf120ea67dff7247d72892189f7",
+                "symbol_id": "b67872df5c20e3ac9c99e41478e11beabea0ef1ab96b1ac9a96d66357d9ab679",
+                "file_path": "server.js",
+                "start_line": 241,
+                "end_line": 268,
+                "resolution": "not_applicable",
+                "source_hash": "d98f3ba92cd732f7082727eed1b5f9c2ab64312e0cfc63be6db0301a21503889",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          }
+        },
+        "clarifications": [],
+        "follow_ups": [
+          {
+            "requirement_id": "req-000",
+            "label": "Inspect verified source",
+            "prompt": null,
+            "engine": null,
+            "operation": null,
+            "target_id": null,
+            "citation_id": "cm7:7154cc466fb74301ddfa31a7e125f478:3f6afc07a914268ea4ccb39de72972d1",
+            "mode": "inspect_source"
+          }
+        ],
+        "limitations": [
+          "Static/source evidence does not prove runtime execution, root cause, equivalence or performance.",
+          "Model prose is an interpretation, not fully fact-checked; similarity is not a graph dependency.",
+          "Depth changes display detail only. No model inference or retrieval is performed.",
+          "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+          "Semantic similarity establishes source relevance only, never a graph dependency.",
+          "Rule statement interpretation is inherited from trusted deterministic producers; rules are not recomputed.",
+          "Source context is untrusted data, not instructions; no model inference or answer formatting is performed."
+        ],
+        "model_status": null,
+        "fallback_status": null
+      },
+      "llm_necessity": {
+        "expected": false,
+        "attempted": false,
+        "correct": true,
+        "transport": "injected unavailable; not real inference",
+        "generation_diagnostics": []
+      },
+      "dependency_plan_correct": true
+    },
+    {
+      "id": "J5",
+      "family": "J",
+      "question": "Where is readSource defined?",
+      "expected_rows": [
+        [
+          "SYMBOL_LOCATION",
+          [
+            "readSource"
+          ]
+        ]
+      ],
+      "actual_rows": [
+        [
+          "SYMBOL_LOCATION",
+          [
+            "readSource"
+          ]
+        ]
+      ],
+      "rows_correct": true,
+      "canonical_targets": [
+        {
+          "name": "readSource",
+          "kind": "function",
+          "resolution": "ambiguous",
+          "path": null,
+          "symbol_id": null
+        }
+      ],
+      "canonical_target_paths_correct": true,
+      "status": "ambiguous",
+      "operations": [],
+      "expected_operations": [],
+      "operations_correct": true,
+      "no_model_calls": true,
+      "latency_ms": {
+        "median_ms": 134.976,
+        "p95_ms": 142.854
+      },
+      "samples_ms": [
+        135.42558299923257,
+        134.47708299918304,
+        131.33483399997203,
+        134.97641699996166,
+        142.85408399973676
+      ],
+      "stage_latency_ms": {
+        "understanding_ms": {
+          "median_ms": 28.341,
+          "p95_ms": 28.876
+        },
+        "planning_ms": {
+          "median_ms": 0.313,
+          "p95_ms": 0.333
+        },
+        "execution_ms": {
+          "median_ms": 37.436,
+          "p95_ms": 42.952
+        },
+        "aggregation_ms": {
+          "median_ms": 28.417,
+          "p95_ms": 30.772
+        },
+        "llm_preparation_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "llm_generation_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "generation_total_ms": {
+          "median_ms": 0.0,
+          "p95_ms": 0.0
+        },
+        "formatting_ms": {
+          "median_ms": 0.447,
+          "p95_ms": 0.472
+        },
+        "validation_ms": {
+          "median_ms": 25.94,
+          "p95_ms": 27.131
+        },
+        "total_ms": {
+          "median_ms": 134.55,
+          "p95_ms": 142.413
+        }
+      },
+      "response_bytes": 6275,
+      "source_paths": [
+        "chunker.js",
+        "registry.js"
+      ],
+      "requirements": [
+        {
+          "requirement_id": "req-000",
+          "order": 0,
+          "original": {
+            "intent": "SYMBOL_LOCATION",
+            "order": 0,
+            "entity_indices": [
+              0
+            ],
+            "depends_on": [],
+            "required_capabilities": [
+              "graph.find_definition"
+            ],
+            "support": "unresolved",
+            "limitations": [
+              "Resolve the textual target or choose an ambiguity candidate before future execution"
+            ],
+            "interpretation": null
+          },
+          "title": "Symbol location",
+          "state": "ambiguous",
+          "supporting_requirement_ids": [
+            "req-000"
+          ],
+          "target_context": [
+            "readSource"
+          ],
+          "sections": [
+            {
+              "title": "Symbol location",
+              "item_ids": []
+            }
+          ],
+          "operations": [],
+          "limitations": [
+            "Resolve the textual target or choose an ambiguity candidate before future execution",
+            "Choose a canonical ID or an exact file scope; no candidate was selected"
+          ],
+          "hidden_items": 0
+        }
+      ],
+      "dependency_plan": [
+        []
+      ],
+      "presentation": {
+        "schema_version": "phase9-1",
+        "presentation_id": "b5fd67184d5629dee106ccb083e1311f",
+        "query_id": "query-5588d17c074808d57549b052",
+        "package_id": "6d5394d2ffba673535ff6765d6c7a225",
+        "support_query_id": "query-5588d17c074808d57549b052",
+        "repository_id": "07c17d89f3f49d0b9f8f3e5d",
+        "snapshot_id": "c452d8a7ba594aa787f5eaa82997452b",
+        "depth": "standard",
+        "status": "ambiguous",
+        "items": {},
+        "requirements": [
+          {
+            "requirement_id": "req-000",
+            "order": 0,
+            "original": {
+              "intent": "SYMBOL_LOCATION",
+              "order": 0,
+              "entity_indices": [
+                0
+              ],
+              "depends_on": [],
+              "required_capabilities": [
+                "graph.find_definition"
+              ],
+              "support": "unresolved",
+              "limitations": [
+                "Resolve the textual target or choose an ambiguity candidate before future execution"
+              ],
+              "interpretation": null
+            },
+            "title": "Symbol location",
+            "state": "ambiguous",
+            "supporting_requirement_ids": [
+              "req-000"
+            ],
+            "target_context": [
+              "readSource"
+            ],
+            "sections": [
+              {
+                "title": "Symbol location",
+                "item_ids": []
+              }
+            ],
+            "operations": [],
+            "limitations": [
+              "Resolve the textual target or choose an ambiguity candidate before future execution",
+              "Choose a canonical ID or an exact file scope; no candidate was selected"
+            ],
+            "hidden_items": 0
+          }
+        ],
+        "sources": {
+          "cm7:6d5394d2ffba673535ff6765d6c7a225:14ff7924aaed0baf52d3db377130ecac": {
+            "citation": {
+              "reference": "cm7:6d5394d2ffba673535ff6765d6c7a225:14ff7924aaed0baf52d3db377130ecac",
+              "record_id": "14ff7924aaed0baf52d3db377130ecac",
+              "source": {
+                "evidence_id": "097fb06051cf130e12f9ae7e1d08caf6bbf8a999b2e9da7cb257ee1d729a2b4a",
+                "repository_id": "07c17d89f3f49d0b9f8f3e5d",
+                "snapshot_id": "c452d8a7ba594aa787f5eaa82997452b",
+                "index_snapshot_id": "6c958731-be5a-4e40-bbe8-98451caadcf9",
+                "evidence_type": "symbol_definition",
+                "file_id": "File:724fd7549d2ec7edb7866b067d4c2fbdd7118149c4e7ec88d8be7cf481658a91",
+                "symbol_id": "097fb06051cf130e12f9ae7e1d08caf6bbf8a999b2e9da7cb257ee1d729a2b4a",
+                "file_path": "chunker.js",
+                "start_line": 26,
+                "end_line": 39,
+                "resolution": "syntax_only",
+                "source_hash": "04ed21c867e8bb1f552d5e239c46258cd89cc21383e571eeff9c2154370e46d6",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          },
+          "cm7:6d5394d2ffba673535ff6765d6c7a225:4f3806606c217a5c0ec47201b2d54704": {
+            "citation": {
+              "reference": "cm7:6d5394d2ffba673535ff6765d6c7a225:4f3806606c217a5c0ec47201b2d54704",
+              "record_id": "4f3806606c217a5c0ec47201b2d54704",
+              "source": {
+                "evidence_id": "3f8f84cb63475ec3c223c4f2cc3e2b303369cfd81c1b3f4cf91a5140f2405d65",
+                "repository_id": "07c17d89f3f49d0b9f8f3e5d",
+                "snapshot_id": "c452d8a7ba594aa787f5eaa82997452b",
+                "index_snapshot_id": "6c958731-be5a-4e40-bbe8-98451caadcf9",
+                "evidence_type": "symbol_definition",
+                "file_id": "File:43466c92009c63ff0266b658f3c9ec4286c78c21020384444ac323a25eacc78d",
+                "symbol_id": "3f8f84cb63475ec3c223c4f2cc3e2b303369cfd81c1b3f4cf91a5140f2405d65",
+                "file_path": "registry.js",
+                "start_line": 81,
+                "end_line": 88,
+                "resolution": "syntax_only",
+                "source_hash": "125980158364c7fb281c1cbd85ec104b6cfcc7bb4f7b4752a7051a703b91fd26",
+                "source_origin": "disk",
+                "schema_version": 6
+              }
+            },
+            "state": "verified",
+            "reason": "Validated under the question's pinned generation; rechecked before navigation."
+          }
+        },
+        "clarifications": [
+          {
+            "requirement_id": "req-000",
+            "entity_indices": [
+              0
+            ],
+            "reason": "Choose a canonical ID or an exact file scope; no candidate was selected",
+            "candidates": [
+              {
+                "entity_id": "097fb06051cf130e12f9ae7e1d08caf6bbf8a999b2e9da7cb257ee1d729a2b4a",
+                "name": "readSource",
+                "kind": "function",
+                "file_path": "chunker.js",
+                "symbol_id": "097fb06051cf130e12f9ae7e1d08caf6bbf8a999b2e9da7cb257ee1d729a2b4a",
+                "evidence": {
+                  "evidence_id": "097fb06051cf130e12f9ae7e1d08caf6bbf8a999b2e9da7cb257ee1d729a2b4a",
+                  "repository_id": "07c17d89f3f49d0b9f8f3e5d",
+                  "snapshot_id": "c452d8a7ba594aa787f5eaa82997452b",
+                  "index_snapshot_id": "6c958731-be5a-4e40-bbe8-98451caadcf9",
+                  "evidence_type": "symbol_definition",
+                  "file_id": "File:724fd7549d2ec7edb7866b067d4c2fbdd7118149c4e7ec88d8be7cf481658a91",
+                  "symbol_id": "097fb06051cf130e12f9ae7e1d08caf6bbf8a999b2e9da7cb257ee1d729a2b4a",
+                  "file_path": "chunker.js",
+                  "start_line": 26,
+                  "end_line": 39,
+                  "resolution": "syntax_only",
+                  "source_hash": "04ed21c867e8bb1f552d5e239c46258cd89cc21383e571eeff9c2154370e46d6",
+                  "source_origin": "disk",
+                  "schema_version": 6
+                }
+              },
+              {
+                "entity_id": "3f8f84cb63475ec3c223c4f2cc3e2b303369cfd81c1b3f4cf91a5140f2405d65",
+                "name": "readSource",
+                "kind": "function",
+                "file_path": "registry.js",
+                "symbol_id": "3f8f84cb63475ec3c223c4f2cc3e2b303369cfd81c1b3f4cf91a5140f2405d65",
+                "evidence": {
+                  "evidence_id": "3f8f84cb63475ec3c223c4f2cc3e2b303369cfd81c1b3f4cf91a5140f2405d65",
+                  "repository_id": "07c17d89f3f49d0b9f8f3e5d",
+                  "snapshot_id": "c452d8a7ba594aa787f5eaa82997452b",
+                  "index_snapshot_id": "6c958731-be5a-4e40-bbe8-98451caadcf9",
+                  "evidence_type": "symbol_definition",
+                  "file_id": "File:43466c92009c63ff0266b658f3c9ec4286c78c21020384444ac323a25eacc78d",
+                  "symbol_id": "3f8f84cb63475ec3c223c4f2cc3e2b303369cfd81c1b3f4cf91a5140f2405d65",
+                  "file_path": "registry.js",
+                  "start_line": 81,
+                  "end_line": 88,
+                  "resolution": "syntax_only",
+                  "source_hash": "125980158364c7fb281c1cbd85ec104b6cfcc7bb4f7b4752a7051a703b91fd26",
+                  "source_origin": "disk",
+                  "schema_version": 6
+                }
+              }
+            ],
+            "source_operation_ids": [],
+            "truncated": false
+          }
+        ],
+        "follow_ups": [],
+        "limitations": [
+          "Static/source evidence does not prove runtime execution, root cause, equivalence or performance.",
+          "Model prose is an interpretation, not fully fact-checked; similarity is not a graph dependency.",
+          "Depth changes display detail only. No model inference or retrieval is performed.",
+          "Verified means indexed static/source evidence, not runtime behavior or completeness.",
+          "Semantic similarity establishes source relevance only, never a graph dependency.",
+          "Rule statement interpretation is inherited from trusted deterministic producers; rules are not recomputed.",
+          "Source context is untrusted data, not instructions; no model inference or answer formatting is performed."
+        ],
+        "model_status": null,
+        "fallback_status": null
+      },
+      "llm_necessity": {
+        "expected": false,
+        "attempted": false,
+        "correct": true,
+        "transport": "injected unavailable; not real inference",
+        "generation_diagnostics": []
+      },
+      "dependency_plan_correct": true
+    }
+  ],
+  "independent_graph_labels": [
+    {
+      "scope": "readSource_repository_callees",
+      "expected": [
+        [
+          "chunker.js",
+          "readSource",
+          "CALLS",
+          "chunker.js",
+          "hash"
+        ]
+      ],
+      "actual": [
+        [
+          "chunker.js",
+          "readSource",
+          "CALLS",
+          "chunker.js",
+          "hash"
+        ]
+      ],
+      "precision": 1.0,
+      "recall": 1.0,
+      "missing": [],
+      "unexpected": []
+    },
+    {
+      "scope": "chunksForFile_repository_callers",
+      "expected": [
+        [
+          "semanticStore.js",
+          "prepareSemantic",
+          "CALLS",
+          "chunker.js",
+          "chunksForFile"
+        ]
+      ],
+      "actual": [
+        [
+          "semanticStore.js",
+          "prepareSemantic",
+          "CALLS",
+          "chunker.js",
+          "chunksForFile"
+        ]
+      ],
+      "precision": 1.0,
+      "recall": 1.0,
+      "missing": [],
+      "unexpected": []
+    },
+    {
+      "scope": "semanticStore_relative_imports",
+      "expected": [
+        [
+          "semanticStore.js",
+          "chunker.js"
+        ],
+        [
+          "semanticStore.js",
+          "docStore.js"
+        ],
+        [
+          "semanticStore.js",
+          "graphStore.js"
+        ]
+      ],
+      "actual": [
+        [
+          "semanticStore.js",
+          "chunker.js"
+        ],
+        [
+          "semanticStore.js",
+          "docStore.js"
+        ],
+        [
+          "semanticStore.js",
+          "graphStore.js"
+        ]
+      ],
+      "precision": 1.0,
+      "recall": 1.0,
+      "missing": [],
+      "unexpected": []
+    },
+    {
+      "scope": "chunker_reverse_dependencies",
+      "expected": [
+        [
+          "docPlanner.js",
+          "chunker.js"
+        ],
+        [
+          "docStore.js",
+          "chunker.js"
+        ],
+        [
+          "retrievalService.js",
+          "chunker.js"
+        ],
+        [
+          "reuseAnalyzer.js",
+          "chunker.js"
+        ],
+        [
+          "semanticStore.js",
+          "chunker.js"
+        ]
+      ],
+      "actual": [
+        [
+          "docPlanner.js",
+          "chunker.js"
+        ],
+        [
+          "docStore.js",
+          "chunker.js"
+        ],
+        [
+          "retrievalService.js",
+          "chunker.js"
+        ],
+        [
+          "reuseAnalyzer.js",
+          "chunker.js"
+        ],
+        [
+          "semanticStore.js",
+          "chunker.js"
+        ]
+      ],
+      "precision": 1.0,
+      "recall": 1.0,
+      "missing": [],
+      "unexpected": []
+    }
+  ],
+  "unchanged_source_after_queries": true,
+  "incremental": {
+    "unchanged_generation_reused": true,
+    "unchanged_chunks_embedded": 0,
+    "edit": {
+      "file": "chunker.js",
+      "stale_old_generation_rejected": true,
+      "ms": 2000.9726670004966,
+      "chunks_embedded": 1,
+      "chunks_reused": 24,
+      "generation_changed": true
+    },
+    "rename": null,
+    "delete": null
+  },
+  "add_and_failure": {
+    "scope": "Synthetic add/malformed edit/recovery/deletion inside the frozen real Node copy, actual embeddings and publication; not extra real-corpus accuracy labels",
+    "add_generation_changed": true,
+    "add_embedded": 1,
+    "no_op_embedded": 0,
+    "malformed_edit_rejected": true,
+    "last_valid_generation_retained": true,
+    "stale_evidence_refused": true,
+    "recovery_embedded": 0,
+    "delete_embedded": 0,
+    "deleted_file_rows_remaining": 0,
+    "pass": true
+  },
+  "post_incremental_integrity": {
+    "graph": {
+      "nodes": 413,
+      "relationships": 993,
+      "resolved": 972,
+      "inferred": 21,
+      "unresolved": 1128
+    },
+    "typescript_version": "5.9.3",
+    "semantic_diagnostics": [],
+    "parsing": {},
+    "provenance_checked": 2492,
+    "provenance_valid": 2492,
+    "foreign_key_errors": [],
+    "dangling_references": [],
+    "languages": [
+      [
+        "javascript",
+        16
+      ]
+    ],
+    "ambiguous_symbol_names": [
+      [
+        "<anonymous:1>",
+        85
+      ],
+      [
+        "<anonymous:2>",
+        31
+      ],
+      [
+        "<anonymous:3>",
+        20
+      ],
+      [
+        "<anonymous:4>",
+        15
+      ],
+      [
+        "<anonymous:5>",
+        10
+      ],
+      [
+        "<anonymous:7>",
+        7
+      ],
+      [
+        "<anonymous:6>",
+        7
+      ],
+      [
+        "extract",
+        5
+      ]
+    ],
+    "chunk_provenance_checked": 505,
+    "chunk_provenance_valid": 505,
+    "sample_symbols": [
+      [
+        "hash",
+        "chunker.js"
+      ],
+      [
+        "boundedText",
+        "chunker.js"
+      ],
+      [
+        "terms",
+        "chunker.js"
+      ],
+      [
+        "readSource",
+        "chunker.js"
+      ],
+      [
+        "chunksForFile",
+        "chunker.js"
+      ],
+      [
+        "commitChunks",
+        "chunker.js"
+      ],
+      [
+        "stableId",
+        "codeParser.js"
+      ],
+      [
+        "languageFor",
+        "codeParser.js"
+      ],
+      [
+        "field",
+        "codeParser.js"
+      ],
+      [
+        "text",
+        "codeParser.js"
+      ],
+      [
+        "cleanString",
+        "codeParser.js"
+      ],
+      [
+        "hasJsx",
+        "codeParser.js"
+      ],
+      [
+        "nameOf",
+        "codeParser.js"
+      ],
+      [
+        "isTestFile",
+        "codeParser.js"
+      ],
+      [
+        "parseImports",
+        "codeParser.js"
+      ],
+      [
+        "symbolKind",
+        "codeParser.js"
+      ],
+      [
+        "signature",
+        "codeParser.js"
+      ],
+      [
+        "docstring",
+        "codeParser.js"
+      ],
+      [
+        "parseCode",
+        "codeParser.js"
+      ],
+      [
+        "parseCode.addSymbol",
+        "codeParser.js"
+      ],
+      [
+        "parseCode.addSymbol.identifiers",
+        "codeParser.js"
+      ],
+      [
+        "parseCode.addSymbol.<anonymous:4>.tokens",
+        "codeParser.js"
+      ],
+      [
+        "parseCode.visit",
+        "codeParser.js"
+      ],
+      [
+        "planDocs",
+        "docPlanner.js"
+      ],
+      [
+        "planDocs.add",
+        "docPlanner.js"
+      ],
+      [
+        "planDocs.label",
+        "docPlanner.js"
+      ],
+      [
+        "planDocs.related",
+        "docPlanner.js"
+      ],
+      [
+        "sectionObject",
+        "docStore.js"
+      ],
+      [
+        "status",
+        "docStore.js"
+      ],
+      [
+        "overview",
+        "docStore.js"
+      ]
+    ]
+  },
+  "original_source_changes_during_measurement": [],
+  "original_sources_unchanged": true,
+  "temporary_copy_and_index_cleaned": true,
+  "python_peak_rss_bytes": 836763648,
+  "cpu_seconds": 71.67465200000001,
+  "resource_scope": "Cumulative worker peak RSS, excludes resolver/Electron/Ollama child processes; CPU is self only."
+}

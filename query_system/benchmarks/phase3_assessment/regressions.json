@@ -1,0 +1,14 @@
+{
+  "date":"2026-10-14",
+  "python":{"command":".venv/bin/python -m pytest -q","exit_code":0,"passed_methods":515,"passed_subtests":677,"warnings":2,"seconds":205.20,"log":"/tmp/codemind-phase3-final-verified-python.log"},
+  "console_pytest_new_modules":{"exit_code":0,"passed_methods":15,"passed_subtests":2,"seconds":1.81,"log":"/tmp/codemind-phase3-console-verified.log"},
+  "node":{"command":"npm --prefix extension test","exit_code":0,"passed":37,"failed":0,"skipped":0,"node_duration_ms":1536.879541,"typescript_compile":"passed","log":"/tmp/codemind-phase3-node-verified.log"},
+  "actual_vscode":{"exit_code":0,"phase9":"passed","phase10":"passed","real_source_suite":"passed","real_host_checks":22,"fault_injected_actual_host_branches":["model_unavailable","model_timeout","graph_failure"],"ordinary_user_engine_connection":"skipped; engine not running","persistent_log":"query_system/benchmarks/phase3_verified/vscode.log","human_usability_review":"pending"},
+  "real_add_and_failed_publication":{"state":"passed","source":"query_system/benchmarks/phase3_node_final/node.json","last_valid_generation_retained":true,"stale_evidence_refused":true,"recovery_chunks_embedded":0},
+  "diff_check":"passed",
+  "production_default_hybrid_changed":false,
+  "new_runtime_dependencies_models_or_providers":false,
+  "user_indexes_modified":false,
+  "classification":"Development-ready",
+  "qualification_not_passed_because":["Source-contradicted accepted workflow prose","Warm-model p95 and timeout/fallback failures","Comparison explanation and semantic-recall limitations","Independent human review pending","Small correlated development labels and unqualified production embedding batch/scale"]
+}
