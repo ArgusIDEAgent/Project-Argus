@@ -1,0 +1,55 @@
+{
+  "recorded_at": "2026-10-14",
+  "scope": "Final regressions after stabilization fixes; existing S1/S2 work preserved",
+  "python": {
+    "query_system": {
+      "passed": 63,
+      "failed": 0,
+      "seconds": 0.136
+    },
+    "knowledge_base": {
+      "passed": 62,
+      "failed": 0,
+      "seconds": 9.912
+    },
+    "ai_engine": {
+      "passed": 318,
+      "failed": 0,
+      "seconds": 185.443
+    },
+    "total_passed": 443,
+    "total_failed": 0
+  },
+  "node": {
+    "passed": 29,
+    "failed": 0,
+    "seconds": 4.496
+  },
+  "extension": {
+    "compilation_passed": true,
+    "phase9_host_passed": true,
+    "phase10_host_passed": true,
+    "real_source_host_passed": true,
+    "exit_code": 0,
+    "optional_legacy_check_connection": "Skipped: ordinary user engine not running; isolated authenticated host suites executed",
+    "real_host_evidence": "stabilization_final_results.json"
+  },
+  "diff_check": {
+    "scoped": true,
+    "exit_code": 0
+  },
+  "warnings": [
+    "Pre-existing SQLite ResourceWarnings also present in baseline; ownership not attributed here",
+    "Existing FastAPI/Starlette and host deprecations; local Qdrant payload-index notice",
+    "Injected offline/vector/watcher/index errors are expected negative-test logs, not failed assertions"
+  ],
+  "not_run": [
+    {
+      "file": "ai-engine/test_ai.py",
+      "reason": "Manual remote-provider script, not automated regression; remote inference not authorized"
+    }
+  ],
+  "temporary_benchmark_cleanup": true,
+  "production_defaults_changed": false,
+  "production_qualification": "failed: explanation usefulness, human review, feature retrieval coverage, memory and indexing time"
+}

@@ -1,0 +1,1409 @@
+{
+  "state": "completed",
+  "repository_id": "a19355069e36770585f8899e",
+  "snapshot_id": "e0b9ff2902564f3384a9db5964ebb56b",
+  "snapshot_inventory_files": 9,
+  "graph_relationship_labels": {
+    "label_scope": "All resolved repository-owned direct calls from the three named implementations; not external/dynamic calls",
+    "expected": [
+      [
+        "extension/src/responsePreview.ts",
+        "openVerifiedPreviewSource",
+        "extension/src/responsePreview.ts",
+        "verifiedPreviewSource"
+      ],
+      [
+        "extension/src/responsePreview.ts",
+        "verifiedPreviewSource",
+        "extension/src/sourceNavigation.ts",
+        "verifiedSourcePath"
+      ],
+      [
+        "extension/src/sourceNavigation.ts",
+        "verifiedSourcePath",
+        "extension/src/sourceNavigation.ts",
+        "isInside"
+      ]
+    ],
+    "actual": [
+      [
+        "extension/src/responsePreview.ts",
+        "openVerifiedPreviewSource",
+        "extension/src/responsePreview.ts",
+        "verifiedPreviewSource"
+      ],
+      [
+        "extension/src/responsePreview.ts",
+        "verifiedPreviewSource",
+        "extension/src/sourceNavigation.ts",
+        "verifiedSourcePath"
+      ],
+      [
+        "extension/src/sourceNavigation.ts",
+        "verifiedSourcePath",
+        "extension/src/sourceNavigation.ts",
+        "isInside"
+      ]
+    ],
+    "precision": 1.0,
+    "recall": 1.0,
+    "missing": [],
+    "unexpected": []
+  },
+  "queries": {
+    "cases": [
+      {
+        "case": "definition",
+        "question": "Where is verifiedSourcePath defined?",
+        "status": "success",
+        "intents": [
+          "SYMBOL_LOCATION"
+        ],
+        "targets": [
+          [
+            "verifiedSourcePath"
+          ]
+        ],
+        "operations": [
+          "graph.find_definition"
+        ],
+        "generations": 0,
+        "latency_ms": {
+          "median_ms": 138.343,
+          "p95_ms": 151.192
+        },
+        "samples": 5,
+        "response_bytes": 5150,
+        "source_paths": [
+          "extension/src/sourceNavigation.ts"
+        ],
+        "requirement_states": [
+          "satisfied"
+        ],
+        "error": null
+      },
+      {
+        "case": "callers",
+        "question": "Who calls verifiedSourcePath?",
+        "status": "success",
+        "intents": [
+          "DIRECT_CALLERS"
+        ],
+        "targets": [
+          [
+            "verifiedSourcePath"
+          ]
+        ],
+        "operations": [
+          "graph.find_callers"
+        ],
+        "generations": 0,
+        "latency_ms": {
+          "median_ms": 156.39,
+          "p95_ms": 157.07
+        },
+        "samples": 5,
+        "response_bytes": 6568,
+        "source_paths": [
+          "extension/src/extension.ts",
+          "extension/src/responsePreview.ts",
+          "extension/src/sourceNavigation.ts"
+        ],
+        "requirement_states": [
+          "satisfied"
+        ],
+        "error": null
+      },
+      {
+        "case": "target_list",
+        "question": "Who calls verifiedSourcePath and verifiedPreviewSource?",
+        "status": "success",
+        "intents": [
+          "DIRECT_CALLERS"
+        ],
+        "targets": [
+          [
+            "verifiedSourcePath",
+            "verifiedPreviewSource"
+          ]
+        ],
+        "operations": [
+          "graph.find_callers",
+          "graph.find_callers"
+        ],
+        "generations": 0,
+        "latency_ms": {
+          "median_ms": 176.015,
+          "p95_ms": 178.469
+        },
+        "samples": 5,
+        "response_bytes": 10370,
+        "source_paths": [
+          "extension/src/extension.ts",
+          "extension/src/responsePreview.ts",
+          "extension/src/sourceNavigation.ts"
+        ],
+        "requirement_states": [
+          "satisfied"
+        ],
+        "error": null
+      },
+      {
+        "case": "compound",
+        "question": "Where is verifiedSourcePath defined and contract of verifiedPreviewSource",
+        "status": "partial",
+        "intents": [
+          "SYMBOL_LOCATION",
+          "FUNCTION_CONTRACT"
+        ],
+        "targets": [
+          [
+            "verifiedSourcePath"
+          ],
+          [
+            "verifiedPreviewSource"
+          ]
+        ],
+        "operations": [
+          "graph.find_definition",
+          "rules.function_contract"
+        ],
+        "generations": 0,
+        "latency_ms": {
+          "median_ms": 172.333,
+          "p95_ms": 176.031
+        },
+        "samples": 5,
+        "response_bytes": 10819,
+        "source_paths": [
+          "extension/src/responsePreview.ts",
+          "extension/src/sourceNavigation.ts"
+        ],
+        "requirement_states": [
+          "satisfied",
+          "partially_satisfied"
+        ],
+        "error": null
+      },
+      {
+        "case": "comparison_tests",
+        "question": "Compare verifiedSourcePath and verifiedPreviewSource and find tests for both",
+        "status": "partial",
+        "intents": [
+          "CODE_COMPARISON",
+          "TEST_DISCOVERY"
+        ],
+        "targets": [
+          [
+            "verifiedSourcePath",
+            "verifiedPreviewSource"
+          ],
+          [
+            "verifiedSourcePath",
+            "verifiedPreviewSource"
+          ]
+        ],
+        "operations": [
+          "rules.reference_test_analysis",
+          "rules.reference_test_analysis",
+          "graph.find_definition",
+          "graph.find_definition",
+          "rules.function_contract",
+          "graph.find_callees",
+          "rules.function_contract",
+          "graph.find_callees"
+        ],
+        "generations": 0,
+        "latency_ms": {
+          "median_ms": 561.984,
+          "p95_ms": 659.63
+        },
+        "samples": 5,
+        "response_bytes": 35095,
+        "source_paths": [
+          "extension/src/extension.ts",
+          "extension/src/responsePreview.ts",
+          "extension/src/sourceNavigation.ts"
+        ],
+        "requirement_states": [
+          "deferred",
+          "partially_satisfied"
+        ],
+        "error": null
+      },
+      {
+        "case": "ambiguous",
+        "question": "Where is run defined?",
+        "status": "not_found",
+        "intents": [
+          "SYMBOL_LOCATION"
+        ],
+        "targets": [
+          [
+            "run"
+          ]
+        ],
+        "operations": [],
+        "generations": 0,
+        "latency_ms": {
+          "median_ms": 114.184,
+          "p95_ms": 114.978
+        },
+        "samples": 5,
+        "response_bytes": 2553,
+        "source_paths": [],
+        "requirement_states": [
+          "not_found"
+        ],
+        "error": null
+      },
+      {
+        "case": "missing",
+        "question": "Where is stabilizationNonexistent defined?",
+        "status": "not_found",
+        "intents": [
+          "SYMBOL_LOCATION"
+        ],
+        "targets": [
+          [
+            "stabilizationNonexistent"
+          ]
+        ],
+        "operations": [],
+        "generations": 0,
+        "latency_ms": {
+          "median_ms": 107.534,
+          "p95_ms": 108.506
+        },
+        "samples": 5,
+        "response_bytes": 2578,
+        "source_paths": [],
+        "requirement_states": [
+          "not_found"
+        ],
+        "error": null
+      },
+      {
+        "case": "unsupported",
+        "question": "How many files are in this repository?",
+        "status": "unsupported",
+        "intents": [
+          "UNRESOLVED"
+        ],
+        "targets": [
+          []
+        ],
+        "operations": [],
+        "generations": 0,
+        "latency_ms": {
+          "median_ms": 31.753,
+          "p95_ms": 33.214
+        },
+        "samples": 5,
+        "response_bytes": 561,
+        "source_paths": [],
+        "requirement_states": [],
+        "error": {
+          "code": "invalid_operation",
+          "message": "Repository statistics are not an implemented hybrid capability."
+        }
+      },
+      {
+        "case": "semantic",
+        "question": "Find code that verifies source file hashes before opening citations",
+        "status": "success",
+        "intents": [
+          "FEATURE_DISCOVERY"
+        ],
+        "targets": [
+          [
+            "Find code that verifies source file hashes before opening citations"
+          ]
+        ],
+        "operations": [
+          "semantic.hybrid_search"
+        ],
+        "generations": 0,
+        "latency_ms": {
+          "median_ms": 222.944,
+          "p95_ms": 229.765
+        },
+        "samples": 5,
+        "response_bytes": 11657,
+        "source_paths": [
+          "extension/src/extension.ts",
+          "extension/src/responsePresentation.ts",
+          "extension/src/responsePreview.ts",
+          "extension/src/sourceNavigation.ts"
+        ],
+        "requirement_states": [
+          "satisfied"
+        ],
+        "error": null
+      }
+    ],
+    "proofs_checked": 290,
+    "proofs_valid": 290
+  },
+  "ollama": {
+    "state": "completed",
+    "model": "llama3:latest",
+    "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+    "details": [
+      {
+        "case": "function",
+        "question": "Explain verifiedSourcePath",
+        "positive": true,
+        "resident_before": false,
+        "status": "partial",
+        "snapshot_id": "e0b9ff2902564f3384a9db5964ebb56b",
+        "wall_ms": 19868.500791999395,
+        "stage_ms": {
+          "understanding_ms": 23.535332991741598,
+          "planning_ms": 0.4372080002212897,
+          "execution_ms": 146.46762500342447,
+          "aggregation_ms": 45.154250008636154,
+          "llm_preparation_ms": 63.04550000641029,
+          "llm_generation_ms": 19463.135750003858,
+          "generation_total_ms": 19610.789750004187,
+          "formatting_ms": 2.918333004345186,
+          "validation_ms": 23.70666699425783,
+          "total_ms": 19867.4598330108
+        },
+        "transport": [
+          {
+            "request_bytes": 9557,
+            "message_bytes": 5854,
+            "schema_bytes": 3195,
+            "options": {
+              "temperature": 0,
+              "num_predict": 350,
+              "num_ctx": 8192
+            },
+            "timeout_s": 29.912271834007697,
+            "response_bytes": 678,
+            "load_duration": 5661683917,
+            "prompt_eval_count": 1437,
+            "prompt_eval_duration": 8496651000,
+            "eval_count": 107,
+            "eval_duration": 5219778000,
+            "total_duration": 19442935542,
+            "done_reason": "stop"
+          }
+        ],
+        "generations": [
+          {
+            "task": "function",
+            "original_orders": [
+              0
+            ],
+            "model_status": "validation_failed",
+            "fallback_status": "evidence_summary",
+            "failure_category": "no_usable_explanation",
+            "model_attempts": 1
+          }
+        ],
+        "output_redacted": "{\"sections\":[{\"title\":\"source_facts\",\"claims\":[{\"requirement_orders\": [0],\"mode\": \"fact\",\"fact_id\": \"source:232bff0185dce396f06b890116b9a5f9\",\"record_ids\": [\"232bff0185dce396f06b890116b9a5f9\"],\"text\": \"Indexed source at extension/src/sourceNavigation.ts:12-31.\"}]}],\"coverage\":[{\"order\": 0,\"state\": \"partial\"}]}",
+        "safe_explanation_claims": [
+          {
+            "claim_id": "81a64fc89b425e3b30ab44a9fa60d1c8",
+            "requirement_orders": [
+              0
+            ],
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "text": "Indexed source at extension/src/sourceNavigation.ts:12-31.",
+            "finding_id": null,
+            "fact_id": "source:232bff0185dce396f06b890116b9a5f9",
+            "record_ids": [
+              "232bff0185dce396f06b890116b9a5f9"
+            ],
+            "citation_ids": [
+              "cm7:7e5ec37a9124df4e3bac648d436e9216:232bff0185dce396f06b890116b9a5f9"
+            ],
+            "verification": "backend_fact"
+          },
+          {
+            "claim_id": "b589a187ec81ca71469feb832256199f",
+            "requirement_orders": [
+              0
+            ],
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "text": "Indexed declaration: verifiedSourcePath",
+            "finding_id": "8dfd147b12fc06a6b582c35e7699fe0a",
+            "fact_id": "8dfd147b12fc06a6b582c35e7699fe0a",
+            "record_ids": [
+              "232bff0185dce396f06b890116b9a5f9"
+            ],
+            "citation_ids": [
+              "cm7:7e5ec37a9124df4e3bac648d436e9216:232bff0185dce396f06b890116b9a5f9"
+            ],
+            "verification": "backend_fact"
+          }
+        ],
+        "review_sources": [
+          {
+            "record_id": "232bff0185dce396f06b890116b9a5f9",
+            "data": {
+              "path": "extension/src/sourceNavigation.ts",
+              "start_line": 12,
+              "end_line": 31,
+              "symbol_id": "ccc796c1c9c672fa211626d08aa56112647583d43a5942cecdf46f353ae71a2f",
+              "kind": "symbol",
+              "provenance": {
+                "kind": "symbol"
+              }
+            },
+            "excerpt": "export function verifiedSourcePath(rootPath: string, relativePath: string, sourceHash: string): string {\n  if (!relativePath || path.isAbsolute(relativePath) || relativePath.includes('\\0')) {\n    throw new Error('Invalid indexed source path.');\n  }\n  const root = fs.realpathSync(rootPath);\n  const file = path.resolve(root, relativePath);\n  if (!isInside(root, file)) throw new Error('Indexed source is outside the selected repository.');\n  let real: string;\n  try { real = fs.realpathSync(file); }\n  catch { throw new Error('Indexed source no longer exists. Refresh the repository.'); }\n  if (!isInside(root, real)) throw new Error('Indexed source is outside the selected repository.');\n  const stat = fs.statSync(real);\n  if (!stat.isFile() || stat.size > MAX_VERIFY_BYTES) {\n    throw new Error('Indexed source is not a regular file or is too large to open.');\n  }\n  if (createHash('sha256').update(fs.readFileSync(real)).digest('hex') !== sourceHash) {\n    throw new Error('This source changed. Refresh the repository before opening it.');\n  }\n  return real;\n}"
+          }
+        ],
+        "citations_valid": true,
+        "context": {
+          "input_bytes": 5854,
+          "source_bytes": 1065,
+          "omissions": [
+            "record_limit:fefbfa12048af7c2d05fb882412d6529",
+            "context_record_limit:eaa37525f8865dbfeed63600a1015023",
+            "context_record_limit:dc4ad5c2e8ee96c94df17a6d7e47afc5",
+            "context_record_limit:d83b49af385c566770c0e3bf5257a24b",
+            "context_record_limit:b74b3b984f1c11e840baa41afaa3d249",
+            "context_record_limit:b73fab3a1ff38b649904050dfd8aa2fa",
+            "context_record_limit:9ca6215d33702ca0f40142c89d03c043",
+            "context_record_limit:8901dd24df52cc4d9eaeb0f7f7bb9480",
+            "context_record_limit:8004cf303b0705aff5d0103fe033c9a8",
+            "context_record_limit:6b749b4dde15b3028ea5cec53f2af3aa",
+            "context_record_limit:5288c2527ca8399a0d515484c1795dfd",
+            "context_record_limit:4118d891ce15d45be2ac9f516ba25e05",
+            "context_record_limit:3adacca252cf7cdf10ec5c0b346114e6",
+            "context_record_limit:355a1f2047ad2c58a3cf76b9421e6633",
+            "context_record_limit:0e7821fa82264b7b73a2a0e341a5afe5",
+            "context_record_limit:098708d4faccfedd625c2a2bf551ac3a",
+            "context_fact_limit:086f9b98f60ee96f15395b1d32d74960"
+          ],
+          "core_ready": {
+            "0": true
+          }
+        }
+      },
+      {
+        "case": "workflow",
+        "question": "Explain the workflow from openVerifiedPreviewSource to verifiedSourcePath",
+        "positive": true,
+        "resident_before": true,
+        "status": "partial",
+        "snapshot_id": "e0b9ff2902564f3384a9db5964ebb56b",
+        "wall_ms": 467.5948330113897,
+        "stage_ms": {
+          "understanding_ms": 27.291708000120707,
+          "planning_ms": 0.6832079961895943,
+          "execution_ms": 213.66420800040942,
+          "aggregation_ms": 58.89875000866596,
+          "llm_preparation_ms": 93.79695799725596,
+          "llm_generation_ms": 0.0,
+          "generation_total_ms": 129.08879200404044,
+          "formatting_ms": 3.0043330043554306,
+          "validation_ms": 22.263708000537008,
+          "total_ms": 467.02270799141843
+        },
+        "transport": [],
+        "generations": [
+          {
+            "task": "workflow",
+            "original_orders": [
+              0
+            ],
+            "model_status": "blocked",
+            "fallback_status": "evidence_summary",
+            "failure_category": "insufficient_target_evidence",
+            "model_attempts": 0
+          }
+        ],
+        "output_redacted": null,
+        "safe_explanation_claims": [
+          {
+            "claim_id": "76d10f094887cc33f2c9295b5d51e1b9",
+            "requirement_orders": [
+              0
+            ],
+            "classification": "derived_analysis",
+            "authoritative": true,
+            "text": "Resolved static CALLS chain: openVerifiedPreviewSource \u2192 verifiedPreviewSource \u2192 verifiedSourcePath",
+            "finding_id": "466e137acdfd3b28026c2559f7235399",
+            "fact_id": "466e137acdfd3b28026c2559f7235399",
+            "record_ids": [
+              "053c6c1a200becd6e5729f618df4d431",
+              "b74b3b984f1c11e840baa41afaa3d249"
+            ],
+            "citation_ids": [
+              "cm7:b839f9b7eb1f16ceb56ba33f66bbb9eb:053c6c1a200becd6e5729f618df4d431",
+              "cm7:b839f9b7eb1f16ceb56ba33f66bbb9eb:b74b3b984f1c11e840baa41afaa3d249"
+            ],
+            "verification": "backend_fact"
+          }
+        ],
+        "review_sources": [
+          {
+            "record_id": "15e4f131afd314daa4034d85b371fb35",
+            "data": {
+              "path": "extension/src/responsePreview.ts",
+              "start_line": 81,
+              "end_line": 93,
+              "symbol_id": "b1c31b46598ba176c9fb78a5b2b349fe4d11d4b8a3943712a38f1c8de997a9e6",
+              "kind": "symbol",
+              "provenance": {
+                "kind": "symbol"
+              }
+            },
+            "excerpt": null
+          },
+          {
+            "record_id": "232bff0185dce396f06b890116b9a5f9",
+            "data": {
+              "path": "extension/src/sourceNavigation.ts",
+              "start_line": 12,
+              "end_line": 31,
+              "symbol_id": "ccc796c1c9c672fa211626d08aa56112647583d43a5942cecdf46f353ae71a2f",
+              "kind": "symbol",
+              "provenance": {
+                "kind": "symbol"
+              }
+            },
+            "excerpt": null
+          },
+          {
+            "record_id": "053c6c1a200becd6e5729f618df4d431",
+            "data": {
+              "path": "extension/src/responsePreview.ts",
+              "start_line": 90,
+              "end_line": 90,
+              "symbol_id": null,
+              "kind": "relationship",
+              "provenance": {
+                "kind": "relationship",
+                "relationship": "CALLS",
+                "source_id": "Function:dbb2a18c44486c957e68d89e1115a6b502be29c2ce2af6998efb8447a6719a07",
+                "target_id": "Function:b10b40e6d736a8d23f822eab5627949f698cdcc09a22bceb1a4e5a6d7ca8a41f",
+                "resolution": "resolved",
+                "evidence_type": "semantic_reference"
+              }
+            },
+            "excerpt": null
+          },
+          {
+            "record_id": "b74b3b984f1c11e840baa41afaa3d249",
+            "data": {
+              "path": "extension/src/responsePreview.ts",
+              "start_line": 72,
+              "end_line": 72,
+              "symbol_id": null,
+              "kind": "relationship",
+              "provenance": {
+                "kind": "relationship",
+                "relationship": "CALLS",
+                "source_id": "Function:b10b40e6d736a8d23f822eab5627949f698cdcc09a22bceb1a4e5a6d7ca8a41f",
+                "target_id": "Function:53b03e32e0762e5b73617dac0a16eb27c239e18d2d743be0f0d04e8497eed25d",
+                "resolution": "resolved",
+                "evidence_type": "semantic_reference"
+              }
+            },
+            "excerpt": null
+          }
+        ],
+        "citations_valid": true,
+        "context": {
+          "input_bytes": 0,
+          "source_bytes": 0,
+          "omissions": [
+            "record_limit:b73fab3a1ff38b649904050dfd8aa2fa",
+            "record_limit:d76df7d7a9cfabce1c2b58a43cb8fa9e",
+            "record_limit:d83b49af385c566770c0e3bf5257a24b",
+            "record_limit:dc4ad5c2e8ee96c94df17a6d7e47afc5",
+            "record_limit:e99d24737e7bc07940a1b3084831a828",
+            "record_limit:eaa37525f8865dbfeed63600a1015023",
+            "record_limit:fefbfa12048af7c2d05fb882412d6529",
+            "context_record_limit:9ca6215d33702ca0f40142c89d03c043",
+            "context_record_limit:8901dd24df52cc4d9eaeb0f7f7bb9480",
+            "context_record_limit:8004cf303b0705aff5d0103fe033c9a8",
+            "context_record_limit:6b749b4dde15b3028ea5cec53f2af3aa",
+            "context_record_limit:6af22765adf53ba9462152a6dd86e701",
+            "context_record_limit:5288c2527ca8399a0d515484c1795dfd",
+            "context_record_limit:46fe9feb771b890dd24d96b78f630edb",
+            "context_record_limit:3e0c3e1a8070b307863dede15228f234",
+            "context_record_limit:3adacca252cf7cdf10ec5c0b346114e6",
+            "context_record_limit:230accefcb27106e74b9b0fe6f55dced",
+            "context_record_limit:0e7821fa82264b7b73a2a0e341a5afe5",
+            "context_record_limit:098708d4faccfedd625c2a2bf551ac3a",
+            "context_fact_limit:a6bcb52c9054001226e08d993a30f5b4",
+            "context_fact_limit:ff7aa35b9afda1bc148e475e936e38f5",
+            "context_fact_limit:72db4d25ef55273f7cfb1596f3af0b09",
+            "context_fact_limit:ce3c1d86bcc700d1017d87a5d919d131",
+            "context_fact_limit:b4ff5b8533b00f473eac3b416e34d521",
+            "context_fact_limit:source:232bff0185dce396f06b890116b9a5f9",
+            "context_fact_limit:source:15e4f131afd314daa4034d85b371fb35",
+            "context_source_limit:b74b3b984f1c11e840baa41afaa3d249",
+            "context_source_limit:053c6c1a200becd6e5729f618df4d431",
+            "context_source_limit:232bff0185dce396f06b890116b9a5f9",
+            "context_source_limit:15e4f131afd314daa4034d85b371fb35",
+            "context_envelope_budget"
+          ],
+          "core_ready": {
+            "0": false
+          }
+        }
+      },
+      {
+        "case": "behavior",
+        "question": "Why might verifiedSourcePath fail?",
+        "positive": true,
+        "resident_before": true,
+        "status": "partial",
+        "snapshot_id": "e0b9ff2902564f3384a9db5964ebb56b",
+        "wall_ms": 15046.264624994365,
+        "stage_ms": {
+          "understanding_ms": 21.55441699142102,
+          "planning_ms": 0.4339580045780167,
+          "execution_ms": 100.59791700041387,
+          "aggregation_ms": 34.95241599739529,
+          "llm_preparation_ms": 45.142250004573725,
+          "llm_generation_ms": 14742.561040999135,
+          "generation_total_ms": 14850.85641600017,
+          "formatting_ms": 2.015999998548068,
+          "validation_ms": 23.642833999474533,
+          "total_ms": 15045.708167002886
+        },
+        "transport": [
+          {
+            "request_bytes": 9333,
+            "message_bytes": 5644,
+            "schema_bytes": 3195,
+            "options": {
+              "temperature": 0,
+              "num_predict": 350,
+              "num_ctx": 8192
+            },
+            "timeout_s": 29.934020208005677,
+            "response_bytes": 945,
+            "load_duration": 19667708,
+            "prompt_eval_count": 1391,
+            "prompt_eval_duration": 7236351000,
+            "eval_count": 151,
+            "eval_duration": 7438152000,
+            "total_duration": 14737748416,
+            "done_reason": "stop"
+          }
+        ],
+        "generations": [
+          {
+            "task": "behavior",
+            "original_orders": [
+              0
+            ],
+            "model_status": "success",
+            "fallback_status": "not_used",
+            "failure_category": null,
+            "model_attempts": 1
+          }
+        ],
+        "output_redacted": "{\"sections\":[{\"title\":\"possible_causes\",\"claims\":[{\"requirement_orders\": [0],\"mode\": \"hypothesis\",\"fact_id\": null,\"record_ids\": [\"232bff0185dce396f06b890116b9a5f9\"],\"text\": \"The verifiedSourcePath function might fail due to an invalid indexed source path, an absolute path, or a path that includes '\\\\0'. It could also fail if the file is outside the selected repository, is not a regular file, or is too large to open. Additionally, the function might fail if the source has changed and the repository needs to be refreshed.\"}]}],\"coverage\": [{\"order\": 0, \"state\": \"partial\"}]}",
+        "safe_explanation_claims": [
+          {
+            "claim_id": "dc3fa2a5d0fc6d8d8b5be84b7c6d6a42",
+            "requirement_orders": [
+              0
+            ],
+            "classification": "hypothetical_consequence",
+            "authoritative": false,
+            "text": "The verifiedSourcePath function might fail due to an invalid indexed source path, an absolute path, or a path that includes '\\0'. It could also fail if the file is outside the selected repository, is not a regular file, or is too large to open. Additionally, the function might fail if the source has changed and the repository needs to be refreshed.",
+            "finding_id": null,
+            "fact_id": null,
+            "record_ids": [
+              "232bff0185dce396f06b890116b9a5f9"
+            ],
+            "citation_ids": [
+              "cm7:be4ff088c0ba096d260920c389311b2a:232bff0185dce396f06b890116b9a5f9"
+            ],
+            "verification": "citation_linked_not_fact_checked"
+          }
+        ],
+        "review_sources": [
+          {
+            "record_id": "232bff0185dce396f06b890116b9a5f9",
+            "data": {
+              "path": "extension/src/sourceNavigation.ts",
+              "start_line": 12,
+              "end_line": 31,
+              "symbol_id": "ccc796c1c9c672fa211626d08aa56112647583d43a5942cecdf46f353ae71a2f",
+              "kind": "symbol",
+              "provenance": {
+                "kind": "symbol"
+              }
+            },
+            "excerpt": "export function verifiedSourcePath(rootPath: string, relativePath: string, sourceHash: string): string {\n  if (!relativePath || path.isAbsolute(relativePath) || relativePath.includes('\\0')) {\n    throw new Error('Invalid indexed source path.');\n  }\n  const root = fs.realpathSync(rootPath);\n  const file = path.resolve(root, relativePath);\n  if (!isInside(root, file)) throw new Error('Indexed source is outside the selected repository.');\n  let real: string;\n  try { real = fs.realpathSync(file); }\n  catch { throw new Error('Indexed source no longer exists. Refresh the repository.'); }\n  if (!isInside(root, real)) throw new Error('Indexed source is outside the selected repository.');\n  const stat = fs.statSync(real);\n  if (!stat.isFile() || stat.size > MAX_VERIFY_BYTES) {\n    throw new Error('Indexed source is not a regular file or is too large to open.');\n  }\n  if (createHash('sha256').update(fs.readFileSync(real)).digest('hex') !== sourceHash) {\n    throw new Error('This source changed. Refresh the repository before opening it.');\n  }\n  return real;\n}"
+          }
+        ],
+        "citations_valid": true,
+        "context": {
+          "input_bytes": 5644,
+          "source_bytes": 1065,
+          "omissions": [
+            "context_record_limit:fefbfa12048af7c2d05fb882412d6529",
+            "context_record_limit:eaa37525f8865dbfeed63600a1015023",
+            "context_record_limit:dc4ad5c2e8ee96c94df17a6d7e47afc5",
+            "context_record_limit:d83b49af385c566770c0e3bf5257a24b",
+            "context_record_limit:b73fab3a1ff38b649904050dfd8aa2fa",
+            "context_record_limit:9ca6215d33702ca0f40142c89d03c043",
+            "context_record_limit:8901dd24df52cc4d9eaeb0f7f7bb9480",
+            "context_record_limit:8004cf303b0705aff5d0103fe033c9a8",
+            "context_record_limit:6b749b4dde15b3028ea5cec53f2af3aa",
+            "context_record_limit:5288c2527ca8399a0d515484c1795dfd",
+            "context_record_limit:3adacca252cf7cdf10ec5c0b346114e6",
+            "context_record_limit:0e7821fa82264b7b73a2a0e341a5afe5",
+            "context_fact_limit:9cda4d95b9d7b0e4183a58f296e4aa1a"
+          ],
+          "core_ready": {
+            "0": true
+          }
+        }
+      },
+      {
+        "case": "comparison",
+        "question": "Compare verifiedSourcePath with extension/src/sourceNavigation.ts::isInside",
+        "positive": true,
+        "resident_before": true,
+        "status": "partial",
+        "snapshot_id": "e0b9ff2902564f3384a9db5964ebb56b",
+        "wall_ms": 15244.438666995848,
+        "stage_ms": {
+          "understanding_ms": 28.518124992842786,
+          "planning_ms": 0.5717089952668175,
+          "execution_ms": 171.90983300679363,
+          "aggregation_ms": 41.603500008932315,
+          "llm_preparation_ms": 75.80987499386538,
+          "llm_generation_ms": 14817.1768339962,
+          "generation_total_ms": 14959.59029099322,
+          "formatting_ms": 2.4613329878775403,
+          "validation_ms": 27.236207999521866,
+          "total_ms": 15243.712916999357
+        },
+        "transport": [
+          {
+            "request_bytes": 10195,
+            "message_bytes": 6316,
+            "schema_bytes": 3328,
+            "options": {
+              "temperature": 0,
+              "num_predict": 350,
+              "num_ctx": 8192
+            },
+            "timeout_s": 29.901080958006787,
+            "response_bytes": 686,
+            "load_duration": 9480708,
+            "prompt_eval_count": 1521,
+            "prompt_eval_duration": 8919828000,
+            "eval_count": 118,
+            "eval_duration": 5841716000,
+            "total_duration": 14808357833,
+            "done_reason": "stop"
+          }
+        ],
+        "generations": [
+          {
+            "task": "comparison",
+            "original_orders": [
+              0
+            ],
+            "model_status": "validation_failed",
+            "fallback_status": "evidence_summary",
+            "failure_category": "no_usable_explanation",
+            "model_attempts": 1
+          }
+        ],
+        "output_redacted": "{\"sections\": [{\"title\": \"comparison\", \"claims\": [{\"requirement_orders\": [0], \"mode\": \"unknown\", \"fact_id\": null, \"record_ids\": [\"232bff0185dce396f06b890116b9a5f9\", \"6b749b4dde15b3028ea5cec53f2af3aa\"], \"text\": \"VerifiedSourcePath and isInside functions are compared.\"}]}], \"coverage\": [{ \"order\": 0, \"state\": \"partial\" }]}",
+        "safe_explanation_claims": [
+          {
+            "claim_id": "fbc603b4f7c1b4d58e80e9932cf94d2f",
+            "requirement_orders": [
+              0
+            ],
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "text": "Indexed source at extension/src/sourceNavigation.ts:12-31.",
+            "finding_id": null,
+            "fact_id": "source:232bff0185dce396f06b890116b9a5f9",
+            "record_ids": [
+              "232bff0185dce396f06b890116b9a5f9"
+            ],
+            "citation_ids": [
+              "cm7:b64ad5d6c56d271cc8a2813cfe4b4be8:232bff0185dce396f06b890116b9a5f9"
+            ],
+            "verification": "backend_fact"
+          },
+          {
+            "claim_id": "9f67f66c9ab541b201fe37abff87a701",
+            "requirement_orders": [
+              0
+            ],
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "text": "Indexed source at extension/src/sourceNavigation.ts:7-10.",
+            "finding_id": null,
+            "fact_id": "source:6b749b4dde15b3028ea5cec53f2af3aa",
+            "record_ids": [
+              "6b749b4dde15b3028ea5cec53f2af3aa"
+            ],
+            "citation_ids": [
+              "cm7:b64ad5d6c56d271cc8a2813cfe4b4be8:6b749b4dde15b3028ea5cec53f2af3aa"
+            ],
+            "verification": "backend_fact"
+          }
+        ],
+        "review_sources": [
+          {
+            "record_id": "232bff0185dce396f06b890116b9a5f9",
+            "data": {
+              "path": "extension/src/sourceNavigation.ts",
+              "start_line": 12,
+              "end_line": 31,
+              "symbol_id": "ccc796c1c9c672fa211626d08aa56112647583d43a5942cecdf46f353ae71a2f",
+              "kind": "symbol",
+              "provenance": {
+                "kind": "symbol"
+              }
+            },
+            "excerpt": "export function verifiedSourcePath(rootPath: string, relativePath: string, sourceHash: string): string {\n  if (!relativePath || path.isAbsolute(relativePath) || relativePath.includes('\\0')) {\n    throw new Error('Invalid indexed source path.');\n  }\n  const root = fs.realpathSync(rootPath);\n  const file = path.resolve(root, relativePath);\n  if (!isInside(root, file)) throw new Error('Indexed source is outside the selected repository.');\n  let real: string;\n  try { real = fs.realpathSync(file); }\n  catch { throw new Error('Indexed source no longer exists. Refresh the repository.'); }\n  if (!isInside(root, real)) throw new Error('Indexed source is outside the selected repository.');\n  const stat = fs.statSync(real);\n  if (!stat.isFile() || stat.size > MAX_VERIFY_BYTES) {\n    throw new Error('Indexed source is not a regular file or is too large to open.');\n  }\n  if (createHash('sha256').update(fs.readFileSync(real)).digest('hex') !== sourceHash) {\n    throw new Error('This source changed. Refresh the repository before opening it.');\n  }\n  return real;\n}"
+          },
+          {
+            "record_id": "6b749b4dde15b3028ea5cec53f2af3aa",
+            "data": {
+              "path": "extension/src/sourceNavigation.ts",
+              "start_line": 7,
+              "end_line": 10,
+              "symbol_id": "c5afb11b179f3efc0d78de5c1e6f6b0d03dc0467ee29b0932912cd196bc70362",
+              "kind": "symbol",
+              "provenance": {
+                "kind": "symbol"
+              }
+            },
+            "excerpt": "function isInside(root: string, target: string): boolean {\n  const rel = path.relative(root, target);\n  return rel !== '' && rel !== '..' && !rel.startsWith('..' + path.sep) && !path.isAbsolute(rel);\n}"
+          }
+        ],
+        "citations_valid": true,
+        "context": {
+          "input_bytes": 6316,
+          "source_bytes": 1266,
+          "omissions": [
+            "context_record_limit:fefbfa12048af7c2d05fb882412d6529",
+            "context_record_limit:eaa37525f8865dbfeed63600a1015023",
+            "context_record_limit:dc4ad5c2e8ee96c94df17a6d7e47afc5",
+            "context_record_limit:d83b49af385c566770c0e3bf5257a24b",
+            "context_record_limit:b73fab3a1ff38b649904050dfd8aa2fa",
+            "context_record_limit:9ca6215d33702ca0f40142c89d03c043",
+            "context_record_limit:8d4ed632425b2d282b178edd73287b76",
+            "context_record_limit:8901dd24df52cc4d9eaeb0f7f7bb9480",
+            "context_record_limit:8004cf303b0705aff5d0103fe033c9a8",
+            "context_record_limit:67cd4a382fb859f4bd38787a61e3fc31",
+            "context_record_limit:5288c2527ca8399a0d515484c1795dfd",
+            "context_record_limit:3adacca252cf7cdf10ec5c0b346114e6",
+            "context_record_limit:15083a248ddc41059c719eea37799765",
+            "context_record_limit:0e7821fa82264b7b73a2a0e341a5afe5",
+            "context_fact_limit:2df69290fc3280ec0a70f57737cfe4e7",
+            "context_fact_limit:09928fdd2adc81721da7f6f1f4dee2cb",
+            "context_fact_limit:3231ff35fee6f375bb15fc0fc73c33c0",
+            "context_fact_limit:f71b48f0eadd3699fd024c4a7a3b989c"
+          ],
+          "core_ready": {
+            "0": true
+          }
+        }
+      },
+      {
+        "case": "partial",
+        "question": "Where is verifiedSourcePath defined and explain verifiedSourcePath",
+        "positive": true,
+        "resident_before": true,
+        "status": "partial",
+        "snapshot_id": "e0b9ff2902564f3384a9db5964ebb56b",
+        "wall_ms": 16225.076082992018,
+        "stage_ms": {
+          "understanding_ms": 32.62320801150054,
+          "planning_ms": 0.8600000001024455,
+          "execution_ms": 153.43587500683498,
+          "aggregation_ms": 53.162791999056935,
+          "llm_preparation_ms": 68.90845899761189,
+          "llm_generation_ms": 15787.965875002556,
+          "generation_total_ms": 15939.527791997534,
+          "formatting_ms": 2.344874999835156,
+          "validation_ms": 27.415916993049905,
+          "total_ms": 16224.365582995233
+        },
+        "transport": [
+          {
+            "request_bytes": 9597,
+            "message_bytes": 5894,
+            "schema_bytes": 3195,
+            "options": {
+              "temperature": 0,
+              "num_predict": 350,
+              "num_ctx": 8192
+            },
+            "timeout_s": 29.905738082990865,
+            "response_bytes": 677,
+            "load_duration": 7071833,
+            "prompt_eval_count": 1441,
+            "prompt_eval_duration": 9625127000,
+            "eval_count": 107,
+            "eval_duration": 6068570000,
+            "total_duration": 15783180333,
+            "done_reason": "stop"
+          }
+        ],
+        "generations": [
+          {
+            "task": "function",
+            "original_orders": [
+              1
+            ],
+            "model_status": "validation_failed",
+            "fallback_status": "evidence_summary",
+            "failure_category": "no_usable_explanation",
+            "model_attempts": 1
+          }
+        ],
+        "output_redacted": "{\"sections\":[{\"title\":\"source_facts\",\"claims\":[{\"requirement_orders\": [0],\"mode\": \"fact\",\"fact_id\": \"source:232bff0185dce396f06b890116b9a5f9\",\"record_ids\": [\"232bff0185dce396f06b890116b9a5f9\"],\"text\": \"Indexed source at extension/src/sourceNavigation.ts:12-31.\"}]}],\"coverage\":[{\"order\": 0,\"state\": \"partial\"}]}",
+        "safe_explanation_claims": [
+          {
+            "claim_id": "9f6a1d1d73c1097ab78cc0d80219ca3e",
+            "requirement_orders": [
+              0
+            ],
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "text": "Indexed source at extension/src/sourceNavigation.ts:12-31.",
+            "finding_id": null,
+            "fact_id": "source:232bff0185dce396f06b890116b9a5f9",
+            "record_ids": [
+              "232bff0185dce396f06b890116b9a5f9"
+            ],
+            "citation_ids": [
+              "cm7:00d8a8c24d45179ae99ce37d2dbf5807:232bff0185dce396f06b890116b9a5f9"
+            ],
+            "verification": "backend_fact"
+          },
+          {
+            "claim_id": "2392717e0114d0623459f5428f89f19b",
+            "requirement_orders": [
+              0
+            ],
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "text": "Indexed declaration: verifiedSourcePath",
+            "finding_id": "46fc7c44a4219eeade0997c5ffb5238a",
+            "fact_id": "46fc7c44a4219eeade0997c5ffb5238a",
+            "record_ids": [
+              "232bff0185dce396f06b890116b9a5f9"
+            ],
+            "citation_ids": [
+              "cm7:00d8a8c24d45179ae99ce37d2dbf5807:232bff0185dce396f06b890116b9a5f9"
+            ],
+            "verification": "backend_fact"
+          }
+        ],
+        "review_sources": [
+          {
+            "record_id": "232bff0185dce396f06b890116b9a5f9",
+            "data": {
+              "path": "extension/src/sourceNavigation.ts",
+              "start_line": 12,
+              "end_line": 31,
+              "symbol_id": "ccc796c1c9c672fa211626d08aa56112647583d43a5942cecdf46f353ae71a2f",
+              "kind": "symbol",
+              "provenance": {
+                "kind": "symbol"
+              }
+            },
+            "excerpt": "export function verifiedSourcePath(rootPath: string, relativePath: string, sourceHash: string): string {\n  if (!relativePath || path.isAbsolute(relativePath) || relativePath.includes('\\0')) {\n    throw new Error('Invalid indexed source path.');\n  }\n  const root = fs.realpathSync(rootPath);\n  const file = path.resolve(root, relativePath);\n  if (!isInside(root, file)) throw new Error('Indexed source is outside the selected repository.');\n  let real: string;\n  try { real = fs.realpathSync(file); }\n  catch { throw new Error('Indexed source no longer exists. Refresh the repository.'); }\n  if (!isInside(root, real)) throw new Error('Indexed source is outside the selected repository.');\n  const stat = fs.statSync(real);\n  if (!stat.isFile() || stat.size > MAX_VERIFY_BYTES) {\n    throw new Error('Indexed source is not a regular file or is too large to open.');\n  }\n  if (createHash('sha256').update(fs.readFileSync(real)).digest('hex') !== sourceHash) {\n    throw new Error('This source changed. Refresh the repository before opening it.');\n  }\n  return real;\n}"
+          }
+        ],
+        "citations_valid": true,
+        "context": {
+          "input_bytes": 5894,
+          "source_bytes": 1065,
+          "omissions": [
+            "record_limit:fefbfa12048af7c2d05fb882412d6529",
+            "context_record_limit:eaa37525f8865dbfeed63600a1015023",
+            "context_record_limit:dc4ad5c2e8ee96c94df17a6d7e47afc5",
+            "context_record_limit:d83b49af385c566770c0e3bf5257a24b",
+            "context_record_limit:b74b3b984f1c11e840baa41afaa3d249",
+            "context_record_limit:b73fab3a1ff38b649904050dfd8aa2fa",
+            "context_record_limit:9ca6215d33702ca0f40142c89d03c043",
+            "context_record_limit:8901dd24df52cc4d9eaeb0f7f7bb9480",
+            "context_record_limit:8004cf303b0705aff5d0103fe033c9a8",
+            "context_record_limit:6b749b4dde15b3028ea5cec53f2af3aa",
+            "context_record_limit:5288c2527ca8399a0d515484c1795dfd",
+            "context_record_limit:4118d891ce15d45be2ac9f516ba25e05",
+            "context_record_limit:3adacca252cf7cdf10ec5c0b346114e6",
+            "context_record_limit:355a1f2047ad2c58a3cf76b9421e6633",
+            "context_record_limit:0e7821fa82264b7b73a2a0e341a5afe5",
+            "context_record_limit:098708d4faccfedd625c2a2bf551ac3a",
+            "context_fact_limit:a39ab59154eb19b27d4ebdb22b024f2c"
+          ],
+          "core_ready": {
+            "0": true
+          }
+        }
+      },
+      {
+        "case": "truncated",
+        "question": "Explain openResponsePreview",
+        "positive": false,
+        "resident_before": true,
+        "status": "partial",
+        "snapshot_id": "e0b9ff2902564f3384a9db5964ebb56b",
+        "wall_ms": 366.64466600632295,
+        "stage_ms": {
+          "understanding_ms": 27.70754099765327,
+          "planning_ms": 0.6171249988256022,
+          "execution_ms": 163.9442500018049,
+          "aggregation_ms": 46.029708988498896,
+          "llm_preparation_ms": 55.469540995545685,
+          "llm_generation_ms": 0.0,
+          "generation_total_ms": 83.75020799576305,
+          "formatting_ms": 2.2031249973224476,
+          "validation_ms": 26.133166989893652,
+          "total_ms": 366.0604169999715
+        },
+        "transport": [],
+        "generations": [
+          {
+            "task": "function",
+            "original_orders": [
+              0
+            ],
+            "model_status": "blocked",
+            "fallback_status": "evidence_summary",
+            "failure_category": "insufficient_target_evidence",
+            "model_attempts": 0
+          }
+        ],
+        "output_redacted": null,
+        "safe_explanation_claims": [
+          {
+            "claim_id": "c8b4a9cc38eed95c8f6a7d839b337e69",
+            "requirement_orders": [
+              0
+            ],
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "text": "Indexed source at extension/src/responsePreview.ts:95-158.",
+            "finding_id": null,
+            "fact_id": "source:80ee53cd69762bebbee44ce577922d62",
+            "record_ids": [
+              "80ee53cd69762bebbee44ce577922d62"
+            ],
+            "citation_ids": [
+              "cm7:c4d6affdd90399bdcf25968a53c0e5a3:80ee53cd69762bebbee44ce577922d62"
+            ],
+            "verification": "backend_fact"
+          },
+          {
+            "claim_id": "b2e540db510dbd580c9136fb8cc515af",
+            "requirement_orders": [
+              0
+            ],
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "text": "Indexed declaration: openResponsePreview",
+            "finding_id": "2a508586a8c80d431c3a5fa692b4ed75",
+            "fact_id": "2a508586a8c80d431c3a5fa692b4ed75",
+            "record_ids": [
+              "80ee53cd69762bebbee44ce577922d62"
+            ],
+            "citation_ids": [
+              "cm7:c4d6affdd90399bdcf25968a53c0e5a3:80ee53cd69762bebbee44ce577922d62"
+            ],
+            "verification": "backend_fact"
+          },
+          {
+            "claim_id": "c5ab060370208f288c5548b02a3a98b0",
+            "requirement_orders": [
+              0
+            ],
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "text": "Declared function signature; no complete return/exception behavior claim",
+            "finding_id": "a93f771a655354d088509078e6030429",
+            "fact_id": "a93f771a655354d088509078e6030429",
+            "record_ids": [
+              "80ee53cd69762bebbee44ce577922d62"
+            ],
+            "citation_ids": [
+              "cm7:c4d6affdd90399bdcf25968a53c0e5a3:80ee53cd69762bebbee44ce577922d62"
+            ],
+            "verification": "backend_fact"
+          }
+        ],
+        "review_sources": [
+          {
+            "record_id": "80ee53cd69762bebbee44ce577922d62",
+            "data": {
+              "path": "extension/src/responsePreview.ts",
+              "start_line": 95,
+              "end_line": 158,
+              "symbol_id": "d877a34489864b373a59e566db8a7465d948bfc9a751f9e2c551af2db5ab5271",
+              "kind": "symbol",
+              "provenance": {
+                "kind": "symbol"
+              }
+            },
+            "excerpt": null
+          }
+        ],
+        "citations_valid": true,
+        "context": {
+          "input_bytes": 6890,
+          "source_bytes": 0,
+          "omissions": [
+            "source_limit:80ee53cd69762bebbee44ce577922d62",
+            "source_limit:3f61c348595993b16037ffcc561f010a",
+            "source_limit:54c38799c5897a4b1a3b0235cd556aa8",
+            "source_limit:6d56c14d8da6c5fb6c07ab0a1bb83d9d",
+            "source_limit:7ce1d1a51bb6dc4c00fee9bee0264295",
+            "source_limit:94380f42236c5ebbd9624697e8dbde45",
+            "source_limit:d7cbbbc4ea0306a943239cde6137e344",
+            "source_limit:e7afe9d225ea26862d1f63446d4da336",
+            "context_record_limit:e7afe9d225ea26862d1f63446d4da336",
+            "context_record_limit:d7cbbbc4ea0306a943239cde6137e344",
+            "context_record_limit:94380f42236c5ebbd9624697e8dbde45",
+            "context_record_limit:7d7f618c5250ee6838981d3f93489a11",
+            "context_record_limit:7ce1d1a51bb6dc4c00fee9bee0264295",
+            "context_record_limit:6dc799e6effa7a1203c3c0aa05a8a91f",
+            "context_record_limit:6d56c14d8da6c5fb6c07ab0a1bb83d9d",
+            "context_record_limit:54c38799c5897a4b1a3b0235cd556aa8",
+            "context_record_limit:3f61c348595993b16037ffcc561f010a",
+            "context_record_limit:2f8e7a7a3812c726dba45b33d34c7805",
+            "context_record_limit:0bd2350c63a49d744055f4c884478c65"
+          ],
+          "core_ready": {
+            "0": false
+          }
+        }
+      },
+      {
+        "case": "missing",
+        "question": "Explain stabilizationNonexistent",
+        "positive": false,
+        "resident_before": true,
+        "status": "not_found",
+        "snapshot_id": "e0b9ff2902564f3384a9db5964ebb56b",
+        "wall_ms": 142.35958400240634,
+        "stage_ms": {
+          "understanding_ms": 25.531999999657273,
+          "planning_ms": 0.4485829995246604,
+          "execution_ms": 35.450875002425164,
+          "aggregation_ms": 23.932999989483505,
+          "llm_preparation_ms": 11.34250000177417,
+          "llm_generation_ms": 0.0,
+          "generation_total_ms": 22.53575000213459,
+          "formatting_ms": 0.5242919869488105,
+          "validation_ms": 20.871375003480352,
+          "total_ms": 141.83691699872725
+        },
+        "transport": [],
+        "generations": [
+          {
+            "task": "function",
+            "original_orders": [
+              0
+            ],
+            "model_status": "blocked",
+            "fallback_status": "no_safe_evidence",
+            "failure_category": "insufficient_target_evidence",
+            "model_attempts": 0
+          }
+        ],
+        "output_redacted": null,
+        "safe_explanation_claims": [],
+        "review_sources": [],
+        "citations_valid": true,
+        "context": {
+          "input_bytes": 2791,
+          "source_bytes": 0,
+          "omissions": [],
+          "core_ready": {
+            "0": false
+          }
+        }
+      },
+      {
+        "case": "ambiguous_comparison",
+        "question": "Compare verifiedSourcePath with isInside",
+        "positive": false,
+        "resident_before": true,
+        "status": "partial",
+        "snapshot_id": "e0b9ff2902564f3384a9db5964ebb56b",
+        "wall_ms": 328.51820799987763,
+        "stage_ms": {
+          "understanding_ms": 31.4501660031965,
+          "planning_ms": 0.7839159952709451,
+          "execution_ms": 130.48441600403748,
+          "aggregation_ms": 49.022167004295625,
+          "llm_preparation_ms": 53.92120800388511,
+          "llm_generation_ms": 0.0,
+          "generation_total_ms": 76.78362500155345,
+          "formatting_ms": 2.4235000018961728,
+          "validation_ms": 23.198000009870157,
+          "total_ms": 328.0516249942593
+        },
+        "transport": [],
+        "generations": [
+          {
+            "task": "comparison",
+            "original_orders": [
+              0
+            ],
+            "model_status": "blocked",
+            "fallback_status": "evidence_summary",
+            "failure_category": "insufficient_target_evidence",
+            "model_attempts": 0
+          }
+        ],
+        "output_redacted": null,
+        "safe_explanation_claims": [
+          {
+            "claim_id": "077372392c9942f811c9ffa65f475468",
+            "requirement_orders": [
+              0
+            ],
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "text": "Indexed source at extension/src/sourceNavigation.ts:12-31.",
+            "finding_id": null,
+            "fact_id": "source:232bff0185dce396f06b890116b9a5f9",
+            "record_ids": [
+              "232bff0185dce396f06b890116b9a5f9"
+            ],
+            "citation_ids": [
+              "cm7:1f3c89bd6fa8a61205754bfb737acefd:232bff0185dce396f06b890116b9a5f9"
+            ],
+            "verification": "backend_fact"
+          },
+          {
+            "claim_id": "ec8e1c6bc4edaf628aea18eb63d2f007",
+            "requirement_orders": [
+              0
+            ],
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "text": "Indexed declaration: verifiedSourcePath",
+            "finding_id": "8f9a535788c746905de49fe6855e3027",
+            "fact_id": "8f9a535788c746905de49fe6855e3027",
+            "record_ids": [
+              "232bff0185dce396f06b890116b9a5f9"
+            ],
+            "citation_ids": [
+              "cm7:1f3c89bd6fa8a61205754bfb737acefd:232bff0185dce396f06b890116b9a5f9"
+            ],
+            "verification": "backend_fact"
+          }
+        ],
+        "review_sources": [
+          {
+            "record_id": "232bff0185dce396f06b890116b9a5f9",
+            "data": {
+              "path": "extension/src/sourceNavigation.ts",
+              "start_line": 12,
+              "end_line": 31,
+              "symbol_id": "ccc796c1c9c672fa211626d08aa56112647583d43a5942cecdf46f353ae71a2f",
+              "kind": "symbol",
+              "provenance": {
+                "kind": "symbol"
+              }
+            },
+            "excerpt": "export function verifiedSourcePath(rootPath: string, relativePath: string, sourceHash: string): string {\n  if (!relativePath || path.isAbsolute(relativePath) || relativePath.includes('\\0')) {\n    throw new Error('Invalid indexed source path.');\n  }\n  const root = fs.realpathSync(rootPath);\n  const file = path.resolve(root, relativePath);\n  if (!isInside(root, file)) throw new Error('Indexed source is outside the selected repository.');\n  let real: string;\n  try { real = fs.realpathSync(file); }\n  catch { throw new Error('Indexed source no longer exists. Refresh the repository.'); }\n  if (!isInside(root, real)) throw new Error('Indexed source is outside the selected repository.');\n  const stat = fs.statSync(real);\n  if (!stat.isFile() || stat.size > MAX_VERIFY_BYTES) {\n    throw new Error('Indexed source is not a regular file or is too large to open.');\n  }\n  if (createHash('sha256').update(fs.readFileSync(real)).digest('hex') !== sourceHash) {\n    throw new Error('This source changed. Refresh the repository before opening it.');\n  }\n  return real;\n}"
+          }
+        ],
+        "citations_valid": true,
+        "context": {
+          "input_bytes": 6290,
+          "source_bytes": 1065,
+          "omissions": [
+            "context_record_limit:fefbfa12048af7c2d05fb882412d6529",
+            "context_record_limit:eaa37525f8865dbfeed63600a1015023",
+            "context_record_limit:e57e080eb24b6b6cbf38d6cdc90150db",
+            "context_record_limit:dc4ad5c2e8ee96c94df17a6d7e47afc5",
+            "context_record_limit:d83b49af385c566770c0e3bf5257a24b",
+            "context_record_limit:b73fab3a1ff38b649904050dfd8aa2fa",
+            "context_record_limit:9ca6215d33702ca0f40142c89d03c043",
+            "context_record_limit:8901dd24df52cc4d9eaeb0f7f7bb9480",
+            "context_record_limit:8004cf303b0705aff5d0103fe033c9a8",
+            "context_record_limit:6b749b4dde15b3028ea5cec53f2af3aa",
+            "context_record_limit:5288c2527ca8399a0d515484c1795dfd",
+            "context_record_limit:3adacca252cf7cdf10ec5c0b346114e6",
+            "context_record_limit:0e7821fa82264b7b73a2a0e341a5afe5",
+            "context_fact_limit:c18eaaf0428e25910bbc519c5acfa594"
+          ],
+          "core_ready": {
+            "0": false
+          }
+        }
+      },
+      {
+        "case": "stale",
+        "question": "Explain verifiedSourcePath",
+        "positive": false,
+        "resident_before": true,
+        "status": "stale_index",
+        "snapshot_id": null,
+        "wall_ms": 12.374333004117943,
+        "stage_ms": {
+          "understanding_ms": 0.0,
+          "planning_ms": 0.0,
+          "execution_ms": 0.0,
+          "aggregation_ms": 0.0,
+          "llm_preparation_ms": 0.0,
+          "llm_generation_ms": 0.0,
+          "generation_total_ms": 0.0,
+          "formatting_ms": 0.0,
+          "validation_ms": 0.0,
+          "total_ms": 11.9036250107456
+        },
+        "transport": [],
+        "generations": [],
+        "output_redacted": null,
+        "safe_explanation_claims": [],
+        "review_sources": [],
+        "citations_valid": null
+      }
+    ],
+    "accepted_positive_explanations": 1,
+    "positive_cases": 5,
+    "acceptance_rate": 0.2,
+    "warm_end_to_end_latency_ms": {
+      "median_ms": 15145.352,
+      "p95_ms": 16225.076
+    },
+    "cold_samples": [
+      19868.500791999395
+    ],
+    "human_review": {
+      "state": "pending",
+      "reviewer": null,
+      "supported_claim_rate": null,
+      "hallucination_rate": null,
+      "note": "Citation membership and backend validation do not establish prose factuality."
+    }
+  },
+  "vscode": {
+    "exit_code": 0,
+    "real_host_pass": true,
+    "output_tail": "\n> codemind-extension@0.4.1 test:integration\n> npm run compile && node test/runTest.js\n\n\n> codemind-extension@0.4.1 compile\n> tsc -p ./\n\n\u001b[90m[main 2026-10-14T08:32:58.743Z]\u001b[0m [node-compile-cache] main: packaged cache inactive (status: disabled, configured: /Applications/Visual Studio Code.app/Contents/Resources/app/node-compile-cache/main, active: none)\n\u001b[90m[main 2026-10-14T08:32:58.865Z]\u001b[0m StorageMainService: creating application shared storage\n\u001b[90m[main 2026-10-14T08:32:59.178Z]\u001b[0m [shared storage] Creating shared storage database at ':memory:' (wasCreated: true)\n\u001b[90m[main 2026-10-14T08:32:59.178Z]\u001b[0m [shared storage] Initializing fallback application storage (path: in-memory)\n\u001b[90m[main 2026-10-14T08:32:59.773Z]\u001b[0m [shared storage] Fallback application storage initialized with 3 items\n\u001b[90m[main 2026-10-14T08:32:59.774Z]\u001b[0m update#setState disabled\n\u001b[90m[main 2026-10-14T08:32:59.774Z]\u001b[0m update#ctor - updates are disabled by the environment\n[RemoteAgentHost] Reconciling: desired=[], current=[]\n[AgentHost:renderer] Acquiring MessagePort to agent host...\n\u001b[90m[main 2026-10-14T08:33:00.326Z]\u001b[0m AgentHostProcessManager: agent host started\n[ChatModelSelection] event=no-model-at-toolbar-build surface=\"workbench\" sessionKey=undefined conversationKey=undefined modelTarget=undefined storageKey=\"chat.currentLanguageModel.panel\" widgetViewKind=\"view\"\n[AgentHost:renderer] MessagePort acquired, creating client...\n[ChatModelSelection] event=no-model-at-toolbar-build surface=\"workbench\" sessionKey=\"local\" conversationKey=\"vscode-chat-session://local/YWY2OTNmODYtMmU1Zi00NmY1LTliNDktMDc2NTY2NzBmY2Nj\" modelTarget=undefined storageKey=\"chat.currentLanguageModel.panel\" widgetViewKind=\"view\"\n[RemoteAgentHostProtocol] Sending initialize: address=local clientId=2775bf34-48fa-4065-8962-86722b2baf8c requestId=1\n[RemoteAgentHostProtocol] Initialized: address=local clientId=2775bf34-48fa-4065-8962-86722b2baf8c durationMs=384\n[AgentHost:renderer] Protocol connection established; clientId=2775bf34-48fa-4065-8962-86722b2baf8c\nStarted local extension host with pid 13676.\n[AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[ChatModelSelection] event=no-model-at-toolbar-build surface=\"workbench\" sessionKey=\"local\" conversationKey=\"vscode-chat-session://local/YWY2OTNmODYtMmU1Zi00NmY1LTliNDktMDc2NTY2NzBmY2Nj\" modelTarget=undefined storageKey=\"chat.currentLanguageModel.panel\" widgetViewKind=\"view\"\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[RemoteAgentHost] Reconciling: desired=[], current=[]\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\nLoading development extension at /Users/paraspingale/Desktop/Projects/CodeMind/CodeingMind_Project /extension\nSettings Sync: Account status changed from uninitialized to unavailable\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\n[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos\nSKIP: engine not running\n[ChatModelSelection] event=no-model-at-toolbar-build surface=\"workbench\" sessionKey=\"local\" conversationKey=\"vscode-chat-session://local/YWY2OTNmODYtMmU1Zi00NmY1LTliNDktMDc2NTY2NzBmY2Nj\" modelTarget=undefined storageKey=\"chat.currentLanguageModel.panel\" widgetViewKind=\"view\"\n[ChatModelSelection] event=no-model-at-toolbar-build surface=\"workbench\" sessionKey=\"local\" conversationKey=\"vscode-chat-session://local/YWY2OTNmODYtMmU1Zi00NmY1LTliNDktMDc2NTY2NzBmY2Nj\" modelTarget=undefined storageKey=\"chat.currentLanguageModel.panel\" widgetViewKind=\"view\"\n[ChatModelSelection] event=no-model-at-toolbar-build surface=\"workbench\" sessionKey=\"local\" conversationKey=\"vscode-chat-session://local/YWY2OTNmODYtMmU1Zi00NmY1LTliNDktMDc2NTY2NzBmY2Nj\" modelTarget=undefined storageKey=\"chat.currentLanguageModel.panel\" widgetViewKind=\"view\"\n[AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false\nPhase 9 VS Code preview, three depths, canonical navigation, dirty/stale/invalid/unauthorized rejection: PASS\n[ChatModelSelection] event=no-model-at-toolbar-build surface=\"workbench\" sessionKey=\"local\" conversationKey=\"vscode-chat-session://local/YWY2OTNmODYtMmU1Zi00NmY1LTliNDktMDc2NTY2NzBmY2Nj\" modelTarget=undefined storageKey=\"chat.currentLanguageModel.panel\" widgetViewKind=\"view\"\n[ChatModelSelection] event=no-model-at-toolbar-build surface=\"workbench\" sessionKey=\"local\" conversationKey=\"vscode-chat-session://local/YWY2OTNmODYtMmU1Zi00NmY1LTliNDktMDc2NTY2NzBmY2Nj\" modelTarget=undefined storageKey=\"chat.currentLanguageModel.panel\" widgetViewKind=\"view\"\n[ChatModelSelection] event=no-model-at-toolbar-build surface=\"workbench\" sessionKey=\"local\" conversationKey=\"vscode-chat-session://local/YWY2OTNmODYtMmU1Zi00NmY1LTliNDktMDc2NTY2NzBmY2Nj\" modelTarget=undefined storageKey=\"chat.currentLanguageModel.panel\" widgetViewKind=\"view\"\nPhase 10 real VS Code host + authenticated loopback API: opt-in, saved settings, deterministic/model routing, depths, verified editor navigation, stale guard, rollback PASS\n[ChatModelSelection] event=no-model-at-toolbar-build surface=\"workbench\" sessionKey=\"local\" conversationKey=\"vscode-chat-session://local/YWY2OTNmODYtMmU1Zi00NmY1LTliNDktMDc2NTY2NzBmY2Nj\" modelTarget=undefined storageKey=\"chat.currentLanguageModel.panel\" widgetViewKind=\"view\"\n[ChatModelSelection] event=no-model-at-toolbar-build surface=\"workbench\" sessionKey=\"local\" conversationKey=\"vscode-chat-session://local/YWY2OTNmODYtMmU1Zi00NmY1LTliNDktMDc2NTY2NzBmY2Nj\" modelTarget=undefined storageKey=\"chat.currentLanguageModel.panel\" widgetViewKind=\"view\"\n[ChatModelSelection] event=no-model-at-toolbar-build surface=\"workbench\" sessionKey=\"local\" conversationKey=\"vscode-chat-session://local/YWY2OTNmODYtMmU1Zi00NmY1LTliNDktMDc2NTY2NzBmY2Nj\" modelTarget=undefined storageKey=\"chat.currentLanguageModel.panel\" widgetViewKind=\"view\"\nFinal real CodeMind VS Code + authenticated read-only backend: depths, both targets, context, canonical source opening, unsupported requests, real Ollama/fallback, repository scope, rollback and ephemeral restart PASS\n\u001b[90m[main 2026-10-14T08:33:24.028Z]\u001b[0m Extension host with pid 13676 exited with code: 0, signal: unknown.\nExit code:   0\n\u001b[91m[main 2026-10-14T08:33:00.686Z]\u001b[0m [AgentHost:stderr] (node:13671) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.\n(Use `Code Helper --trace-deprecation ...` to show where the warning was created)\n\nExtension 'github.copilot-chat' appears in product.json but enables LESS API proposals than the extension wants.\npackage.json (LOSES): agentSessionsWorkspace\nagentsWindowConfiguration\nchatDebug\nchatHooks\nenvIsConnectionMetered\nextensionsAny\nnewSymbolNamesProvider\ninteractive\ncodeActionAI\nactiveComment\ncommentReveal\ncontribCommentThreadAdditionalMenu\ncontribCommentsViewThreadMenus\ncontribChatEditorInlineGutterMenu\ndocumentFiltersExclusive\nembeddings\nfindTextInFiles\nfindTextInFiles2\nlanguageModelToolSupportsModel\nfindFiles2\ntextSearchProvider\nterminalDataWriteEvent\nterminalExecuteCommandEvent\nterminalSelection\nterminalQuickFixProvider\nmappedEditsProvider\naiRelatedInformation\naiSettingsSearch\nchatParticipantAdditions\ndefaultChatParticipant\ncontribSourceControlInputBoxMenu\nauthLearnMore\nauthIssuers\ntestObserver\naiTextSearchProvider\nchatParticipantPrivate\nchatProvider\ncontribDebugCreateConfiguration\nchatReferenceDiagnostic\ntextSearchProvider2\nchatReferenceBinaryData\nlanguageModelSystem\nlanguageModelCapabilities\nlanguageModelPricing\ninlineCompletionsAdditions\nchatStatusItem\nchatInputNotification\ntaskProblemMatcherStatus\ncontribLanguageModelToolSets\ntextDocumentChangeReason\nresolvers\ntaskExecutionTerminal\ndataChannels\nlanguageModelThinkingPart\nchatSessionsProvider\ndevDeviceId\ncontribEditorContentMenu\nchatPromptFiles\nmcpServerDefinitions\ntabInputMultiDiff\nworkspaceTrust\nenvironmentPower\nterminalTitle\ntoolInvocationApproveCombination\nchatSessionCustomizationProvider\nproduct.json (WINS): agentSessionsWorkspace\nagentsWindowConfiguration\ninteractive\nterminalDataWriteEvent\nterminalExecuteCommandEvent\nterminalSelection\nterminalQuickFixProvider\nchatParticipantAdditions\ndefaultChatParticipant\nembeddings\nchatProvider\nmappedEditsProvider\naiRelatedInformation\naiSettingsSearch\ncodeActionAI\nfindTextInFiles\nfindTextInFiles2\ntextSearchProvider\ntextSearchProvider2\nactiveComment\ncommentReveal\ncontribSourceControlInputBoxMenu\ncontribCommentEditorActionsMenu\ncontribCommentThreadAdditionalMenu\ncontribCommentsViewThreadMenus\ncontribChatEditorInlineGutterMenu\nextensionAffinity\nnewSymbolNamesProvider\nfindFiles2\nchatReferenceDiagnostic\nextensionsAny\nauthLearnMore\ntestObserver\naiTextSearchProvider\ndocumentFiltersExclusive\nchatParticipantPrivate\ncontribDebugCreateConfiguration\ninlineCompletionsAdditions\nchatReferenceBinaryData\nlanguageModelSystem\nlanguageModelCapabilities\nlanguageModelThinkingPart\nlanguageModelToolSupportsModel\nchatStatusItem\ntaskProblemMatcherStatus\ncontribLanguageModelToolSets\ntextDocumentChangeReason\nresolvers\ntaskExecutionTerminal\ndataChannels\nchatSessionsProvider\nchatSessionCustomizationProvider\ndevDeviceId\ncontribEditorContentMenu\ntokenInformation\ntoolInvocationApproveCombination\nchatPromptFiles\nmcpServerDefinitions\ntabInputMultiDiff\nworkspaceTrust\nchatHooks\nchatDebug\nenvIsConnectionMetered\nenvironmentPower\nterminalTitle\nlanguageModelPricing\nchatInputNotification\nDELTA: authIssuers\nProceeding with EXTRA proposals (authIssuers) because extension is in development mode. Still, this EXTENSION WILL BE BROKEN unless product.json is updated.\n[CloudSandboxApi] No 'github' session with scopes [read:user, user:email, repo, workflow]\nUnknown channel: agentHostClientByokLm\nUnknown channel: agentHostClientProxy\nUnknown channel: agentHostClientProxy\nUnknown channel: agentHostClientProxy\n(node:13676) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.\n(Use `Code Helper (Plugin) --trace-deprecation ...` to show where the warning was created)\n[File Watcher (node.js)] Watcher shutdown because watched path got deleted\n[File Watcher (node.js)] Watcher shutdown because watched path got deleted\n[File Watcher (node.js)] Watcher shutdown because watched path got deleted\n"
+  },
+  "stored_vectors_unchanged": true,
+  "same_generation_still_active": true,
+  "corpus": "Frozen real CodeMind extension implementation; not the full target-sized corpus",
+  "copied_files": 9,
+  "private_indexing_ms": 16562.558125006035,
+  "user_indexes_modified": false,
+  "temporary_corpus_and_index_cleaned": true
+}
