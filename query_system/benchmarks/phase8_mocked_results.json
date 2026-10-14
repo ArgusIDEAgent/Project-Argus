@@ -1,0 +1,795 @@
+{
+  "evaluation": "Mocked local model, synthetic fixture; not real model quality or full factual verification",
+  "repository_id": "58a621811be2adb5bd0efee2",
+  "generation_id": "5df984967dfa40cebd51af5e8faa641a",
+  "workloads": 4,
+  "repeats": 3,
+  "runs": 12,
+  "backend_result_schema_validity": 1,
+  "model_schema_and_grounding_acceptance": 1,
+  "citation_checks": 84,
+  "citation_validity": 1,
+  "coverage_preservation": true,
+  "fallback_frequency": 0,
+  "latency": {
+    "preparation_ms": {
+      "median_ms": 38.371,
+      "p95_ms": 51.934
+    },
+    "model_ms": {
+      "median_ms": 0.04,
+      "p95_ms": 0.054
+    },
+    "total_ms": {
+      "median_ms": 90.785,
+      "p95_ms": 112.989
+    }
+  },
+  "input_bytes": {
+    "median": 12939.5,
+    "max": 13198
+  },
+  "negative_probes": {
+    "unavailable": {
+      "model_status": "unavailable",
+      "status": "partial",
+      "failure_category": "offline",
+      "fallback": "evidence_summary",
+      "preparation_ms": 33.62,
+      "model_ms": 0.028,
+      "total_ms": 87.035,
+      "input_bytes": 12738,
+      "source_bytes": 522,
+      "model_calls": 1,
+      "context_truncated": false,
+      "coverage": [
+        "partial"
+      ],
+      "claim_count": 7,
+      "citation_count": 5,
+      "unverified_interpretations": 0,
+      "claims": [
+        {
+          "classification": "verified_source_observation",
+          "authoritative": true,
+          "text": "Indexed source at login.ts:3-3.",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:1183f83611a51ee7fc96e3f2390ec51a"
+          ]
+        },
+        {
+          "classification": "verified_source_observation",
+          "authoritative": true,
+          "text": "Indexed declaration: login",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:1183f83611a51ee7fc96e3f2390ec51a"
+          ]
+        },
+        {
+          "classification": "verified_source_observation",
+          "authoritative": true,
+          "text": "Indexed declaration: entry",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:5cbe2c0c54583ffa451ba6d2dc24efb9"
+          ]
+        },
+        {
+          "classification": "verified_graph_relationship",
+          "authoritative": true,
+          "text": "Resolved static CALLS: entry → login",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:30bcc2f0916063b0494cc7968224aec5"
+          ]
+        },
+        {
+          "classification": "verified_graph_relationship",
+          "authoritative": true,
+          "text": "Resolved static CALLS: checkLogin → login",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:2088f1eca718afe2ef28685167c5392a"
+          ]
+        },
+        {
+          "classification": "verified_graph_relationship",
+          "authoritative": true,
+          "text": "Resolved static CALLS: login → validateToken",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:eef40b7efc1e00d7bc911cde1e7dd58c"
+          ]
+        },
+        {
+          "classification": "derived_analysis",
+          "authoritative": true,
+          "text": "Resolved static CALLS chain: entry → login",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:30bcc2f0916063b0494cc7968224aec5"
+          ]
+        }
+      ]
+    },
+    "malformed": {
+      "model_status": "validation_failed",
+      "status": "partial",
+      "failure_category": "invalid_schema",
+      "fallback": "evidence_summary",
+      "preparation_ms": 41.395,
+      "model_ms": 0.018,
+      "total_ms": 97.306,
+      "input_bytes": 12738,
+      "source_bytes": 522,
+      "model_calls": 1,
+      "context_truncated": false,
+      "coverage": [
+        "partial"
+      ],
+      "claim_count": 7,
+      "citation_count": 5,
+      "unverified_interpretations": 0,
+      "claims": [
+        {
+          "classification": "verified_source_observation",
+          "authoritative": true,
+          "text": "Indexed source at login.ts:3-3.",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:1183f83611a51ee7fc96e3f2390ec51a"
+          ]
+        },
+        {
+          "classification": "verified_source_observation",
+          "authoritative": true,
+          "text": "Indexed declaration: login",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:1183f83611a51ee7fc96e3f2390ec51a"
+          ]
+        },
+        {
+          "classification": "verified_source_observation",
+          "authoritative": true,
+          "text": "Indexed declaration: entry",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:5cbe2c0c54583ffa451ba6d2dc24efb9"
+          ]
+        },
+        {
+          "classification": "verified_graph_relationship",
+          "authoritative": true,
+          "text": "Resolved static CALLS: entry → login",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:30bcc2f0916063b0494cc7968224aec5"
+          ]
+        },
+        {
+          "classification": "verified_graph_relationship",
+          "authoritative": true,
+          "text": "Resolved static CALLS: checkLogin → login",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:2088f1eca718afe2ef28685167c5392a"
+          ]
+        },
+        {
+          "classification": "verified_graph_relationship",
+          "authoritative": true,
+          "text": "Resolved static CALLS: login → validateToken",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:eef40b7efc1e00d7bc911cde1e7dd58c"
+          ]
+        },
+        {
+          "classification": "derived_analysis",
+          "authoritative": true,
+          "text": "Resolved static CALLS chain: entry → login",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:30bcc2f0916063b0494cc7968224aec5"
+          ]
+        }
+      ]
+    },
+    "invented_fact": {
+      "model_status": "validation_failed",
+      "status": "partial",
+      "failure_category": "unsupported_fact_text",
+      "fallback": "evidence_summary",
+      "preparation_ms": 44.058,
+      "model_ms": 0.074,
+      "total_ms": 101.083,
+      "input_bytes": 12738,
+      "source_bytes": 522,
+      "model_calls": 1,
+      "context_truncated": false,
+      "coverage": [
+        "partial"
+      ],
+      "claim_count": 7,
+      "citation_count": 5,
+      "unverified_interpretations": 0,
+      "claims": [
+        {
+          "classification": "verified_source_observation",
+          "authoritative": true,
+          "text": "Indexed source at login.ts:3-3.",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:1183f83611a51ee7fc96e3f2390ec51a"
+          ]
+        },
+        {
+          "classification": "verified_source_observation",
+          "authoritative": true,
+          "text": "Indexed declaration: login",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:1183f83611a51ee7fc96e3f2390ec51a"
+          ]
+        },
+        {
+          "classification": "verified_source_observation",
+          "authoritative": true,
+          "text": "Indexed declaration: entry",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:5cbe2c0c54583ffa451ba6d2dc24efb9"
+          ]
+        },
+        {
+          "classification": "verified_graph_relationship",
+          "authoritative": true,
+          "text": "Resolved static CALLS: entry → login",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:30bcc2f0916063b0494cc7968224aec5"
+          ]
+        },
+        {
+          "classification": "verified_graph_relationship",
+          "authoritative": true,
+          "text": "Resolved static CALLS: checkLogin → login",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:2088f1eca718afe2ef28685167c5392a"
+          ]
+        },
+        {
+          "classification": "verified_graph_relationship",
+          "authoritative": true,
+          "text": "Resolved static CALLS: login → validateToken",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:eef40b7efc1e00d7bc911cde1e7dd58c"
+          ]
+        },
+        {
+          "classification": "derived_analysis",
+          "authoritative": true,
+          "text": "Resolved static CALLS chain: entry → login",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:30bcc2f0916063b0494cc7968224aec5"
+          ]
+        }
+      ]
+    }
+  },
+  "details": [
+    {
+      "task": "function",
+      "model_status": "success",
+      "status": "success",
+      "failure_category": null,
+      "fallback": "not_used",
+      "preparation_ms": 41.038,
+      "model_ms": 0.045,
+      "total_ms": 92.657,
+      "input_bytes": 12738,
+      "source_bytes": 522,
+      "model_calls": 1,
+      "context_truncated": false,
+      "coverage": [
+        "addressed"
+      ],
+      "claim_count": 2,
+      "citation_count": 7,
+      "unverified_interpretations": 1,
+      "claims": [
+        {
+          "classification": "model_interpretation",
+          "authoritative": false,
+          "text": "The supplied source suggests a static flow between these indexed declarations; runtime behavior is not confirmed.",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:1183f83611a51ee7fc96e3f2390ec51a",
+            "cm7:3080ffb132e177f530bf252336577cd1:1a7dbe5d2e4240b8c28f042b32f97e15",
+            "cm7:3080ffb132e177f530bf252336577cd1:f30dc44a22445a2aa7d5e8d92cfe523d",
+            "cm7:3080ffb132e177f530bf252336577cd1:5cbe2c0c54583ffa451ba6d2dc24efb9",
+            "cm7:3080ffb132e177f530bf252336577cd1:2088f1eca718afe2ef28685167c5392a",
+            "cm7:3080ffb132e177f530bf252336577cd1:eef40b7efc1e00d7bc911cde1e7dd58c",
+            "cm7:3080ffb132e177f530bf252336577cd1:30bcc2f0916063b0494cc7968224aec5"
+          ]
+        },
+        {
+          "classification": "verified_source_observation",
+          "authoritative": true,
+          "text": "Indexed source at login.ts:3-3.",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:1183f83611a51ee7fc96e3f2390ec51a"
+          ]
+        }
+      ]
+    },
+    {
+      "task": "function",
+      "model_status": "success",
+      "status": "success",
+      "failure_category": null,
+      "fallback": "not_used",
+      "preparation_ms": 51.934,
+      "model_ms": 0.044,
+      "total_ms": 112.989,
+      "input_bytes": 12738,
+      "source_bytes": 522,
+      "model_calls": 1,
+      "context_truncated": false,
+      "coverage": [
+        "addressed"
+      ],
+      "claim_count": 2,
+      "citation_count": 7,
+      "unverified_interpretations": 1,
+      "claims": [
+        {
+          "classification": "model_interpretation",
+          "authoritative": false,
+          "text": "The supplied source suggests a static flow between these indexed declarations; runtime behavior is not confirmed.",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:1183f83611a51ee7fc96e3f2390ec51a",
+            "cm7:3080ffb132e177f530bf252336577cd1:1a7dbe5d2e4240b8c28f042b32f97e15",
+            "cm7:3080ffb132e177f530bf252336577cd1:f30dc44a22445a2aa7d5e8d92cfe523d",
+            "cm7:3080ffb132e177f530bf252336577cd1:5cbe2c0c54583ffa451ba6d2dc24efb9",
+            "cm7:3080ffb132e177f530bf252336577cd1:2088f1eca718afe2ef28685167c5392a",
+            "cm7:3080ffb132e177f530bf252336577cd1:eef40b7efc1e00d7bc911cde1e7dd58c",
+            "cm7:3080ffb132e177f530bf252336577cd1:30bcc2f0916063b0494cc7968224aec5"
+          ]
+        },
+        {
+          "classification": "verified_source_observation",
+          "authoritative": true,
+          "text": "Indexed source at login.ts:3-3.",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:1183f83611a51ee7fc96e3f2390ec51a"
+          ]
+        }
+      ]
+    },
+    {
+      "task": "function",
+      "model_status": "success",
+      "status": "success",
+      "failure_category": null,
+      "fallback": "not_used",
+      "preparation_ms": 40.659,
+      "model_ms": 0.033,
+      "total_ms": 94.604,
+      "input_bytes": 12738,
+      "source_bytes": 522,
+      "model_calls": 1,
+      "context_truncated": false,
+      "coverage": [
+        "addressed"
+      ],
+      "claim_count": 2,
+      "citation_count": 7,
+      "unverified_interpretations": 1,
+      "claims": [
+        {
+          "classification": "model_interpretation",
+          "authoritative": false,
+          "text": "The supplied source suggests a static flow between these indexed declarations; runtime behavior is not confirmed.",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:1183f83611a51ee7fc96e3f2390ec51a",
+            "cm7:3080ffb132e177f530bf252336577cd1:1a7dbe5d2e4240b8c28f042b32f97e15",
+            "cm7:3080ffb132e177f530bf252336577cd1:f30dc44a22445a2aa7d5e8d92cfe523d",
+            "cm7:3080ffb132e177f530bf252336577cd1:5cbe2c0c54583ffa451ba6d2dc24efb9",
+            "cm7:3080ffb132e177f530bf252336577cd1:2088f1eca718afe2ef28685167c5392a",
+            "cm7:3080ffb132e177f530bf252336577cd1:eef40b7efc1e00d7bc911cde1e7dd58c",
+            "cm7:3080ffb132e177f530bf252336577cd1:30bcc2f0916063b0494cc7968224aec5"
+          ]
+        },
+        {
+          "classification": "verified_source_observation",
+          "authoritative": true,
+          "text": "Indexed source at login.ts:3-3.",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:1183f83611a51ee7fc96e3f2390ec51a"
+          ]
+        }
+      ]
+    },
+    {
+      "task": "workflow",
+      "model_status": "success",
+      "status": "success",
+      "failure_category": null,
+      "fallback": "not_used",
+      "preparation_ms": 35.377,
+      "model_ms": 0.046,
+      "total_ms": 87.73,
+      "input_bytes": 13198,
+      "source_bytes": 522,
+      "model_calls": 1,
+      "context_truncated": false,
+      "coverage": [
+        "addressed"
+      ],
+      "claim_count": 2,
+      "citation_count": 7,
+      "unverified_interpretations": 1,
+      "claims": [
+        {
+          "classification": "model_interpretation",
+          "authoritative": false,
+          "text": "The supplied source suggests a static flow between these indexed declarations; runtime behavior is not confirmed.",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:1183f83611a51ee7fc96e3f2390ec51a",
+            "cm7:3080ffb132e177f530bf252336577cd1:1a7dbe5d2e4240b8c28f042b32f97e15",
+            "cm7:3080ffb132e177f530bf252336577cd1:f30dc44a22445a2aa7d5e8d92cfe523d",
+            "cm7:3080ffb132e177f530bf252336577cd1:5cbe2c0c54583ffa451ba6d2dc24efb9",
+            "cm7:3080ffb132e177f530bf252336577cd1:2088f1eca718afe2ef28685167c5392a",
+            "cm7:3080ffb132e177f530bf252336577cd1:eef40b7efc1e00d7bc911cde1e7dd58c",
+            "cm7:3080ffb132e177f530bf252336577cd1:30bcc2f0916063b0494cc7968224aec5"
+          ]
+        },
+        {
+          "classification": "verified_source_observation",
+          "authoritative": true,
+          "text": "Indexed source at login.ts:3-3.",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:1183f83611a51ee7fc96e3f2390ec51a"
+          ]
+        }
+      ]
+    },
+    {
+      "task": "workflow",
+      "model_status": "success",
+      "status": "success",
+      "failure_category": null,
+      "fallback": "not_used",
+      "preparation_ms": 38.735,
+      "model_ms": 0.054,
+      "total_ms": 94.644,
+      "input_bytes": 13198,
+      "source_bytes": 522,
+      "model_calls": 1,
+      "context_truncated": false,
+      "coverage": [
+        "addressed"
+      ],
+      "claim_count": 2,
+      "citation_count": 7,
+      "unverified_interpretations": 1,
+      "claims": [
+        {
+          "classification": "model_interpretation",
+          "authoritative": false,
+          "text": "The supplied source suggests a static flow between these indexed declarations; runtime behavior is not confirmed.",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:1183f83611a51ee7fc96e3f2390ec51a",
+            "cm7:3080ffb132e177f530bf252336577cd1:1a7dbe5d2e4240b8c28f042b32f97e15",
+            "cm7:3080ffb132e177f530bf252336577cd1:f30dc44a22445a2aa7d5e8d92cfe523d",
+            "cm7:3080ffb132e177f530bf252336577cd1:5cbe2c0c54583ffa451ba6d2dc24efb9",
+            "cm7:3080ffb132e177f530bf252336577cd1:2088f1eca718afe2ef28685167c5392a",
+            "cm7:3080ffb132e177f530bf252336577cd1:eef40b7efc1e00d7bc911cde1e7dd58c",
+            "cm7:3080ffb132e177f530bf252336577cd1:30bcc2f0916063b0494cc7968224aec5"
+          ]
+        },
+        {
+          "classification": "verified_source_observation",
+          "authoritative": true,
+          "text": "Indexed source at login.ts:3-3.",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:1183f83611a51ee7fc96e3f2390ec51a"
+          ]
+        }
+      ]
+    },
+    {
+      "task": "workflow",
+      "model_status": "success",
+      "status": "success",
+      "failure_category": null,
+      "fallback": "not_used",
+      "preparation_ms": 38.008,
+      "model_ms": 0.043,
+      "total_ms": 87.658,
+      "input_bytes": 13198,
+      "source_bytes": 522,
+      "model_calls": 1,
+      "context_truncated": false,
+      "coverage": [
+        "addressed"
+      ],
+      "claim_count": 2,
+      "citation_count": 7,
+      "unverified_interpretations": 1,
+      "claims": [
+        {
+          "classification": "model_interpretation",
+          "authoritative": false,
+          "text": "The supplied source suggests a static flow between these indexed declarations; runtime behavior is not confirmed.",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:1183f83611a51ee7fc96e3f2390ec51a",
+            "cm7:3080ffb132e177f530bf252336577cd1:1a7dbe5d2e4240b8c28f042b32f97e15",
+            "cm7:3080ffb132e177f530bf252336577cd1:f30dc44a22445a2aa7d5e8d92cfe523d",
+            "cm7:3080ffb132e177f530bf252336577cd1:5cbe2c0c54583ffa451ba6d2dc24efb9",
+            "cm7:3080ffb132e177f530bf252336577cd1:2088f1eca718afe2ef28685167c5392a",
+            "cm7:3080ffb132e177f530bf252336577cd1:eef40b7efc1e00d7bc911cde1e7dd58c",
+            "cm7:3080ffb132e177f530bf252336577cd1:30bcc2f0916063b0494cc7968224aec5"
+          ]
+        },
+        {
+          "classification": "verified_source_observation",
+          "authoritative": true,
+          "text": "Indexed source at login.ts:3-3.",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:1183f83611a51ee7fc96e3f2390ec51a"
+          ]
+        }
+      ]
+    },
+    {
+      "task": "behavior",
+      "model_status": "success",
+      "status": "partial",
+      "failure_category": null,
+      "fallback": "not_used",
+      "preparation_ms": 34.769,
+      "model_ms": 0.041,
+      "total_ms": 87.514,
+      "input_bytes": 12715,
+      "source_bytes": 522,
+      "model_calls": 1,
+      "context_truncated": false,
+      "coverage": [
+        "partial"
+      ],
+      "claim_count": 2,
+      "citation_count": 7,
+      "unverified_interpretations": 1,
+      "claims": [
+        {
+          "classification": "model_interpretation",
+          "authoritative": false,
+          "text": "The supplied source suggests a static flow between these indexed declarations; runtime behavior is not confirmed.",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:1183f83611a51ee7fc96e3f2390ec51a",
+            "cm7:3080ffb132e177f530bf252336577cd1:1a7dbe5d2e4240b8c28f042b32f97e15",
+            "cm7:3080ffb132e177f530bf252336577cd1:f30dc44a22445a2aa7d5e8d92cfe523d",
+            "cm7:3080ffb132e177f530bf252336577cd1:5cbe2c0c54583ffa451ba6d2dc24efb9",
+            "cm7:3080ffb132e177f530bf252336577cd1:2088f1eca718afe2ef28685167c5392a",
+            "cm7:3080ffb132e177f530bf252336577cd1:eef40b7efc1e00d7bc911cde1e7dd58c",
+            "cm7:3080ffb132e177f530bf252336577cd1:30bcc2f0916063b0494cc7968224aec5"
+          ]
+        },
+        {
+          "classification": "verified_source_observation",
+          "authoritative": true,
+          "text": "Indexed source at login.ts:3-3.",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:1183f83611a51ee7fc96e3f2390ec51a"
+          ]
+        }
+      ]
+    },
+    {
+      "task": "behavior",
+      "model_status": "success",
+      "status": "partial",
+      "failure_category": null,
+      "fallback": "not_used",
+      "preparation_ms": 37.427,
+      "model_ms": 0.039,
+      "total_ms": 88.913,
+      "input_bytes": 12715,
+      "source_bytes": 522,
+      "model_calls": 1,
+      "context_truncated": false,
+      "coverage": [
+        "partial"
+      ],
+      "claim_count": 2,
+      "citation_count": 7,
+      "unverified_interpretations": 1,
+      "claims": [
+        {
+          "classification": "model_interpretation",
+          "authoritative": false,
+          "text": "The supplied source suggests a static flow between these indexed declarations; runtime behavior is not confirmed.",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:1183f83611a51ee7fc96e3f2390ec51a",
+            "cm7:3080ffb132e177f530bf252336577cd1:1a7dbe5d2e4240b8c28f042b32f97e15",
+            "cm7:3080ffb132e177f530bf252336577cd1:f30dc44a22445a2aa7d5e8d92cfe523d",
+            "cm7:3080ffb132e177f530bf252336577cd1:5cbe2c0c54583ffa451ba6d2dc24efb9",
+            "cm7:3080ffb132e177f530bf252336577cd1:2088f1eca718afe2ef28685167c5392a",
+            "cm7:3080ffb132e177f530bf252336577cd1:eef40b7efc1e00d7bc911cde1e7dd58c",
+            "cm7:3080ffb132e177f530bf252336577cd1:30bcc2f0916063b0494cc7968224aec5"
+          ]
+        },
+        {
+          "classification": "verified_source_observation",
+          "authoritative": true,
+          "text": "Indexed source at login.ts:3-3.",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:1183f83611a51ee7fc96e3f2390ec51a"
+          ]
+        }
+      ]
+    },
+    {
+      "task": "behavior",
+      "model_status": "success",
+      "status": "partial",
+      "failure_category": null,
+      "fallback": "not_used",
+      "preparation_ms": 35.855,
+      "model_ms": 0.037,
+      "total_ms": 86.57,
+      "input_bytes": 12715,
+      "source_bytes": 522,
+      "model_calls": 1,
+      "context_truncated": false,
+      "coverage": [
+        "partial"
+      ],
+      "claim_count": 2,
+      "citation_count": 7,
+      "unverified_interpretations": 1,
+      "claims": [
+        {
+          "classification": "model_interpretation",
+          "authoritative": false,
+          "text": "The supplied source suggests a static flow between these indexed declarations; runtime behavior is not confirmed.",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:1183f83611a51ee7fc96e3f2390ec51a",
+            "cm7:3080ffb132e177f530bf252336577cd1:1a7dbe5d2e4240b8c28f042b32f97e15",
+            "cm7:3080ffb132e177f530bf252336577cd1:f30dc44a22445a2aa7d5e8d92cfe523d",
+            "cm7:3080ffb132e177f530bf252336577cd1:5cbe2c0c54583ffa451ba6d2dc24efb9",
+            "cm7:3080ffb132e177f530bf252336577cd1:2088f1eca718afe2ef28685167c5392a",
+            "cm7:3080ffb132e177f530bf252336577cd1:eef40b7efc1e00d7bc911cde1e7dd58c",
+            "cm7:3080ffb132e177f530bf252336577cd1:30bcc2f0916063b0494cc7968224aec5"
+          ]
+        },
+        {
+          "classification": "verified_source_observation",
+          "authoritative": true,
+          "text": "Indexed source at login.ts:3-3.",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:1183f83611a51ee7fc96e3f2390ec51a"
+          ]
+        }
+      ]
+    },
+    {
+      "task": "comparison",
+      "model_status": "success",
+      "status": "success",
+      "failure_category": null,
+      "fallback": "not_used",
+      "preparation_ms": 35.676,
+      "model_ms": 0.036,
+      "total_ms": 85.9,
+      "input_bytes": 13141,
+      "source_bytes": 522,
+      "model_calls": 1,
+      "context_truncated": false,
+      "coverage": [
+        "addressed"
+      ],
+      "claim_count": 2,
+      "citation_count": 7,
+      "unverified_interpretations": 1,
+      "claims": [
+        {
+          "classification": "model_interpretation",
+          "authoritative": false,
+          "text": "The supplied source suggests a static flow between these indexed declarations; runtime behavior is not confirmed.",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:1183f83611a51ee7fc96e3f2390ec51a",
+            "cm7:3080ffb132e177f530bf252336577cd1:1a7dbe5d2e4240b8c28f042b32f97e15",
+            "cm7:3080ffb132e177f530bf252336577cd1:f30dc44a22445a2aa7d5e8d92cfe523d",
+            "cm7:3080ffb132e177f530bf252336577cd1:5cbe2c0c54583ffa451ba6d2dc24efb9",
+            "cm7:3080ffb132e177f530bf252336577cd1:2088f1eca718afe2ef28685167c5392a",
+            "cm7:3080ffb132e177f530bf252336577cd1:eef40b7efc1e00d7bc911cde1e7dd58c",
+            "cm7:3080ffb132e177f530bf252336577cd1:30bcc2f0916063b0494cc7968224aec5"
+          ]
+        },
+        {
+          "classification": "verified_source_observation",
+          "authoritative": true,
+          "text": "Indexed source at login.ts:3-3.",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:1183f83611a51ee7fc96e3f2390ec51a"
+          ]
+        }
+      ]
+    },
+    {
+      "task": "comparison",
+      "model_status": "success",
+      "status": "success",
+      "failure_category": null,
+      "fallback": "not_used",
+      "preparation_ms": 39.107,
+      "model_ms": 0.039,
+      "total_ms": 97.804,
+      "input_bytes": 13141,
+      "source_bytes": 522,
+      "model_calls": 1,
+      "context_truncated": false,
+      "coverage": [
+        "addressed"
+      ],
+      "claim_count": 2,
+      "citation_count": 7,
+      "unverified_interpretations": 1,
+      "claims": [
+        {
+          "classification": "model_interpretation",
+          "authoritative": false,
+          "text": "The supplied source suggests a static flow between these indexed declarations; runtime behavior is not confirmed.",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:1183f83611a51ee7fc96e3f2390ec51a",
+            "cm7:3080ffb132e177f530bf252336577cd1:1a7dbe5d2e4240b8c28f042b32f97e15",
+            "cm7:3080ffb132e177f530bf252336577cd1:f30dc44a22445a2aa7d5e8d92cfe523d",
+            "cm7:3080ffb132e177f530bf252336577cd1:5cbe2c0c54583ffa451ba6d2dc24efb9",
+            "cm7:3080ffb132e177f530bf252336577cd1:2088f1eca718afe2ef28685167c5392a",
+            "cm7:3080ffb132e177f530bf252336577cd1:eef40b7efc1e00d7bc911cde1e7dd58c",
+            "cm7:3080ffb132e177f530bf252336577cd1:30bcc2f0916063b0494cc7968224aec5"
+          ]
+        },
+        {
+          "classification": "verified_source_observation",
+          "authoritative": true,
+          "text": "Indexed source at login.ts:3-3.",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:1183f83611a51ee7fc96e3f2390ec51a"
+          ]
+        }
+      ]
+    },
+    {
+      "task": "comparison",
+      "model_status": "success",
+      "status": "success",
+      "failure_category": null,
+      "fallback": "not_used",
+      "preparation_ms": 43.187,
+      "model_ms": 0.038,
+      "total_ms": 94.572,
+      "input_bytes": 13141,
+      "source_bytes": 522,
+      "model_calls": 1,
+      "context_truncated": false,
+      "coverage": [
+        "addressed"
+      ],
+      "claim_count": 2,
+      "citation_count": 7,
+      "unverified_interpretations": 1,
+      "claims": [
+        {
+          "classification": "model_interpretation",
+          "authoritative": false,
+          "text": "The supplied source suggests a static flow between these indexed declarations; runtime behavior is not confirmed.",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:1183f83611a51ee7fc96e3f2390ec51a",
+            "cm7:3080ffb132e177f530bf252336577cd1:1a7dbe5d2e4240b8c28f042b32f97e15",
+            "cm7:3080ffb132e177f530bf252336577cd1:f30dc44a22445a2aa7d5e8d92cfe523d",
+            "cm7:3080ffb132e177f530bf252336577cd1:5cbe2c0c54583ffa451ba6d2dc24efb9",
+            "cm7:3080ffb132e177f530bf252336577cd1:2088f1eca718afe2ef28685167c5392a",
+            "cm7:3080ffb132e177f530bf252336577cd1:eef40b7efc1e00d7bc911cde1e7dd58c",
+            "cm7:3080ffb132e177f530bf252336577cd1:30bcc2f0916063b0494cc7968224aec5"
+          ]
+        },
+        {
+          "classification": "verified_source_observation",
+          "authoritative": true,
+          "text": "Indexed source at login.ts:3-3.",
+          "citations": [
+            "cm7:3080ffb132e177f530bf252336577cd1:1183f83611a51ee7fc96e3f2390ec51a"
+          ]
+        }
+      ]
+    }
+  ]
+}

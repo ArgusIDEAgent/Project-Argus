@@ -1,0 +1,196 @@
+{
+  "evaluation": "Separate real local development smoke attempts; no automatic generation retries",
+  "attempt_count": 3,
+  "attempts": [
+    {
+      "implementation": "Initial schema before conditional claim constraints",
+      "evaluation": "One real local Ollama generation; not a general quality guarantee",
+      "state": "completed",
+      "endpoint": "http://127.0.0.1:11434/api/chat",
+      "model": "llama3:latest",
+      "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+      "repository_id": "dbca8b5a112593e87d1768d8",
+      "generation_id": "00fdbc65a97542da932df80471113f30",
+      "citation_validity": true,
+      "raw_prose_factuality": "Requires manual review; citation membership is not full factual verification",
+      "model_status": "validation_failed",
+      "status": "partial",
+      "failure_category": "missing_evidence_or_text",
+      "fallback": "evidence_summary",
+      "preparation_ms": 95.39,
+      "model_ms": 15732.271,
+      "total_ms": 15879.503,
+      "input_bytes": 4189,
+      "source_bytes": 69,
+      "model_calls": 1,
+      "coverage": [
+        "partial"
+      ],
+      "claim_count": 2,
+      "citation_count": 1,
+      "unverified_interpretations": 0,
+      "claims": [
+        {
+          "classification": "verified_source_observation",
+          "authoritative": true,
+          "text": "Indexed source at login.ts:3-3.",
+          "citations": [
+            "cm7:61fa0b6bc8579dc18c727ace3bf38c65:1a56892cd3ed22cc215435af641ffc13"
+          ]
+        },
+        {
+          "classification": "verified_source_observation",
+          "authoritative": true,
+          "text": "Indexed declaration: login",
+          "citations": [
+            "cm7:61fa0b6bc8579dc18c727ace3bf38c65:1a56892cd3ed22cc215435af641ffc13"
+          ]
+        }
+      ],
+      "backend_result_schema_validity": true,
+      "model_schema_validity": null,
+      "measurement_note": "Early development attempt: raw output not captured; model_ms included validation overhead. Not directly comparable to final timings."
+    },
+    {
+      "implementation": "Conditional claim schema",
+      "evaluation": "One real local Ollama generation; not a general quality guarantee",
+      "state": "completed",
+      "endpoint": "http://127.0.0.1:11434/api/chat",
+      "model": "llama3:latest",
+      "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+      "repository_id": "f9b2b73252d74ea5859c1f07",
+      "generation_id": "b543cb34d0014165a9d1913d1cc0d5d2",
+      "backend_result_schema_validity": true,
+      "model_schema_validity": true,
+      "grounding_validation_accepted": true,
+      "model_output_redacted": {
+        "sections": [
+          {
+            "title": "explanation",
+            "claims": [
+              {
+                "requirement_orders": [
+                  0
+                ],
+                "mode": "interpretation",
+                "fact_id": null,
+                "record_ids": [
+                  "ba60301f3a30f858216c3c0c66404405"
+                ],
+                "text": "The login function is a function that validates a token. It takes a token as an input and returns the result of the validateToken function."
+              }
+            ]
+          }
+        ],
+        "coverage": [
+          {
+            "order": 0,
+            "state": "partial"
+          }
+        ]
+      },
+      "citation_validity": true,
+      "raw_prose_factuality": "Requires manual review; citation membership is not full factual verification",
+      "model_status": "success",
+      "status": "partial",
+      "failure_category": null,
+      "fallback": "not_used",
+      "preparation_ms": 33.577,
+      "model_ms": 16704.282,
+      "total_ms": 16785.829,
+      "input_bytes": 4218,
+      "source_bytes": 69,
+      "model_calls": 1,
+      "coverage": [
+        "partial"
+      ],
+      "claim_count": 1,
+      "citation_count": 1,
+      "unverified_interpretations": 1,
+      "claims": [
+        {
+          "classification": "model_interpretation",
+          "authoritative": false,
+          "text": "The login function is a function that validates a token. It takes a token as an input and returns the result of the validateToken function.",
+          "citations": [
+            "cm7:2f65b20ae9146ad13954c3c082475ccf:ba60301f3a30f858216c3c0c66404405"
+          ]
+        }
+      ]
+    },
+    {
+      "implementation": "Final schema and task-specific instructions",
+      "evaluation": "One real local Ollama generation; not a general quality guarantee",
+      "state": "completed",
+      "endpoint": "http://127.0.0.1:11434/api/chat",
+      "model": "llama3:latest",
+      "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+      "repository_id": "64781d8c1362072ffb9587b2",
+      "generation_id": "262181dc790b4366a61e34713a80d152",
+      "backend_result_schema_validity": true,
+      "model_schema_validity": true,
+      "grounding_validation_accepted": true,
+      "model_output_redacted": {
+        "sections": [
+          {
+            "title": "explanation",
+            "claims": [
+              {
+                "requirement_orders": [
+                  0
+                ],
+                "mode": "interpretation",
+                "fact_id": null,
+                "record_ids": [
+                  "bc628a4ddd32632629d69eebcb030b72"
+                ],
+                "text": "The login function is a function that takes a token as an input and returns the result of the validateToken function. It is defined in the login.ts file."
+              }
+            ]
+          }
+        ],
+        "coverage": [
+          {
+            "order": 0,
+            "state": "partial"
+          }
+        ]
+      },
+      "citation_validity": true,
+      "raw_prose_factuality": "Requires manual review; citation membership is not full factual verification",
+      "model_status": "success",
+      "status": "partial",
+      "failure_category": null,
+      "fallback": "not_used",
+      "preparation_ms": 62.606,
+      "model_ms": 14467.151,
+      "total_ms": 14600.306,
+      "input_bytes": 6130,
+      "source_bytes": 302,
+      "model_calls": 1,
+      "context_truncated": true,
+      "coverage": [
+        "partial"
+      ],
+      "claim_count": 1,
+      "citation_count": 1,
+      "unverified_interpretations": 1,
+      "claims": [
+        {
+          "classification": "model_interpretation",
+          "authoritative": false,
+          "text": "The login function is a function that takes a token as an input and returns the result of the validateToken function. It is defined in the login.ts file.",
+          "citations": [
+            "cm7:775135653086cfee55c5a31992940c59:bc628a4ddd32632629d69eebcb030b72"
+          ]
+        }
+      ]
+    }
+  ],
+  "manual_review": {
+    "method": "Agent review against the existing synthetic fixture source and final structured output, not an independent human evaluation",
+    "source_path": "ai-engine/tests/test_phase4_rules.py",
+    "fixture_source": "export function login(token: string) { return validateToken(token); }",
+    "final_observations": "The reported input, delegation/return and file match login.ts:3. No root-cause, performance or behavioral-equivalence claim appears. Caller/callee explanation is incomplete; coverage remains partial. This one example does not measure general factual accuracy."
+  }
+}

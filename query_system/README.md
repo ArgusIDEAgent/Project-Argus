@@ -10,6 +10,12 @@ executor pin. See [PHASE7.md](PHASE7.md) for provenance checks, claim classes,
 requirement coverage, canonical deduplication, budgets and backend-owned citations.
 It does not invoke an LLM or switch `/retrieve` or `/ask` to new contracts.
 
+Phase 8 adds standalone evidence-grounded local generation from accepted Phase 7
+packages, with redacted bounded context, structured claims, backend-owned citations
+and deterministic fallback. See [PHASE8.md](PHASE8.md) for the compatibility audit,
+explicit support bindings, safeguards, benchmarks and limitations. Production
+routes and Phase 6 routing remain unchanged; explanation routing is still deferred.
+
 `contracts.py` defines the boundary between CodeMind's existing knowledge base and
 the planned graph, semantic, rules, and Graph RAG engines. It does not change the
 current `/retrieve` or `/ask` response formats.
