@@ -8,6 +8,9 @@ import os
 from pathlib import Path
 import sys
 import sqlite3
+import subprocess
+import tempfile
+import shutil
 from contextlib import closing
 from time import perf_counter
 from unittest.mock import patch
@@ -18,6 +21,27 @@ from query_system.qualify_stabilization import (
     existing_api_channels, progress, query_checks, repository_id, run_hybrid,
 )
 from query_system.benchmark_execution import latency
+
+
+def evaluate_bound(store, client, repeats, real_local, vscode=False):
+    view = store.view(); repo = store.repo_id
+    before = vector_digest(client, view["manifest"]["collection"])
+    result = {"state": "completed", "repository_id": repo, "snapshot_id": view["snapshotId"],
+        "snapshot_inventory_files": len(view["manifest"]["sources"]["files"]), "graph_relationship_labels": graph_labels(store),
+        "queries": query_checks(store, existing_api_channels(api,config.EMBEDDING_MODEL_NAME), "codemind", repeats)}
+    if real_local: result["ollama"] = model_checks(store, existing_api_channels(api,config.EMBEDDING_MODEL_NAME))
+    if vscode:
+        env = {**os.environ, "CODEMIND_QUAL_REPO_ROOT": str(store.root), "CODEMIND_DATA_DIR": str(store.base),
+            "CODEMIND_QUAL_MODEL_CACHE": str(Path(config.DEFAULT_DATA_DIR) / "models")}
+        checked = subprocess.run(["npm", "--prefix", "extension", "run", "test:integration"], cwd=PROJECT,
+            env=env, capture_output=True, text=True, timeout=240)
+        result["vscode"] = {"exit_code": checked.returncode,
+            "real_host_pass": "Final real CodeMind VS Code + authenticated read-only backend:" in checked.stdout and checked.returncode == 0,
+            "output_tail": (checked.stdout + checked.stderr)[-18000:]}
+        progress("real_vscode", exit_code=checked.returncode)
+    result["stored_vectors_unchanged"] = before == vector_digest(client, view["manifest"]["collection"])
+    result["same_generation_still_active"] = (store.active() or {}).get("id") == view["snapshotId"] and store.matches(view["snapshotId"])
+    return result
 
 
 def vector_digest(client, collection):
@@ -95,10 +119,11 @@ def model_checks(store, channels):
     cases = [("function", "Explain verifiedSourcePath", True),
         ("workflow", "Explain the workflow from openVerifiedPreviewSource to verifiedSourcePath", True),
         ("behavior", "Why might verifiedSourcePath fail?", True),
-        ("comparison", "Compare verifiedSourcePath with isInside", True),
+        ("comparison", "Compare verifiedSourcePath with extension/src/sourceNavigation.ts::isInside", True),
         ("partial", "Where is verifiedSourcePath defined and explain verifiedSourcePath", True),
         ("truncated", "Explain openResponsePreview", False),
         ("missing", "Explain stabilizationNonexistent", False),
+        ("ambiguous_comparison", "Compare verifiedSourcePath with isInside", False),
         ("stale", "Explain verifiedSourcePath", False)]
     details = []
     for name, question, positive in cases:
@@ -119,7 +144,7 @@ def model_checks(store, channels):
             if generation.context:
                 item["review_sources"].extend(source.model_dump(mode="json") for source in generation.context.sources)
                 item["context"] = {"input_bytes": generation.context.input_bytes, "source_bytes": generation.context.source_bytes,
-                    "omissions": generation.context.omissions, "core_ready": generation.context.core_ready}
+                    "omissions": generation.context.omissions, "core_ready": {str(order): ready for order, ready in generation.context.core_ready.items()}}
         details.append(PresentationSafety(answers).tree(item))
         progress("local_model", case=name, status=item["status"], model=[value["model_status"] for value in item["generations"]])
     positives = [item for item in details if item["positive"]]
@@ -148,22 +173,59 @@ def run(repeats=5, real_local=False):
         stack.enter_context(patch.object(api, "get_qdrant_client", return_value=client))
         stack.enter_context(patch.object(config, "get_embedding_model", return_value=model))
         stack.enter_context(patch.dict(api._REGISTERED_REPOS, {repo: {"rootPath": str(root)}}))
-        before = vector_digest(client, view["manifest"]["collection"])
-        result = {"state": "completed", "repository_id": repo, "snapshot_id": view["snapshotId"],
-            "snapshot_inventory_files": len(view["manifest"]["sources"]["files"]), "graph_relationship_labels": graph_labels(store),
-            "queries": query_checks(store, existing_api_channels(api,config.EMBEDDING_MODEL_NAME), "codemind", repeats)}
-        if real_local: result["ollama"] = model_checks(store, existing_api_channels(api,config.EMBEDDING_MODEL_NAME))
-        result["stored_vectors_unchanged"] = before == vector_digest(client, view["manifest"]["collection"])
-        result["same_generation_still_active"] = (store.active() or {}).get("id") == view["snapshotId"] and store.matches(view["snapshotId"])
+        result = evaluate_bound(store, client, repeats, real_local)
         result["no_index_or_publication_requested"] = True
         return result
+
+
+def isolated_run(repeats=5, real_local=False, vscode=False):
+    """Freeze the real extension implementation, then reuse its one private index."""
+    from query_system.qualify_stabilization import copy_text, index_directory, build_graph
+    from fastembed import TextEmbedding
+    import faiss
+    cache = Path(config.DEFAULT_DATA_DIR) / "models"
+    model = TextEmbedding(model_name=config.EMBEDDING_MODEL_NAME, cache_dir=str(cache), local_files_only=True, threads=2)
+    with tempfile.TemporaryDirectory(prefix="cm-final-coordinated-") as temporary, ExitStack() as stack:
+        base = Path(temporary); root = base / "repo"; root.mkdir(); data = base / "private"
+        copied = copy_text(PROJECT / "extension/src", root / "extension/src")
+        for name in ("package.json", "README.md", "tsconfig.json"):
+            shutil.copy2(PROJECT / "extension" / name, root / "extension" / name)
+        store = SnapshotStore(root, repository_id(root), data)
+        client = FaissClient(data / "faiss"); stack.callback(client.close)
+        stack.enter_context(patch.object(config, "get_embedding_model", return_value=model))
+        stack.enter_context(patch("indexer.get_embedding_model", return_value=model))
+        for module in ("api", "indexer"):
+            stack.enter_context(patch(module + ".get_qdrant_client", return_value=client))
+        stack.enter_context(patch.object(api, "DEFAULT_DATA_DIR", str(data)))
+        stack.enter_context(patch.dict(api._REGISTERED_REPOS, {store.repo_id: {"rootPath": str(root)}}))
+        started = perf_counter()
+        publication = store.publish(client=client, collection=config.COLLECTION_NAME, index_directory=index_directory, build_graph=build_graph)
+        indexing_ms = (perf_counter()-started)*1000
+        progress("coordinated_private_snapshot", files=len(copied)+3, chunks=publication["chunks_embedded"])
+        client.db.execute("PRAGMA query_only=ON")
+        stack.enter_context(patch.object(faiss, "write_index", side_effect=AssertionError("No vector repair during read-only qualification")))
+        result = evaluate_bound(store, client, repeats, real_local, vscode)
+        result.update(corpus="Frozen real CodeMind extension implementation; not the full target-sized corpus",
+            copied_files=len(copied)+3, private_indexing_ms=indexing_ms, user_indexes_modified=False)
+    result["temporary_corpus_and_index_cleaned"] = not base.exists()
+    return result
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--real-local", action="store_true")
+    parser.add_argument("--isolated", action="store_true", help="Approved disposable frozen real-source index")
+    parser.add_argument("--vscode", action="store_true", help="Actual read-only VS Code integration against the disposable index")
+    parser.add_argument("--output", type=Path, help="Persist the generated qualification report before temporary data cleanup")
     parser.add_argument("--repeats", type=int, default=5, choices=range(5, 11))
-    args = parser.parse_args(); print(json.dumps(run(args.repeats, args.real_local), indent=2))
+    args = parser.parse_args()
+    if args.vscode and not args.isolated: parser.error("--vscode requires --isolated")
+    result = isolated_run(args.repeats, args.real_local, args.vscode) if args.isolated else run(args.repeats, args.real_local)
+    if args.output:
+        with args.output.open("x") as destination: json.dump(result, destination, indent=2)
+        print(json.dumps({"state": result["state"], "report": str(args.output), "cleaned": result.get("temporary_corpus_and_index_cleaned")}))
+    else:
+        print(json.dumps(result, indent=2))
 
 
 if __name__ == "__main__": main()

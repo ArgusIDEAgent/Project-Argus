@@ -1,0 +1,101 @@
+{
+  "evaluation": "Positive implementation-entrypoint labels for four exploratory source-inspected feature questions; not exhaustive relevance judgments",
+  "recall_formula": "Relevant implementation files retrieved / labeled implementation files",
+  "details": [
+    {
+      "corpus": "next-typescript",
+      "question": "Find code that renders a list of sample users with navigation links",
+      "label_scope": "Declared implementation-entrypoint files, not exhaustive semantic relevance judgments",
+      "relevant_files": [
+        "components/List.tsx",
+        "components/ListItem.tsx",
+        "pages/users/index.tsx"
+      ],
+      "returned_unique_files_in_top5_chunks": [
+        "pages/api/users/index.ts",
+        "pages/users/[id].tsx",
+        "pages/users/index.tsx",
+        "utils/sample-data.ts"
+      ],
+      "hits": [
+        "pages/users/index.tsx"
+      ],
+      "implementation_file_recall": 0.3333333333333333,
+      "positive_label_match_fraction": 0.25,
+      "coverage_threshold_met": false,
+      "semantic_precision": null,
+      "precision_note": "Other returned files have not all been adjudicated; a match fraction against positive-only labels is not semantic precision."
+    },
+    {
+      "corpus": "express",
+      "question": "Find code that sets up the application and its request router",
+      "label_scope": "Declared implementation-entrypoint files, not exhaustive semantic relevance judgments",
+      "relevant_files": [
+        "lib/express.js",
+        "lib/application.js"
+      ],
+      "returned_unique_files_in_top5_chunks": [
+        "lib/application.js",
+        "lib/response.js",
+        "test/acceptance/multi-router.js",
+        "test/acceptance/params.js",
+        "test/app.router.js"
+      ],
+      "hits": [
+        "lib/application.js"
+      ],
+      "implementation_file_recall": 0.5,
+      "positive_label_match_fraction": 0.2,
+      "coverage_threshold_met": false,
+      "semantic_precision": null,
+      "precision_note": "Other returned files have not all been adjudicated; a match fraction against positive-only labels is not semantic precision."
+    },
+    {
+      "corpus": "flask",
+      "question": "Find code that dispatches HTTP requests to registered view functions",
+      "label_scope": "Declared implementation-entrypoint files, not exhaustive semantic relevance judgments",
+      "relevant_files": [
+        "src/flask/app.py"
+      ],
+      "returned_unique_files_in_top5_chunks": [
+        "src/flask/app.py",
+        "src/flask/sansio/scaffold.py",
+        "src/flask/views.py"
+      ],
+      "hits": [
+        "src/flask/app.py"
+      ],
+      "implementation_file_recall": 1,
+      "positive_label_match_fraction": 0.3333333333333333,
+      "coverage_threshold_met": true,
+      "semantic_precision": null,
+      "precision_note": "Other returned files have not all been adjudicated; a match fraction against positive-only labels is not semantic precision."
+    },
+    {
+      "corpus": "codemind",
+      "question": "Find code that verifies source file hashes before opening citations",
+      "label_scope": "Declared implementation-entrypoint files, not exhaustive semantic relevance judgments",
+      "relevant_files": [
+        "extension/src/sourceNavigation.ts",
+        "extension/src/responsePreview.ts"
+      ],
+      "returned_unique_files_in_top5_chunks": [
+        "ai-engine/lexical_search.py",
+        "extension/src/responsePreview.ts",
+        "query_system/benchmark_hybrid.py"
+      ],
+      "hits": [
+        "extension/src/responsePreview.ts"
+      ],
+      "implementation_file_recall": 0.5,
+      "positive_label_match_fraction": 0.3333333333333333,
+      "coverage_threshold_met": false,
+      "semantic_precision": null,
+      "precision_note": "Other returned files have not all been adjudicated; a match fraction against positive-only labels is not semantic precision."
+    }
+  ],
+  "mean_recall": 0.5833333333333333,
+  "mean_precision": null,
+  "qualification_pass": false,
+  "precision_qualification": "unmeasured: needs complete relevance judgments; do not treat unmatched related files as false positives"
+}

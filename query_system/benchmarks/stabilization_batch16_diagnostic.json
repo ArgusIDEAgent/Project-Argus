@@ -1,0 +1,17 @@
+{
+  "corpus": "express",
+  "copied_files": 106,
+  "copied_bytes": 630174,
+  "chunks_embedded": 3958,
+  "embedding_batch_size": 16,
+  "indexing_ms": 353707.6444169943,
+  "python_peak_rss_bytes": 1334689792,
+  "provenance_checked": 14293,
+  "provenance_valid": 14293,
+  "chunk_provenance_checked": 3958,
+  "chunk_provenance_valid": 3958,
+  "unchanged_chunks_embedded": 0,
+  "temporary_corpora_and_indexes_cleaned": true,
+  "production_configuration_changed": false,
+  "scope": "Diagnostic only; latency comparison not controlled; smaller batch reduces observed peak RSS but exceeds five-minute gate"
+}

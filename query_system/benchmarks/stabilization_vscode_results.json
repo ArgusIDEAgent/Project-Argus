@@ -1,0 +1,26 @@
+{
+  "evaluation": "Actual VS Code extension host using a frozen disposable real CodeMind extension snapshot, authenticated ephemeral read-only backend and native LocalOllama; not a full interactive UX study",
+  "exit_code": 0,
+  "repository_id": "ecb4a454b9ebaea3075dd0cb",
+  "snapshot_id": "79cfb69d3dc84d90a1ab5e77535a35a0",
+  "phase9_pass": true,
+  "phase10_pass": true,
+  "real_vscode_pass": true,
+  "checks": [
+    "Quick/Standard/Deep",
+    "canonical source path and editor range",
+    "opaque backend-owned previous target",
+    "two caller targets",
+    "unsupported statistics actionable error",
+    "native local Ollama or validated fallback visible",
+    "wrong repository and invented action blocked",
+    "hybrid rollback",
+    "ephemeral backend restart invalidates old handle"
+  ],
+  "source_copy_files": 9,
+  "private_indexing_ms": 16419.74474999006,
+  "stored_vectors_unchanged": true,
+  "same_generation_still_active": true,
+  "temporary_corpus_and_index_cleaned": true,
+  "tool_capture_note": "Full run exited 0; large JSON capture was truncated by the tool. This compact host result preserves observed pass markers; a separate complete Ollama report is recorded."
+}

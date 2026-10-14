@@ -4,8 +4,12 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 import test_phase10_integration as phase10
+import test_phase8_generation as phase8
 from hybrid_api import AnswerCache
 from fastapi import HTTPException
+from query_system.generation_contracts import GenerationBudget
+from query_system.graph_rag import GraphRagGenerator
+import answers
 
 
 class StabilizationApiTests(unittest.TestCase):
@@ -63,4 +67,17 @@ class StabilizationApiTests(unittest.TestCase):
         self.assertEqual(reply.status_code, 200)
         self.assertEqual(reply.json()["operations"], [])
         self.assertTrue(reply.json()["presentation"]["clarifications"])
+
+    def test_default_workflow_context_retains_its_required_verified_path(self):
+        helper = phase8.GenerationTests(); helper.owner = self.owner.owner
+        with self.owner.owner.session() as executor:
+            package = helper.package(executor)
+            request = helper.request(executor, package, "workflow", GenerationBudget())
+            client = phase8.FakeLocal()
+            result = GraphRagGenerator(executor, answers, client=client).generate(request, package)
+            self.assertTrue(result.context.core_ready[0], result.context.gaps)
+            self.assertTrue(any(fact.data.get("path_node_ids") for fact in result.context.facts))
+            self.assertLessEqual(result.context.input_bytes, request.budget.num_ctx - request.budget.num_predict - 512)
+            self.assertEqual(result.model_status, "success")
+            self.assertEqual(client.calls, 1)
 

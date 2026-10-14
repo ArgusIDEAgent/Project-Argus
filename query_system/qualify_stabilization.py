@@ -225,10 +225,11 @@ def incremental(store, client):
     return {"unchanged_generation_reused": True, "unchanged_chunks_embedded": 0, "edit": changed, "rename": renamed, "delete": deleted}
 
 
-def run(repeats=5, labels=None):
+def run(repeats=5, labels=None, embedding_batch_size=64):
     if repeats < 5 or repeats > 10: raise ValueError("Use 5–10 qualification repetitions")
     results = {"evaluation": "Disposable real-source profiles; no user indexes modified; not a universal language/scale guarantee",
-        "pins": PINS, "repeats": repeats, "profiles": [], "model": config.EMBEDDING_MODEL_NAME, "existing_knowledge_bases_unchanged_by_harness": True}
+        "pins": PINS, "repeats": repeats, "profiles": [], "model": config.EMBEDDING_MODEL_NAME,
+        "benchmark_embedding_batch_size": embedding_batch_size, "existing_knowledge_bases_unchanged_by_harness": True}
     model = TextEmbedding(model_name=config.EMBEDDING_MODEL_NAME, cache_dir=str(Path(config.DEFAULT_DATA_DIR) / "models"), local_files_only=True, threads=2)
     with tempfile.TemporaryDirectory(prefix="cm-final-qualification-") as temporary:
         base = Path(temporary)
@@ -242,7 +243,7 @@ def run(repeats=5, labels=None):
                 repo = repository_id(root); store = SnapshotStore(root, repo, data)
                 with ExitStack() as guards:
                     client = FaissClient(data / "faiss"); guards.callback(client.close)
-                    def embeds(texts): return [vector.tolist() for vector in model.embed(texts, batch_size=64)]
+                    def embeds(texts): return [vector.tolist() for vector in model.embed(texts, batch_size=embedding_batch_size)]
                     for module in ("api", "indexer"):
                         guards.enter_context(patch(module + ".get_qdrant_client", return_value=client))
                         guards.enter_context(patch(module + ".embed_texts", side_effect=embeds))
@@ -272,8 +273,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repeats", type=int, default=5)
     parser.add_argument("--corpus", choices=[*PINS, "codemind"], action="append")
+    parser.add_argument("--embedding-batch-size", type=int, choices=[8, 16, 32, 64], default=64,
+        help="Isolated diagnostic only; does not change production configuration")
     args = parser.parse_args()
-    print(json.dumps(run(args.repeats, args.corpus), indent=2))
+    print(json.dumps(run(args.repeats, args.corpus, args.embedding_batch_size), indent=2))
 
 
 if __name__ == "__main__": main()

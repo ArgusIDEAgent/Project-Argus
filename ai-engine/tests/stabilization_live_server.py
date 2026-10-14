@@ -48,7 +48,7 @@ def main():
     def measured(self, *args):
         counts["model"] += 1
         return native(self, *args)  # Actual installed local model, not a producer mock.
-    model = TextEmbedding(model_name=config.EMBEDDING_MODEL_NAME, cache_dir=str(data / "models"), local_files_only=True, threads=2)
+    model = TextEmbedding(model_name=config.EMBEDDING_MODEL_NAME, cache_dir=os.environ.get("CODEMIND_QUAL_MODEL_CACHE", str(data / "models")), local_files_only=True, threads=2)
     sock = socket.socket(); sock.bind(("127.0.0.1", 0)); sock.listen(16)
     try:
         with contextlib.ExitStack() as stack:

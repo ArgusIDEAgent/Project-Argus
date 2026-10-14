@@ -31,8 +31,6 @@ SYSTEM = (
     "Semantic results indicate similarity, never dependencies. Never promote hypotheses/unresolved references to facts. "
     "Never write citations, citation IDs, source lists or tool calls in text. Cover every original requirement order, "
     "mark partial/unsupported honestly, and retain uncertainty and coverage gaps."
-    " A usable explanation needs at least one concise source-grounded interpretation or hypothesis per addressed requirement; "
-    "source-location facts alone are not an explanation. Use the smallest sufficient record_ids, and never invent missing details."
 )
 LIMITATIONS = [
     "Citations verify provenance, not arbitrary prose; model interpretations are not fully fact-checked.",
@@ -139,9 +137,21 @@ class GraphRagGenerator:
         available_sources = {key: record for key, record in package.evidence.items() if any(use.requirement_id in selected_requirements for use in record.uses)}
         target_records = {order: {key for key, record in available_sources.items() if record.proof.evidence_type in ("symbol_definition", "source_range") and any(
             record.proof.symbol_id == entity.symbol_id if entity.symbol_id else record.proof.file_id == entity.file_id for entity in entities)} for order, entities in targets.items()}
-        priority = set().union(*target_records.values()) if target_records else set()
+        target_priority = set().union(*target_records.values()) if target_records else set()
+        # A workflow needs a verified path as well as its endpoint definitions.
+        # Preserve the first supplied path per binding, not a newly inferred path.
+        essential_facts = set()
+        priority = set(target_priority)
+        if request.explanation_type == "workflow":
+            for bindings in request.bindings.values():
+                path = next((finding for finding in package.findings
+                    if finding.requirement_id in bindings and isinstance(finding.original, GraphFinding)
+                    and finding.original.path_node_ids), None)
+                if path is not None:
+                    essential_facts.add(path.finding_id)
+                    priority.update(path.evidence_record_ids)
         sources, source_bytes, omissions = [], 0, []
-        for key in [*sorted(priority), *sorted(available_sources.keys() - priority)]:
+        for key in [*sorted(target_priority), *sorted(priority - target_priority), *sorted(available_sources.keys() - priority)]:
             if len(sources) >= budget.max_records:
                 omissions.append("record_limit:" + key)
                 continue
@@ -159,7 +169,7 @@ class GraphRagGenerator:
             sources.append(PreparedSource(record_id=key, data=self.safety.tree(data), excerpt=excerpt))
         admitted = {source.record_id for source in sources}
         facts = []
-        for key in sorted(priority & admitted):
+        for key in sorted(target_priority & admitted):
             record = available_sources[key]
             proof = record.proof
             if proof.file_path is None:
@@ -180,8 +190,11 @@ class GraphRagGenerator:
                 statement=self.safety.text(self._statement(finding)), data=self.safety.tree(finding.original.model_dump(mode="json")),
                 limitations=self.safety.tree(finding.limitations)))
         if len(facts) > budget.max_facts:
-            omissions.extend("fact_limit:" + item.fact_id for item in facts[budget.max_facts:])
-            facts = facts[:budget.max_facts]
+            retained = [item for item in facts if item.fact_id in essential_facts]
+            retained += [item for item in facts if item.fact_id not in essential_facts][:max(0, budget.max_facts - len(retained))]
+            admitted_facts = {item.fact_id for item in retained[:budget.max_facts]}
+            omissions.extend("fact_limit:" + item.fact_id for item in facts if item.fact_id not in admitted_facts)
+            facts = [item for item in facts if item.fact_id in admitted_facts]
         def messages():
             payload = self.safety.tree({"task": request.explanation_type, "question": request.query.question,
                 "requirements": [{**item.model_dump(mode="json"), "support_ids": request.bindings[item.order],
@@ -205,11 +218,14 @@ class GraphRagGenerator:
                 sources.remove(extra)
                 facts = [item for item in facts if extra.record_id not in item.record_ids]
                 omissions.append("context_record_limit:" + extra.record_id)
-            elif len(facts) > 1:
-                omissions.append("context_fact_limit:" + facts[-1].fact_id)
-                facts.pop()
+            elif len(facts) > 1 and any(item.fact_id not in essential_facts for item in facts):
+                extra_fact = next(item for item in reversed(facts) if item.fact_id not in essential_facts)
+                omissions.append("context_fact_limit:" + extra_fact.fact_id)
+                facts.remove(extra_fact)
             else:
-                excerpt = next((source for source in reversed(sources) if source.excerpt is not None), None)
+                excerpt = next((source for source in reversed(sources) if source.excerpt is not None and source.record_id not in target_priority), None)
+                if excerpt is None:
+                    excerpt = next((source for source in reversed(sources) if source.excerpt is not None), None)
                 if excerpt is None:
                     # Safe facts can still form a deterministic summary even if
                     # the required prompt envelope itself does not fit.

@@ -1,0 +1,1192 @@
+{
+  "state": "completed",
+  "repository_id": "39258e11ae5ac997a747ddcb",
+  "snapshot_id": "c21e2ac0ab0e4070af532123a367f752",
+  "snapshot_inventory_files": 9,
+  "graph_relationship_labels": {
+    "label_scope": "All resolved repository-owned direct calls from the three named implementations; not external/dynamic calls",
+    "expected": [
+      [
+        "extension/src/responsePreview.ts",
+        "openVerifiedPreviewSource",
+        "extension/src/responsePreview.ts",
+        "verifiedPreviewSource"
+      ],
+      [
+        "extension/src/responsePreview.ts",
+        "verifiedPreviewSource",
+        "extension/src/sourceNavigation.ts",
+        "verifiedSourcePath"
+      ],
+      [
+        "extension/src/sourceNavigation.ts",
+        "verifiedSourcePath",
+        "extension/src/sourceNavigation.ts",
+        "isInside"
+      ]
+    ],
+    "actual": [
+      [
+        "extension/src/responsePreview.ts",
+        "openVerifiedPreviewSource",
+        "extension/src/responsePreview.ts",
+        "verifiedPreviewSource"
+      ],
+      [
+        "extension/src/responsePreview.ts",
+        "verifiedPreviewSource",
+        "extension/src/sourceNavigation.ts",
+        "verifiedSourcePath"
+      ],
+      [
+        "extension/src/sourceNavigation.ts",
+        "verifiedSourcePath",
+        "extension/src/sourceNavigation.ts",
+        "isInside"
+      ]
+    ],
+    "precision": 1.0,
+    "recall": 1.0,
+    "missing": [],
+    "unexpected": []
+  },
+  "queries": {
+    "cases": [
+      {
+        "case": "definition",
+        "question": "Where is verifiedSourcePath defined?",
+        "status": "success",
+        "intents": [
+          "SYMBOL_LOCATION"
+        ],
+        "targets": [
+          [
+            "verifiedSourcePath"
+          ]
+        ],
+        "operations": [
+          "graph.find_definition"
+        ],
+        "generations": 0,
+        "latency_ms": {
+          "median_ms": 156.84,
+          "p95_ms": 181.977
+        },
+        "samples": 5,
+        "response_bytes": 5148,
+        "source_paths": [
+          "extension/src/sourceNavigation.ts"
+        ],
+        "requirement_states": [
+          "satisfied"
+        ],
+        "error": null
+      },
+      {
+        "case": "callers",
+        "question": "Who calls verifiedSourcePath?",
+        "status": "success",
+        "intents": [
+          "DIRECT_CALLERS"
+        ],
+        "targets": [
+          [
+            "verifiedSourcePath"
+          ]
+        ],
+        "operations": [
+          "graph.find_callers"
+        ],
+        "generations": 0,
+        "latency_ms": {
+          "median_ms": 166.766,
+          "p95_ms": 182.462
+        },
+        "samples": 5,
+        "response_bytes": 6568,
+        "source_paths": [
+          "extension/src/extension.ts",
+          "extension/src/responsePreview.ts",
+          "extension/src/sourceNavigation.ts"
+        ],
+        "requirement_states": [
+          "satisfied"
+        ],
+        "error": null
+      },
+      {
+        "case": "target_list",
+        "question": "Who calls verifiedSourcePath and verifiedPreviewSource?",
+        "status": "success",
+        "intents": [
+          "DIRECT_CALLERS"
+        ],
+        "targets": [
+          [
+            "verifiedSourcePath",
+            "verifiedPreviewSource"
+          ]
+        ],
+        "operations": [
+          "graph.find_callers",
+          "graph.find_callers"
+        ],
+        "generations": 0,
+        "latency_ms": {
+          "median_ms": 169.852,
+          "p95_ms": 200.938
+        },
+        "samples": 5,
+        "response_bytes": 10367,
+        "source_paths": [
+          "extension/src/extension.ts",
+          "extension/src/responsePreview.ts",
+          "extension/src/sourceNavigation.ts"
+        ],
+        "requirement_states": [
+          "satisfied"
+        ],
+        "error": null
+      },
+      {
+        "case": "compound",
+        "question": "Where is verifiedSourcePath defined and contract of verifiedPreviewSource",
+        "status": "partial",
+        "intents": [
+          "SYMBOL_LOCATION",
+          "FUNCTION_CONTRACT"
+        ],
+        "targets": [
+          [
+            "verifiedSourcePath"
+          ],
+          [
+            "verifiedPreviewSource"
+          ]
+        ],
+        "operations": [
+          "graph.find_definition",
+          "rules.function_contract"
+        ],
+        "generations": 0,
+        "latency_ms": {
+          "median_ms": 172.595,
+          "p95_ms": 190.415
+        },
+        "samples": 5,
+        "response_bytes": 10819,
+        "source_paths": [
+          "extension/src/responsePreview.ts",
+          "extension/src/sourceNavigation.ts"
+        ],
+        "requirement_states": [
+          "satisfied",
+          "partially_satisfied"
+        ],
+        "error": null
+      },
+      {
+        "case": "comparison_tests",
+        "question": "Compare verifiedSourcePath and verifiedPreviewSource and find tests for both",
+        "status": "partial",
+        "intents": [
+          "CODE_COMPARISON",
+          "TEST_DISCOVERY"
+        ],
+        "targets": [
+          [
+            "verifiedSourcePath",
+            "verifiedPreviewSource"
+          ],
+          [
+            "verifiedSourcePath",
+            "verifiedPreviewSource"
+          ]
+        ],
+        "operations": [
+          "rules.reference_test_analysis",
+          "rules.reference_test_analysis",
+          "graph.find_definition",
+          "graph.find_definition",
+          "rules.function_contract",
+          "graph.find_callees",
+          "rules.function_contract",
+          "graph.find_callees"
+        ],
+        "generations": 0,
+        "latency_ms": {
+          "median_ms": 466.652,
+          "p95_ms": 485.007
+        },
+        "samples": 5,
+        "response_bytes": 35089,
+        "source_paths": [
+          "extension/src/extension.ts",
+          "extension/src/responsePreview.ts",
+          "extension/src/sourceNavigation.ts"
+        ],
+        "requirement_states": [
+          "deferred",
+          "partially_satisfied"
+        ],
+        "error": null
+      },
+      {
+        "case": "ambiguous",
+        "question": "Where is run defined?",
+        "status": "not_found",
+        "intents": [
+          "SYMBOL_LOCATION"
+        ],
+        "targets": [
+          [
+            "run"
+          ]
+        ],
+        "operations": [],
+        "generations": 0,
+        "latency_ms": {
+          "median_ms": 94.288,
+          "p95_ms": 95.228
+        },
+        "samples": 5,
+        "response_bytes": 2552,
+        "source_paths": [],
+        "requirement_states": [
+          "not_found"
+        ],
+        "error": null
+      },
+      {
+        "case": "missing",
+        "question": "Where is stabilizationNonexistent defined?",
+        "status": "not_found",
+        "intents": [
+          "SYMBOL_LOCATION"
+        ],
+        "targets": [
+          [
+            "stabilizationNonexistent"
+          ]
+        ],
+        "operations": [],
+        "generations": 0,
+        "latency_ms": {
+          "median_ms": 89.354,
+          "p95_ms": 95.506
+        },
+        "samples": 5,
+        "response_bytes": 2578,
+        "source_paths": [],
+        "requirement_states": [
+          "not_found"
+        ],
+        "error": null
+      },
+      {
+        "case": "unsupported",
+        "question": "How many files are in this repository?",
+        "status": "unsupported",
+        "intents": [
+          "UNRESOLVED"
+        ],
+        "targets": [
+          []
+        ],
+        "operations": [],
+        "generations": 0,
+        "latency_ms": {
+          "median_ms": 28.108,
+          "p95_ms": 29.344
+        },
+        "samples": 5,
+        "response_bytes": 562,
+        "source_paths": [],
+        "requirement_states": [],
+        "error": {
+          "code": "invalid_operation",
+          "message": "Repository statistics are not an implemented hybrid capability."
+        }
+      },
+      {
+        "case": "semantic",
+        "question": "Find code that verifies source file hashes before opening citations",
+        "status": "success",
+        "intents": [
+          "FEATURE_DISCOVERY"
+        ],
+        "targets": [
+          [
+            "Find code that verifies source file hashes before opening citations"
+          ]
+        ],
+        "operations": [
+          "semantic.hybrid_search"
+        ],
+        "generations": 0,
+        "latency_ms": {
+          "median_ms": 208.9,
+          "p95_ms": 225.325
+        },
+        "samples": 5,
+        "response_bytes": 11654,
+        "source_paths": [
+          "extension/src/extension.ts",
+          "extension/src/responsePresentation.ts",
+          "extension/src/responsePreview.ts",
+          "extension/src/sourceNavigation.ts"
+        ],
+        "requirement_states": [
+          "satisfied"
+        ],
+        "error": null
+      }
+    ],
+    "proofs_checked": 290,
+    "proofs_valid": 290
+  },
+  "ollama": {
+    "state": "completed",
+    "model": "llama3:latest",
+    "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+    "details": [
+      {
+        "case": "function",
+        "question": "Explain verifiedSourcePath",
+        "positive": true,
+        "resident_before": true,
+        "status": "partial",
+        "snapshot_id": "c21e2ac0ab0e4070af532123a367f752",
+        "wall_ms": 12710.739665999427,
+        "stage_ms": {
+          "understanding_ms": 22.477374994195998,
+          "planning_ms": 0.4174170026089996,
+          "execution_ms": 136.6965000052005,
+          "aggregation_ms": 42.753041998366825,
+          "llm_preparation_ms": 61.15291600872297,
+          "llm_generation_ms": 12332.331166006043,
+          "generation_total_ms": 12467.19591600413,
+          "formatting_ms": 2.438832991174422,
+          "validation_ms": 25.83229100855533,
+          "total_ms": 12710.203750000801
+        },
+        "transport": [
+          {
+            "request_bytes": 9803,
+            "message_bytes": 6100,
+            "schema_bytes": 3195,
+            "options": {
+              "temperature": 0,
+              "num_predict": 350,
+              "num_ctx": 8192
+            },
+            "timeout_s": 29.914938250003615,
+            "response_bytes": 678,
+            "load_duration": 15455958,
+            "prompt_eval_count": 1478,
+            "prompt_eval_duration": 7133576000,
+            "eval_count": 106,
+            "eval_duration": 5124039000,
+            "total_duration": 12326566958,
+            "done_reason": "stop"
+          }
+        ],
+        "generations": [
+          {
+            "task": "function",
+            "original_orders": [
+              0
+            ],
+            "model_status": "validation_failed",
+            "fallback_status": "evidence_summary",
+            "failure_category": "no_usable_explanation",
+            "model_attempts": 1
+          }
+        ],
+        "output_redacted": "{\"sections\":[{\"title\":\"source_facts\",\"claims\":[{\"requirement_orders\": [0],\"mode\": \"fact\",\"fact_id\": \"source:baba7358f9a3464f09dfda244fb8be01\",\"record_ids\": [\"baba7358f9a3464f09dfda244fb8be01\"],\"text\": \"Indexed source at extension/src/sourceNavigation.ts:12-31.\"}]}],\"coverage\":[{\"order\": 0,\"state\": \"partial\"}]}",
+        "safe_explanation_claims": [
+          {
+            "claim_id": "254341c12a084506987fd02803cbe3eb",
+            "requirement_orders": [
+              0
+            ],
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "text": "Indexed source at extension/src/sourceNavigation.ts:12-31.",
+            "finding_id": null,
+            "fact_id": "source:baba7358f9a3464f09dfda244fb8be01",
+            "record_ids": [
+              "baba7358f9a3464f09dfda244fb8be01"
+            ],
+            "citation_ids": [
+              "cm7:717b45b457945472524b24cf6e95503b:baba7358f9a3464f09dfda244fb8be01"
+            ],
+            "verification": "backend_fact"
+          },
+          {
+            "claim_id": "d1cd372b1cb394d6a017f7e4c8640d69",
+            "requirement_orders": [
+              0
+            ],
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "text": "Indexed declaration: verifiedSourcePath",
+            "finding_id": "840069ae157f34f9ea793f7a661c96ed",
+            "fact_id": "840069ae157f34f9ea793f7a661c96ed",
+            "record_ids": [
+              "baba7358f9a3464f09dfda244fb8be01"
+            ],
+            "citation_ids": [
+              "cm7:717b45b457945472524b24cf6e95503b:baba7358f9a3464f09dfda244fb8be01"
+            ],
+            "verification": "backend_fact"
+          }
+        ],
+        "review_sources": [
+          {
+            "record_id": "baba7358f9a3464f09dfda244fb8be01",
+            "data": {
+              "path": "extension/src/sourceNavigation.ts",
+              "start_line": 12,
+              "end_line": 31,
+              "symbol_id": "b82b1291d21c156dfcb38051de09cf7bc82d9d116e38951b390751d83c18590e",
+              "kind": "symbol",
+              "provenance": {
+                "kind": "symbol"
+              }
+            },
+            "excerpt": "export function verifiedSourcePath(rootPath: string, relativePath: string, sourceHash: string): string {\n  if (!relativePath || path.isAbsolute(relativePath) || relativePath.includes('\\0')) {\n    throw new Error('Invalid indexed source path.');\n  }\n  const root = fs.realpathSync(rootPath);\n  const file = path.resolve(root, relativePath);\n  if (!isInside(root, file)) throw new Error('Indexed source is outside the selected repository.');\n  let real: string;\n  try { real = fs.realpathSync(file); }\n  catch { throw new Error('Indexed source no longer exists. Refresh the repository.'); }\n  if (!isInside(root, real)) throw new Error('Indexed source is outside the selected repository.');\n  const stat = fs.statSync(real);\n  if (!stat.isFile() || stat.size > MAX_VERIFY_BYTES) {\n    throw new Error('Indexed source is not a regular file or is too large to open.');\n  }\n  if (createHash('sha256').update(fs.readFileSync(real)).digest('hex') !== sourceHash) {\n    throw new Error('This source changed. Refresh the repository before opening it.');\n  }\n  return real;\n}"
+          }
+        ],
+        "citations_valid": true,
+        "context": {
+          "input_bytes": 6100,
+          "source_bytes": 1065,
+          "omissions": [
+            "record_limit:fa653a7b54161389ecdd617ee7fa60df",
+            "context_record_limit:fa01882ee90472e377bd93827df23711",
+            "context_record_limit:f9313b8c37cff299ed0ca5fdd5d99167",
+            "context_record_limit:f6efe7f4a2dc1a00e1ec035aacb2a31a",
+            "context_record_limit:d651a547df00e468c82e7ace7b60f53a",
+            "context_record_limit:b712be7a94be39f2ffe2df7c98743b6a",
+            "context_record_limit:a79192074336e6df68b60d3fdfaf9dae",
+            "context_record_limit:a36beba26a618747251e9d521688754a",
+            "context_record_limit:9d27288870c09e4c2cd2912fd65e660e",
+            "context_record_limit:8d8a531fa61d8fd0fe4d0465426bdfc9",
+            "context_record_limit:8990557e56b5369054751eea4138fa62",
+            "context_record_limit:823b85e4323ed24550342d559539a03e",
+            "context_record_limit:525af8def413ef2dff3ac8055012060a",
+            "context_record_limit:3e96204b7ca36ea40a29cdea6cd76c58",
+            "context_record_limit:2ff776151449656f9fe0f3d3b73b9d2c",
+            "context_record_limit:0a0f7cb32d6cc2734ec7f26565a23f1a",
+            "context_fact_limit:4e9f2a6ab0ae905367f12c2bbe35e74f"
+          ],
+          "core_ready": {
+            "0": true
+          }
+        }
+      },
+      {
+        "case": "workflow",
+        "question": "Explain the workflow from openVerifiedPreviewSource to verifiedSourcePath",
+        "positive": true,
+        "resident_before": true,
+        "status": "partial",
+        "snapshot_id": "c21e2ac0ab0e4070af532123a367f752",
+        "wall_ms": 594.4743750005728,
+        "stage_ms": {
+          "understanding_ms": 28.052667010342702,
+          "planning_ms": 0.661666999803856,
+          "execution_ms": 228.52841699204873,
+          "aggregation_ms": 57.12483399838675,
+          "llm_preparation_ms": 206.06558400322683,
+          "llm_generation_ms": 0.0,
+          "generation_total_ms": 239.71758400148246,
+          "formatting_ms": 2.7500410069478676,
+          "validation_ms": 24.014499998884276,
+          "total_ms": 593.9492909965338
+        },
+        "transport": [],
+        "generations": [
+          {
+            "task": "workflow",
+            "original_orders": [
+              0
+            ],
+            "model_status": "blocked",
+            "fallback_status": "evidence_summary",
+            "failure_category": "insufficient_target_evidence",
+            "model_attempts": 0
+          }
+        ],
+        "output_redacted": null,
+        "safe_explanation_claims": [
+          {
+            "claim_id": "cb67283727c0192f0757035491385f46",
+            "requirement_orders": [
+              0
+            ],
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "text": "Indexed source at extension/src/responsePreview.ts:81-93.",
+            "finding_id": null,
+            "fact_id": "source:000b85dbb305431a4f24df4c38225739",
+            "record_ids": [
+              "000b85dbb305431a4f24df4c38225739"
+            ],
+            "citation_ids": [
+              "cm7:144fb57bf7c3980ee9dbe58ccdda9143:000b85dbb305431a4f24df4c38225739"
+            ],
+            "verification": "backend_fact"
+          }
+        ],
+        "review_sources": [
+          {
+            "record_id": "000b85dbb305431a4f24df4c38225739",
+            "data": {
+              "path": "extension/src/responsePreview.ts",
+              "start_line": 81,
+              "end_line": 93,
+              "symbol_id": "4f7f0670b04aa9625e2ce1ccb39e70d3fe315761f12de9c7a7671870f1991260",
+              "kind": "symbol",
+              "provenance": {
+                "kind": "symbol"
+              }
+            },
+            "excerpt": "export async function openVerifiedPreviewSource(rootPath: string, reply: VerificationReply, reference: string): Promise<void> {\n  if (!vscode.workspace.isTrusted) throw new Error('Workspace Trust is required for source navigation.');\n  const file = verifiedPreviewSource(rootPath, reply, reference);\n  const proof = reply.source!.source;\n  const document = await vscode.workspace.openTextDocument(file);\n  if (document.isDirty || proof.end_line > document.lineCount || createHash('sha256').update(document.getText(), 'utf8').digest('hex') !== proof.source_hash) {\n    throw new Error('Editor source is dirty, changed or not byte-compatible with the citation. Navigation refused.');\n  }\n  // Recheck disk after the asynchronous document open, before showing selection.\n  verifiedPreviewSource(rootPath, reply, reference);\n  await vscode.window.showTextDocument(document, { viewColumn: vscode.ViewColumn.Beside,\n    selection: new vscode.Range(proof.start_line - 1, 0, proof.end_line - 1, document.lineAt(proof.end_line - 1).text.length) });\n}"
+          },
+          {
+            "record_id": "baba7358f9a3464f09dfda244fb8be01",
+            "data": {
+              "path": "extension/src/sourceNavigation.ts",
+              "start_line": 12,
+              "end_line": 31,
+              "symbol_id": "b82b1291d21c156dfcb38051de09cf7bc82d9d116e38951b390751d83c18590e",
+              "kind": "symbol",
+              "provenance": {
+                "kind": "symbol"
+              }
+            },
+            "excerpt": null
+          }
+        ],
+        "citations_valid": true,
+        "context": {
+          "input_bytes": 6274,
+          "source_bytes": 1041,
+          "omissions": [
+            "record_limit:c0f10ecb062b9191ceb45fcd02288559",
+            "record_limit:cc0b742c376eb4f24594d7eb54dec8c6",
+            "record_limit:d651a547df00e468c82e7ace7b60f53a",
+            "record_limit:f6dd37e96375ed65a290cbf25bdfead5",
+            "record_limit:f6efe7f4a2dc1a00e1ec035aacb2a31a",
+            "record_limit:f9313b8c37cff299ed0ca5fdd5d99167",
+            "record_limit:fa653a7b54161389ecdd617ee7fa60df",
+            "unsupported_context:6f1645bef92f1eab87e17e5f92247ba8",
+            "unsupported_context:3d2efb23957aabf5c2efc7f4ade64e8f",
+            "context_record_limit:ad05cff580f301418a51eab2265284de",
+            "context_record_limit:abf560e32719c24e93bb0bb0c9549094",
+            "context_record_limit:a79192074336e6df68b60d3fdfaf9dae",
+            "context_record_limit:a36beba26a618747251e9d521688754a",
+            "context_record_limit:9d27288870c09e4c2cd2912fd65e660e",
+            "context_record_limit:8d8a531fa61d8fd0fe4d0465426bdfc9",
+            "context_record_limit:8990557e56b5369054751eea4138fa62",
+            "context_record_limit:823b85e4323ed24550342d559539a03e",
+            "context_record_limit:7fc9295b468a6a71833aebe8af1fd531",
+            "context_record_limit:525af8def413ef2dff3ac8055012060a",
+            "context_record_limit:4083048d827900971aea8d91df978645",
+            "context_record_limit:3e96204b7ca36ea40a29cdea6cd76c58",
+            "context_record_limit:2ff776151449656f9fe0f3d3b73b9d2c",
+            "context_record_limit:0a0f7cb32d6cc2734ec7f26565a23f1a",
+            "context_fact_limit:887e3c191cc378de9941994c268b5431",
+            "context_fact_limit:dff586e7b1bee04b9376ef3367f304d3",
+            "context_fact_limit:d944bc90c9e8c40219a89a0e28ee9f75",
+            "context_fact_limit:eeebdf72ff0793f965fdd073d8c5e3ae",
+            "context_fact_limit:source:baba7358f9a3464f09dfda244fb8be01",
+            "context_source_limit:baba7358f9a3464f09dfda244fb8be01"
+          ],
+          "core_ready": {
+            "0": false
+          }
+        }
+      },
+      {
+        "case": "behavior",
+        "question": "Why might verifiedSourcePath fail?",
+        "positive": true,
+        "resident_before": true,
+        "status": "partial",
+        "snapshot_id": "c21e2ac0ab0e4070af532123a367f752",
+        "wall_ms": 14893.230832996778,
+        "stage_ms": {
+          "understanding_ms": 27.305750001687557,
+          "planning_ms": 0.47920900397002697,
+          "execution_ms": 127.15308299812023,
+          "aggregation_ms": 38.107874992419966,
+          "llm_preparation_ms": 51.03950000193436,
+          "llm_generation_ms": 14548.8467499963,
+          "generation_total_ms": 14664.538208002341,
+          "formatting_ms": 1.9149590079905465,
+          "validation_ms": 20.809167006518692,
+          "total_ms": 14892.481540999142
+        },
+        "transport": [
+          {
+            "request_bytes": 9579,
+            "message_bytes": 5890,
+            "schema_bytes": 3195,
+            "options": {
+              "temperature": 0,
+              "num_predict": 350,
+              "num_ctx": 8192
+            },
+            "timeout_s": 29.92522474999714,
+            "response_bytes": 911,
+            "load_duration": 10089834,
+            "prompt_eval_count": 1440,
+            "prompt_eval_duration": 7353319000,
+            "eval_count": 145,
+            "eval_duration": 7083972000,
+            "total_duration": 14543861375,
+            "done_reason": "stop"
+          }
+        ],
+        "generations": [
+          {
+            "task": "behavior",
+            "original_orders": [
+              0
+            ],
+            "model_status": "success",
+            "fallback_status": "not_used",
+            "failure_category": null,
+            "model_attempts": 1
+          }
+        ],
+        "output_redacted": "{\"sections\":[{\"title\":\"possible_causes\",\"claims\":[{\"requirement_orders\": [0],\"mode\": \"hypothesis\",\"fact_id\": null,\"record_ids\": [\"baba7358f9a3464f09dfda244fb8be01\"],\"text\": \"verifiedSourcePath might fail due to invalid indexed source path, absolute path, or path including '\\\\0'. It could also fail if the file is outside the selected repository, not a regular file, or too large to open. Additionally, the source hash might not match the expected value, indicating the source has changed.\"}]}],\"coverage\": [{ \"order\": 0, \"state\": \"partial\" }]}",
+        "safe_explanation_claims": [
+          {
+            "claim_id": "c797d04926de117694fc86233a8f9ca8",
+            "requirement_orders": [
+              0
+            ],
+            "classification": "hypothetical_consequence",
+            "authoritative": false,
+            "text": "verifiedSourcePath might fail due to invalid indexed source path, absolute path, or path including '\\0'. It could also fail if the file is outside the selected repository, not a regular file, or too large to open. Additionally, the source hash might not match the expected value, indicating the source has changed.",
+            "finding_id": null,
+            "fact_id": null,
+            "record_ids": [
+              "baba7358f9a3464f09dfda244fb8be01"
+            ],
+            "citation_ids": [
+              "cm7:a8ccfaea0dce963261a1e200a4a68e57:baba7358f9a3464f09dfda244fb8be01"
+            ],
+            "verification": "citation_linked_not_fact_checked"
+          }
+        ],
+        "review_sources": [
+          {
+            "record_id": "baba7358f9a3464f09dfda244fb8be01",
+            "data": {
+              "path": "extension/src/sourceNavigation.ts",
+              "start_line": 12,
+              "end_line": 31,
+              "symbol_id": "b82b1291d21c156dfcb38051de09cf7bc82d9d116e38951b390751d83c18590e",
+              "kind": "symbol",
+              "provenance": {
+                "kind": "symbol"
+              }
+            },
+            "excerpt": "export function verifiedSourcePath(rootPath: string, relativePath: string, sourceHash: string): string {\n  if (!relativePath || path.isAbsolute(relativePath) || relativePath.includes('\\0')) {\n    throw new Error('Invalid indexed source path.');\n  }\n  const root = fs.realpathSync(rootPath);\n  const file = path.resolve(root, relativePath);\n  if (!isInside(root, file)) throw new Error('Indexed source is outside the selected repository.');\n  let real: string;\n  try { real = fs.realpathSync(file); }\n  catch { throw new Error('Indexed source no longer exists. Refresh the repository.'); }\n  if (!isInside(root, real)) throw new Error('Indexed source is outside the selected repository.');\n  const stat = fs.statSync(real);\n  if (!stat.isFile() || stat.size > MAX_VERIFY_BYTES) {\n    throw new Error('Indexed source is not a regular file or is too large to open.');\n  }\n  if (createHash('sha256').update(fs.readFileSync(real)).digest('hex') !== sourceHash) {\n    throw new Error('This source changed. Refresh the repository before opening it.');\n  }\n  return real;\n}"
+          }
+        ],
+        "citations_valid": true,
+        "context": {
+          "input_bytes": 5890,
+          "source_bytes": 1065,
+          "omissions": [
+            "context_record_limit:fa653a7b54161389ecdd617ee7fa60df",
+            "context_record_limit:f9313b8c37cff299ed0ca5fdd5d99167",
+            "context_record_limit:f6efe7f4a2dc1a00e1ec035aacb2a31a",
+            "context_record_limit:d651a547df00e468c82e7ace7b60f53a",
+            "context_record_limit:a79192074336e6df68b60d3fdfaf9dae",
+            "context_record_limit:a36beba26a618747251e9d521688754a",
+            "context_record_limit:9d27288870c09e4c2cd2912fd65e660e",
+            "context_record_limit:8990557e56b5369054751eea4138fa62",
+            "context_record_limit:823b85e4323ed24550342d559539a03e",
+            "context_record_limit:525af8def413ef2dff3ac8055012060a",
+            "context_record_limit:2ff776151449656f9fe0f3d3b73b9d2c",
+            "context_record_limit:0a0f7cb32d6cc2734ec7f26565a23f1a",
+            "context_fact_limit:5b8c778c18e724af9fce99d1c0f1d9b4"
+          ],
+          "core_ready": {
+            "0": true
+          }
+        }
+      },
+      {
+        "case": "comparison",
+        "question": "Compare verifiedSourcePath with isInside",
+        "positive": true,
+        "resident_before": true,
+        "status": "partial",
+        "snapshot_id": "c21e2ac0ab0e4070af532123a367f752",
+        "wall_ms": 300.6899999891175,
+        "stage_ms": {
+          "understanding_ms": 26.939500006847084,
+          "planning_ms": 0.6231659936020151,
+          "execution_ms": 115.2074590063421,
+          "aggregation_ms": 39.03558399179019,
+          "llm_preparation_ms": 56.28904199693352,
+          "llm_generation_ms": 0.0,
+          "generation_total_ms": 80.24083399504889,
+          "formatting_ms": 2.5740830024005845,
+          "validation_ms": 23.857292006141506,
+          "total_ms": 300.0954169983743
+        },
+        "transport": [],
+        "generations": [
+          {
+            "task": "comparison",
+            "original_orders": [
+              0
+            ],
+            "model_status": "blocked",
+            "fallback_status": "evidence_summary",
+            "failure_category": "insufficient_target_evidence",
+            "model_attempts": 0
+          }
+        ],
+        "output_redacted": null,
+        "safe_explanation_claims": [
+          {
+            "claim_id": "833a619045ea5f3f3d64196715c45024",
+            "requirement_orders": [
+              0
+            ],
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "text": "Indexed source at extension/src/sourceNavigation.ts:12-31.",
+            "finding_id": null,
+            "fact_id": "source:baba7358f9a3464f09dfda244fb8be01",
+            "record_ids": [
+              "baba7358f9a3464f09dfda244fb8be01"
+            ],
+            "citation_ids": [
+              "cm7:fe98f4ea518fdf4395d23491e4ddc392:baba7358f9a3464f09dfda244fb8be01"
+            ],
+            "verification": "backend_fact"
+          },
+          {
+            "claim_id": "478a58115636616487e8c8824be0a028",
+            "requirement_orders": [
+              0
+            ],
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "text": "Indexed declaration: verifiedSourcePath",
+            "finding_id": "f9a4328367a50c84e7a7df974cdc0457",
+            "fact_id": "f9a4328367a50c84e7a7df974cdc0457",
+            "record_ids": [
+              "baba7358f9a3464f09dfda244fb8be01"
+            ],
+            "citation_ids": [
+              "cm7:fe98f4ea518fdf4395d23491e4ddc392:baba7358f9a3464f09dfda244fb8be01"
+            ],
+            "verification": "backend_fact"
+          }
+        ],
+        "review_sources": [
+          {
+            "record_id": "baba7358f9a3464f09dfda244fb8be01",
+            "data": {
+              "path": "extension/src/sourceNavigation.ts",
+              "start_line": 12,
+              "end_line": 31,
+              "symbol_id": "b82b1291d21c156dfcb38051de09cf7bc82d9d116e38951b390751d83c18590e",
+              "kind": "symbol",
+              "provenance": {
+                "kind": "symbol"
+              }
+            },
+            "excerpt": "export function verifiedSourcePath(rootPath: string, relativePath: string, sourceHash: string): string {\n  if (!relativePath || path.isAbsolute(relativePath) || relativePath.includes('\\0')) {\n    throw new Error('Invalid indexed source path.');\n  }\n  const root = fs.realpathSync(rootPath);\n  const file = path.resolve(root, relativePath);\n  if (!isInside(root, file)) throw new Error('Indexed source is outside the selected repository.');\n  let real: string;\n  try { real = fs.realpathSync(file); }\n  catch { throw new Error('Indexed source no longer exists. Refresh the repository.'); }\n  if (!isInside(root, real)) throw new Error('Indexed source is outside the selected repository.');\n  const stat = fs.statSync(real);\n  if (!stat.isFile() || stat.size > MAX_VERIFY_BYTES) {\n    throw new Error('Indexed source is not a regular file or is too large to open.');\n  }\n  if (createHash('sha256').update(fs.readFileSync(real)).digest('hex') !== sourceHash) {\n    throw new Error('This source changed. Refresh the repository before opening it.');\n  }\n  return real;\n}"
+          }
+        ],
+        "citations_valid": true,
+        "context": {
+          "input_bytes": 6536,
+          "source_bytes": 1065,
+          "omissions": [
+            "context_record_limit:fa653a7b54161389ecdd617ee7fa60df",
+            "context_record_limit:f9313b8c37cff299ed0ca5fdd5d99167",
+            "context_record_limit:f6efe7f4a2dc1a00e1ec035aacb2a31a",
+            "context_record_limit:d651a547df00e468c82e7ace7b60f53a",
+            "context_record_limit:a79192074336e6df68b60d3fdfaf9dae",
+            "context_record_limit:a36beba26a618747251e9d521688754a",
+            "context_record_limit:9d27288870c09e4c2cd2912fd65e660e",
+            "context_record_limit:8990557e56b5369054751eea4138fa62",
+            "context_record_limit:823b85e4323ed24550342d559539a03e",
+            "context_record_limit:525af8def413ef2dff3ac8055012060a",
+            "context_record_limit:2ff776151449656f9fe0f3d3b73b9d2c",
+            "context_record_limit:1ae74875b84a0eeb88ea67698ae8545a",
+            "context_record_limit:0a0f7cb32d6cc2734ec7f26565a23f1a",
+            "context_fact_limit:43bc56181c2a70be4349401335337559"
+          ],
+          "core_ready": {
+            "0": false
+          }
+        }
+      },
+      {
+        "case": "partial",
+        "question": "Where is verifiedSourcePath defined and explain verifiedSourcePath",
+        "positive": true,
+        "resident_before": true,
+        "status": "partial",
+        "snapshot_id": "c21e2ac0ab0e4070af532123a367f752",
+        "wall_ms": 14743.85604201234,
+        "stage_ms": {
+          "understanding_ms": 23.34616699954495,
+          "planning_ms": 0.5339579947758466,
+          "execution_ms": 137.1062499965774,
+          "aggregation_ms": 46.68366600526497,
+          "llm_preparation_ms": 70.12962500448339,
+          "llm_generation_ms": 14338.537708012154,
+          "generation_total_ms": 14488.70449999231,
+          "formatting_ms": 2.875540987588465,
+          "validation_ms": 31.103834000532515,
+          "total_ms": 14742.874832998496
+        },
+        "transport": [
+          {
+            "request_bytes": 9843,
+            "message_bytes": 6140,
+            "schema_bytes": 3195,
+            "options": {
+              "temperature": 0,
+              "num_predict": 350,
+              "num_ctx": 8192
+            },
+            "timeout_s": 29.901669291997678,
+            "response_bytes": 677,
+            "load_duration": 6988541,
+            "prompt_eval_count": 1478,
+            "prompt_eval_duration": 8269614000,
+            "eval_count": 106,
+            "eval_duration": 5978641000,
+            "total_duration": 14332970416,
+            "done_reason": "stop"
+          }
+        ],
+        "generations": [
+          {
+            "task": "function",
+            "original_orders": [
+              1
+            ],
+            "model_status": "validation_failed",
+            "fallback_status": "evidence_summary",
+            "failure_category": "no_usable_explanation",
+            "model_attempts": 1
+          }
+        ],
+        "output_redacted": "{\"sections\":[{\"title\":\"source_facts\",\"claims\":[{\"requirement_orders\": [0],\"mode\": \"fact\",\"fact_id\": \"source:baba7358f9a3464f09dfda244fb8be01\",\"record_ids\": [\"baba7358f9a3464f09dfda244fb8be01\"],\"text\": \"Indexed source at extension/src/sourceNavigation.ts:12-31.\"}]}],\"coverage\":[{\"order\": 0,\"state\": \"partial\"}]}",
+        "safe_explanation_claims": [
+          {
+            "claim_id": "8050748c33db8190034cfade48a3d469",
+            "requirement_orders": [
+              0
+            ],
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "text": "Indexed source at extension/src/sourceNavigation.ts:12-31.",
+            "finding_id": null,
+            "fact_id": "source:baba7358f9a3464f09dfda244fb8be01",
+            "record_ids": [
+              "baba7358f9a3464f09dfda244fb8be01"
+            ],
+            "citation_ids": [
+              "cm7:e6c4f2fd4720f0dda9eecc22b4ec34b0:baba7358f9a3464f09dfda244fb8be01"
+            ],
+            "verification": "backend_fact"
+          },
+          {
+            "claim_id": "4c370977694eae591d014eb5d71e54ca",
+            "requirement_orders": [
+              0
+            ],
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "text": "Indexed declaration: verifiedSourcePath",
+            "finding_id": "827479536e479162336535fdece07a51",
+            "fact_id": "827479536e479162336535fdece07a51",
+            "record_ids": [
+              "baba7358f9a3464f09dfda244fb8be01"
+            ],
+            "citation_ids": [
+              "cm7:e6c4f2fd4720f0dda9eecc22b4ec34b0:baba7358f9a3464f09dfda244fb8be01"
+            ],
+            "verification": "backend_fact"
+          }
+        ],
+        "review_sources": [
+          {
+            "record_id": "baba7358f9a3464f09dfda244fb8be01",
+            "data": {
+              "path": "extension/src/sourceNavigation.ts",
+              "start_line": 12,
+              "end_line": 31,
+              "symbol_id": "b82b1291d21c156dfcb38051de09cf7bc82d9d116e38951b390751d83c18590e",
+              "kind": "symbol",
+              "provenance": {
+                "kind": "symbol"
+              }
+            },
+            "excerpt": "export function verifiedSourcePath(rootPath: string, relativePath: string, sourceHash: string): string {\n  if (!relativePath || path.isAbsolute(relativePath) || relativePath.includes('\\0')) {\n    throw new Error('Invalid indexed source path.');\n  }\n  const root = fs.realpathSync(rootPath);\n  const file = path.resolve(root, relativePath);\n  if (!isInside(root, file)) throw new Error('Indexed source is outside the selected repository.');\n  let real: string;\n  try { real = fs.realpathSync(file); }\n  catch { throw new Error('Indexed source no longer exists. Refresh the repository.'); }\n  if (!isInside(root, real)) throw new Error('Indexed source is outside the selected repository.');\n  const stat = fs.statSync(real);\n  if (!stat.isFile() || stat.size > MAX_VERIFY_BYTES) {\n    throw new Error('Indexed source is not a regular file or is too large to open.');\n  }\n  if (createHash('sha256').update(fs.readFileSync(real)).digest('hex') !== sourceHash) {\n    throw new Error('This source changed. Refresh the repository before opening it.');\n  }\n  return real;\n}"
+          }
+        ],
+        "citations_valid": true,
+        "context": {
+          "input_bytes": 6140,
+          "source_bytes": 1065,
+          "omissions": [
+            "record_limit:fa653a7b54161389ecdd617ee7fa60df",
+            "context_record_limit:fa01882ee90472e377bd93827df23711",
+            "context_record_limit:f9313b8c37cff299ed0ca5fdd5d99167",
+            "context_record_limit:f6efe7f4a2dc1a00e1ec035aacb2a31a",
+            "context_record_limit:d651a547df00e468c82e7ace7b60f53a",
+            "context_record_limit:b712be7a94be39f2ffe2df7c98743b6a",
+            "context_record_limit:a79192074336e6df68b60d3fdfaf9dae",
+            "context_record_limit:a36beba26a618747251e9d521688754a",
+            "context_record_limit:9d27288870c09e4c2cd2912fd65e660e",
+            "context_record_limit:8d8a531fa61d8fd0fe4d0465426bdfc9",
+            "context_record_limit:8990557e56b5369054751eea4138fa62",
+            "context_record_limit:823b85e4323ed24550342d559539a03e",
+            "context_record_limit:525af8def413ef2dff3ac8055012060a",
+            "context_record_limit:3e96204b7ca36ea40a29cdea6cd76c58",
+            "context_record_limit:2ff776151449656f9fe0f3d3b73b9d2c",
+            "context_record_limit:0a0f7cb32d6cc2734ec7f26565a23f1a",
+            "context_fact_limit:cacf29c9890fd784745acd2e42f11d5d"
+          ],
+          "core_ready": {
+            "0": true
+          }
+        }
+      },
+      {
+        "case": "truncated",
+        "question": "Explain openResponsePreview",
+        "positive": false,
+        "resident_before": true,
+        "status": "partial",
+        "snapshot_id": "c21e2ac0ab0e4070af532123a367f752",
+        "wall_ms": 402.64387500064913,
+        "stage_ms": {
+          "understanding_ms": 34.151749990996905,
+          "planning_ms": 0.8818749920465052,
+          "execution_ms": 182.268832999398,
+          "aggregation_ms": 52.07912498735823,
+          "llm_preparation_ms": 54.651041005854495,
+          "llm_generation_ms": 0.0,
+          "generation_total_ms": 82.60062499903142,
+          "formatting_ms": 2.3715419956715778,
+          "validation_ms": 28.80970800470095,
+          "total_ms": 401.90199999778997
+        },
+        "transport": [],
+        "generations": [
+          {
+            "task": "function",
+            "original_orders": [
+              0
+            ],
+            "model_status": "blocked",
+            "fallback_status": "evidence_summary",
+            "failure_category": "insufficient_target_evidence",
+            "model_attempts": 0
+          }
+        ],
+        "output_redacted": null,
+        "safe_explanation_claims": [
+          {
+            "claim_id": "f658e96cefea67565595356a576659e8",
+            "requirement_orders": [
+              0
+            ],
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "text": "Indexed source at extension/src/responsePreview.ts:95-158.",
+            "finding_id": null,
+            "fact_id": "source:44fed819300f9b60c130ae8b471a0ad2",
+            "record_ids": [
+              "44fed819300f9b60c130ae8b471a0ad2"
+            ],
+            "citation_ids": [
+              "cm7:6c062f762b2b4906b2629af5dab506bd:44fed819300f9b60c130ae8b471a0ad2"
+            ],
+            "verification": "backend_fact"
+          },
+          {
+            "claim_id": "095da48291e6687e8efe148393d75423",
+            "requirement_orders": [
+              0
+            ],
+            "classification": "verified_source_observation",
+            "authoritative": true,
+            "text": "Indexed declaration: openResponsePreview",
+            "finding_id": "412ed3f42807cc0561a250978d61ea2c",
+            "fact_id": "412ed3f42807cc0561a250978d61ea2c",
+            "record_ids": [
+              "44fed819300f9b60c130ae8b471a0ad2"
+            ],
+            "citation_ids": [
+              "cm7:6c062f762b2b4906b2629af5dab506bd:44fed819300f9b60c130ae8b471a0ad2"
+            ],
+            "verification": "backend_fact"
+          }
+        ],
+        "review_sources": [
+          {
+            "record_id": "44fed819300f9b60c130ae8b471a0ad2",
+            "data": {
+              "path": "extension/src/responsePreview.ts",
+              "start_line": 95,
+              "end_line": 158,
+              "symbol_id": "6f3d36ce1ba233bb8e1eeea4f5051efe07f6e197cd542d22957e5335d7602ae0",
+              "kind": "symbol",
+              "provenance": {
+                "kind": "symbol"
+              }
+            },
+            "excerpt": null
+          }
+        ],
+        "citations_valid": true,
+        "context": {
+          "input_bytes": 5053,
+          "source_bytes": 0,
+          "omissions": [
+            "source_limit:44fed819300f9b60c130ae8b471a0ad2",
+            "source_limit:50a95597524b883289fa22637192ea76",
+            "source_limit:5d48b98ffc2ab5595f0201e947776902",
+            "source_limit:909e1b409cfc9f55aec7033346f1e07f",
+            "source_limit:c4218150034a3d310548c713a2ec3c50",
+            "source_limit:da31522a90d951315e5cadf69d63cf35",
+            "source_limit:ef21bc6675013004b8cf6f094c29a35c",
+            "source_limit:f50b61a43ee1658ca4e5a9fa44c1b291",
+            "context_record_limit:f50b61a43ee1658ca4e5a9fa44c1b291",
+            "context_record_limit:ef21bc6675013004b8cf6f094c29a35c",
+            "context_record_limit:da31522a90d951315e5cadf69d63cf35",
+            "context_record_limit:d1cfaaf58f95f9ea99df879799ebf97a",
+            "context_record_limit:cfa78fb45161b81786c0a660952528c6",
+            "context_record_limit:c4218150034a3d310548c713a2ec3c50",
+            "context_record_limit:b8e71ba17e89e83e291a3a99ff67d631",
+            "context_record_limit:909e1b409cfc9f55aec7033346f1e07f",
+            "context_record_limit:7f8485a8063f3ad56b50713f01e9d892",
+            "context_record_limit:5d48b98ffc2ab5595f0201e947776902",
+            "context_record_limit:50a95597524b883289fa22637192ea76",
+            "context_fact_limit:61a1c7ce2da2d80df03a513c9ec6de9e"
+          ],
+          "core_ready": {
+            "0": false
+          }
+        }
+      },
+      {
+        "case": "missing",
+        "question": "Explain stabilizationNonexistent",
+        "positive": false,
+        "resident_before": true,
+        "status": "not_found",
+        "snapshot_id": "c21e2ac0ab0e4070af532123a367f752",
+        "wall_ms": 143.7454160040943,
+        "stage_ms": {
+          "understanding_ms": 24.724083006731234,
+          "planning_ms": 0.38745799975004047,
+          "execution_ms": 34.810957993613556,
+          "aggregation_ms": 23.53045900235884,
+          "llm_preparation_ms": 12.226708000525832,
+          "llm_generation_ms": 0.0,
+          "generation_total_ms": 23.6160420026863,
+          "formatting_ms": 0.4954589967383072,
+          "validation_ms": 22.507833011331968,
+          "total_ms": 143.19350000005215
+        },
+        "transport": [],
+        "generations": [
+          {
+            "task": "function",
+            "original_orders": [
+              0
+            ],
+            "model_status": "blocked",
+            "fallback_status": "no_safe_evidence",
+            "failure_category": "insufficient_target_evidence",
+            "model_attempts": 0
+          }
+        ],
+        "output_redacted": null,
+        "safe_explanation_claims": [],
+        "review_sources": [],
+        "citations_valid": true,
+        "context": {
+          "input_bytes": 3037,
+          "source_bytes": 0,
+          "omissions": [],
+          "core_ready": {
+            "0": false
+          }
+        }
+      },
+      {
+        "case": "stale",
+        "question": "Explain verifiedSourcePath",
+        "positive": false,
+        "resident_before": true,
+        "status": "stale_index",
+        "snapshot_id": null,
+        "wall_ms": 12.47020899609197,
+        "stage_ms": {
+          "understanding_ms": 0.0,
+          "planning_ms": 0.0,
+          "execution_ms": 0.0,
+          "aggregation_ms": 0.0,
+          "llm_preparation_ms": 0.0,
+          "llm_generation_ms": 0.0,
+          "generation_total_ms": 0.0,
+          "formatting_ms": 0.0,
+          "validation_ms": 0.0,
+          "total_ms": 11.985042001469992
+        },
+        "transport": [],
+        "generations": [],
+        "output_redacted": null,
+        "safe_explanation_claims": [],
+        "review_sources": [],
+        "citations_valid": null
+      }
+    ],
+    "accepted_positive_explanations": 1,
+    "positive_cases": 5,
+    "acceptance_rate": 0.2,
+    "warm_end_to_end_latency_ms": {
+      "median_ms": 12710.74,
+      "p95_ms": 14893.231
+    },
+    "cold_samples": [],
+    "human_review": {
+      "state": "pending",
+      "reviewer": null,
+      "supported_claim_rate": null,
+      "hallucination_rate": null,
+      "note": "Citation membership and backend validation do not establish prose factuality."
+    }
+  },
+  "stored_vectors_unchanged": true,
+  "same_generation_still_active": true,
+  "corpus": "Frozen real CodeMind extension implementation; not the full target-sized corpus",
+  "copied_files": 9,
+  "private_indexing_ms": 21081.221792002907,
+  "user_indexes_modified": false,
+  "temporary_corpus_and_index_cleaned": true
+}
