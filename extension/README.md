@@ -1,5 +1,29 @@
 # CodeMind Extension
 
+## Phase 10 development hybrid chat (default off)
+
+Start the existing launcher from the project root with
+`CODEMIND_ENABLE_HYBRID=1 .venv/bin/python start_codemind.py`. Enable
+`codemind.hybridEnabled` in VS Code, open CodeMind Chat and select a repository
+with a current published snapshot. The ordinary chat still uses `/ask` when this
+setting is false. Search, reuse and documentation commands keep their existing
+routes. No dependencies or model installation are introduced.
+
+Quick/Standard/Deep change display only. Source clicks require fresh backend
+authorization and the existing hash/range/containment/editor checks. Old answers
+expire after five minutes or restart: ask again. Explanation failures preserve
+independent deterministic findings; turn off `codemind.hybridAllowGeneration`
+for deterministic support only. Editor context is sent for `this`/`here`/`current`/
+`selected` questions, because the existing normalizer treats active-file context
+as a scope. Named queries otherwise search the whole selected repository.
+
+Rollback: disable `codemind.hybridEnabled`; optionally restart the backend without
+`CODEMIND_ENABLE_HYBRID=1`. Old hybrid controls are disabled, settings/indexes remain
+intact, and legacy chat remains available. There is no automatic production-default
+migration. See [Phase 10 verification and limitations](../query_system/PHASE10.md):
+the actual target-sized knowledge-base build is currently blocked by an existing
+TypeScript resolver failure; fixture opt-in verification is not production readiness.
+
 ## Phase 9 response preview (separate from production chat)
 
 **CodeMind: Preview Validated Response (Phase 9)** opens an existing Phase 7/8

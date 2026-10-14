@@ -1,0 +1,367 @@
+{
+  "evaluation": "Synthetic end-to-end, fixed retrieval vectors and mocked local generation; not production estimates",
+  "runs": 120,
+  "repeats_per_workload": 20,
+  "generation_id": "860e0058090f47a69d7cc6fe07e8e19d",
+  "citation_checks": 500,
+  "valid_citations": 500,
+  "python_allocations_peak_bytes": 3457898,
+  "process_peak_rss_bytes": 159744000,
+  "memory_notes": "RSS includes imports/native FAISS/runtime; Python tracemalloc excludes native/model memory. Ollama memory is not measured.",
+  "details": [
+    {
+      "workload": "graph",
+      "question": "Who calls login?",
+      "samples": 20,
+      "latency": {
+        "understanding_ms": {
+          "median_ms": 76.053,
+          "p95_ms": 180.392
+        },
+        "planning_ms": {
+          "median_ms": 2.576,
+          "p95_ms": 6.658
+        },
+        "execution_ms": {
+          "median_ms": 262.665,
+          "p95_ms": 382.322
+        },
+        "aggregation_ms": {
+          "median_ms": 110.51,
+          "p95_ms": 186.908
+        },
+        "llm_preparation_ms": {
+          "median_ms": 0,
+          "p95_ms": 0
+        },
+        "llm_generation_ms": {
+          "median_ms": 0,
+          "p95_ms": 0
+        },
+        "generation_total_ms": {
+          "median_ms": 0,
+          "p95_ms": 0
+        },
+        "formatting_ms": {
+          "median_ms": 3.601,
+          "p95_ms": 6.653
+        },
+        "validation_ms": {
+          "median_ms": 69.192,
+          "p95_ms": 128.277
+        },
+        "total_ms": {
+          "median_ms": 665.468,
+          "p95_ms": 1113.993
+        }
+      },
+      "wall_latency": {
+        "median_ms": 668.652,
+        "p95_ms": 1128.159
+      },
+      "response_bytes_median": 6400,
+      "response_bytes_max": 6403,
+      "fallback_rate": 0,
+      "truncation_rate": 0,
+      "statuses": [
+        "success"
+      ],
+      "model_attempts": 0
+    },
+    {
+      "workload": "semantic",
+      "question": "Find code that checks access",
+      "samples": 20,
+      "latency": {
+        "understanding_ms": {
+          "median_ms": 45.921,
+          "p95_ms": 78.891
+        },
+        "planning_ms": {
+          "median_ms": 1.733,
+          "p95_ms": 4.449
+        },
+        "execution_ms": {
+          "median_ms": 392.91,
+          "p95_ms": 492.605
+        },
+        "aggregation_ms": {
+          "median_ms": 78.88,
+          "p95_ms": 164.218
+        },
+        "llm_preparation_ms": {
+          "median_ms": 0,
+          "p95_ms": 0
+        },
+        "llm_generation_ms": {
+          "median_ms": 0,
+          "p95_ms": 0
+        },
+        "generation_total_ms": {
+          "median_ms": 0,
+          "p95_ms": 0
+        },
+        "formatting_ms": {
+          "median_ms": 3.032,
+          "p95_ms": 8.459
+        },
+        "validation_ms": {
+          "median_ms": 52.721,
+          "p95_ms": 121.896
+        },
+        "total_ms": {
+          "median_ms": 629.956,
+          "p95_ms": 1010.821
+        }
+      },
+      "wall_latency": {
+        "median_ms": 631.793,
+        "p95_ms": 1011.764
+      },
+      "response_bytes_median": 11564,
+      "response_bytes_max": 11567,
+      "fallback_rate": 0,
+      "truncation_rate": 0,
+      "statuses": [
+        "success"
+      ],
+      "model_attempts": 0
+    },
+    {
+      "workload": "rules",
+      "question": "Contract of validateToken",
+      "samples": 20,
+      "latency": {
+        "understanding_ms": {
+          "median_ms": 42.866,
+          "p95_ms": 50.145
+        },
+        "planning_ms": {
+          "median_ms": 1.66,
+          "p95_ms": 2.274
+        },
+        "execution_ms": {
+          "median_ms": 152.021,
+          "p95_ms": 259.191
+        },
+        "aggregation_ms": {
+          "median_ms": 45.411,
+          "p95_ms": 63.043
+        },
+        "llm_preparation_ms": {
+          "median_ms": 0,
+          "p95_ms": 0
+        },
+        "llm_generation_ms": {
+          "median_ms": 0,
+          "p95_ms": 0
+        },
+        "generation_total_ms": {
+          "median_ms": 0,
+          "p95_ms": 0
+        },
+        "formatting_ms": {
+          "median_ms": 1.787,
+          "p95_ms": 3.329
+        },
+        "validation_ms": {
+          "median_ms": 39.313,
+          "p95_ms": 43.333
+        },
+        "total_ms": {
+          "median_ms": 304.185,
+          "p95_ms": 409.547
+        }
+      },
+      "wall_latency": {
+        "median_ms": 305.204,
+        "p95_ms": 410.75
+      },
+      "response_bytes_median": 7157.5,
+      "response_bytes_max": 7160,
+      "fallback_rate": 0,
+      "truncation_rate": 0,
+      "statuses": [
+        "partial"
+      ],
+      "model_attempts": 0
+    },
+    {
+      "workload": "multi_engine",
+      "question": "Who calls login and contract of entry",
+      "samples": 20,
+      "latency": {
+        "understanding_ms": {
+          "median_ms": 54.473,
+          "p95_ms": 57.93
+        },
+        "planning_ms": {
+          "median_ms": 2.708,
+          "p95_ms": 3.138
+        },
+        "execution_ms": {
+          "median_ms": 203.121,
+          "p95_ms": 253.321
+        },
+        "aggregation_ms": {
+          "median_ms": 80.405,
+          "p95_ms": 92.748
+        },
+        "llm_preparation_ms": {
+          "median_ms": 0,
+          "p95_ms": 0
+        },
+        "llm_generation_ms": {
+          "median_ms": 0,
+          "p95_ms": 0
+        },
+        "generation_total_ms": {
+          "median_ms": 0,
+          "p95_ms": 0
+        },
+        "formatting_ms": {
+          "median_ms": 3.457,
+          "p95_ms": 4.064
+        },
+        "validation_ms": {
+          "median_ms": 46.248,
+          "p95_ms": 53.444
+        },
+        "total_ms": {
+          "median_ms": 413.529,
+          "p95_ms": 478.314
+        }
+      },
+      "wall_latency": {
+        "median_ms": 414.999,
+        "p95_ms": 480.185
+      },
+      "response_bytes_median": 11187,
+      "response_bytes_max": 11190,
+      "fallback_rate": 0,
+      "truncation_rate": 0,
+      "statuses": [
+        "partial"
+      ],
+      "model_attempts": 0
+    },
+    {
+      "workload": "explanation",
+      "question": "Explain `login`",
+      "samples": 20,
+      "latency": {
+        "understanding_ms": {
+          "median_ms": 49.58,
+          "p95_ms": 66.005
+        },
+        "planning_ms": {
+          "median_ms": 2.887,
+          "p95_ms": 3.444
+        },
+        "execution_ms": {
+          "median_ms": 343.67,
+          "p95_ms": 436.452
+        },
+        "aggregation_ms": {
+          "median_ms": 110.793,
+          "p95_ms": 129.437
+        },
+        "llm_preparation_ms": {
+          "median_ms": 105.518,
+          "p95_ms": 128.065
+        },
+        "llm_generation_ms": {
+          "median_ms": 0.14,
+          "p95_ms": 0.184
+        },
+        "generation_total_ms": {
+          "median_ms": 226.69,
+          "p95_ms": 303.157
+        },
+        "formatting_ms": {
+          "median_ms": 11.964,
+          "p95_ms": 17.744
+        },
+        "validation_ms": {
+          "median_ms": 59.689,
+          "p95_ms": 68.622
+        },
+        "total_ms": {
+          "median_ms": 853.048,
+          "p95_ms": 1055.961
+        }
+      },
+      "wall_latency": {
+        "median_ms": 855.22,
+        "p95_ms": 1058.23
+      },
+      "response_bytes_median": 17727.5,
+      "response_bytes_max": 17731,
+      "fallback_rate": 0,
+      "truncation_rate": 0,
+      "statuses": [
+        "partial"
+      ],
+      "model_attempts": 20
+    },
+    {
+      "workload": "compound",
+      "question": "Where is `login` defined and explain `login`",
+      "samples": 20,
+      "latency": {
+        "understanding_ms": {
+          "median_ms": 62.603,
+          "p95_ms": 72.912
+        },
+        "planning_ms": {
+          "median_ms": 3.723,
+          "p95_ms": 4.324
+        },
+        "execution_ms": {
+          "median_ms": 362.949,
+          "p95_ms": 425.13
+        },
+        "aggregation_ms": {
+          "median_ms": 113.705,
+          "p95_ms": 146.038
+        },
+        "llm_preparation_ms": {
+          "median_ms": 111.157,
+          "p95_ms": 130.076
+        },
+        "llm_generation_ms": {
+          "median_ms": 0.145,
+          "p95_ms": 0.18
+        },
+        "generation_total_ms": {
+          "median_ms": 238.132,
+          "p95_ms": 328.517
+        },
+        "formatting_ms": {
+          "median_ms": 12.504,
+          "p95_ms": 15.953
+        },
+        "validation_ms": {
+          "median_ms": 63.425,
+          "p95_ms": 71.696
+        },
+        "total_ms": {
+          "median_ms": 881.037,
+          "p95_ms": 1042.291
+        }
+      },
+      "wall_latency": {
+        "median_ms": 883.068,
+        "p95_ms": 1044.298
+      },
+      "response_bytes_median": 19361,
+      "response_bytes_max": 19365,
+      "fallback_rate": 0,
+      "truncation_rate": 0,
+      "statuses": [
+        "partial"
+      ],
+      "model_attempts": 20
+    }
+  ]
+}

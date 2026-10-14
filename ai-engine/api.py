@@ -710,6 +710,10 @@ def ask(req: SearchRequest):
     return result
 
 
+from hybrid_api import create_hybrid_router
+app.include_router(create_hybrid_router(sys.modules[__name__]))
+
+
 if __name__ == "__main__":
     import uvicorn
 

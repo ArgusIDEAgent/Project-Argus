@@ -52,6 +52,7 @@ async function run() {
     fs.rmSync(outsideRoot, { recursive: true, force: true });
   }
   await require('./presentationSuite').run();
+  await require('./hybridSuite').run();
 }
 
 module.exports = { run };

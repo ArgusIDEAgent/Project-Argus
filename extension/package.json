@@ -66,6 +66,18 @@
     "configuration": {
       "title": "CodeMind",
       "properties": {
+        "codemind.hybridEnabled": {
+          "type": "boolean", "default": false,
+          "description": "Opt into the development hybrid chat pipeline. Requires CODEMIND_ENABLE_HYBRID=1 on the local engine. Turn off to restore legacy chat."
+        },
+        "codemind.hybridDepth": {
+          "type": "string", "enum": ["quick", "standard", "deep"], "default": "standard",
+          "description": "Presentation depth for opt-in hybrid chat; depth changes do not invoke new retrieval or generation."
+        },
+        "codemind.hybridAllowGeneration": {
+          "type": "boolean", "default": true,
+          "description": "Allow grounded local Ollama explanations in opt-in hybrid mode; deterministic questions never invoke it."
+        },
         "codemind.checkReuseOnSave": {
           "type": "boolean", "default": true,
           "description": "Check newly indexed symbols for reusable implementations after saving."

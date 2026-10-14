@@ -1,0 +1,1667 @@
+{
+  "evaluation": "Real-source corpora, existing cached BGE/FAISS, mock explanations separated from real-local smoke",
+  "state": "partial",
+  "repositories": [
+    {
+      "repository": "small",
+      "state": "completed",
+      "source_origin": "Isolated copy of actual current CodeMind text; dependencies/generated files/artifacts/sensitive files excluded. Small corpus selects sourceNavigation plus extension docs/config; diagnostic corpus excludes other JS/TS to isolate the recorded graph-builder failure.",
+      "copied_files": 3,
+      "copied_bytes": 8316,
+      "source_manifest_digest": "22cb1a0c5ffbbd7e4af94d4e95c96fa0db90499b184809c8acbc7d790ac39fc7",
+      "documentation_config_files": 2,
+      "languages": [
+        [
+          "json",
+          17
+        ],
+        [
+          "markdown",
+          6
+        ],
+        [
+          "typescript",
+          3
+        ]
+      ],
+      "symbols": 2,
+      "unresolved_relationships": 18,
+      "ambiguous_symbol_examples": [],
+      "generation_id": "d3798aa23dce4a99b6c17b314bceaf42",
+      "repository_id": "e52cfdacbdb045ce7766e251",
+      "indexing_ms": 1351.7856250109617,
+      "questions": 11,
+      "intent_correct": 10,
+      "operation_correct": 10,
+      "citation_checks": 46,
+      "valid_citations": 46,
+      "cases": [
+        {
+          "case": "definition",
+          "question": "Where is `verifiedSourcePath` defined?",
+          "expected_intent": "SYMBOL_LOCATION",
+          "actual_intent": "SYMBOL_LOCATION",
+          "intent_correct": true,
+          "expected_engine": "graph",
+          "expected_operation": "find_definition",
+          "operation_correct": true,
+          "expected_source": "extension/src/sourceNavigation.ts",
+          "expected_source_present": true,
+          "coverage": [
+            "satisfied"
+          ],
+          "sources": [
+            "extension/src/sourceNavigation.ts"
+          ],
+          "operations": [
+            {
+              "operation_id": "query-04058bd2e3ea5add758dd15b:req-000:op-00",
+              "requirement_id": "req-000",
+              "engine": "graph",
+              "operation": "find_definition",
+              "status": "success",
+              "supporting": false
+            }
+          ],
+          "generation": [],
+          "status": "success",
+          "stage_ms": {
+            "understanding_ms": 31.04433299449738,
+            "planning_ms": 0.3987910022260621,
+            "execution_ms": 54.099250002764165,
+            "aggregation_ms": 26.3167910015909,
+            "llm_preparation_ms": 0,
+            "llm_generation_ms": 0,
+            "generation_total_ms": 0,
+            "formatting_ms": 0.5959589907433838,
+            "validation_ms": 20.599791008862667,
+            "total_ms": 144.91600000474136
+          },
+          "wall_ms": 146.1635000014212,
+          "response_bytes": 5148,
+          "citation_checks": 1,
+          "valid_citations": 1,
+          "fallback": false,
+          "truncated": false,
+          "model_attempts": 0
+        },
+        {
+          "case": "callees",
+          "question": "What does `verifiedSourcePath` call?",
+          "expected_intent": "DIRECT_CALLEES",
+          "actual_intent": "DIRECT_CALLEES",
+          "intent_correct": true,
+          "expected_engine": "graph",
+          "expected_operation": "find_callees",
+          "operation_correct": true,
+          "expected_source": "extension/src/sourceNavigation.ts",
+          "expected_source_present": true,
+          "coverage": [
+            "partially_satisfied"
+          ],
+          "sources": [
+            "extension/src/sourceNavigation.ts"
+          ],
+          "operations": [
+            {
+              "operation_id": "query-2fe4f85fe632969a18b7b2b8:req-000:op-00",
+              "requirement_id": "req-000",
+              "engine": "graph",
+              "operation": "find_callees",
+              "status": "partial",
+              "supporting": false
+            }
+          ],
+          "generation": [],
+          "status": "partial",
+          "stage_ms": {
+            "understanding_ms": 23.89579199370928,
+            "planning_ms": 0.4130000015720725,
+            "execution_ms": 75.45958299306221,
+            "aggregation_ms": 36.00237499631476,
+            "llm_preparation_ms": 0,
+            "llm_generation_ms": 0,
+            "generation_total_ms": 0,
+            "formatting_ms": 0.7827079971320927,
+            "validation_ms": 21.474959008628502,
+            "total_ms": 169.801791998907
+          },
+          "wall_ms": 170.38825000054203,
+          "response_bytes": 6821,
+          "citation_checks": 2,
+          "valid_citations": 2,
+          "fallback": false,
+          "truncated": false,
+          "model_attempts": 0
+        },
+        {
+          "case": "contract",
+          "question": "Contract of `verifiedSourcePath`",
+          "expected_intent": "FUNCTION_CONTRACT",
+          "actual_intent": "FUNCTION_CONTRACT",
+          "intent_correct": true,
+          "expected_engine": "rules",
+          "expected_operation": "function_contract",
+          "operation_correct": true,
+          "expected_source": "extension/src/sourceNavigation.ts",
+          "expected_source_present": true,
+          "coverage": [
+            "partially_satisfied"
+          ],
+          "sources": [
+            "extension/src/sourceNavigation.ts"
+          ],
+          "operations": [
+            {
+              "operation_id": "query-af5667b4ac7b2e89d1c14798:req-000:op-00",
+              "requirement_id": "req-000",
+              "engine": "rules",
+              "operation": "function_contract",
+              "status": "partial",
+              "supporting": false
+            }
+          ],
+          "generation": [],
+          "status": "partial",
+          "stage_ms": {
+            "understanding_ms": 23.771500011207536,
+            "planning_ms": 0.4171250038780272,
+            "execution_ms": 78.37925000058021,
+            "aggregation_ms": 21.45895900321193,
+            "llm_preparation_ms": 0,
+            "llm_generation_ms": 0,
+            "generation_total_ms": 0,
+            "formatting_ms": 0.5201249878155068,
+            "validation_ms": 25.24750000156928,
+            "total_ms": 161.4935409888858
+          },
+          "wall_ms": 162.12095800437964,
+          "response_bytes": 7331,
+          "citation_checks": 1,
+          "valid_citations": 1,
+          "fallback": false,
+          "truncated": false,
+          "model_attempts": 0
+        },
+        {
+          "case": "impact",
+          "question": "Impact of changing `verifiedSourcePath`",
+          "expected_intent": "CHANGE_IMPACT",
+          "actual_intent": "CHANGE_IMPACT",
+          "intent_correct": true,
+          "expected_engine": "rules",
+          "expected_operation": "change_impact",
+          "operation_correct": true,
+          "expected_source": "extension/src/sourceNavigation.ts",
+          "expected_source_present": true,
+          "coverage": [
+            "partially_satisfied"
+          ],
+          "sources": [
+            "extension/src/sourceNavigation.ts"
+          ],
+          "operations": [
+            {
+              "operation_id": "query-4de2ab488f5a72272c15c07e:req-000:op-00",
+              "requirement_id": "req-000",
+              "engine": "rules",
+              "operation": "change_impact",
+              "status": "partial",
+              "supporting": false
+            }
+          ],
+          "generation": [],
+          "status": "partial",
+          "stage_ms": {
+            "understanding_ms": 22.85320800729096,
+            "planning_ms": 0.3632080042734742,
+            "execution_ms": 168.81575000297744,
+            "aggregation_ms": 35.67916600150056,
+            "llm_preparation_ms": 0,
+            "llm_generation_ms": 0,
+            "generation_total_ms": 0,
+            "formatting_ms": 1.103290996979922,
+            "validation_ms": 23.06720799242612,
+            "total_ms": 264.6814580075443
+          },
+          "wall_ms": 265.3562080085976,
+          "response_bytes": 23852,
+          "citation_checks": 6,
+          "valid_citations": 6,
+          "fallback": false,
+          "truncated": false,
+          "model_attempts": 0
+        },
+        {
+          "case": "tests",
+          "question": "What tests cover `verifiedSourcePath`?",
+          "expected_intent": "TEST_DISCOVERY",
+          "actual_intent": "TEST_DISCOVERY",
+          "intent_correct": true,
+          "expected_engine": "rules",
+          "expected_operation": "reference_test_analysis",
+          "operation_correct": true,
+          "expected_source": null,
+          "expected_source_present": null,
+          "coverage": [
+            "partially_satisfied"
+          ],
+          "sources": [
+            "extension/src/sourceNavigation.ts"
+          ],
+          "operations": [
+            {
+              "operation_id": "query-db7160e0f4c4be2ad25aa310:req-000:op-00",
+              "requirement_id": "req-000",
+              "engine": "rules",
+              "operation": "reference_test_analysis",
+              "status": "partial",
+              "supporting": false
+            }
+          ],
+          "generation": [],
+          "status": "partial",
+          "stage_ms": {
+            "understanding_ms": 21.687625005142763,
+            "planning_ms": 0.3662910021375865,
+            "execution_ms": 141.45845800521784,
+            "aggregation_ms": 29.244624995044433,
+            "llm_preparation_ms": 0,
+            "llm_generation_ms": 0,
+            "generation_total_ms": 0,
+            "formatting_ms": 0.9277500066673383,
+            "validation_ms": 23.302625006181188,
+            "total_ms": 227.99254200072028
+          },
+          "wall_ms": 228.61041700525675,
+          "response_bytes": 19971,
+          "citation_checks": 6,
+          "valid_citations": 6,
+          "fallback": false,
+          "truncated": false,
+          "model_attempts": 0
+        },
+        {
+          "case": "module",
+          "question": "Overview of extension/src/sourceNavigation.ts",
+          "expected_intent": "MODULE_OVERVIEW",
+          "actual_intent": "MODULE_OVERVIEW",
+          "intent_correct": true,
+          "expected_engine": "rules",
+          "expected_operation": "module_overview",
+          "operation_correct": true,
+          "expected_source": "extension/src/sourceNavigation.ts",
+          "expected_source_present": true,
+          "coverage": [
+            "partially_satisfied"
+          ],
+          "sources": [
+            "extension/src/sourceNavigation.ts"
+          ],
+          "operations": [
+            {
+              "operation_id": "query-68c5b416d29de5328ca53429:req-000:op-00",
+              "requirement_id": "req-000",
+              "engine": "rules",
+              "operation": "module_overview",
+              "status": "partial",
+              "supporting": false
+            }
+          ],
+          "generation": [],
+          "status": "partial",
+          "stage_ms": {
+            "understanding_ms": 22.145290990010835,
+            "planning_ms": 0.35916699562221766,
+            "execution_ms": 132.44370798929594,
+            "aggregation_ms": 28.635458002099767,
+            "llm_preparation_ms": 0,
+            "llm_generation_ms": 0,
+            "generation_total_ms": 0,
+            "formatting_ms": 0.7327079947572201,
+            "validation_ms": 23.29079199989792,
+            "total_ms": 218.04337500361726
+          },
+          "wall_ms": 218.6157920077676,
+          "response_bytes": 14944,
+          "citation_checks": 4,
+          "valid_citations": 4,
+          "fallback": false,
+          "truncated": false,
+          "model_attempts": 0
+        },
+        {
+          "case": "feature",
+          "question": "Find code that verifies source file hashes before opening citations",
+          "expected_intent": "FEATURE_DISCOVERY",
+          "actual_intent": "FEATURE_DISCOVERY",
+          "intent_correct": true,
+          "expected_engine": "semantic",
+          "expected_operation": "hybrid_search",
+          "operation_correct": false,
+          "expected_source": "extension/src/sourceNavigation.ts",
+          "expected_source_present": false,
+          "coverage": [
+            "ambiguous"
+          ],
+          "sources": [],
+          "operations": [],
+          "generation": [],
+          "status": "ambiguous",
+          "stage_ms": {
+            "understanding_ms": 20.020125011797063,
+            "planning_ms": 0.23329199757426977,
+            "execution_ms": 28.8020830048481,
+            "aggregation_ms": 19.63704198715277,
+            "llm_preparation_ms": 0,
+            "llm_generation_ms": 0,
+            "generation_total_ms": 0,
+            "formatting_ms": 0.25829199876170605,
+            "validation_ms": 18.980666995048523,
+            "total_ms": 98.1305000022985
+          },
+          "wall_ms": 98.70633399987128,
+          "response_bytes": 2684,
+          "citation_checks": 0,
+          "valid_citations": 0,
+          "fallback": false,
+          "truncated": false,
+          "model_attempts": 0
+        },
+        {
+          "case": "function",
+          "question": "Explain `verifiedSourcePath`",
+          "expected_intent": "FUNCTION_EXPLANATION",
+          "actual_intent": "FUNCTION_EXPLANATION",
+          "intent_correct": true,
+          "expected_engine": "graph",
+          "expected_operation": "find_definition",
+          "operation_correct": true,
+          "expected_source": "extension/src/sourceNavigation.ts",
+          "expected_source_present": true,
+          "coverage": [
+            "partial"
+          ],
+          "sources": [
+            "extension/src/sourceNavigation.ts"
+          ],
+          "operations": [
+            {
+              "operation_id": "query-7ed47801fd5e5e7b6d087af0:req-001:op-00",
+              "requirement_id": "req-001",
+              "engine": "graph",
+              "operation": "find_definition",
+              "status": "success",
+              "supporting": true
+            },
+            {
+              "operation_id": "query-7ed47801fd5e5e7b6d087af0:req-002:op-00",
+              "requirement_id": "req-002",
+              "engine": "rules",
+              "operation": "function_contract",
+              "status": "partial",
+              "supporting": true
+            },
+            {
+              "operation_id": "query-7ed47801fd5e5e7b6d087af0:req-003:op-00",
+              "requirement_id": "req-003",
+              "engine": "graph",
+              "operation": "find_callees",
+              "status": "partial",
+              "supporting": true
+            },
+            {
+              "operation_id": "query-7ed47801fd5e5e7b6d087af0:req-004:op-00",
+              "requirement_id": "req-004",
+              "engine": "graph",
+              "operation": "find_callers",
+              "status": "not_found",
+              "supporting": true
+            }
+          ],
+          "generation": [
+            {
+              "task": "function",
+              "original_orders": [
+                0
+              ],
+              "model_status": "success",
+              "fallback_status": "not_used",
+              "failure_category": null,
+              "model_attempts": 1
+            }
+          ],
+          "status": "partial",
+          "stage_ms": {
+            "understanding_ms": 21.20795899827499,
+            "planning_ms": 0.47662500583101064,
+            "execution_ms": 138.89433299482334,
+            "aggregation_ms": 36.700750002637506,
+            "llm_preparation_ms": 29.953582998132333,
+            "llm_generation_ms": 0.03199999628122896,
+            "generation_total_ms": 70.53050000104122,
+            "formatting_ms": 2.1457499969983473,
+            "validation_ms": 27.755834002164192,
+            "total_ms": 309.3943749991013
+          },
+          "wall_ms": 310.22212500101887,
+          "response_bytes": 24590,
+          "citation_checks": 13,
+          "valid_citations": 13,
+          "fallback": false,
+          "truncated": false,
+          "model_attempts": 1
+        },
+        {
+          "case": "behavior",
+          "question": "Why might `verifiedSourcePath` fail?",
+          "expected_intent": "BEHAVIOR_INVESTIGATION",
+          "actual_intent": "BEHAVIOR_INVESTIGATION",
+          "intent_correct": true,
+          "expected_engine": "rules",
+          "expected_operation": "function_contract",
+          "operation_correct": true,
+          "expected_source": "extension/src/sourceNavigation.ts",
+          "expected_source_present": true,
+          "coverage": [
+            "partial"
+          ],
+          "sources": [
+            "extension/src/sourceNavigation.ts"
+          ],
+          "operations": [
+            {
+              "operation_id": "query-a53a4fef57d71301569c7cc2:req-001:op-00",
+              "requirement_id": "req-001",
+              "engine": "graph",
+              "operation": "find_definition",
+              "status": "success",
+              "supporting": true
+            },
+            {
+              "operation_id": "query-a53a4fef57d71301569c7cc2:req-002:op-00",
+              "requirement_id": "req-002",
+              "engine": "rules",
+              "operation": "function_contract",
+              "status": "partial",
+              "supporting": true
+            },
+            {
+              "operation_id": "query-a53a4fef57d71301569c7cc2:req-003:op-00",
+              "requirement_id": "req-003",
+              "engine": "graph",
+              "operation": "find_callees",
+              "status": "partial",
+              "supporting": true
+            }
+          ],
+          "generation": [
+            {
+              "task": "behavior",
+              "original_orders": [
+                0
+              ],
+              "model_status": "success",
+              "fallback_status": "not_used",
+              "failure_category": null,
+              "model_attempts": 1
+            }
+          ],
+          "status": "partial",
+          "stage_ms": {
+            "understanding_ms": 23.110708993044682,
+            "planning_ms": 0.45016699004918337,
+            "execution_ms": 110.02675000054296,
+            "aggregation_ms": 35.81891700741835,
+            "llm_preparation_ms": 31.249916006345302,
+            "llm_generation_ms": 0.033082993468269706,
+            "generation_total_ms": 70.04308300383855,
+            "formatting_ms": 1.8533330003265291,
+            "validation_ms": 26.5697090071626,
+            "total_ms": 279.8743750026915
+          },
+          "wall_ms": 280.6209999980638,
+          "response_bytes": 24117,
+          "citation_checks": 13,
+          "valid_citations": 13,
+          "fallback": false,
+          "truncated": false,
+          "model_attempts": 1
+        },
+        {
+          "case": "missing",
+          "question": "Where is `phase10Nonexistent` defined?",
+          "expected_intent": "SYMBOL_LOCATION",
+          "actual_intent": "SYMBOL_LOCATION",
+          "intent_correct": true,
+          "expected_engine": null,
+          "expected_operation": null,
+          "operation_correct": true,
+          "expected_source": null,
+          "expected_source_present": null,
+          "coverage": [
+            "not_found"
+          ],
+          "sources": [],
+          "operations": [],
+          "generation": [],
+          "status": "not_found",
+          "stage_ms": {
+            "understanding_ms": 18.44879200507421,
+            "planning_ms": 0.2395409974269569,
+            "execution_ms": 31.298083005822264,
+            "aggregation_ms": 20.42299999448005,
+            "llm_preparation_ms": 0,
+            "llm_generation_ms": 0,
+            "generation_total_ms": 0,
+            "formatting_ms": 0.2615410048747435,
+            "validation_ms": 19.163499993737787,
+            "total_ms": 100.06699999212287
+          },
+          "wall_ms": 100.53208300087135,
+          "response_bytes": 2570,
+          "citation_checks": 0,
+          "valid_citations": 0,
+          "fallback": false,
+          "truncated": false,
+          "model_attempts": 0
+        },
+        {
+          "case": "unsupported_statistics",
+          "question": "How many files are in this repository?",
+          "expected_intent": "REPOSITORY_STATISTICS",
+          "actual_intent": "UNRESOLVED",
+          "intent_correct": false,
+          "expected_engine": null,
+          "expected_operation": null,
+          "operation_correct": true,
+          "expected_source": null,
+          "expected_source_present": null,
+          "coverage": [],
+          "sources": [],
+          "operations": [],
+          "generation": [],
+          "status": "unsupported",
+          "stage_ms": {
+            "understanding_ms": 19.205374992452562,
+            "planning_ms": 0,
+            "execution_ms": 0,
+            "aggregation_ms": 0,
+            "llm_preparation_ms": 0,
+            "llm_generation_ms": 0,
+            "generation_total_ms": 0,
+            "formatting_ms": 0,
+            "validation_ms": 0,
+            "total_ms": 29.987083005835302
+          },
+          "wall_ms": 30.41579200362321,
+          "response_bytes": 562,
+          "citation_checks": 0,
+          "valid_citations": 0,
+          "fallback": false,
+          "truncated": false,
+          "model_attempts": 0
+        }
+      ],
+      "real_local_smoke": {
+        "state": "completed",
+        "model": "llama3:latest",
+        "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+        "generation": [
+          {
+            "task": "function",
+            "original_orders": [
+              0
+            ],
+            "model_status": "timeout",
+            "fallback_status": "evidence_summary",
+            "failure_category": "socket_timeout",
+            "model_attempts": 1
+          }
+        ],
+        "claims": [
+          {
+            "text": "Static CALLS: isInside",
+            "classification": "verified_graph_relationship",
+            "authoritative": true
+          },
+          {
+            "text": "Resolved static CALLS: verifiedSourcePath → isInside",
+            "classification": "verified_graph_relationship",
+            "authoritative": true
+          },
+          {
+            "text": "Declared function signature; no complete return/exception behavior claim",
+            "classification": "verified_source_observation",
+            "authoritative": true
+          },
+          {
+            "text": "Indexed declaration: verifiedSourcePath",
+            "classification": "verified_source_observation",
+            "authoritative": true
+          },
+          {
+            "text": "verifiedSourcePath",
+            "classification": "verified_source_observation",
+            "authoritative": true
+          },
+          {
+            "text": "Declared function signature; no complete return/exception behavior claim",
+            "classification": "verified_source_observation",
+            "authoritative": true
+          },
+          {
+            "text": "Indexed source at extension/src/sourceNavigation.ts:12-31.",
+            "classification": "verified_source_observation",
+            "authoritative": true
+          },
+          {
+            "text": "Static CALLS: isInside",
+            "classification": "verified_graph_relationship",
+            "authoritative": true
+          },
+          {
+            "text": "Resolved static CALLS: verifiedSourcePath → isInside",
+            "classification": "verified_graph_relationship",
+            "authoritative": true
+          }
+        ],
+        "factual_review": "No independent human review; model interpretation explicitly non-authoritative.",
+        "status": "partial",
+        "stage_ms": {
+          "understanding_ms": 21.41841599950567,
+          "planning_ms": 0.44012500438839197,
+          "execution_ms": 143.31004199630115,
+          "aggregation_ms": 40.68854199431371,
+          "llm_preparation_ms": 38.589999996474944,
+          "llm_generation_ms": 29956.59820799483,
+          "generation_total_ms": 31343.655167001998,
+          "formatting_ms": 116.04537499079015,
+          "validation_ms": 165.642249994562,
+          "total_ms": 31873.075125011383
+        },
+        "wall_ms": 31885.53349999711,
+        "response_bytes": 15458,
+        "citation_checks": 3,
+        "valid_citations": 3,
+        "fallback": true,
+        "truncated": false,
+        "model_attempts": 1
+      }
+    },
+    {
+      "repository": "target-sized",
+      "state": "blocked",
+      "copied_files": 151,
+      "copied_bytes": 1677469,
+      "reason": "Existing knowledge-base graph snapshot publication failed; no hybrid answers evaluated or legacy graph substituted.",
+      "failure": "TypeScript semantic pass failed: /Users/paraspingale/Desktop/Projects/CodeMind/CodeingMind_Project /knowledge_base/semantic_resolver.cjs:99\n    `${decl.getSourceFile().fileName}:${decl.parent.pos}:${decl.parent.end}`));\n                                                    ^\n\nTypeError: Cannot read properties of undefined (reading 'pos')\n    at /Users/paraspingale/Desktop/Projects/CodeMind/CodeingMind_Project /knowledge_base/semantic_resolver.cjs:99:53\n    at Array.map (<anonymous>)\n    at declaration (/Users/paraspingale/Desktop/Projects/CodeMind/CodeingMind_Project /knowledge_base/semantic_resolver.cjs:98:39)\n    at targetAt (/Users/paraspingale/Desktop/Projects/CodeMind/CodeingMind_Project /knowledge_base/semantic_resolver.cjs:114:10)\n    at visit (/Users/paraspingale/Desktop/Projects/CodeMind/CodeingMind_Project /knowledge_base/semantic_resolver.cjs:203:22)\n    at /Users/paraspingale/Desktop/Projects/CodeMind/CodeingMind_Project /knowledge_base/semantic_resolver.cjs:207:36\n    at visitNode2 (/Users/paraspingale/Desktop/Projects/CodeMind/CodeingMind_Project /extension/node_modules/typescript/lib/typescript.js:32449:18)\n    at forEachChildInPropertyAccessExpression (/Users/paraspingale/Desktop/Projects/CodeMind/CodeingMind_Project /extension/node_modules/typescript/lib/typescript.js:32609:96)\n    at Object.forEachChild (/Users/paraspingale/Desktop/Projects/CodeMind/CodeingMind_Project /extension/node_modules/typescript/lib/typescript.js:32970:35)\n    at visit (/Users/paraspingale/Desktop/Projects/CodeMind/CodeingMind_Project /knowledge_base/semantic_resolver.cjs:207:6)\n\nNode.js v26.7.0\n",
+      "indexing_ms": 2895.3967499983264
+    },
+    {
+      "repository": "multilingual-diagnostic",
+      "state": "completed",
+      "source_origin": "Isolated copy of actual current CodeMind text; dependencies/generated files/artifacts/sensitive files excluded. Small corpus selects sourceNavigation plus extension docs/config; diagnostic corpus excludes other JS/TS to isolate the recorded graph-builder failure.",
+      "copied_files": 110,
+      "copied_bytes": 1410131,
+      "source_manifest_digest": "f4b4afa2d8e8fd330e4a0712dca5fbb1011a576f4ebbe5a5bcbea2a638832b5b",
+      "documentation_config_files": 21,
+      "languages": [
+        [
+          "json",
+          113
+        ],
+        [
+          "markdown",
+          256
+        ],
+        [
+          "python",
+          1929
+        ],
+        [
+          "typescript",
+          3
+        ]
+      ],
+      "symbols": 2,
+      "unresolved_relationships": 18,
+      "ambiguous_symbol_examples": [],
+      "generation_id": "b06bb4cf28db4f15b43e5e4976a3720c",
+      "repository_id": "0238c6706f8d42302502467c",
+      "indexing_ms": 219908.5446250101,
+      "questions": 17,
+      "intent_correct": 16,
+      "operation_correct": 14,
+      "citation_checks": 67,
+      "valid_citations": 67,
+      "cases": [
+        {
+          "case": "definition",
+          "question": "Where is `verifiedSourcePath` defined?",
+          "expected_intent": "SYMBOL_LOCATION",
+          "actual_intent": "SYMBOL_LOCATION",
+          "intent_correct": true,
+          "expected_engine": "graph",
+          "expected_operation": "find_definition",
+          "operation_correct": true,
+          "expected_source": "extension/src/sourceNavigation.ts",
+          "expected_source_present": true,
+          "coverage": [
+            "satisfied"
+          ],
+          "sources": [
+            "extension/src/sourceNavigation.ts"
+          ],
+          "operations": [
+            {
+              "operation_id": "query-4e93ef5d0e655f61f851d5f2:req-000:op-00",
+              "requirement_id": "req-000",
+              "engine": "graph",
+              "operation": "find_definition",
+              "status": "success",
+              "supporting": false
+            }
+          ],
+          "generation": [],
+          "status": "success",
+          "stage_ms": {
+            "understanding_ms": 61.60783299128525,
+            "planning_ms": 4.634999990230426,
+            "execution_ms": 217.85362499940675,
+            "aggregation_ms": 81.28804199805018,
+            "llm_preparation_ms": 0,
+            "llm_generation_ms": 0,
+            "generation_total_ms": 0,
+            "formatting_ms": 5.105125004774891,
+            "validation_ms": 55.33300001116004,
+            "total_ms": 460.15295801043976
+          },
+          "wall_ms": 493.60554199665785,
+          "response_bytes": 5146,
+          "citation_checks": 1,
+          "valid_citations": 1,
+          "fallback": false,
+          "truncated": false,
+          "model_attempts": 0
+        },
+        {
+          "case": "callers",
+          "question": "Who calls `verifiedSourcePath`?",
+          "expected_intent": "DIRECT_CALLERS",
+          "actual_intent": "DIRECT_CALLERS",
+          "intent_correct": true,
+          "expected_engine": "graph",
+          "expected_operation": "find_callers",
+          "operation_correct": true,
+          "expected_source": "extension/src/responsePreview.ts",
+          "expected_source_present": false,
+          "coverage": [
+            "not_found"
+          ],
+          "sources": [],
+          "operations": [
+            {
+              "operation_id": "query-55a5ec2a47d88b341a033947:req-000:op-00",
+              "requirement_id": "req-000",
+              "engine": "graph",
+              "operation": "find_callers",
+              "status": "not_found",
+              "supporting": false
+            }
+          ],
+          "generation": [],
+          "status": "not_found",
+          "stage_ms": {
+            "understanding_ms": 75.0365420099115,
+            "planning_ms": 0.5467919982038438,
+            "execution_ms": 164.80879198934417,
+            "aggregation_ms": 71.5641660062829,
+            "llm_preparation_ms": 0,
+            "llm_generation_ms": 0,
+            "generation_total_ms": 0,
+            "formatting_ms": 0.8852499886415899,
+            "validation_ms": 52.42962499323767,
+            "total_ms": 405.6688330019824
+          },
+          "wall_ms": 406.55608400993515,
+          "response_bytes": 2867,
+          "citation_checks": 0,
+          "valid_citations": 0,
+          "fallback": false,
+          "truncated": false,
+          "model_attempts": 0
+        },
+        {
+          "case": "callees",
+          "question": "What does `verifiedSourcePath` call?",
+          "expected_intent": "DIRECT_CALLEES",
+          "actual_intent": "DIRECT_CALLEES",
+          "intent_correct": true,
+          "expected_engine": "graph",
+          "expected_operation": "find_callees",
+          "operation_correct": true,
+          "expected_source": "extension/src/sourceNavigation.ts",
+          "expected_source_present": true,
+          "coverage": [
+            "partially_satisfied"
+          ],
+          "sources": [
+            "extension/src/sourceNavigation.ts"
+          ],
+          "operations": [
+            {
+              "operation_id": "query-513e817ce1b48bf7d33490e3:req-000:op-00",
+              "requirement_id": "req-000",
+              "engine": "graph",
+              "operation": "find_callees",
+              "status": "partial",
+              "supporting": false
+            }
+          ],
+          "generation": [],
+          "status": "partial",
+          "stage_ms": {
+            "understanding_ms": 66.38883298728615,
+            "planning_ms": 0.601625011768192,
+            "execution_ms": 165.7462909934111,
+            "aggregation_ms": 81.34404200245626,
+            "llm_preparation_ms": 0,
+            "llm_generation_ms": 0,
+            "generation_total_ms": 0,
+            "formatting_ms": 1.3532080047298223,
+            "validation_ms": 62.48237499676179,
+            "total_ms": 405.1530840079067
+          },
+          "wall_ms": 406.0955839959206,
+          "response_bytes": 6820,
+          "citation_checks": 2,
+          "valid_citations": 2,
+          "fallback": false,
+          "truncated": false,
+          "model_attempts": 0
+        },
+        {
+          "case": "contract",
+          "question": "Contract of `verifiedSourcePath`",
+          "expected_intent": "FUNCTION_CONTRACT",
+          "actual_intent": "FUNCTION_CONTRACT",
+          "intent_correct": true,
+          "expected_engine": "rules",
+          "expected_operation": "function_contract",
+          "operation_correct": true,
+          "expected_source": "extension/src/sourceNavigation.ts",
+          "expected_source_present": true,
+          "coverage": [
+            "partially_satisfied"
+          ],
+          "sources": [
+            "extension/src/sourceNavigation.ts"
+          ],
+          "operations": [
+            {
+              "operation_id": "query-d5dfb6a64cb2fe9411dba2ef:req-000:op-00",
+              "requirement_id": "req-000",
+              "engine": "rules",
+              "operation": "function_contract",
+              "status": "partial",
+              "supporting": false
+            }
+          ],
+          "generation": [],
+          "status": "partial",
+          "stage_ms": {
+            "understanding_ms": 56.21862500265706,
+            "planning_ms": 0.6058330036466941,
+            "execution_ms": 249.10041599650867,
+            "aggregation_ms": 109.98262499924749,
+            "llm_preparation_ms": 0,
+            "llm_generation_ms": 0,
+            "generation_total_ms": 0,
+            "formatting_ms": 0.7408329984173179,
+            "validation_ms": 51.68937498820014,
+            "total_ms": 495.5506249971222
+          },
+          "wall_ms": 496.49279200821184,
+          "response_bytes": 7332,
+          "citation_checks": 1,
+          "valid_citations": 1,
+          "fallback": false,
+          "truncated": false,
+          "model_attempts": 0
+        },
+        {
+          "case": "impact",
+          "question": "Impact of changing `verifiedSourcePath`",
+          "expected_intent": "CHANGE_IMPACT",
+          "actual_intent": "CHANGE_IMPACT",
+          "intent_correct": true,
+          "expected_engine": "rules",
+          "expected_operation": "change_impact",
+          "operation_correct": true,
+          "expected_source": "extension/src/sourceNavigation.ts",
+          "expected_source_present": true,
+          "coverage": [
+            "partially_satisfied"
+          ],
+          "sources": [
+            "extension/src/sourceNavigation.ts"
+          ],
+          "operations": [
+            {
+              "operation_id": "query-eefa85618dde09c049ce87a7:req-000:op-00",
+              "requirement_id": "req-000",
+              "engine": "rules",
+              "operation": "change_impact",
+              "status": "partial",
+              "supporting": false
+            }
+          ],
+          "generation": [],
+          "status": "partial",
+          "stage_ms": {
+            "understanding_ms": 52.949499993701465,
+            "planning_ms": 0.516707994393073,
+            "execution_ms": 392.8027079964522,
+            "aggregation_ms": 82.31287500530016,
+            "llm_preparation_ms": 0,
+            "llm_generation_ms": 0,
+            "generation_total_ms": 0,
+            "formatting_ms": 1.5710830048192292,
+            "validation_ms": 59.356583005865104,
+            "total_ms": 618.5897919931449
+          },
+          "wall_ms": 619.9224169977242,
+          "response_bytes": 23853,
+          "citation_checks": 6,
+          "valid_citations": 6,
+          "fallback": false,
+          "truncated": false,
+          "model_attempts": 0
+        },
+        {
+          "case": "tests",
+          "question": "What tests cover `verifiedSourcePath`?",
+          "expected_intent": "TEST_DISCOVERY",
+          "actual_intent": "TEST_DISCOVERY",
+          "intent_correct": true,
+          "expected_engine": "rules",
+          "expected_operation": "reference_test_analysis",
+          "operation_correct": true,
+          "expected_source": null,
+          "expected_source_present": null,
+          "coverage": [
+            "partially_satisfied"
+          ],
+          "sources": [
+            "extension/src/sourceNavigation.ts"
+          ],
+          "operations": [
+            {
+              "operation_id": "query-81896364601d059534b477b9:req-000:op-00",
+              "requirement_id": "req-000",
+              "engine": "rules",
+              "operation": "reference_test_analysis",
+              "status": "partial",
+              "supporting": false
+            }
+          ],
+          "generation": [],
+          "status": "partial",
+          "stage_ms": {
+            "understanding_ms": 50.28558299818542,
+            "planning_ms": 0.5065000004833564,
+            "execution_ms": 286.77458300080616,
+            "aggregation_ms": 68.42133299505804,
+            "llm_preparation_ms": 0,
+            "llm_generation_ms": 0,
+            "generation_total_ms": 0,
+            "formatting_ms": 1.2458749988581985,
+            "validation_ms": 46.53025000880007,
+            "total_ms": 478.6005829955684
+          },
+          "wall_ms": 479.4396250072168,
+          "response_bytes": 19967,
+          "citation_checks": 6,
+          "valid_citations": 6,
+          "fallback": false,
+          "truncated": false,
+          "model_attempts": 0
+        },
+        {
+          "case": "module",
+          "question": "Overview of extension/src/sourceNavigation.ts",
+          "expected_intent": "MODULE_OVERVIEW",
+          "actual_intent": "MODULE_OVERVIEW",
+          "intent_correct": true,
+          "expected_engine": "rules",
+          "expected_operation": "module_overview",
+          "operation_correct": true,
+          "expected_source": "extension/src/sourceNavigation.ts",
+          "expected_source_present": true,
+          "coverage": [
+            "partially_satisfied"
+          ],
+          "sources": [
+            "extension/src/sourceNavigation.ts"
+          ],
+          "operations": [
+            {
+              "operation_id": "query-7b05fffd578374bf33ff3524:req-000:op-00",
+              "requirement_id": "req-000",
+              "engine": "rules",
+              "operation": "module_overview",
+              "status": "partial",
+              "supporting": false
+            }
+          ],
+          "generation": [],
+          "status": "partial",
+          "stage_ms": {
+            "understanding_ms": 66.39379200350959,
+            "planning_ms": 0.7163330010371283,
+            "execution_ms": 397.34258300450165,
+            "aggregation_ms": 68.57320900599007,
+            "llm_preparation_ms": 0,
+            "llm_generation_ms": 0,
+            "generation_total_ms": 0,
+            "formatting_ms": 1.0237910028081387,
+            "validation_ms": 52.14462500589434,
+            "total_ms": 620.6167080090381
+          },
+          "wall_ms": 621.6507500066655,
+          "response_bytes": 14940,
+          "citation_checks": 4,
+          "valid_citations": 4,
+          "fallback": false,
+          "truncated": false,
+          "model_attempts": 0
+        },
+        {
+          "case": "feature",
+          "question": "Find code that verifies source file hashes before opening citations",
+          "expected_intent": "FEATURE_DISCOVERY",
+          "actual_intent": "FEATURE_DISCOVERY",
+          "intent_correct": true,
+          "expected_engine": "semantic",
+          "expected_operation": "hybrid_search",
+          "operation_correct": false,
+          "expected_source": "extension/src/sourceNavigation.ts",
+          "expected_source_present": false,
+          "coverage": [
+            "ambiguous"
+          ],
+          "sources": [],
+          "operations": [],
+          "generation": [],
+          "status": "ambiguous",
+          "stage_ms": {
+            "understanding_ms": 56.5212499932386,
+            "planning_ms": 0.37204100226517767,
+            "execution_ms": 78.7958340079058,
+            "aggregation_ms": 50.37629199796356,
+            "llm_preparation_ms": 0,
+            "llm_generation_ms": 0,
+            "generation_total_ms": 0,
+            "formatting_ms": 0.3398329863557592,
+            "validation_ms": 74.95408300019335,
+            "total_ms": 287.80566599743906
+          },
+          "wall_ms": 288.7424169894075,
+          "response_bytes": 2682,
+          "citation_checks": 0,
+          "valid_citations": 0,
+          "fallback": false,
+          "truncated": false,
+          "model_attempts": 0
+        },
+        {
+          "case": "feature_docs",
+          "question": "Find code that renders documentation markdown",
+          "expected_intent": "FEATURE_DISCOVERY",
+          "actual_intent": "FEATURE_DISCOVERY",
+          "intent_correct": true,
+          "expected_engine": "semantic",
+          "expected_operation": "hybrid_search",
+          "operation_correct": true,
+          "expected_source": "extension/src/extension.ts",
+          "expected_source_present": false,
+          "coverage": [
+            "satisfied"
+          ],
+          "sources": [
+            "ai-engine/api.py",
+            "ai-engine/config.py",
+            "knowledge_base/chunking.py",
+            "knowledge_base/test_semantic.py",
+            "query_system/benchmark_hybrid.py"
+          ],
+          "operations": [
+            {
+              "operation_id": "query-9631139bb577354b0b91f82b:req-000:op-00",
+              "requirement_id": "req-000",
+              "engine": "semantic",
+              "operation": "hybrid_search",
+              "status": "success",
+              "supporting": false
+            }
+          ],
+          "generation": [],
+          "status": "success",
+          "stage_ms": {
+            "understanding_ms": 53.76366699056234,
+            "planning_ms": 0.5922910058870912,
+            "execution_ms": 786.8605840048986,
+            "aggregation_ms": 61.95274999481626,
+            "llm_preparation_ms": 0,
+            "llm_generation_ms": 0,
+            "generation_total_ms": 0,
+            "formatting_ms": 0.9937080030795187,
+            "validation_ms": 56.44495900196489,
+            "total_ms": 990.0978330115322
+          },
+          "wall_ms": 991.1316670040833,
+          "response_bytes": 11218,
+          "citation_checks": 5,
+          "valid_citations": 5,
+          "fallback": false,
+          "truncated": false,
+          "model_attempts": 0
+        },
+        {
+          "case": "function",
+          "question": "Explain `verifiedSourcePath`",
+          "expected_intent": "FUNCTION_EXPLANATION",
+          "actual_intent": "FUNCTION_EXPLANATION",
+          "intent_correct": true,
+          "expected_engine": "graph",
+          "expected_operation": "find_definition",
+          "operation_correct": true,
+          "expected_source": "extension/src/sourceNavigation.ts",
+          "expected_source_present": true,
+          "coverage": [
+            "partial"
+          ],
+          "sources": [
+            "extension/src/sourceNavigation.ts"
+          ],
+          "operations": [
+            {
+              "operation_id": "query-388191809649b91525781721:req-001:op-00",
+              "requirement_id": "req-001",
+              "engine": "graph",
+              "operation": "find_definition",
+              "status": "success",
+              "supporting": true
+            },
+            {
+              "operation_id": "query-388191809649b91525781721:req-002:op-00",
+              "requirement_id": "req-002",
+              "engine": "rules",
+              "operation": "function_contract",
+              "status": "partial",
+              "supporting": true
+            },
+            {
+              "operation_id": "query-388191809649b91525781721:req-003:op-00",
+              "requirement_id": "req-003",
+              "engine": "graph",
+              "operation": "find_callees",
+              "status": "partial",
+              "supporting": true
+            },
+            {
+              "operation_id": "query-388191809649b91525781721:req-004:op-00",
+              "requirement_id": "req-004",
+              "engine": "graph",
+              "operation": "find_callers",
+              "status": "not_found",
+              "supporting": true
+            }
+          ],
+          "generation": [
+            {
+              "task": "function",
+              "original_orders": [
+                0
+              ],
+              "model_status": "success",
+              "fallback_status": "not_used",
+              "failure_category": null,
+              "model_attempts": 1
+            }
+          ],
+          "status": "partial",
+          "stage_ms": {
+            "understanding_ms": 51.56599999463651,
+            "planning_ms": 0.6815410015406087,
+            "execution_ms": 425.20508299639914,
+            "aggregation_ms": 68.00583300355356,
+            "llm_preparation_ms": 51.869291011826135,
+            "llm_generation_ms": 0.04358400474302471,
+            "generation_total_ms": 124.25250001251698,
+            "formatting_ms": 2.801583003019914,
+            "validation_ms": 50.56041700299829,
+            "total_ms": 751.7159579874715
+          },
+          "wall_ms": 753.0777909996687,
+          "response_bytes": 24587,
+          "citation_checks": 13,
+          "valid_citations": 13,
+          "fallback": false,
+          "truncated": false,
+          "model_attempts": 1
+        },
+        {
+          "case": "workflow",
+          "question": "Explain the workflow from `openVerifiedPreviewSource` to `verifiedSourcePath`",
+          "expected_intent": "WORKFLOW_EXPLANATION",
+          "actual_intent": "WORKFLOW_EXPLANATION",
+          "intent_correct": true,
+          "expected_engine": "graph",
+          "expected_operation": "find_paths",
+          "operation_correct": false,
+          "expected_source": "extension/src/sourceNavigation.ts",
+          "expected_source_present": true,
+          "coverage": [
+            "not_found"
+          ],
+          "sources": [
+            "extension/src/sourceNavigation.ts"
+          ],
+          "operations": [
+            {
+              "operation_id": "query-ab431c3ddcf0e9f06f7abae5:req-002:op-00",
+              "requirement_id": "req-002",
+              "engine": "graph",
+              "operation": "find_definition",
+              "status": "success",
+              "supporting": true
+            },
+            {
+              "operation_id": "query-ab431c3ddcf0e9f06f7abae5:req-006:op-00",
+              "requirement_id": "req-006",
+              "engine": "rules",
+              "operation": "function_contract",
+              "status": "partial",
+              "supporting": true
+            },
+            {
+              "operation_id": "query-ab431c3ddcf0e9f06f7abae5:req-007:op-00",
+              "requirement_id": "req-007",
+              "engine": "graph",
+              "operation": "find_callees",
+              "status": "partial",
+              "supporting": true
+            }
+          ],
+          "generation": [
+            {
+              "task": "workflow",
+              "original_orders": [
+                0
+              ],
+              "model_status": "blocked",
+              "fallback_status": "evidence_summary",
+              "failure_category": "insufficient_target_evidence",
+              "model_attempts": 0
+            }
+          ],
+          "status": "partial",
+          "stage_ms": {
+            "understanding_ms": 49.891333997948095,
+            "planning_ms": 0.7639589894097298,
+            "execution_ms": 233.51183299382683,
+            "aggregation_ms": 62.55454200436361,
+            "llm_preparation_ms": 47.567874993546866,
+            "llm_generation_ms": 0,
+            "generation_total_ms": 80.34183399286121,
+            "formatting_ms": 2.3423329985234886,
+            "validation_ms": 44.08437499660067,
+            "total_ms": 494.9640830018325
+          },
+          "wall_ms": 495.77183299697936,
+          "response_bytes": 15928,
+          "citation_checks": 3,
+          "valid_citations": 3,
+          "fallback": true,
+          "truncated": false,
+          "model_attempts": 0
+        },
+        {
+          "case": "behavior",
+          "question": "Why might `verifiedSourcePath` fail?",
+          "expected_intent": "BEHAVIOR_INVESTIGATION",
+          "actual_intent": "BEHAVIOR_INVESTIGATION",
+          "intent_correct": true,
+          "expected_engine": "rules",
+          "expected_operation": "function_contract",
+          "operation_correct": true,
+          "expected_source": "extension/src/sourceNavigation.ts",
+          "expected_source_present": true,
+          "coverage": [
+            "partial"
+          ],
+          "sources": [
+            "extension/src/sourceNavigation.ts"
+          ],
+          "operations": [
+            {
+              "operation_id": "query-f921cef9f26a740fe9bf6b9a:req-001:op-00",
+              "requirement_id": "req-001",
+              "engine": "graph",
+              "operation": "find_definition",
+              "status": "success",
+              "supporting": true
+            },
+            {
+              "operation_id": "query-f921cef9f26a740fe9bf6b9a:req-002:op-00",
+              "requirement_id": "req-002",
+              "engine": "rules",
+              "operation": "function_contract",
+              "status": "partial",
+              "supporting": true
+            },
+            {
+              "operation_id": "query-f921cef9f26a740fe9bf6b9a:req-003:op-00",
+              "requirement_id": "req-003",
+              "engine": "graph",
+              "operation": "find_callees",
+              "status": "partial",
+              "supporting": true
+            }
+          ],
+          "generation": [
+            {
+              "task": "behavior",
+              "original_orders": [
+                0
+              ],
+              "model_status": "success",
+              "fallback_status": "not_used",
+              "failure_category": null,
+              "model_attempts": 1
+            }
+          ],
+          "status": "partial",
+          "stage_ms": {
+            "understanding_ms": 43.15195900562685,
+            "planning_ms": 0.463333009975031,
+            "execution_ms": 255.2450829971349,
+            "aggregation_ms": 61.528332997113466,
+            "llm_preparation_ms": 46.46774999855552,
+            "llm_generation_ms": 0.03716700302902609,
+            "generation_total_ms": 112.03404200205114,
+            "formatting_ms": 2.132959009031765,
+            "validation_ms": 46.597207998274826,
+            "total_ms": 544.3982910073828
+          },
+          "wall_ms": 545.2120000118157,
+          "response_bytes": 24114,
+          "citation_checks": 13,
+          "valid_citations": 13,
+          "fallback": false,
+          "truncated": false,
+          "model_attempts": 1
+        },
+        {
+          "case": "comparison",
+          "question": "Compare `escapeDisplay` and `renderResponseBody`",
+          "expected_intent": "CODE_COMPARISON",
+          "actual_intent": "CODE_COMPARISON",
+          "intent_correct": true,
+          "expected_engine": "graph",
+          "expected_operation": "find_definition",
+          "operation_correct": false,
+          "expected_source": "extension/src/responsePresentation.ts",
+          "expected_source_present": false,
+          "coverage": [
+            "not_found"
+          ],
+          "sources": [],
+          "operations": [],
+          "generation": [
+            {
+              "task": "comparison",
+              "original_orders": [
+                0
+              ],
+              "model_status": "blocked",
+              "fallback_status": "no_safe_evidence",
+              "failure_category": "insufficient_target_evidence",
+              "model_attempts": 0
+            }
+          ],
+          "status": "not_found",
+          "stage_ms": {
+            "understanding_ms": 39.63062500406522,
+            "planning_ms": 0.4339580045780167,
+            "execution_ms": 60.49570799223147,
+            "aggregation_ms": 40.565874995081685,
+            "llm_preparation_ms": 20.85816700127907,
+            "llm_generation_ms": 0,
+            "generation_total_ms": 40.71216699958313,
+            "formatting_ms": 0.5357909976737574,
+            "validation_ms": 38.31825000816025,
+            "total_ms": 241.79699999513105
+          },
+          "wall_ms": 242.3712909949245,
+          "response_bytes": 4111,
+          "citation_checks": 0,
+          "valid_citations": 0,
+          "fallback": true,
+          "truncated": false,
+          "model_attempts": 0
+        },
+        {
+          "case": "compound",
+          "question": "Where is `verifiedSourcePath` defined and explain `verifiedSourcePath`",
+          "expected_intent": "SYMBOL_LOCATION",
+          "actual_intent": "SYMBOL_LOCATION",
+          "intent_correct": true,
+          "expected_engine": "graph",
+          "expected_operation": "find_definition",
+          "operation_correct": true,
+          "expected_source": "extension/src/sourceNavigation.ts",
+          "expected_source_present": true,
+          "coverage": [
+            "satisfied",
+            "partial"
+          ],
+          "sources": [
+            "extension/src/sourceNavigation.ts"
+          ],
+          "operations": [
+            {
+              "operation_id": "query-3b438c88995c1a0b7d95b537:req-000:op-00",
+              "requirement_id": "req-000",
+              "engine": "graph",
+              "operation": "find_definition",
+              "status": "success",
+              "supporting": false
+            },
+            {
+              "operation_id": "query-3b438c88995c1a0b7d95b537:req-002:op-00",
+              "requirement_id": "req-002",
+              "engine": "rules",
+              "operation": "function_contract",
+              "status": "partial",
+              "supporting": true
+            },
+            {
+              "operation_id": "query-3b438c88995c1a0b7d95b537:req-003:op-00",
+              "requirement_id": "req-003",
+              "engine": "graph",
+              "operation": "find_callees",
+              "status": "partial",
+              "supporting": true
+            },
+            {
+              "operation_id": "query-3b438c88995c1a0b7d95b537:req-004:op-00",
+              "requirement_id": "req-004",
+              "engine": "graph",
+              "operation": "find_callers",
+              "status": "not_found",
+              "supporting": true
+            }
+          ],
+          "generation": [
+            {
+              "task": "function",
+              "original_orders": [
+                1
+              ],
+              "model_status": "success",
+              "fallback_status": "not_used",
+              "failure_category": null,
+              "model_attempts": 1
+            }
+          ],
+          "status": "partial",
+          "stage_ms": {
+            "understanding_ms": 42.75108299043495,
+            "planning_ms": 0.5947919999016449,
+            "execution_ms": 278.46612498979084,
+            "aggregation_ms": 58.27066699566785,
+            "llm_preparation_ms": 45.92983399925288,
+            "llm_generation_ms": 0.031167000997811556,
+            "generation_total_ms": 109.54520900850184,
+            "formatting_ms": 2.266625000629574,
+            "validation_ms": 46.106167006655596,
+            "total_ms": 559.5500830095261
+          },
+          "wall_ms": 560.3924589959206,
+          "response_bytes": 26374,
+          "citation_checks": 13,
+          "valid_citations": 13,
+          "fallback": false,
+          "truncated": false,
+          "model_attempts": 1
+        },
+        {
+          "case": "ambiguous",
+          "question": "Where is `run` defined?",
+          "expected_intent": "SYMBOL_LOCATION",
+          "actual_intent": "SYMBOL_LOCATION",
+          "intent_correct": true,
+          "expected_engine": null,
+          "expected_operation": null,
+          "operation_correct": true,
+          "expected_source": null,
+          "expected_source_present": null,
+          "coverage": [
+            "not_found"
+          ],
+          "sources": [],
+          "operations": [],
+          "generation": [],
+          "status": "not_found",
+          "stage_ms": {
+            "understanding_ms": 38.27025000646245,
+            "planning_ms": 0.2919999969890341,
+            "execution_ms": 59.598292005830444,
+            "aggregation_ms": 38.85525000805501,
+            "llm_preparation_ms": 0,
+            "llm_generation_ms": 0,
+            "generation_total_ms": 0,
+            "formatting_ms": 0.2519999979995191,
+            "validation_ms": 36.67045799375046,
+            "total_ms": 194.88666600955185
+          },
+          "wall_ms": 195.41008298983797,
+          "response_bytes": 2554,
+          "citation_checks": 0,
+          "valid_citations": 0,
+          "fallback": false,
+          "truncated": false,
+          "model_attempts": 0
+        },
+        {
+          "case": "missing",
+          "question": "Where is `phase10Nonexistent` defined?",
+          "expected_intent": "SYMBOL_LOCATION",
+          "actual_intent": "SYMBOL_LOCATION",
+          "intent_correct": true,
+          "expected_engine": null,
+          "expected_operation": null,
+          "operation_correct": true,
+          "expected_source": null,
+          "expected_source_present": null,
+          "coverage": [
+            "not_found"
+          ],
+          "sources": [],
+          "operations": [],
+          "generation": [],
+          "status": "not_found",
+          "stage_ms": {
+            "understanding_ms": 38.403250000556,
+            "planning_ms": 0.27620900073088706,
+            "execution_ms": 54.633457999443635,
+            "aggregation_ms": 38.91570800624322,
+            "llm_preparation_ms": 0,
+            "llm_generation_ms": 0,
+            "generation_total_ms": 0,
+            "formatting_ms": 0.26866600092034787,
+            "validation_ms": 37.4847919883905,
+            "total_ms": 189.49550000252202
+          },
+          "wall_ms": 190.02754100074526,
+          "response_bytes": 2568,
+          "citation_checks": 0,
+          "valid_citations": 0,
+          "fallback": false,
+          "truncated": false,
+          "model_attempts": 0
+        },
+        {
+          "case": "unsupported_statistics",
+          "question": "How many files are in this repository?",
+          "expected_intent": "REPOSITORY_STATISTICS",
+          "actual_intent": "UNRESOLVED",
+          "intent_correct": false,
+          "expected_engine": null,
+          "expected_operation": null,
+          "operation_correct": true,
+          "expected_source": null,
+          "expected_source_present": null,
+          "coverage": [],
+          "sources": [],
+          "operations": [],
+          "generation": [],
+          "status": "unsupported",
+          "stage_ms": {
+            "understanding_ms": 37.642124996636994,
+            "planning_ms": 0,
+            "execution_ms": 0,
+            "aggregation_ms": 0,
+            "llm_preparation_ms": 0,
+            "llm_generation_ms": 0,
+            "generation_total_ms": 0,
+            "formatting_ms": 0,
+            "validation_ms": 0,
+            "total_ms": 58.14549999195151
+          },
+          "wall_ms": 58.59737501305062,
+          "response_bytes": 561,
+          "citation_checks": 0,
+          "valid_citations": 0,
+          "fallback": false,
+          "truncated": false,
+          "model_attempts": 0
+        }
+      ],
+      "real_local_smoke": {
+        "state": "not_requested"
+      }
+    }
+  ],
+  "human_reviewed_factual_accuracy": "Not measured: no independent human reviewer. Citation validity is not prose factuality.",
+  "limitations": [
+    "Related corpora from one project, not a general external-repository benchmark.",
+    "Original target-sized snapshot may fail in the existing graph builder; diagnostic exclusions are NOT a fix or a target-size pass.",
+    "Temporary indexes are built only for evaluation; original user indexes remain unchanged.",
+    "One sample per labeled real query; no real-corpus p95 claim.",
+    "Mock model answers test transport/grounding compatibility, not semantic explanation accuracy."
+  ]
+}

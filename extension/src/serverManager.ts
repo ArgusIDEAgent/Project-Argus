@@ -3,6 +3,14 @@ import * as http from 'node:http';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
+import type { ResponsePresentation } from './responsePresentation';
+import type { VerificationReply } from './responsePreview';
+
+export type HybridQueryInput = { repository_id: string; question: string; depth: 'quick' | 'standard' | 'deep';
+  active_file?: string; cursor?: { line: number; column: number };
+  selection?: { start: { line: number; column: number }; end: { line: number; column: number } } };
+export type HybridReply = { schema_version: 'hybrid-v1'; status: string; presentation: ResponsePresentation | null;
+  navigation_token: string | null; snapshot_id: string | null; error: { message: string } | null };
 
 type HelloResponse = { reply: string };
 export type Repository = { id: string; rootPath: string; defaultBranch: string };
@@ -89,6 +97,22 @@ export class ServerManager implements vscode.Disposable {
 
   async ask(repoId: string, query: string): Promise<SearchResult> {
     return this.request('POST', '/ask', { repoId, query, limit: 5 });
+  }
+
+  async hybridQuery(query: HybridQueryInput, allowGeneration: boolean): Promise<HybridReply> {
+    return this.request('POST', '/v1/hybrid/query', { query, allow_generation: allowGeneration });
+  }
+
+  async hybridReadiness(repoId: string): Promise<{ enabled: boolean; snapshot_ready: boolean; legacy_available: boolean }> {
+    return this.request('GET', `/v1/hybrid/readiness?repoId=${encodeURIComponent(repoId)}`);
+  }
+
+  async hybridPresentation(repository_id: string, navigation_token: string, depth: string): Promise<VerificationReply> {
+    return this.request('POST', '/v1/hybrid/presentation', { repository_id, navigation_token, depth });
+  }
+
+  async hybridSource(repository_id: string, navigation_token: string, reference: string, depth: string): Promise<VerificationReply> {
+    return this.request('POST', '/v1/hybrid/source', { repository_id, navigation_token, reference, depth });
   }
 
   async reuse(repoId: string, input: { query: string } | { entityId: string }): Promise<SearchResult> {

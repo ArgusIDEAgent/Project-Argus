@@ -129,3 +129,57 @@ test('follow-ups copy supported queries without creating backend actions', () =>
   assert.ok(html.includes('Copy query: Show direct callers')); assert.ok(html.includes('data-follow-up-key="opaque-copy"'));
   assert.ok(!html.includes('data-search')); assert.ok(!html.includes('command:'));
 });
+
+test('hybrid rendering shares escaping and has per-answer citation anchor namespaces', () => {
+  const result = view(); result.items.finding.text = '<img src=x onerror="run()">';
+  const first = renderResponseBody(result, { 'cm7:package:record': 'opaque' }, {}, 'hybrid', 'answer-one-');
+  const second = renderResponseBody(result, {}, {}, 'hybrid', 'answer-two-');
+  assert.ok(first.includes('CodeMind Hybrid Answer'));
+  assert.ok(first.includes('&lt;img')); assert.ok(!first.includes('<img'));
+  assert.ok(first.includes('href="#answer-one-source-1"'));
+  assert.ok(second.includes('id="answer-two-source-1"'));
+  assert.ok(!first.includes('<script')); assert.ok(!first.includes('href="command:'));
+});
+
+test('existing saved settings and dependencies remain compatible with default-off opt-in', () => {
+  const manifest = require('../package.json');
+  const settings = manifest.contributes.configuration.properties;
+  assert.equal(settings['codemind.hybridEnabled'].default, false);
+  assert.equal(settings['codemind.checkReuseOnSave'].default, true);
+  assert.deepEqual(settings['codemind.hybridDepth'].enum, ['quick', 'standard', 'deep']);
+  assert.deepEqual(manifest.dependencies, {});
+});
+
+test('actual chat webview forwards only opaque hybrid actions and disables them on rollback', () => {
+  const Module = require('node:module');
+  const native = Module._load;
+  let html;
+  try {
+    Module._load = function(name, ...args) { return name === 'vscode' ? {} : native.call(this, name, ...args); };
+    html = require('../out/extension').chatHtml({});
+  } finally { Module._load = native; }
+  const script = /<script nonce="[^"]+">([\s\S]*?)<\/script>/.exec(html)[1];
+  const nodes = new Map(), posts = [], controls = [];
+  let receive;
+  function element() { return { dataset: {}, children: [], listeners: {}, disabled: false, focus() {},
+    addEventListener(name, callback) { this.listeners[name] = callback; },
+    append(...values) { this.children.push(...values); }, querySelectorAll() { return controls; } }; }
+  const document = { getElementById(id) { if (!nodes.has(id)) nodes.set(id, element()); return nodes.get(id); },
+    createElement: element, querySelector() { return nodes.get('answer'); } };
+  vm.runInNewContext(script, { acquireVsCodeApi: () => ({ postMessage: value => posts.push(value) }), document,
+    window: { addEventListener(_, callback) { receive = callback; } }, clearTimeout() {}, setTimeout() {} });
+  const answer = element(); answer.dataset.answerKey = 'opaque-answer'; nodes.set('answer', answer);
+  const control = element(); control.dataset = { sourceKey: 'opaque-source' }; control.closest = () => answer;
+  controls.push(control);
+  const click = nodes.get('messages').listeners.click;
+  click({ target: { closest: () => control } });
+  control.dataset = { depth: 'deep' }; click({ target: { closest: () => control } });
+  control.dataset = { followUpKey: 'opaque-copy' }; click({ target: { closest: () => control } });
+  assert.equal(JSON.stringify(posts), '[{"type":"hybridSource","key":"opaque-answer","actionKey":"opaque-source"},{"type":"hybridDepth","key":"opaque-answer","depth":"deep"},{"type":"hybridCopyQuery","key":"opaque-answer","actionKey":"opaque-copy"}]');
+  receive({ data: { type: 'hybridResults', key: 'opaque-answer', html: '<section>Host-escaped content</section>' } });
+  assert.equal(answer.innerHTML, '<section>Host-escaped content</section>');
+  nodes.get('messages').querySelectorAll = () => [answer];
+  receive({ data: { type: 'hybridRollback' } });
+  assert.ok(control.disabled); click({ target: { closest: () => control } });
+  assert.equal(posts.length, 3);
+});

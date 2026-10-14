@@ -5,6 +5,7 @@ import * as vscode from 'vscode';
 import { ServerManager, SearchResult, CodeResult, DocSection, DocsStatus, Job } from './serverManager';
 import { verifiedSourcePath } from './sourceNavigation';
 import { registerResponsePreview } from './responsePreview';
+import { HybridChatSession, hybridEnabled } from './hybridChat';
 
 let server: ServerManager | undefined;
 
@@ -29,6 +30,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   }));
 
   let panel: vscode.WebviewPanel | undefined;
+  const hybrid = new HybridChatSession(server, message => panel ? panel.webview.postMessage(message) : Promise.resolve(false));
+  context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(event => {
+    if (event.affectsConfiguration('codemind.hybridEnabled') && !hybridEnabled()) {
+      hybrid.clear(); void panel?.webview.postMessage({ type: 'hybridRollback' });
+    }
+  }));
   let selectionVersion = 0;
   let repositoryWatcher: fs.FSWatcher | undefined;
   let vscodeWatcher: vscode.FileSystemWatcher | undefined;
@@ -101,6 +108,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   }
 
   function stopWatching(): void {
+    hybrid.clear();
+    void panel?.webview.postMessage({ type: 'hybridRollback' });
     repositoryWatcher?.close();
     repositoryWatcher = undefined;
     vscodeWatcher?.dispose();
@@ -312,6 +321,10 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       const query = suppliedQuery || await vscode.window.showInputBox({
         prompt: reuse ? 'Describe the code you intend to write' : 'Search repository code' });
       if (!query?.trim()) return;
+      if (answer && !reuse && hybridEnabled()) {
+        await hybrid.ask(selected, query, () => selectedRepository === selected && Boolean(panel));
+        return;
+      }
       const result = reuse ? await server!.reuse(selected.id, { query }) : answer ? await server!.ask(selected.id, query) : await server!.search(selected.id, query);
       if (selectedRepository === selected) await showResults(result, reuse ? 'Reuse suggestions' : 'Code search');
     } catch (error) {
@@ -365,6 +378,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     panel.webview.onDidReceiveMessage(async (message: unknown) => {
       if (!panel || !server) return;
       const action = message as { type?: string; key?: string; action?: string; text?: string } | null;
+      if (await hybrid.handle(message, selectedRepository)) return;
       if (action?.type === 'search' || action?.type === 'reuse' || action?.type === 'ask') {
         if (typeof action.text === 'string' && action.text.length <= 2000) await runSearch(action.type === 'reuse', action.text, action.type === 'ask');
         return;
@@ -645,6 +659,15 @@ export function chatHtml(webview: vscode.Webview): string {
     document.getElementById('check-reuse').addEventListener('click', () => vscode.postMessage({ type: 'reuse', text: input.value }));
     document.getElementById('open-docs').addEventListener('click', () => vscode.postMessage({ type: 'docsOverview' }));
     syncDocsButton.addEventListener('click', () => vscode.postMessage({ type: 'docsSync' }));
+    messages.addEventListener('click', event => {
+      const control = event.target.closest('button');
+      const view = control && control.closest('.hybrid-response');
+      if (!view || control.disabled) return;
+      const key = view.dataset.answerKey;
+      if (control.dataset.sourceKey) vscode.postMessage({ type: 'hybridSource', key, actionKey: control.dataset.sourceKey });
+      if (control.dataset.followUpKey) vscode.postMessage({ type: 'hybridCopyQuery', key, actionKey: control.dataset.followUpKey });
+      if (control.dataset.depth) vscode.postMessage({ type: 'hybridDepth', key, depth: control.dataset.depth });
+    });
 
     function renderMarkdown(markdown, host) {
       let list = null;
@@ -754,6 +777,21 @@ export function chatHtml(webview: vscode.Webview): string {
 
     window.addEventListener('message', event => {
       const message = event.data;
+      if (message.type === 'hybridResults') {
+        let view = document.querySelector('.hybrid-response[data-answer-key="' + message.key + '"]');
+        if (!view) { view = document.createElement('section'); view.className = 'docs-view hybrid-response'; view.dataset.answerKey = message.key; messages.append(view); }
+        // HTML is produced only by the extension host's escaping Phase 9 renderer,
+        // never taken from backend/model HTML or a frontend-supplied filesystem path.
+        view.innerHTML = message.html;
+        clearTimeout(pendingTimer); button.disabled = false; input.focus(); messages.scrollTop = messages.scrollHeight; return;
+      }
+      if (message.type === 'hybridRollback' || message.type === 'hybridExpired') {
+        for (const view of messages.querySelectorAll('.hybrid-response')) {
+          if (message.key && view.dataset.answerKey !== message.key) continue;
+          for (const control of view.querySelectorAll('button')) control.disabled = true;
+        }
+        return;
+      }
       if (message.type === 'repository') { repositoryStatus.textContent = message.text; return; }
       if (message.type === 'docsStatus') {
         const status = message.status;

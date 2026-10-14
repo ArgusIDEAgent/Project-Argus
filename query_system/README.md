@@ -1,5 +1,13 @@
 # Hybrid query contracts: Phase 1
 
+Phase 10 connects the completed components through `orchestration.run_hybrid()`
+and authenticated, default-off `/v1/hybrid` routes. VS Code chat opts in through
+`codemind.hybridEnabled`; ordinary `/ask` and `/retrieve` remain unchanged.
+See [PHASE10.md](PHASE10.md) for contracts, enablement, readiness, rollback,
+regressions and measured limitations. Target-sized real-corpus qualification is
+blocked by an existing knowledge-base resolver failure; no production migration
+is authorized or performed.
+
 Phase 6 adds a standalone deterministic planner and executor. See
 [PHASE6.md](PHASE6.md) for the compatibility audit, routing table, one-pin lifecycle,
 explicit semantic-candidate selection, resource limits and verification commands.
