@@ -111,13 +111,19 @@ class HybridIntegrationTests(unittest.TestCase):
 
     def test_ambiguous_missing_unsupported_statistics_and_insufficient_evidence_do_not_call_model(self):
         for question, expected in (("Where is duplicate defined?", "ambiguous"), ("Where is noSuchFunction defined?", "not_found"),
-                                   ("How many files are in this repository?", "unsupported"), ("Compare login and entry", "ambiguous"),
+                                   ("How many files are in this repository?", "unsupported"), ("Compare duplicate and sharedName", "ambiguous"),
                                    ("Explain `noSuchFunction`", "not_found")):
             fake = FakeLocal(); run = self.run_question(question, fake)
             with self.subTest(question=question):
                 self.assertEqual(run.response.status, expected, run.response.error)
                 self.assertEqual(fake.calls, 0)
                 if "How many" in question: self.assertEqual(run.response.operations, [])
+        # One valid operand may supply deterministic evidence, never a guessed comparison.
+        fake = FakeLocal(); run = self.run_question("Compare duplicate and entry", fake)
+        self.assertEqual(run.response.status, "partial")
+        self.assertEqual(run.response.presentation.requirements[0].state, "ambiguous")
+        self.assertTrue(run.response.presentation.clarifications)
+        self.assertEqual(fake.calls, 0)
 
     def test_generation_opt_out_and_call_budget_are_explicit(self):
         fake = FakeLocal(); run = self.run_question("Explain `login`", fake, allow_generation=False)
@@ -169,11 +175,14 @@ class HybridIntegrationTests(unittest.TestCase):
             return valid_answer(context)
         self.assertTrue(self.run_question("Explain `login`", FakeLocal(inspect)).response.presentation.items)
 
-    def test_compound_comparison_parser_gap_never_generates_a_guessed_comparison(self):
+    def test_compound_comparison_preserves_both_resolved_targets_after_s2(self):
         fake = FakeLocal(); run = self.run_question("Explain `login` and compare `login` and `entry`", fake)
-        self.assertEqual(fake.calls, 1)
-        self.assertEqual(run.response.generations[1].model_attempts, 0)
-        self.assertNotEqual(run.response.presentation.requirements[1].state, "satisfied")
+        self.assertEqual(fake.calls, 2)
+        self.assertEqual(run.response.generations[1].model_attempts, 1)
+        self.assertEqual(run.response.generations[1].model_status, "success")
+        targets = [run.original.entities[i] for i in run.original.requirements[1].entity_indices]
+        self.assertEqual([target.name for target in targets], ["login", "entry"])
+        self.assertTrue(all(target.symbol_id and target.evidence for target in targets))
 
     def test_independent_engine_failure_keeps_successful_graph_requirement(self):
         def factory(name, *args):

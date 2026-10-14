@@ -86,6 +86,12 @@ async function run() {
     await session.handle({ type: 'hybridDepth', key: reply.key, depth: 'quick' }, selected);
     assert.equal((await metrics(options)).model, 1);
     reply = messages.findLast(message => message.type === 'hybridResults');
+    // Existing opaque answer authority supplies one verified previous target.
+    await session.ask(selected, 'Who calls it?', () => true);
+    reply = messages.findLast(message => message.type === 'hybridResults');
+    assert.ok(reply.html.includes('Known direct callers'));
+    assert.ok(reply.html.includes('data-source-key='));
+    assert.equal((await metrics(options)).model, 1);
     const savedLogin = fs.readFileSync(path.join(options.rootPath, 'login.ts'));
     fs.appendFileSync(path.join(options.rootPath, 'login.ts'), '// stale fixture\n');
     await session.handle({ type: 'hybridSource', key: reply.key, actionKey: /data-source-key="([^"]+)"/.exec(reply.html)[1] }, selected);

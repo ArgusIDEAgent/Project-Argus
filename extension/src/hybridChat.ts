@@ -32,9 +32,11 @@ type Answer = { repoId: string; rootPath: string; token: string; view: ResponseP
 
 export class HybridChatSession {
   private answers = new Map<string, Answer>();
+  private epoch = 0;
+  private previous?: { repoId: string; rootPath: string; token: string };
   constructor(private server: ServerManager, private send: (message: unknown) => Thenable<boolean>) {}
 
-  clear(): void { this.answers.clear(); }
+  clear(): void { this.epoch++; this.answers.clear(); this.previous = undefined; }
 
   private async show(key: string, answer: Answer): Promise<void> {
     answer.sources.clear(); answer.copies.clear();
@@ -51,18 +53,32 @@ export class HybridChatSession {
   }
 
   async ask(selected: { id: string; rootPath: string }, question: string, current: () => boolean): Promise<void> {
-    const readiness = await this.server.hybridReadiness(selected.id);
+    const epoch = this.epoch;
+    const valid = () => epoch === this.epoch && current() && hybridEnabled();
+    if (!valid()) return;
+    const readiness = await this.server.hybridReadiness(selected.id).catch(error => { if (!valid()) return undefined; throw error; });
+    if (!valid() || !readiness) return;
     if (!readiness.enabled) throw new Error('Hybrid backend is disabled. Enable CODEMIND_ENABLE_HYBRID=1 or turn off codemind.hybridEnabled to use legacy chat.');
     if (!readiness.snapshot_ready) throw new Error('Hybrid mode needs a current indexed snapshot. Wait for synchronization or refresh the selected repository.');
     const settings = vscode.workspace.getConfiguration('codemind');
     const depth = settings.get<'quick' | 'standard' | 'deep'>('hybridDepth', 'standard');
-    const response = await this.server.hybridQuery({ repository_id: selected.id, question, depth, ...editorQueryContext(selected.rootPath, question) }, settings.get('hybridAllowGeneration', true));
-    if (!current() || !hybridEnabled()) return;
+    const previous = this.previous?.repoId === selected.id && this.previous.rootPath === selected.rootPath
+      && /\b(?:it|its|their|them|that|this)\b/i.test(question) ? this.previous.token : undefined;
+    let response;
+    try {
+      response = await this.server.hybridQuery({ repository_id: selected.id, question, depth, ...editorQueryContext(selected.rootPath, question) }, settings.get('hybridAllowGeneration', true), previous);
+    } catch (error) {
+      if (!valid()) return;
+      if (previous) this.previous = undefined; // Expired/restarted authority must not trap future retries.
+      throw error;
+    }
+    if (!valid()) return;
     if (response.schema_version !== 'hybrid-v1' || !response.presentation) throw new Error(response.error?.message || 'Hybrid response unavailable; legacy mode remains available.');
     if (response.presentation.repository_id !== selected.id || response.presentation.snapshot_id !== response.snapshot_id) throw new Error('Hybrid response repository/generation mismatch.');
     const key = randomBytes(12).toString('hex');
     const answer: Answer = { repoId: selected.id, rootPath: selected.rootPath, token: response.navigation_token || '', view: response.presentation,
       sources: new Map(), copies: new Map(), version: 0 };
+    this.previous = answer.token ? { repoId: answer.repoId, rootPath: answer.rootPath, token: answer.token } : undefined;
     this.answers.set(key, answer);
     if (this.answers.size > 8) {
       const old = this.answers.keys().next().value!; this.answers.delete(old);
@@ -102,6 +118,7 @@ export class HybridChatSession {
         await openVerifiedPreviewSource(selected.rootPath, reply, reference);
       }
     } catch (error) {
+      if (!this.answers.has(action.key!) || !hybridEnabled()) return true;
       for (const source of Object.values(answer.view.sources)) { source.state = 'unavailable'; source.reason = 'Hybrid source/display authorization failed; ask again.'; }
       if (this.answers.has(action.key!)) await this.show(action.key!, answer);
       await this.send({ type: 'error', text: error instanceof Error ? error.message : 'Hybrid action failed.' });

@@ -164,7 +164,7 @@ def compose_presentation(run, depth):
     return PresentationResult.model_validate(view.model_dump(), strict=True)
 
 
-async def run_hybrid(store, request: HybridQueryRequest, channels, answers, *, client=None, engine_factory=None):
+async def run_hybrid(store, request: HybridQueryRequest, channels, answers, *, client=None, engine_factory=None, conversation=None):
     request = HybridQueryRequest.model_validate(request.model_dump(), strict=True)
     start = perf_counter(); deadline = monotonic() + request.limits.deadline_ms / 1000
     timing = PipelineTiming()
@@ -173,7 +173,7 @@ async def run_hybrid(store, request: HybridQueryRequest, channels, answers, *, c
         with MultiEngineExecutor.pinned(store, channels, engine_factory=engine_factory) as executor:
             executor.context.validate_request(request.query)
             run.response.snapshot_id = executor.context.snapshot_id
-            before = perf_counter(); original = executor.understand(request.query)
+            before = perf_counter(); original = executor.understand(request.query, conversation)
             timing.understanding_ms = (perf_counter() - before) * 1000
             run.original = original
             before = perf_counter()

@@ -22,7 +22,7 @@ from query_system.semantic_engine import SEMANTIC_OPERATIONS
 
 
 _QUOTES = re.compile(r"(?<!\w)(`(?:\\.|[^`\\\n])*`|\"(?:\\.|[^\"\\\n])*\"|'(?:\\.|[^'\\\n])*')")
-_PRONOUN = re.compile(r"\b(?:this(?:\s+(?:function|method|class|module|file|code))?|that|it|its|their)\b", re.I)
+_PRONOUN = re.compile(r"\b(?:this(?:\s+(?:function|method|class|module|file|code))?|that|it|its|their|both|them)\b", re.I)
 _IGNORE = STOP_WORDS | frozenset("logic code workflow feature functionality defined declared implemented callers callees dependencies contract signature parameters arguments tests overview its their that cover loginflow resource request pipeline returns return type do call named end class symbol".split())
 _PATTERNS = (
     ("DIRECT_CALLEES", r"\b(?:callees\b|what (?:functions? )?does\b(?:(?!\band\b)[^?,;])*?\bcall\b|which functions (?:are called by|does)\b|calls made by\b)"),
@@ -70,24 +70,105 @@ def _path(name):
     return bool(re.search(r"\.(?:[cm]?[jt]sx?|py|md|json|ya?ml|toml|ini|c|cpp|h|java|go|rs|rb)$", name, re.I))
 
 
+_REQUEST_START = re.compile(r"^(?:(?:and\s+)?then\s+|please\s+|tell me\s+)?(?:compare|difference between|find|locate|explain|describe|who|what|where|why|which|contract|signature|impact|overview|dependencies|dependents|imports|callers|callees|tests?|(?:show|list)\s+(?:me\s+)?(?:the\s+)?(?:code|logic|callers|callees|tests?|dependencies|exports|definitions|its|their)|(?:its|their|both)\s+(?:callers|callees|dependencies|tests))\b", re.I)
+_UNKNOWN_REQUEST = re.compile(r"^(?:deploy|execute|delete|predict|prove|count|how many|benchmark|run command)\b", re.I)
+_TARGET_LIST = re.compile(r"\b(?:who calls|what calls|callers of|callees of|tests? (?:for|cover|covers|reference|references))\b", re.I)
+
+
+def _discovery_clause(base, masked):
+    """A functional description is not a request for an exact symbol named by prose."""
+    text = masked.strip()
+    if not re.match(r"(?:find|locate|show|where (?:is|are)|which part)\b", text, re.I):
+        return False
+    if re.match(r"(?:find|locate|show)\s+(?:the\s+)?(?:callers|callees|tests?|dependencies|dependents|imports|exports)\b", text, re.I):
+        return False
+    if re.search(r"\b(?:defined|declared|named)\b", text, re.I):
+        return False
+    if re.search(r"\b(?:code|logic|implementation|functionality|feature)\b|\b(?:function|method)\s+(?:responsible for|that)\b|^which part\b", text, re.I):
+        return True
+    if re.match(r"where (?:is|are)\b", text, re.I) and re.search(r"\bimplemented\b", text, re.I):
+        # Bare natural-language functionality may use "implemented"; explicit
+        # quoted/CamelCase/qualified/named targets still use canonical lookup.
+        return not (_QUOTES.search(base) or re.search(r"\b(?:function|method|class|symbol)\b|::|\w_\w|\w\.\w|[a-z][A-Z]", base))
+    return False
+
+
+def _separators(base, masked):
+    boundaries, left = [], 0
+    code_spans = [(item.start(), item.end()) for item in re.finditer(rf"{PATH}(?:::{IDENTIFIER})?(?![\w.])|{IDENTIFIER}", masked)
+                  if any(char in item.group() for char in "/.:")]
+    for match in re.finditer(r"[,;]|\b(?:and(?:\s+then)?|then)\b", masked, re.I):
+        if any(start <= match.start() < end for start, end in code_spans):
+            continue
+        clause, tail = masked[left:match.start()], masked[match.end():].lstrip()
+        new_request = _REQUEST_START.match(tail) or _UNKNOWN_REQUEST.match(tail)
+        comparison = re.search(r"\b(?:compare|difference between)\b", clause, re.I)
+        target_list = _TARGET_LIST.search(clause)
+        description = _discovery_clause(base[left:match.start()], clause)
+        if match.group().lower() == "and" and (comparison or target_list or description) and not new_request:
+            continue
+        if match.group() == "," and description and not new_request:
+            continue
+        boundaries.append(match)
+        left = match.end()
+    return boundaries
+
+
 def parse_question(question: str) -> NormalizedQuery:
     """Pure lexical front end; canonical IDs are only assigned by pinned lookup."""
     if not isinstance(question, str) or re.search(r"[\x00-\x08\x0b\x0c\x0e-\x1f]", question):
         raise ValueError("Question contains invalid control characters")
     legacy = plan_query(question)  # Preserve, reuse and expose the existing plan.
     base, masked = _masked(question)
-    separators = list(re.finditer(r"[,;]|\b(?:and(?:\s+then)?|then)\b", masked, re.I))
+    separators = _separators(base, masked)
     def clause_bounds(position):
         left = max([match.end() for match in separators if match.end() <= position] or [0])
         right = min([match.start() for match in separators if match.start() > position] or [len(question)])
         return left, right
+    spans = [(left, right) for left, right in dict.fromkeys(clause_bounds(pos) for pos in [0, *[match.end() for match in separators]])]
+    discovery = [(left, right) for left, right in spans if _discovery_clause(base[left:right], masked[left:right])]
     mentions = []
-    def add(name, kind, start, end, explicit=False):
+    def add(name, kind, start, end, explicit=False, file_path=None, role=False):
+        if any(left <= start < right for left, right in discovery) and (kind not in ("file", "module") or not _path(name)):
+            return
         if not explicit and (name.casefold() in _IGNORE or _PRONOUN.fullmatch(name)):
             return
-        if any(item[2].name == name and clause_bounds(item[0])[0] == clause_bounds(start)[0] for item in mentions):
+        if any(a <= start < b and entity.name == name for a, b, entity in mentions):
             return
-        mentions.append((start, end, QueryEntity(name=name, kind=kind)))
+        if not role and any(item[2].name == name and clause_bounds(item[0])[0] == clause_bounds(start)[0] for item in mentions):
+            return
+        mentions.append((start, end, QueryEntity(name=name, kind=kind, file_path=file_path)))
+    operand = rf"(?:(?:the\s+)?(?:function|method|class|symbol)\s+)?(?P<ref>{_QUOTES.pattern}|{PATH}::{IDENTIFIER}|{PATH}(?![\w.])|{IDENTIFIER})(?:\s+in\s+(?P<scope>{_QUOTES.pattern}|{PATH}(?![\w.])))?"
+    def extract_operands(header, limit, connectors):
+        _, right = clause_bounds(header.start())
+        offset = header.end() + re.match(r"\s*", base[header.end():right]).end()
+        for ordinal in range(limit):
+            match = re.match(operand, base[offset:right])
+            if not match:
+                break
+            raw = match.group("ref")
+            name = raw[1:-1] if raw[:1] in "`\"'" else raw
+            scope = match.group("scope")
+            if scope and scope[:1] in "`\"'": scope = scope[1:-1]
+            if "::" in name:
+                scope, name = name.rsplit("::", 1)
+            if re.fullmatch(IDENTIFIER, name) or _path(name):
+                start, end = offset + match.start("ref"), offset + match.end("ref")
+                add(name, "file" if _path(name) else "method" if "." in name else "function", start, end,
+                    explicit=raw[:1] in "`\"'", file_path=scope, role=True)
+                if scope:
+                    at = offset + (match.start("scope") if match.group("scope") else match.start("ref"))
+                    add(scope, "file", at, offset + match.end(), explicit=True, role=True)
+            offset += match.end()
+            connector = re.match(rf"\s+(?:{connectors})\s+", base[offset:right], re.I)
+            if ordinal < limit - 1 and connector:
+                offset += connector.end()
+            else:
+                break
+    for header in re.finditer(r"\b(?:compare|difference between)\b", masked, re.I):
+        extract_operands(header, 2, r"and|with|versus|vs\.?")
+    for header in _TARGET_LIST.finditer(masked):
+        extract_operands(header, 13, r"and")
     for match in _QUOTES.finditer(base):
         name = match.group()[1:-1]
         if _path(name):
@@ -101,6 +182,8 @@ def parse_question(question: str) -> NormalizedQuery:
         if not any(a <= match.start(2) < b for a, b, _ in mentions):
             add(match.group(2), match.group(1).lower(), match.start(2), match.end(2), explicit=True)
     for match in re.finditer(rf"\b({IDENTIFIER})\s+(function|method|class|module)\b", masked, re.I):
+        if _REQUEST_START.fullmatch(match.group(1)):
+            continue  # "Find function login" is not a function named "Find".
         add(match.group(1), match.group(2).lower(), match.start(1), match.end(1))
     target_prefix = (r"who calls|what calls|callers of|callees of|explain|describe|overview of|contract of|signature of|"
                      r"parameters of|return type of|change|modify|changing|find|locate|where is|what does|"
@@ -136,7 +219,7 @@ def parse_question(question: str) -> NormalizedQuery:
             position = match.start()
             left, right = clause_bounds(position)
             clause = masked[left:right]
-            if (intent, left) in handled:
+            if (intent, left) in handled or any(a <= position < b for a, b in discovery):
                 continue
             if (intent == "SYMBOL_LOCATION" and not any(left <= a < right for a, _, _ in mentions)
                     and not _PRONOUN.search(clause) and not re.search(r"\b(?:logic|code|feature|functionality)\b", clause, re.I)):
@@ -151,6 +234,8 @@ def parse_question(question: str) -> NormalizedQuery:
                 continue
             events.append((position, intent))
             handled.add((intent, left))
+    events.extend((left, "FEATURE_DISCOVERY") for left, _ in discovery)
+    events.extend((left, "UNRESOLVED") for left, right in spans if _UNKNOWN_REQUEST.match(masked[left:right].strip()) and not any(left <= position < right for position, _ in events))
     if not events:
         intent = "SYMBOL_LOCATION" if entities else "FEATURE_DISCOVERY"
         # Existing imports/dependents planning maps to structural requirements,
@@ -169,7 +254,7 @@ def parse_question(question: str) -> NormalizedQuery:
         truncated = True
         events = events[:12]
     intents = list(dict.fromkeys(event[1] for event in events))
-    if intents == ["FEATURE_DISCOVERY"] or (not entities and not _PRONOUN.search(masked) and set(intents) & {
+    if (intents == ["FEATURE_DISCOVERY"] and len(events) == 1) or (not entities and not _PRONOUN.search(masked) and set(intents) & {
             "WORKFLOW_EXPLANATION", "BEHAVIOR_INVESTIGATION", "FUNCTION_EXPLANATION"}):
         if len(mentions) >= 12:
             mentions = mentions[:11]
@@ -190,7 +275,11 @@ def parse_question(question: str) -> NormalizedQuery:
         mentions.sort(key=lambda item: (item[0], item[1]))
         entities = [item[2] for item in mentions]
     requirements, previous_indices = [], []
-    for order, (position, intent) in enumerate(events):
+    for position, intent in events:
+        if len(requirements) >= 12:
+            truncated = True
+            break
+        order = len(requirements)
         left, right = clause_bounds(position)
         indices = [i for i, (start, end, _) in enumerate(mentions) if left <= start < right]
         # File entities qualify symbols in a clause rather than replace them.
@@ -198,19 +287,35 @@ def parse_question(question: str) -> NormalizedQuery:
         files = [i for i in indices if entities[i].kind in ("file", "module")]
         if symbols and len(files) == 1:
             for index in symbols:
-                entities[index].file_path = entities[files[0]].name.removeprefix("./")
+                if entities[index].file_path is None:
+                    entities[index].file_path = entities[files[0]].name.removeprefix("./")
         if symbols and intent not in ("MODULE_OVERVIEW",):
             indices = symbols
-        if (intent == "CODE_COMPARISON" or intent == "DEPENDENCY_PATH" and re.search(r"\b(?:from|between|to)\b", masked, re.I)) and len(events) == 1:
+        if intent == "DEPENDENCY_PATH" and re.search(r"\b(?:from|between|to)\b", masked, re.I) and len(events) == 1:
             indices = list(range(len(entities)))
-        inherited = not indices and bool(previous_indices)
+        inherited = intent not in ("CODE_COMPARISON", "UNRESOLVED") and not indices and bool(previous_indices)
         if inherited:
             indices = list(previous_indices)
+        comparison_inputs = inherited and (requirements[-1].intent == "CODE_COMPARISON" or
+                                           requirements[-1].interpretation == "comparison_input_reference")
         requirements.append(IntentRequirement(intent=intent, order=order, entity_indices=indices,
-            depends_on=[order-1] if inherited else [], interpretation="direct_dependency_summary" if
+            depends_on=[order-1] if inherited and not comparison_inputs else [], interpretation="direct_dependency_summary" if
             intent == "DEPENDENCY_PATH" and len(indices) < 2 else None))
-        if inherited and len(indices) > 1 and not re.search(r"\btheir\b", masked[left:right], re.I):
+        if intent == "UNRESOLVED" and _UNKNOWN_REQUEST.match(masked[left:right].strip()):
+            requirements[-1].interpretation = "unrecognized_requirement"
+        if inherited and len(indices) > 1 and not re.search(r"\b(?:their|both|them)\b", masked[left:right], re.I):
             requirements[-1].interpretation = "ambiguous_local_reference"
+        elif comparison_inputs:
+            requirements[-1].interpretation = "comparison_input_reference"
+            if intent == "DEPENDENCY_PATH" and len(indices) > 1 and not re.search(r"\b(?:path|from|between|to)\b", masked[left:right], re.I):
+                # Two inputs requested for summaries are not a source/target path.
+                # Emit existing single-symbol summary contracts; router unchanged.
+                requirements[-1].entity_indices = [indices[0]]
+                for index in indices[1:]:
+                    if len(requirements) >= 12:
+                        truncated = True
+                        break
+                    requirements.append(requirements[-1].model_copy(update={"order": len(requirements), "entity_indices": [index]}))
         if indices:
             previous_indices = indices
     result = NormalizedQuery(intents=intents, primary_intent=intents[0], secondary_intents=intents[1:],
@@ -461,7 +566,8 @@ class _Understanding:
         return QueryEntity(kind="symbol", name="this/it", reason="No fresh, explicit context identifies the textual target")
 
     def resolve(self):
-        if self.result.intents == ["UNRESOLVED"] and self.conversation and not self.invalid_context:
+        if self.result.intents == ["UNRESOLVED"] and self.conversation and not self.invalid_context and not any(
+                item.interpretation == "unrecognized_requirement" for item in self.result.requirements):
             if len(self.conversation.previous_intents) == 1 and self.conversation.previous_intents[0] != "UNRESOLVED":
                 intent = self.conversation.previous_intents[0]
                 self.result.intents = [intent]
@@ -472,6 +578,11 @@ class _Understanding:
             if entity.kind in ("file", "module"):
                 self.file(entity)
         for entity in self.result.entities:
+            if entity.kind == "feature" and entity.file_path:
+                scoped = next((item for item in self.result.entities if item.kind in ("file", "module")
+                               and item.name.removeprefix("./") == entity.file_path and item.resolution == "resolved"), None)
+                if scoped:
+                    entity.file_path = scoped.file_path
             if entity.kind not in ("file", "module", "feature"):
                 if self.active_file and entity.file_path is None:
                     self.result.context_used.append("active_file")
@@ -481,7 +592,7 @@ class _Understanding:
                         and self.result.intents == ["WORKFLOW_EXPLANATION"]):
                     entity.kind, entity.name = "feature", self.result.normalized_question
                     entity.resolution, entity.reason = "unresolved_text", "Unknown workflow description retained for discovery, not a canonical symbol"
-        missing = [item for item in self.result.requirements if not item.entity_indices]
+        missing = [item for item in self.result.requirements if not item.entity_indices and item.interpretation != "unrecognized_requirement"]
         if missing:
             entity = self.contextual_entity()
             index = len(self.result.entities)
@@ -510,7 +621,9 @@ class _Understanding:
                 requirement.limitations.append("A singular local pronoun refers to multiple targets; choose a target")
             elif intent == "UNRESOLVED":
                 requirement.support = "unresolved"
-                requirement.limitations.append("The follow-up has no explicit intent and no unique fresh previous intent; clarification is required")
+                requirement.limitations.append("This explicit request has no declared query operation; clarify or rephrase it" if
+                    requirement.interpretation == "unrecognized_requirement" else
+                    "The follow-up has no explicit intent and no unique fresh previous intent; clarification is required")
             elif intent == "CODE_COMPARISON":
                 requirement.support = "unsupported"
                 requirement.limitations.append("No dedicated comparison operation is declared by the existing engines")

@@ -1,0 +1,1733 @@
+{
+  "evaluation": "Disposable real-source profiles; no user indexes modified; not a universal language/scale guarantee",
+  "pins": {
+    "next-typescript": [
+      "vercel/next.js",
+      "2251f43886faac9da45e585a77c07fa2b881f410"
+    ],
+    "express": [
+      "expressjs/express",
+      "9a3f7ff4120d7920a2d13809ff5ae78648c8a3d6"
+    ],
+    "flask": [
+      "pallets/flask",
+      "d086db856be187255b8ec61ef409357393020f32"
+    ]
+  },
+  "repeats": 5,
+  "profiles": [
+    {
+      "corpus": "next-typescript",
+      "source": "https://github.com/vercel/next.js/tree/2251f43886faac9da45e585a77c07fa2b881f410",
+      "commit": "2251f43886faac9da45e585a77c07fa2b881f410",
+      "copied_files": 14,
+      "copied_bytes": 9083,
+      "original_copy_digest": "a98ec39974967d45ac425615c576aef6060d308180b97f629a4b0840c80a28ff",
+      "repository_id": "c178c2cdbc0a8822923f13a3",
+      "snapshot_id": "3e9aaeb7377947359d48ff969701b477",
+      "indexing_ms": 1461.1290419998113,
+      "chunks_embedded": 65,
+      "indexed_inventory_files": 14,
+      "integrity": {
+        "graph": {
+          "nodes": 58,
+          "relationships": 146,
+          "resolved": 133,
+          "inferred": 13,
+          "unresolved": 10
+        },
+        "typescript_version": "5.9.3",
+        "semantic_diagnostics": [],
+        "parsing": {},
+        "provenance_checked": 178,
+        "provenance_valid": 178,
+        "foreign_key_errors": [],
+        "dangling_references": [],
+        "languages": [
+          [
+            "json",
+            2
+          ],
+          [
+            "typescript",
+            11
+          ]
+        ],
+        "ambiguous_symbol_names": [
+          [
+            "Props",
+            5
+          ],
+          [
+            "<anonymous:1>",
+            3
+          ],
+          [
+            "getStaticProps",
+            2
+          ]
+        ],
+        "chunk_provenance_checked": 65,
+        "chunk_provenance_valid": 65,
+        "sample_symbols": [
+          [
+            "Props",
+            "components/Layout.tsx"
+          ],
+          [
+            "Layout",
+            "components/Layout.tsx"
+          ],
+          [
+            "Props",
+            "components/List.tsx"
+          ],
+          [
+            "List",
+            "components/List.tsx"
+          ],
+          [
+            "ListDetailProps",
+            "components/ListDetail.tsx"
+          ],
+          [
+            "ListDetail",
+            "components/ListDetail.tsx"
+          ],
+          [
+            "Props",
+            "components/ListItem.tsx"
+          ],
+          [
+            "ListItem",
+            "components/ListItem.tsx"
+          ],
+          [
+            "User",
+            "interfaces/index.ts"
+          ],
+          [
+            "AboutPage",
+            "pages/about.tsx"
+          ],
+          [
+            "handler",
+            "pages/api/users/index.ts"
+          ],
+          [
+            "IndexPage",
+            "pages/index.tsx"
+          ],
+          [
+            "Props",
+            "pages/users/[id].tsx"
+          ],
+          [
+            "StaticPropsDetail",
+            "pages/users/[id].tsx"
+          ],
+          [
+            "getStaticPaths",
+            "pages/users/[id].tsx"
+          ],
+          [
+            "getStaticProps",
+            "pages/users/[id].tsx"
+          ],
+          [
+            "Props",
+            "pages/users/index.tsx"
+          ],
+          [
+            "WithStaticProps",
+            "pages/users/index.tsx"
+          ],
+          [
+            "getStaticProps",
+            "pages/users/index.tsx"
+          ]
+        ]
+      },
+      "queries": {
+        "cases": [
+          {
+            "case": "module",
+            "question": "Overview of pages/index.tsx",
+            "status": "partial",
+            "intents": [
+              "MODULE_OVERVIEW"
+            ],
+            "targets": [
+              [
+                "pages/index.tsx"
+              ]
+            ],
+            "operations": [
+              "rules.module_overview"
+            ],
+            "generations": 0,
+            "latency_ms": {
+              "median_ms": 211.032,
+              "p95_ms": 240.625
+            },
+            "samples": 5,
+            "response_bytes": 15808,
+            "source_paths": [
+              "pages/index.tsx"
+            ],
+            "requirement_states": [
+              "partially_satisfied"
+            ],
+            "error": null
+          },
+          {
+            "case": "semantic",
+            "question": "Find code that renders a list of sample users with navigation links",
+            "status": "success",
+            "intents": [
+              "FEATURE_DISCOVERY"
+            ],
+            "targets": [
+              [
+                "Find code that renders a list of sample users with navigation links"
+              ]
+            ],
+            "operations": [
+              "semantic.hybrid_search"
+            ],
+            "generations": 0,
+            "latency_ms": {
+              "median_ms": 186.333,
+              "p95_ms": 207.206
+            },
+            "samples": 5,
+            "response_bytes": 11351,
+            "source_paths": [
+              "pages/api/users/index.ts",
+              "pages/users/[id].tsx",
+              "pages/users/index.tsx",
+              "utils/sample-data.ts"
+            ],
+            "requirement_states": [
+              "satisfied"
+            ],
+            "error": null
+          }
+        ],
+        "proofs_checked": 50,
+        "proofs_valid": 50
+      },
+      "incremental": {
+        "unchanged_generation_reused": true,
+        "unchanged_chunks_embedded": 0,
+        "edit": {
+          "file": "components/Layout.tsx",
+          "stale_old_generation_rejected": true,
+          "ms": 259.8959169990849,
+          "chunks_embedded": 1,
+          "chunks_reused": 4,
+          "generation_changed": true
+        },
+        "rename": {
+          "from": "README.md",
+          "to": "README.qualification.md",
+          "old_chunks_remaining": 0,
+          "chunks_embedded": 5
+        },
+        "delete": {
+          "path": "README.qualification.md",
+          "chunks_remaining": 0,
+          "chunks_embedded": 0
+        }
+      },
+      "post_incremental_integrity": {
+        "graph": {
+          "nodes": 58,
+          "relationships": 146,
+          "resolved": 133,
+          "inferred": 13,
+          "unresolved": 10
+        },
+        "typescript_version": "5.9.3",
+        "semantic_diagnostics": [],
+        "parsing": {},
+        "provenance_checked": 178,
+        "provenance_valid": 178,
+        "foreign_key_errors": [],
+        "dangling_references": [],
+        "languages": [
+          [
+            "json",
+            2
+          ],
+          [
+            "typescript",
+            11
+          ]
+        ],
+        "ambiguous_symbol_names": [
+          [
+            "Props",
+            5
+          ],
+          [
+            "<anonymous:1>",
+            3
+          ],
+          [
+            "getStaticProps",
+            2
+          ]
+        ],
+        "chunk_provenance_checked": 60,
+        "chunk_provenance_valid": 60,
+        "sample_symbols": [
+          [
+            "Props",
+            "components/Layout.tsx"
+          ],
+          [
+            "Layout",
+            "components/Layout.tsx"
+          ],
+          [
+            "Props",
+            "components/List.tsx"
+          ],
+          [
+            "List",
+            "components/List.tsx"
+          ],
+          [
+            "ListDetailProps",
+            "components/ListDetail.tsx"
+          ],
+          [
+            "ListDetail",
+            "components/ListDetail.tsx"
+          ],
+          [
+            "Props",
+            "components/ListItem.tsx"
+          ],
+          [
+            "ListItem",
+            "components/ListItem.tsx"
+          ],
+          [
+            "User",
+            "interfaces/index.ts"
+          ],
+          [
+            "AboutPage",
+            "pages/about.tsx"
+          ],
+          [
+            "handler",
+            "pages/api/users/index.ts"
+          ],
+          [
+            "IndexPage",
+            "pages/index.tsx"
+          ],
+          [
+            "Props",
+            "pages/users/[id].tsx"
+          ],
+          [
+            "StaticPropsDetail",
+            "pages/users/[id].tsx"
+          ],
+          [
+            "getStaticPaths",
+            "pages/users/[id].tsx"
+          ],
+          [
+            "getStaticProps",
+            "pages/users/[id].tsx"
+          ],
+          [
+            "Props",
+            "pages/users/index.tsx"
+          ],
+          [
+            "WithStaticProps",
+            "pages/users/index.tsx"
+          ],
+          [
+            "getStaticProps",
+            "pages/users/index.tsx"
+          ]
+        ]
+      },
+      "state": "completed",
+      "python_peak_rss_bytes": 520536064
+    },
+    {
+      "corpus": "express",
+      "source": "https://github.com/expressjs/express/tree/9a3f7ff4120d7920a2d13809ff5ae78648c8a3d6",
+      "commit": "9a3f7ff4120d7920a2d13809ff5ae78648c8a3d6",
+      "copied_files": 106,
+      "copied_bytes": 630174,
+      "original_copy_digest": "45eeda84412b64602faff4171a1cab6477716f92231156b35296e08ec6c60602",
+      "repository_id": "757dffe803c1bb4e9790d5ee",
+      "snapshot_id": "90186f29c0054e569305567e335c47ab",
+      "indexing_ms": 289665.03604099853,
+      "chunks_embedded": 3958,
+      "indexed_inventory_files": 106,
+      "integrity": {
+        "graph": {
+          "nodes": 3150,
+          "relationships": 3984,
+          "resolved": 3787,
+          "inferred": 197,
+          "unresolved": 7402
+        },
+        "typescript_version": "5.9.3",
+        "semantic_diagnostics": [],
+        "parsing": {},
+        "provenance_checked": 14293,
+        "provenance_valid": 14293,
+        "foreign_key_errors": [],
+        "dangling_references": [],
+        "languages": [
+          [
+            "javascript",
+            98
+          ],
+          [
+            "json",
+            1
+          ]
+        ],
+        "ambiguous_symbol_names": [
+          [
+            "<anonymous:1>",
+            1313
+          ],
+          [
+            "<anonymous:2>",
+            463
+          ],
+          [
+            "<anonymous:3>",
+            286
+          ],
+          [
+            "<anonymous:4>",
+            181
+          ],
+          [
+            "<anonymous:5>",
+            115
+          ],
+          [
+            "<anonymous:6>",
+            76
+          ],
+          [
+            "<anonymous:7>",
+            55
+          ],
+          [
+            "<anonymous:8>",
+            35
+          ]
+        ],
+        "chunk_provenance_checked": 3958,
+        "chunk_provenance_valid": 3958,
+        "sample_symbols": [
+          [
+            "init",
+            "lib/application.js"
+          ],
+          [
+            "init.getrouter",
+            "lib/application.js"
+          ],
+          [
+            "defaultConfiguration",
+            "lib/application.js"
+          ],
+          [
+            "defaultConfiguration.onmount",
+            "lib/application.js"
+          ],
+          [
+            "handle",
+            "lib/application.js"
+          ],
+          [
+            "use",
+            "lib/application.js"
+          ],
+          [
+            "use.<anonymous:1>.mounted_app",
+            "lib/application.js"
+          ],
+          [
+            "route",
+            "lib/application.js"
+          ],
+          [
+            "engine",
+            "lib/application.js"
+          ],
+          [
+            "param",
+            "lib/application.js"
+          ],
+          [
+            "set",
+            "lib/application.js"
+          ],
+          [
+            "path",
+            "lib/application.js"
+          ],
+          [
+            "enabled",
+            "lib/application.js"
+          ],
+          [
+            "disabled",
+            "lib/application.js"
+          ],
+          [
+            "enable",
+            "lib/application.js"
+          ],
+          [
+            "disable",
+            "lib/application.js"
+          ],
+          [
+            "all",
+            "lib/application.js"
+          ],
+          [
+            "render",
+            "lib/application.js"
+          ],
+          [
+            "listen",
+            "lib/application.js"
+          ],
+          [
+            "logerror",
+            "lib/application.js"
+          ],
+          [
+            "tryRender",
+            "lib/application.js"
+          ],
+          [
+            "createApplication",
+            "lib/express.js"
+          ],
+          [
+            "createApplication.app",
+            "lib/express.js"
+          ],
+          [
+            "header",
+            "lib/request.js"
+          ],
+          [
+            "range",
+            "lib/request.js"
+          ],
+          [
+            "query",
+            "lib/request.js"
+          ],
+          [
+            "is",
+            "lib/request.js"
+          ],
+          [
+            "protocol",
+            "lib/request.js"
+          ],
+          [
+            "secure",
+            "lib/request.js"
+          ],
+          [
+            "ip",
+            "lib/request.js"
+          ]
+        ]
+      },
+      "queries": {
+        "cases": [
+          {
+            "case": "definition",
+            "question": "Where is createApplication in lib/express.js defined?",
+            "status": "success",
+            "intents": [
+              "SYMBOL_LOCATION"
+            ],
+            "targets": [
+              [
+                "createApplication"
+              ]
+            ],
+            "operations": [
+              "graph.find_definition"
+            ],
+            "generations": 0,
+            "latency_ms": {
+              "median_ms": 366.195,
+              "p95_ms": 471.839
+            },
+            "samples": 5,
+            "response_bytes": 5045,
+            "source_paths": [
+              "lib/express.js"
+            ],
+            "requirement_states": [
+              "satisfied"
+            ],
+            "error": null
+          },
+          {
+            "case": "module",
+            "question": "Overview of lib/application.js",
+            "status": "partial",
+            "intents": [
+              "MODULE_OVERVIEW"
+            ],
+            "targets": [
+              [
+                "lib/application.js"
+              ]
+            ],
+            "operations": [
+              "rules.module_overview"
+            ],
+            "generations": 0,
+            "latency_ms": {
+              "median_ms": 482.937,
+              "p95_ms": 604.605
+            },
+            "samples": 5,
+            "response_bytes": 21679,
+            "source_paths": [
+              "lib/application.js"
+            ],
+            "requirement_states": [
+              "partially_satisfied"
+            ],
+            "error": null
+          },
+          {
+            "case": "semantic",
+            "question": "Find code that sets up the application and its request router",
+            "status": "success",
+            "intents": [
+              "FEATURE_DISCOVERY"
+            ],
+            "targets": [
+              [
+                "Find code that sets up the application and its request router"
+              ]
+            ],
+            "operations": [
+              "semantic.hybrid_search"
+            ],
+            "generations": 0,
+            "latency_ms": {
+              "median_ms": 558.154,
+              "p95_ms": 601.616
+            },
+            "samples": 5,
+            "response_bytes": 11322,
+            "source_paths": [
+              "lib/application.js",
+              "lib/response.js",
+              "test/acceptance/multi-router.js",
+              "test/acceptance/params.js",
+              "test/app.router.js"
+            ],
+            "requirement_states": [
+              "satisfied"
+            ],
+            "error": null
+          }
+        ],
+        "proofs_checked": 155,
+        "proofs_valid": 155
+      },
+      "incremental": {
+        "unchanged_generation_reused": true,
+        "unchanged_chunks_embedded": 0,
+        "edit": {
+          "file": "index.js",
+          "stale_old_generation_rejected": true,
+          "ms": 27753.758958991966,
+          "chunks_embedded": 1,
+          "chunks_reused": 0,
+          "generation_changed": true
+        },
+        "rename": {
+          "from": "History.md",
+          "to": "History.qualification.md",
+          "old_chunks_remaining": 0,
+          "chunks_embedded": 122
+        },
+        "delete": {
+          "path": "History.qualification.md",
+          "chunks_remaining": 0,
+          "chunks_embedded": 0
+        }
+      },
+      "post_incremental_integrity": {
+        "graph": {
+          "nodes": 3150,
+          "relationships": 3984,
+          "resolved": 3787,
+          "inferred": 197,
+          "unresolved": 7402
+        },
+        "typescript_version": "5.9.3",
+        "semantic_diagnostics": [],
+        "parsing": {},
+        "provenance_checked": 14293,
+        "provenance_valid": 14293,
+        "foreign_key_errors": [],
+        "dangling_references": [],
+        "languages": [
+          [
+            "javascript",
+            98
+          ],
+          [
+            "json",
+            1
+          ]
+        ],
+        "ambiguous_symbol_names": [
+          [
+            "<anonymous:1>",
+            1313
+          ],
+          [
+            "<anonymous:2>",
+            463
+          ],
+          [
+            "<anonymous:3>",
+            286
+          ],
+          [
+            "<anonymous:4>",
+            181
+          ],
+          [
+            "<anonymous:5>",
+            115
+          ],
+          [
+            "<anonymous:6>",
+            76
+          ],
+          [
+            "<anonymous:7>",
+            55
+          ],
+          [
+            "<anonymous:8>",
+            35
+          ]
+        ],
+        "chunk_provenance_checked": 3836,
+        "chunk_provenance_valid": 3836,
+        "sample_symbols": [
+          [
+            "init",
+            "lib/application.js"
+          ],
+          [
+            "init.getrouter",
+            "lib/application.js"
+          ],
+          [
+            "defaultConfiguration",
+            "lib/application.js"
+          ],
+          [
+            "defaultConfiguration.onmount",
+            "lib/application.js"
+          ],
+          [
+            "handle",
+            "lib/application.js"
+          ],
+          [
+            "use",
+            "lib/application.js"
+          ],
+          [
+            "use.<anonymous:1>.mounted_app",
+            "lib/application.js"
+          ],
+          [
+            "route",
+            "lib/application.js"
+          ],
+          [
+            "engine",
+            "lib/application.js"
+          ],
+          [
+            "param",
+            "lib/application.js"
+          ],
+          [
+            "set",
+            "lib/application.js"
+          ],
+          [
+            "path",
+            "lib/application.js"
+          ],
+          [
+            "enabled",
+            "lib/application.js"
+          ],
+          [
+            "disabled",
+            "lib/application.js"
+          ],
+          [
+            "enable",
+            "lib/application.js"
+          ],
+          [
+            "disable",
+            "lib/application.js"
+          ],
+          [
+            "all",
+            "lib/application.js"
+          ],
+          [
+            "render",
+            "lib/application.js"
+          ],
+          [
+            "listen",
+            "lib/application.js"
+          ],
+          [
+            "logerror",
+            "lib/application.js"
+          ],
+          [
+            "tryRender",
+            "lib/application.js"
+          ],
+          [
+            "createApplication",
+            "lib/express.js"
+          ],
+          [
+            "createApplication.app",
+            "lib/express.js"
+          ],
+          [
+            "header",
+            "lib/request.js"
+          ],
+          [
+            "range",
+            "lib/request.js"
+          ],
+          [
+            "query",
+            "lib/request.js"
+          ],
+          [
+            "is",
+            "lib/request.js"
+          ],
+          [
+            "protocol",
+            "lib/request.js"
+          ],
+          [
+            "secure",
+            "lib/request.js"
+          ],
+          [
+            "ip",
+            "lib/request.js"
+          ]
+        ]
+      },
+      "state": "completed",
+      "python_peak_rss_bytes": 3553951744
+    },
+    {
+      "corpus": "flask",
+      "source": "https://github.com/pallets/flask/tree/d086db856be187255b8ec61ef409357393020f32",
+      "commit": "d086db856be187255b8ec61ef409357393020f32",
+      "copied_files": 81,
+      "copied_bytes": 574978,
+      "original_copy_digest": "8d0150ff8f557ac96f28ce3142cb8b82e0bce0aa3b2348c6ca9cd04c4859adcd",
+      "repository_id": "0ae3c4f658eb36d6bcd0c162",
+      "snapshot_id": "8acb1e6116d9400987621c7ccc7c1576",
+      "indexing_ms": 141267.48795900494,
+      "chunks_embedded": 1880,
+      "indexed_inventory_files": 81,
+      "integrity": {
+        "graph": {
+          "nodes": 1,
+          "relationships": 0,
+          "resolved": 0,
+          "inferred": 0,
+          "unresolved": 0
+        },
+        "typescript_version": "5.9.3",
+        "semantic_diagnostics": [],
+        "parsing": {},
+        "provenance_checked": 0,
+        "provenance_valid": 0,
+        "foreign_key_errors": [],
+        "dangling_references": [],
+        "languages": [],
+        "ambiguous_symbol_names": [],
+        "chunk_provenance_checked": 1880,
+        "chunk_provenance_valid": 1880,
+        "sample_symbols": []
+      },
+      "queries": {
+        "cases": [
+          {
+            "case": "unsupported_python_graph",
+            "question": "Where is Flask in src/flask/app.py defined?",
+            "status": "unsupported",
+            "intents": [
+              "SYMBOL_LOCATION"
+            ],
+            "targets": [
+              [
+                "Flask"
+              ]
+            ],
+            "operations": [],
+            "generations": 0,
+            "latency_ms": {
+              "median_ms": 131.384,
+              "p95_ms": 149.493
+            },
+            "samples": 5,
+            "response_bytes": 2471,
+            "source_paths": [],
+            "requirement_states": [
+              "unsupported"
+            ],
+            "error": null
+          },
+          {
+            "case": "semantic",
+            "question": "Find code that dispatches HTTP requests to registered view functions",
+            "status": "success",
+            "intents": [
+              "FEATURE_DISCOVERY"
+            ],
+            "targets": [
+              [
+                "Find code that dispatches HTTP requests to registered view functions"
+              ]
+            ],
+            "operations": [
+              "semantic.hybrid_search"
+            ],
+            "generations": 0,
+            "latency_ms": {
+              "median_ms": 324.207,
+              "p95_ms": 333.486
+            },
+            "samples": 5,
+            "response_bytes": 11271,
+            "source_paths": [
+              "src/flask/app.py",
+              "src/flask/sansio/scaffold.py",
+              "src/flask/views.py"
+            ],
+            "requirement_states": [
+              "satisfied"
+            ],
+            "error": null
+          }
+        ],
+        "proofs_checked": 25,
+        "proofs_valid": 25
+      },
+      "incremental": {
+        "unchanged_generation_reused": true,
+        "unchanged_chunks_embedded": 0,
+        "edit": {
+          "file": "src/flask/__init__.py",
+          "stale_old_generation_rejected": true,
+          "ms": 1410.905000011553,
+          "chunks_embedded": 1,
+          "chunks_reused": 1,
+          "generation_changed": true
+        },
+        "rename": {
+          "from": "README.md",
+          "to": "README.qualification.md",
+          "old_chunks_remaining": 0,
+          "chunks_embedded": 6
+        },
+        "delete": {
+          "path": "README.qualification.md",
+          "chunks_remaining": 0,
+          "chunks_embedded": 0
+        }
+      },
+      "post_incremental_integrity": {
+        "graph": {
+          "nodes": 1,
+          "relationships": 0,
+          "resolved": 0,
+          "inferred": 0,
+          "unresolved": 0
+        },
+        "typescript_version": "5.9.3",
+        "semantic_diagnostics": [],
+        "parsing": {},
+        "provenance_checked": 0,
+        "provenance_valid": 0,
+        "foreign_key_errors": [],
+        "dangling_references": [],
+        "languages": [],
+        "ambiguous_symbol_names": [],
+        "chunk_provenance_checked": 1874,
+        "chunk_provenance_valid": 1874,
+        "sample_symbols": []
+      },
+      "state": "completed",
+      "python_peak_rss_bytes": 3553951744
+    },
+    {
+      "corpus": "codemind",
+      "source": "Inert copy of current CodeMind checkout",
+      "copied_files": 168,
+      "copied_bytes": 1837709,
+      "original_copy_digest": "eb5efc6a42d706cf51c563505656bf127a9618de4e0d38f32150cc6f7fe0317e",
+      "repository_id": "4c57f29f77191a0eeedd5815",
+      "snapshot_id": "fb12d7997bdd4e6ab0429d71017f1814",
+      "indexing_ms": 301153.3436250029,
+      "chunks_embedded": 3580,
+      "indexed_inventory_files": 168,
+      "integrity": {
+        "graph": {
+          "nodes": 870,
+          "relationships": 1944,
+          "resolved": 1863,
+          "inferred": 81,
+          "unresolved": 2323
+        },
+        "typescript_version": "5.9.3",
+        "semantic_diagnostics": [],
+        "parsing": {},
+        "provenance_checked": 5015,
+        "provenance_valid": 5015,
+        "foreign_key_errors": [],
+        "dangling_references": [],
+        "languages": [
+          [
+            "javascript",
+            28
+          ],
+          [
+            "json",
+            4
+          ],
+          [
+            "typescript",
+            16
+          ]
+        ],
+        "ambiguous_symbol_names": [
+          [
+            "<anonymous:1>",
+            155
+          ],
+          [
+            "<anonymous:2>",
+            68
+          ],
+          [
+            "<anonymous:3>",
+            44
+          ],
+          [
+            "<anonymous:4>",
+            29
+          ],
+          [
+            "<anonymous:5>",
+            21
+          ],
+          [
+            "<anonymous:6>",
+            14
+          ],
+          [
+            "<anonymous:7>",
+            13
+          ],
+          [
+            "<anonymous:8>",
+            9
+          ]
+        ],
+        "chunk_provenance_checked": 3580,
+        "chunk_provenance_valid": 3580,
+        "sample_symbols": [
+          [
+            "hash",
+            "extension/server/chunker.js"
+          ],
+          [
+            "boundedText",
+            "extension/server/chunker.js"
+          ],
+          [
+            "terms",
+            "extension/server/chunker.js"
+          ],
+          [
+            "readSource",
+            "extension/server/chunker.js"
+          ],
+          [
+            "chunksForFile",
+            "extension/server/chunker.js"
+          ],
+          [
+            "commitChunks",
+            "extension/server/chunker.js"
+          ],
+          [
+            "stableId",
+            "extension/server/codeParser.js"
+          ],
+          [
+            "languageFor",
+            "extension/server/codeParser.js"
+          ],
+          [
+            "field",
+            "extension/server/codeParser.js"
+          ],
+          [
+            "text",
+            "extension/server/codeParser.js"
+          ],
+          [
+            "cleanString",
+            "extension/server/codeParser.js"
+          ],
+          [
+            "hasJsx",
+            "extension/server/codeParser.js"
+          ],
+          [
+            "nameOf",
+            "extension/server/codeParser.js"
+          ],
+          [
+            "isTestFile",
+            "extension/server/codeParser.js"
+          ],
+          [
+            "parseImports",
+            "extension/server/codeParser.js"
+          ],
+          [
+            "symbolKind",
+            "extension/server/codeParser.js"
+          ],
+          [
+            "signature",
+            "extension/server/codeParser.js"
+          ],
+          [
+            "docstring",
+            "extension/server/codeParser.js"
+          ],
+          [
+            "parseCode",
+            "extension/server/codeParser.js"
+          ],
+          [
+            "parseCode.addSymbol",
+            "extension/server/codeParser.js"
+          ],
+          [
+            "parseCode.addSymbol.identifiers",
+            "extension/server/codeParser.js"
+          ],
+          [
+            "parseCode.addSymbol.<anonymous:4>.tokens",
+            "extension/server/codeParser.js"
+          ],
+          [
+            "parseCode.visit",
+            "extension/server/codeParser.js"
+          ],
+          [
+            "planDocs",
+            "extension/server/docPlanner.js"
+          ],
+          [
+            "planDocs.add",
+            "extension/server/docPlanner.js"
+          ],
+          [
+            "planDocs.label",
+            "extension/server/docPlanner.js"
+          ],
+          [
+            "planDocs.related",
+            "extension/server/docPlanner.js"
+          ],
+          [
+            "sectionObject",
+            "extension/server/docStore.js"
+          ],
+          [
+            "status",
+            "extension/server/docStore.js"
+          ],
+          [
+            "overview",
+            "extension/server/docStore.js"
+          ]
+        ]
+      },
+      "queries": {
+        "cases": [
+          {
+            "case": "definition",
+            "question": "Where is verifiedSourcePath defined?",
+            "status": "success",
+            "intents": [
+              "SYMBOL_LOCATION"
+            ],
+            "targets": [
+              [
+                "verifiedSourcePath"
+              ]
+            ],
+            "operations": [
+              "graph.find_definition"
+            ],
+            "generations": 0,
+            "latency_ms": {
+              "median_ms": 356.714,
+              "p95_ms": 386.75
+            },
+            "samples": 5,
+            "response_bytes": 5150,
+            "source_paths": [
+              "extension/src/sourceNavigation.ts"
+            ],
+            "requirement_states": [
+              "satisfied"
+            ],
+            "error": null
+          },
+          {
+            "case": "callers",
+            "question": "Who calls verifiedSourcePath?",
+            "status": "success",
+            "intents": [
+              "DIRECT_CALLERS"
+            ],
+            "targets": [
+              [
+                "verifiedSourcePath"
+              ]
+            ],
+            "operations": [
+              "graph.find_callers"
+            ],
+            "generations": 0,
+            "latency_ms": {
+              "median_ms": 322.516,
+              "p95_ms": 355.292
+            },
+            "samples": 5,
+            "response_bytes": 6564,
+            "source_paths": [
+              "extension/src/extension.ts",
+              "extension/src/responsePreview.ts",
+              "extension/src/sourceNavigation.ts"
+            ],
+            "requirement_states": [
+              "satisfied"
+            ],
+            "error": null
+          },
+          {
+            "case": "target_list",
+            "question": "Who calls verifiedSourcePath and verifiedPreviewSource?",
+            "status": "success",
+            "intents": [
+              "DIRECT_CALLERS"
+            ],
+            "targets": [
+              [
+                "verifiedSourcePath",
+                "verifiedPreviewSource"
+              ]
+            ],
+            "operations": [
+              "graph.find_callers",
+              "graph.find_callers"
+            ],
+            "generations": 0,
+            "latency_ms": {
+              "median_ms": 382.718,
+              "p95_ms": 403.874
+            },
+            "samples": 5,
+            "response_bytes": 10368,
+            "source_paths": [
+              "extension/src/extension.ts",
+              "extension/src/responsePreview.ts",
+              "extension/src/sourceNavigation.ts"
+            ],
+            "requirement_states": [
+              "satisfied"
+            ],
+            "error": null
+          },
+          {
+            "case": "compound",
+            "question": "Where is verifiedSourcePath defined and contract of verifiedPreviewSource",
+            "status": "partial",
+            "intents": [
+              "SYMBOL_LOCATION",
+              "FUNCTION_CONTRACT"
+            ],
+            "targets": [
+              [
+                "verifiedSourcePath"
+              ],
+              [
+                "verifiedPreviewSource"
+              ]
+            ],
+            "operations": [
+              "graph.find_definition",
+              "rules.function_contract"
+            ],
+            "generations": 0,
+            "latency_ms": {
+              "median_ms": 402.24,
+              "p95_ms": 414.536
+            },
+            "samples": 5,
+            "response_bytes": 10818,
+            "source_paths": [
+              "extension/src/responsePreview.ts",
+              "extension/src/sourceNavigation.ts"
+            ],
+            "requirement_states": [
+              "satisfied",
+              "partially_satisfied"
+            ],
+            "error": null
+          },
+          {
+            "case": "comparison_tests",
+            "question": "Compare verifiedSourcePath and verifiedPreviewSource and find tests for both",
+            "status": "partial",
+            "intents": [
+              "CODE_COMPARISON",
+              "TEST_DISCOVERY"
+            ],
+            "targets": [
+              [
+                "verifiedSourcePath",
+                "verifiedPreviewSource"
+              ],
+              [
+                "verifiedSourcePath",
+                "verifiedPreviewSource"
+              ]
+            ],
+            "operations": [
+              "rules.reference_test_analysis",
+              "rules.reference_test_analysis",
+              "graph.find_definition",
+              "graph.find_definition",
+              "rules.function_contract",
+              "graph.find_callees",
+              "rules.function_contract",
+              "graph.find_callees"
+            ],
+            "generations": 0,
+            "latency_ms": {
+              "median_ms": 968.496,
+              "p95_ms": 1196.79
+            },
+            "samples": 5,
+            "response_bytes": 20257,
+            "source_paths": [
+              "extension/src/responsePreview.ts",
+              "extension/src/sourceNavigation.ts"
+            ],
+            "requirement_states": [
+              "deferred",
+              "partially_satisfied"
+            ],
+            "error": null
+          },
+          {
+            "case": "ambiguous",
+            "question": "Where is run defined?",
+            "status": "ambiguous",
+            "intents": [
+              "SYMBOL_LOCATION"
+            ],
+            "targets": [
+              [
+                "run"
+              ]
+            ],
+            "operations": [],
+            "generations": 0,
+            "latency_ms": {
+              "median_ms": 278.607,
+              "p95_ms": 304.994
+            },
+            "samples": 5,
+            "response_bytes": 16019,
+            "source_paths": [
+              "extension/server/gitService.js",
+              "extension/server/registry.js",
+              "extension/test/hybridSuite.js",
+              "extension/test/presentationSuite.js",
+              "extension/test/suite.js",
+              "knowledge_base/fixtures/phase8/typescript/src/ambiguous.ts"
+            ],
+            "requirement_states": [
+              "ambiguous"
+            ],
+            "error": null
+          },
+          {
+            "case": "missing",
+            "question": "Where is stabilizationNonexistent defined?",
+            "status": "not_found",
+            "intents": [
+              "SYMBOL_LOCATION"
+            ],
+            "targets": [
+              [
+                "stabilizationNonexistent"
+              ]
+            ],
+            "operations": [],
+            "generations": 0,
+            "latency_ms": {
+              "median_ms": 242.858,
+              "p95_ms": 245.828
+            },
+            "samples": 5,
+            "response_bytes": 2576,
+            "source_paths": [],
+            "requirement_states": [
+              "not_found"
+            ],
+            "error": null
+          },
+          {
+            "case": "unsupported",
+            "question": "How many files are in this repository?",
+            "status": "unsupported",
+            "intents": [
+              "UNRESOLVED"
+            ],
+            "targets": [
+              []
+            ],
+            "operations": [],
+            "generations": 0,
+            "latency_ms": {
+              "median_ms": 74.835,
+              "p95_ms": 77.319
+            },
+            "samples": 5,
+            "response_bytes": 561,
+            "source_paths": [],
+            "requirement_states": [],
+            "error": {
+              "code": "invalid_operation",
+              "message": "Repository statistics are not an implemented hybrid capability."
+            }
+          },
+          {
+            "case": "semantic",
+            "question": "Find code that verifies source file hashes before opening citations",
+            "status": "success",
+            "intents": [
+              "FEATURE_DISCOVERY"
+            ],
+            "targets": [
+              [
+                "Find code that verifies source file hashes before opening citations"
+              ]
+            ],
+            "operations": [
+              "semantic.hybrid_search"
+            ],
+            "generations": 0,
+            "latency_ms": {
+              "median_ms": 535.966,
+              "p95_ms": 675.344
+            },
+            "samples": 5,
+            "response_bytes": 11391,
+            "source_paths": [
+              "ai-engine/lexical_search.py",
+              "extension/src/responsePreview.ts",
+              "query_system/benchmark_hybrid.py"
+            ],
+            "requirement_states": [
+              "satisfied"
+            ],
+            "error": null
+          }
+        ],
+        "proofs_checked": 305,
+        "proofs_valid": 305
+      },
+      "incremental": {
+        "unchanged_generation_reused": true,
+        "unchanged_chunks_embedded": 0,
+        "edit": {
+          "file": "ai-engine/answers.py",
+          "stale_old_generation_rejected": true,
+          "ms": 13053.73200000031,
+          "chunks_embedded": 1,
+          "chunks_reused": 9,
+          "generation_changed": true
+        },
+        "rename": {
+          "from": "CLAUDE.md",
+          "to": "CLAUDE.qualification.md",
+          "old_chunks_remaining": 0,
+          "chunks_embedded": 5
+        },
+        "delete": {
+          "path": "CLAUDE.qualification.md",
+          "chunks_remaining": 0,
+          "chunks_embedded": 0
+        }
+      },
+      "post_incremental_integrity": {
+        "graph": {
+          "nodes": 870,
+          "relationships": 1944,
+          "resolved": 1863,
+          "inferred": 81,
+          "unresolved": 2323
+        },
+        "typescript_version": "5.9.3",
+        "semantic_diagnostics": [],
+        "parsing": {},
+        "provenance_checked": 5015,
+        "provenance_valid": 5015,
+        "foreign_key_errors": [],
+        "dangling_references": [],
+        "languages": [
+          [
+            "javascript",
+            28
+          ],
+          [
+            "json",
+            4
+          ],
+          [
+            "typescript",
+            16
+          ]
+        ],
+        "ambiguous_symbol_names": [
+          [
+            "<anonymous:1>",
+            155
+          ],
+          [
+            "<anonymous:2>",
+            68
+          ],
+          [
+            "<anonymous:3>",
+            44
+          ],
+          [
+            "<anonymous:4>",
+            29
+          ],
+          [
+            "<anonymous:5>",
+            21
+          ],
+          [
+            "<anonymous:6>",
+            14
+          ],
+          [
+            "<anonymous:7>",
+            13
+          ],
+          [
+            "<anonymous:8>",
+            9
+          ]
+        ],
+        "chunk_provenance_checked": 3576,
+        "chunk_provenance_valid": 3576,
+        "sample_symbols": [
+          [
+            "hash",
+            "extension/server/chunker.js"
+          ],
+          [
+            "boundedText",
+            "extension/server/chunker.js"
+          ],
+          [
+            "terms",
+            "extension/server/chunker.js"
+          ],
+          [
+            "readSource",
+            "extension/server/chunker.js"
+          ],
+          [
+            "chunksForFile",
+            "extension/server/chunker.js"
+          ],
+          [
+            "commitChunks",
+            "extension/server/chunker.js"
+          ],
+          [
+            "stableId",
+            "extension/server/codeParser.js"
+          ],
+          [
+            "languageFor",
+            "extension/server/codeParser.js"
+          ],
+          [
+            "field",
+            "extension/server/codeParser.js"
+          ],
+          [
+            "text",
+            "extension/server/codeParser.js"
+          ],
+          [
+            "cleanString",
+            "extension/server/codeParser.js"
+          ],
+          [
+            "hasJsx",
+            "extension/server/codeParser.js"
+          ],
+          [
+            "nameOf",
+            "extension/server/codeParser.js"
+          ],
+          [
+            "isTestFile",
+            "extension/server/codeParser.js"
+          ],
+          [
+            "parseImports",
+            "extension/server/codeParser.js"
+          ],
+          [
+            "symbolKind",
+            "extension/server/codeParser.js"
+          ],
+          [
+            "signature",
+            "extension/server/codeParser.js"
+          ],
+          [
+            "docstring",
+            "extension/server/codeParser.js"
+          ],
+          [
+            "parseCode",
+            "extension/server/codeParser.js"
+          ],
+          [
+            "parseCode.addSymbol",
+            "extension/server/codeParser.js"
+          ],
+          [
+            "parseCode.addSymbol.identifiers",
+            "extension/server/codeParser.js"
+          ],
+          [
+            "parseCode.addSymbol.<anonymous:4>.tokens",
+            "extension/server/codeParser.js"
+          ],
+          [
+            "parseCode.visit",
+            "extension/server/codeParser.js"
+          ],
+          [
+            "planDocs",
+            "extension/server/docPlanner.js"
+          ],
+          [
+            "planDocs.add",
+            "extension/server/docPlanner.js"
+          ],
+          [
+            "planDocs.label",
+            "extension/server/docPlanner.js"
+          ],
+          [
+            "planDocs.related",
+            "extension/server/docPlanner.js"
+          ],
+          [
+            "sectionObject",
+            "extension/server/docStore.js"
+          ],
+          [
+            "status",
+            "extension/server/docStore.js"
+          ],
+          [
+            "overview",
+            "extension/server/docStore.js"
+          ]
+        ]
+      },
+      "state": "completed",
+      "python_peak_rss_bytes": 3553951744
+    }
+  ],
+  "model": "BAAI/bge-small-en-v1.5",
+  "existing_knowledge_bases_unchanged_by_harness": true,
+  "temporary_corpora_and_indexes_cleaned": true
+}

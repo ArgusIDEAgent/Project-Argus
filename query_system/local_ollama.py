@@ -73,7 +73,20 @@ class LocalOllama:
             with self.opener.open(request, timeout=remaining) as reply:
                 if reply.geturl() != LOCAL_CHAT_URL:
                     raise LocalModelFailure("unexpected_response_url", "error")
-                raw = reply.read(budget.max_response_bytes + 1)
+                parts, size = [], 0
+                while True:
+                    if monotonic() >= deadline:
+                        raise LocalModelFailure("deadline", "timeout")
+                    # read(n) waits for the entire body even when a peer keeps a
+                    # socket alive with small packets. read1 returns available
+                    # data so cooperative deadline/byte checks can run between reads.
+                    part = reply.read1(min(65536, budget.max_response_bytes + 1 - size))
+                    if not part:
+                        break
+                    parts.append(part); size += len(part)
+                    if size > budget.max_response_bytes:
+                        raise LocalModelFailure("response_budget", "invalid_output")
+                raw = b"".join(parts)
             if len(raw) > budget.max_response_bytes:
                 raise LocalModelFailure("response_budget", "invalid_output")
             if monotonic() > deadline:

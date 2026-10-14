@@ -1,0 +1,464 @@
+{
+  "task": "Stabilization S1",
+  "state": "passed",
+  "node_version": "v26.7.0",
+  "profiles": [
+    {
+      "profile": "CodeMind-affected-checkout",
+      "state": "passed",
+      "source": "Actual affected checkout, read-only",
+      "copied_files": null,
+      "build_and_verification_ms": 1871.3922919996548,
+      "graph": {
+        "nodes": 434,
+        "relationships": 908,
+        "resolved": 851,
+        "inferred": 57,
+        "unresolved": 1148
+      },
+      "typescript_version": "5.9.3",
+      "semantic_diagnostics": [],
+      "parsing": {
+        "parsed": 27,
+        "partial": 0,
+        "error": 0,
+        "symbols": 348,
+        "references": 1549,
+        "comments": 40
+      },
+      "provenance_checked": 2404,
+      "provenance_valid": 2404,
+      "foreign_key_errors": [],
+      "dangling_references": [],
+      "languages": [
+        [
+          null,
+          2
+        ],
+        [
+          "javascript",
+          11
+        ],
+        [
+          "json",
+          4
+        ],
+        [
+          "typescript",
+          16
+        ]
+      ],
+      "ambiguous_symbol_names": [
+        [
+          "<anonymous:1>",
+          62
+        ],
+        [
+          "<anonymous:2>",
+          33
+        ],
+        [
+          "<anonymous:3>",
+          21
+        ],
+        [
+          "<anonymous:4>",
+          13
+        ],
+        [
+          "<anonymous:5>",
+          10
+        ],
+        [
+          "<anonymous:6>",
+          7
+        ],
+        [
+          "<anonymous:7>",
+          6
+        ],
+        [
+          "run",
+          5
+        ]
+      ],
+      "legacy_reproduction": {
+        "exit_code": 1,
+        "crash_reproduced": true,
+        "diagnostic_and_stack": "{\"usageFile\":\"extension/test/hybridSuite.js\",\"expression\":\"exports\",\"symbol\":\"exports\",\"declarations\":[{\"kind\":\"SourceFile\",\"file\":\"extension/test/hybridSuite.js\",\"parent\":null}]}\n[eval]:98\n  const owners = new Set(declarations.map((decl) => `${decl.getSourceFile().fileName}:${decl.parent.pos}:${decl.parent.end}`));\n                                                                                                    ^\n\nTypeError: Cannot read properties of undefined (reading 'pos')\n    at [eval]:98:101\n    at Array.map (<anonymous>)\n    at declaration ([eval]:98:39)\n    at targetAt ([eval]:121:10)\n    at visit ([eval]:210:22)\n    at [eval]:214:36\n    at visitNode2 (/Users/paraspingale/Desktop/Projects/CodeMind/CodeingMind_Project /extension/node_modules/typescript/lib/typescript.js:32449:18)\n    at forEachChildInPropertyAccessExpression (/Users/paraspingale/Desktop/Projects/CodeMind/CodeingMind_Project /extension/node_modules/typescript/lib/typescript.js:32609:96)\n    at Object.forEachChild (/Users/paraspingale/Desktop/Projects/CodeMind/CodeingMind_Project /extension/node_modules/typescript/lib/typescript.js:32970:35)\n    at visit ([eval]:214:6)\n\nNode.js v26.7.0\n"
+      },
+      "frozen_input": {
+        "files": 156,
+        "observed_source_digest": "94f8ccf07ac2687c7cfc53b3c5ac1295ccfa2340b5fb9094b1556f4bd33587cf",
+        "source_git_revision": "f7cbecdac987ea3194a4007c514ecd58f2c8dcc7"
+      },
+      "published_snapshot": {
+        "state": "passed",
+        "repository_id": "86a2751d1f3d943b9f820893",
+        "generation_id": "4dc137c775aa47378a813129537c1eee",
+        "pin_count": 1,
+        "ready_evidence_stage_ids": [
+          "2d41cbdd-9ec7-4e03-91a8-7dc3e1aa41dd",
+          "332e097c-12fc-4535-a07f-e6243af5cc9c"
+        ],
+        "accepted_evidence_records": 5,
+        "callers": [
+          "activate.openIndexedSource",
+          "verifiedPreviewSource"
+        ],
+        "publication_ms": 186845.89041699655,
+        "files_indexed": 150,
+        "chunks_embedded": 3166,
+        "unchanged_republication": true,
+        "unchanged_chunks_embedded": 0,
+        "graph_provenance": {
+          "graph": {
+            "nodes": 434,
+            "relationships": 908,
+            "resolved": 851,
+            "inferred": 57,
+            "unresolved": 1148
+          },
+          "typescript_version": "5.9.3",
+          "semantic_diagnostics": [],
+          "parsing": {
+            "parsed": 27,
+            "partial": 0,
+            "error": 0,
+            "symbols": 348,
+            "references": 1549,
+            "comments": 40
+          },
+          "provenance_checked": 2404,
+          "provenance_valid": 2404,
+          "foreign_key_errors": [],
+          "dangling_references": [],
+          "languages": [
+            [
+              null,
+              2
+            ],
+            [
+              "javascript",
+              11
+            ],
+            [
+              "json",
+              4
+            ],
+            [
+              "typescript",
+              16
+            ]
+          ],
+          "ambiguous_symbol_names": [
+            [
+              "<anonymous:1>",
+              62
+            ],
+            [
+              "<anonymous:2>",
+              33
+            ],
+            [
+              "<anonymous:3>",
+              21
+            ],
+            [
+              "<anonymous:4>",
+              13
+            ],
+            [
+              "<anonymous:5>",
+              10
+            ],
+            [
+              "<anonymous:6>",
+              7
+            ],
+            [
+              "<anonymous:7>",
+              6
+            ],
+            [
+              "run",
+              5
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "profile": "CodeMind-extension-source",
+      "state": "passed",
+      "source": "Isolated inert copy of real source text",
+      "copied_files": 32,
+      "build_and_verification_ms": 3642.4689580017002,
+      "graph": {
+        "nodes": 683,
+        "relationships": 1602,
+        "resolved": 1533,
+        "inferred": 69,
+        "unresolved": 2059
+      },
+      "typescript_version": "5.9.3",
+      "semantic_diagnostics": [],
+      "parsing": {
+        "parsed": 27,
+        "partial": 0,
+        "error": 0,
+        "symbols": 607,
+        "references": 3007,
+        "comments": 26
+      },
+      "provenance_checked": 4268,
+      "provenance_valid": 4268,
+      "foreign_key_errors": [],
+      "dangling_references": [],
+      "languages": [
+        [
+          "javascript",
+          21
+        ],
+        [
+          "json",
+          3
+        ],
+        [
+          "typescript",
+          6
+        ]
+      ],
+      "ambiguous_symbol_names": [
+        [
+          "<anonymous:1>",
+          130
+        ],
+        [
+          "<anonymous:2>",
+          53
+        ],
+        [
+          "<anonymous:3>",
+          35
+        ],
+        [
+          "<anonymous:4>",
+          24
+        ],
+        [
+          "<anonymous:5>",
+          16
+        ],
+        [
+          "<anonymous:6>",
+          11
+        ],
+        [
+          "<anonymous:7>",
+          10
+        ],
+        [
+          "<anonymous:8>",
+          7
+        ]
+      ]
+    },
+    {
+      "profile": "vscode-test-electron-installed-release",
+      "state": "passed",
+      "source": "Isolated inert copy of real source text",
+      "copied_files": 13,
+      "build_and_verification_ms": 961.2966670101741,
+      "graph": {
+        "nodes": 272,
+        "relationships": 708,
+        "resolved": 682,
+        "inferred": 26,
+        "unresolved": 473
+      },
+      "typescript_version": "5.9.3",
+      "semantic_diagnostics": [],
+      "parsing": {
+        "parsed": 13,
+        "partial": 0,
+        "error": 0,
+        "symbols": 229,
+        "references": 640,
+        "comments": 121
+      },
+      "provenance_checked": 1410,
+      "provenance_valid": 1410,
+      "foreign_key_errors": [],
+      "dangling_references": [],
+      "languages": [
+        [
+          "javascript",
+          7
+        ],
+        [
+          "typescript",
+          6
+        ]
+      ],
+      "ambiguous_symbol_names": [
+        [
+          "<anonymous:1>",
+          38
+        ],
+        [
+          "<anonymous:2>",
+          21
+        ],
+        [
+          "get",
+          13
+        ],
+        [
+          "constructor",
+          10
+        ],
+        [
+          "<anonymous:3>",
+          10
+        ],
+        [
+          "<anonymous:5>",
+          6
+        ],
+        [
+          "<anonymous:4>",
+          6
+        ],
+        [
+          "report",
+          4
+        ]
+      ]
+    }
+  ],
+  "embedding_scope": "Fresh temporary affected-repository publication only",
+  "limitations": [
+    "Installed vscode-test is a source-release corpus, not an independent Git checkout.",
+    "Source/graph/provenance qualification does not measure semantic-search quality, LLM factuality or production performance."
+  ],
+  "target_sized_copy": {
+    "profile": "CodeMind-target-sized-copy",
+    "copied_files": 156,
+    "copied_bytes": 1731291,
+    "state": "passed",
+    "build_ms": 11556.710707998718,
+    "graph": {
+      "nodes": 836,
+      "relationships": 1895,
+      "resolved": 1817,
+      "inferred": 78,
+      "unresolved": 2270
+    },
+    "typescript_version": "5.9.3",
+    "semantic_diagnostics": [],
+    "parsing": {
+      "parsed": 43,
+      "partial": 0,
+      "error": 0,
+      "symbols": 716,
+      "references": 3318,
+      "comments": 48
+    },
+    "provenance_checked": 4881,
+    "provenance_valid": 4881,
+    "foreign_key_errors": [],
+    "dangling_references": [],
+    "languages": [
+      [
+        "javascript",
+        27
+      ],
+      [
+        "json",
+        4
+      ],
+      [
+        "typescript",
+        16
+      ]
+    ],
+    "ambiguous_symbol_names": [
+      [
+        "<anonymous:1>",
+        146
+      ],
+      [
+        "<anonymous:2>",
+        63
+      ],
+      [
+        "<anonymous:3>",
+        41
+      ],
+      [
+        "<anonymous:4>",
+        28
+      ],
+      [
+        "<anonymous:5>",
+        20
+      ],
+      [
+        "<anonymous:6>",
+        14
+      ],
+      [
+        "<anonymous:7>",
+        13
+      ],
+      [
+        "<anonymous:8>",
+        9
+      ]
+    ],
+    "legacy_reproduction": {
+      "exit_code": 0,
+      "crash_reproduced": false,
+      "diagnostic_and_stack": ""
+    }
+  },
+  "verification_history": {
+    "initial_structural_provenance_checks": 8068,
+    "initial_concurrent_ai_suite": {
+      "passed": 301,
+      "failed": 1,
+      "failure": "test_cooperative_timeout_drains_workers_before_pin_release",
+      "reason": "30 ms deadline expired before dispatch under concurrent embedding/verification load",
+      "isolated_rerun": "passed",
+      "final_full_ai_suite": {
+        "passed": 302,
+        "failed": 0,
+        "seconds": 149.475
+      }
+    },
+    "initial_live_publication": {
+      "state": "rejected",
+      "exception": "RuntimeError: Repository changed while indexing; retrying is required",
+      "resolution": "Fresh publication succeeded against a frozen copy built from observe_sources; source digests and no-change reuse verified"
+    }
+  },
+  "final_tests": {
+    "python": {
+      "knowledge_base": 62,
+      "query_system": 50,
+      "ai_engine": 302,
+      "total": 414,
+      "failed": 0
+    },
+    "node": {
+      "resolver": 9,
+      "renderer_ipc": 17,
+      "total": 26,
+      "failed": 0
+    },
+    "extension_compile": "passed",
+    "vscode_phase9_phase10_integration": "passed",
+    "diff_check": "passed"
+  }
+}

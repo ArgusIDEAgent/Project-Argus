@@ -1,0 +1,173 @@
+{
+  "qualification": "existing real CodeMind snapshot, no indexing or generation",
+  "repository_id": "e3d21fb6884a718d6b658076",
+  "snapshot_id": "1923414e4d81419f9081246a3bb74453",
+  "reader_pins": 1,
+  "indexed_inventory_files": 164,
+  "proofs_checked": 21,
+  "valid_proofs": 21,
+  "vectors_unchanged": true,
+  "vector_digest": "e7f67db8c2af9766d8dd57185c592161ae7bf9fe909d16a4b2e6f32c23885759",
+  "vector_cache_rebuilds_forbidden": true,
+  "details": [
+    {
+      "question": "Where is verifiedPreviewSource defined?",
+      "intents": [
+        "SYMBOL_LOCATION"
+      ],
+      "targets": [
+        [
+          "verifiedPreviewSource"
+        ]
+      ],
+      "operations": [
+        "graph.find_definition"
+      ],
+      "status": "success",
+      "operation_statuses": [
+        "success"
+      ],
+      "findings": 1,
+      "retrieval_methods": [],
+      "clarifications": 0,
+      "canonical_entity_ids": [
+        "b4d198c5e58abfb656984c1d2d98ae82f67a64ff4234addd9fb8433cb419ebd4"
+      ]
+    },
+    {
+      "question": "Who calls verifiedPreviewSource?",
+      "intents": [
+        "DIRECT_CALLERS"
+      ],
+      "targets": [
+        [
+          "verifiedPreviewSource"
+        ]
+      ],
+      "operations": [
+        "graph.find_callers"
+      ],
+      "status": "success",
+      "operation_statuses": [
+        "success"
+      ],
+      "findings": 2,
+      "retrieval_methods": [],
+      "clarifications": 0,
+      "canonical_entity_ids": [
+        "b4d198c5e58abfb656984c1d2d98ae82f67a64ff4234addd9fb8433cb419ebd4"
+      ]
+    },
+    {
+      "question": "Find callers of extension/src/responsePreview.ts::verifiedPreviewSource",
+      "intents": [
+        "DIRECT_CALLERS"
+      ],
+      "targets": [
+        [
+          "verifiedPreviewSource"
+        ]
+      ],
+      "operations": [
+        "graph.find_callers"
+      ],
+      "status": "success",
+      "operation_statuses": [
+        "success"
+      ],
+      "findings": 2,
+      "retrieval_methods": [],
+      "clarifications": 0,
+      "canonical_entity_ids": [
+        "b4d198c5e58abfb656984c1d2d98ae82f67a64ff4234addd9fb8433cb419ebd4"
+      ]
+    },
+    {
+      "question": "Compare verifiedSourcePath and verifiedPreviewSource and find tests for both",
+      "intents": [
+        "CODE_COMPARISON",
+        "TEST_DISCOVERY"
+      ],
+      "targets": [
+        [
+          "verifiedSourcePath",
+          "verifiedPreviewSource"
+        ],
+        [
+          "verifiedSourcePath",
+          "verifiedPreviewSource"
+        ]
+      ],
+      "operations": [
+        "rules.reference_test_analysis",
+        "rules.reference_test_analysis"
+      ],
+      "status": "partial",
+      "operation_statuses": [
+        "partial",
+        "partial"
+      ],
+      "findings": 2,
+      "retrieval_methods": [],
+      "clarifications": 0,
+      "canonical_entity_ids": [
+        "7c5b7732d367c000acb138e52b4c80cbbf8fcbdf82d4823ebaa3664d178c94ff",
+        "b4d198c5e58abfb656984c1d2d98ae82f67a64ff4234addd9fb8433cb419ebd4"
+      ]
+    },
+    {
+      "question": "Find code that verifies source file hashes before opening citations",
+      "intents": [
+        "FEATURE_DISCOVERY"
+      ],
+      "targets": [
+        [
+          "Find code that verifies source file hashes before opening citations"
+        ]
+      ],
+      "operations": [
+        "semantic.hybrid_search"
+      ],
+      "status": "success",
+      "operation_statuses": [
+        "success"
+      ],
+      "findings": 5,
+      "retrieval_methods": [
+        "keyword",
+        "semantic"
+      ],
+      "clarifications": 0,
+      "canonical_entity_ids": []
+    },
+    {
+      "question": "Find code that verifies source file hashes before opening citations and show its callers",
+      "intents": [
+        "FEATURE_DISCOVERY",
+        "DIRECT_CALLERS"
+      ],
+      "targets": [
+        [
+          "Find code that verifies source file hashes before opening citations"
+        ],
+        [
+          "Find code that verifies source file hashes before opening citations"
+        ]
+      ],
+      "operations": [
+        "semantic.hybrid_search"
+      ],
+      "status": "partial",
+      "operation_statuses": [
+        "success"
+      ],
+      "findings": 5,
+      "retrieval_methods": [
+        "keyword",
+        "semantic"
+      ],
+      "clarifications": 1,
+      "canonical_entity_ids": []
+    }
+  ]
+}

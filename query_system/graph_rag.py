@@ -31,6 +31,8 @@ SYSTEM = (
     "Semantic results indicate similarity, never dependencies. Never promote hypotheses/unresolved references to facts. "
     "Never write citations, citation IDs, source lists or tool calls in text. Cover every original requirement order, "
     "mark partial/unsupported honestly, and retain uncertainty and coverage gaps."
+    " A usable explanation needs at least one concise source-grounded interpretation or hypothesis per addressed requirement; "
+    "source-location facts alone are not an explanation. Use the smallest sufficient record_ids, and never invent missing details."
 )
 LIMITATIONS = [
     "Citations verify provenance, not arbitrary prose; model interpretations are not fully fact-checked.",

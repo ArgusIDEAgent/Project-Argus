@@ -15,7 +15,7 @@ from fastapi import APIRouter, HTTPException
 import answers
 import config
 from knowledge_base.synchronization import SnapshotStore
-from query_system.contracts import SnapshotContext
+from query_system.contracts import QueryContext, SnapshotContext
 from query_system.evidence_aggregation import EvidenceAggregator, FAILURES
 from query_system.executor import MultiEngineExecutor
 from query_system.hybrid_contracts import HybridPresentationRequest, HybridQueryRequest, HybridResponse, HybridSourceRequest
@@ -58,7 +58,7 @@ class AnswerCache:
             self._prune()
             entry = self.entries.get(token)
             if entry is None or entry[1:3] != (repo, str(Path(root).resolve())):
-                raise HTTPException(404, "Hybrid answer handle is unavailable, expired or not authorized for this repository.")
+                raise HTTPException(404, "Hybrid answer handle is unavailable, expired or not authorized for this repository. Ask the question again.")
             return copy.deepcopy(entry[4])
 
 
@@ -128,7 +128,21 @@ def create_hybrid_router(api):
         store = store_for(req.query.repository_id)
         if not slots.acquire(blocking=False): raise HTTPException(429, "Hybrid engine is busy; retry after current bounded requests finish.")
         try:
-            run = asyncio.run(run_hybrid(store, req, existing_api_channels(api, config.EMBEDDING_MODEL_NAME), answers))
+            conversation = None
+            if req.previous_answer_token is not None:
+                previous = cache.get(req.previous_answer_token, req.query.repository_id, store.root)
+                indices = {index for row in previous.original.requirements for index in row.entity_indices}
+                targets = [previous.original.entities[index] for index in sorted(indices)]
+                unique = {target.entity_id for target in targets if target.resolution == "resolved" and target.evidence is not None}
+                # Only a unique original canonical input may become context.
+                # Retrieved semantic findings/candidates are never selected here.
+                target = targets[0] if targets and len(unique) == 1 and all(
+                    item.resolution == "resolved" and item.evidence is not None for item in targets) else None
+                conversation = QueryContext(repository_id=previous.package.repository_id,
+                    snapshot_id=previous.package.snapshot_id, previous_target=target,
+                    previous_intents=previous.original.intents)
+            run = asyncio.run(run_hybrid(store, req, existing_api_channels(api, config.EMBEDDING_MODEL_NAME), answers,
+                                         conversation=conversation))
             if run.package is not None and run.response.presentation is not None and run.response.status not in ("stale_index", "error"):
                 run.response.navigation_token = cache.put(req.query.repository_id, store.root, run)
                 if run.response.navigation_token is None:

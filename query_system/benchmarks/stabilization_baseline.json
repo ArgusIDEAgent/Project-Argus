@@ -1,0 +1,212 @@
+{
+  "recorded_at": "2026-10-14",
+  "scope": "Untouched working tree including pre-existing S1/S2 changes; no baseline code edits",
+  "tests": {
+    "query_system": 60,
+    "knowledge_base": 62,
+    "ai_engine": 311,
+    "python_total": 433,
+    "node_total": 26,
+    "vscode_compile": true,
+    "vscode_phase9": true,
+    "vscode_phase10": true,
+    "diff_check": true
+  },
+  "ai_engine_seconds": 158.978,
+  "ollama_observed": [
+    {
+      "phase": "first_nonresident",
+      "model": "llama3:latest",
+      "status": "partial",
+      "snapshot_id": "7abd63c0d983403d9dee02c14d87b3ac",
+      "wall_ms": 23480.07000000507,
+      "stage_ms": {
+        "understanding_ms": 312.82983398705255,
+        "planning_ms": 0.5249160021776333,
+        "execution_ms": 1387.1515409991844,
+        "aggregation_ms": 291.1710829939693,
+        "llm_preparation_ms": 178.80754100042395,
+        "llm_generation_ms": 20588.194374999148,
+        "generation_total_ms": 21091.343958003563,
+        "formatting_ms": 2.486916011548601,
+        "validation_ms": 256.7595829896163,
+        "total_ms": 23479.187834003824
+      },
+      "calls": [
+        {
+          "request_bytes": 9557,
+          "message_bytes": 5854,
+          "schema_bytes": 3195,
+          "options": {
+            "temperature": 0,
+            "num_predict": 350,
+            "num_ctx": 8192
+          },
+          "timeout_s": 29.67316687499988,
+          "response_bytes": 678,
+          "load_duration": 5112771042,
+          "prompt_eval_count": 1479,
+          "prompt_eval_duration": 9526861000,
+          "eval_count": 113,
+          "eval_duration": 5906690000,
+          "total_duration": 20576569500,
+          "done_reason": "stop"
+        }
+      ],
+      "generations": [
+        {
+          "task": "function",
+          "original_orders": [
+            0
+          ],
+          "model_status": "validation_failed",
+          "fallback_status": "evidence_summary",
+          "failure_category": "no_usable_explanation",
+          "model_attempts": 1
+        }
+      ],
+      "claims": [
+        {
+          "text": "Indexed source at extension/src/sourceNavigation.ts:12-31.",
+          "classification": "verified_source_observation",
+          "verification": "backend_fact"
+        },
+        {
+          "text": "Indexed declaration: verifiedSourcePath",
+          "classification": "verified_source_observation",
+          "verification": "backend_fact"
+        }
+      ],
+      "contexts": [
+        {
+          "bytes": 5854,
+          "core_ready": {
+            "0": true
+          },
+          "omissions": [
+            "record_limit:fff1d9a397803f4e18eaa399fdacb57a",
+            "context_record_limit:fe1ce594fee76c7eac0dd0efa31a5c4b",
+            "context_record_limit:f8e36ca7065d80d032c22a60cf6556d6",
+            "context_record_limit:de80db723d949fe67bc66deb72cd444e",
+            "context_record_limit:d978860c0fc615e1a6363e56f17c8fb5",
+            "context_record_limit:d75836b564b2e4ab9981c6d525c9cfac",
+            "context_record_limit:d032ba15b7434778ce14fa5d8a597d31",
+            "context_record_limit:cefef4489d10f569c266e9ed2c9bce3d",
+            "context_record_limit:caa6cefd8ba0291080ceb162b2c9fc4f",
+            "context_record_limit:ae3cdbba9e7aecb61eeacf65f5bd2c5c",
+            "context_record_limit:a094858f74175925bafb9d067aee6855",
+            "context_record_limit:7ff2eee1135be6219b9bafa271f3e865",
+            "context_record_limit:5aa781307b4b287024b29026ff4516f1",
+            "context_record_limit:28d9557dc0031af70b900c4f45ed761c",
+            "context_record_limit:02fc941b967bf85dd236c0735e45d06a",
+            "context_record_limit:0190c928c7a8e2fde308262fe980f550",
+            "context_fact_limit:ac3dece8ed36381fd24d4943caa593ae"
+          ]
+        }
+      ]
+    },
+    {
+      "phase": "warm_attempt",
+      "model": "llama3:latest",
+      "status": "partial",
+      "snapshot_id": "7abd63c0d983403d9dee02c14d87b3ac",
+      "wall_ms": 9111.136541003361,
+      "stage_ms": {
+        "understanding_ms": 267.3218749987427,
+        "planning_ms": 0.4811669932678342,
+        "execution_ms": 1410.8416669914732,
+        "aggregation_ms": 290.6225420010742,
+        "llm_preparation_ms": 184.14020800264552,
+        "llm_generation_ms": 6219.603833000292,
+        "generation_total_ms": 6744.022749990108,
+        "formatting_ms": 1.856375005445443,
+        "validation_ms": 259.6494169993093,
+        "total_ms": 9110.563209003885
+      },
+      "calls": [
+        {
+          "request_bytes": 9557,
+          "message_bytes": 5854,
+          "schema_bytes": 3195,
+          "options": {
+            "temperature": 0,
+            "num_predict": 350,
+            "num_ctx": 8192
+          },
+          "timeout_s": 29.65535929199541,
+          "response_bytes": 677,
+          "load_duration": 10730959,
+          "prompt_eval_count": 1479,
+          "prompt_eval_duration": 103297000,
+          "eval_count": 113,
+          "eval_duration": 6079995000,
+          "total_duration": 6203057750,
+          "done_reason": "stop"
+        }
+      ],
+      "generations": [
+        {
+          "task": "function",
+          "original_orders": [
+            0
+          ],
+          "model_status": "validation_failed",
+          "fallback_status": "evidence_summary",
+          "failure_category": "no_usable_explanation",
+          "model_attempts": 1
+        }
+      ],
+      "claims": [
+        {
+          "text": "Indexed source at extension/src/sourceNavigation.ts:12-31.",
+          "classification": "verified_source_observation",
+          "verification": "backend_fact"
+        },
+        {
+          "text": "Indexed declaration: verifiedSourcePath",
+          "classification": "verified_source_observation",
+          "verification": "backend_fact"
+        }
+      ],
+      "contexts": [
+        {
+          "bytes": 5854,
+          "core_ready": {
+            "0": true
+          },
+          "omissions": [
+            "record_limit:fff1d9a397803f4e18eaa399fdacb57a",
+            "context_record_limit:fe1ce594fee76c7eac0dd0efa31a5c4b",
+            "context_record_limit:f8e36ca7065d80d032c22a60cf6556d6",
+            "context_record_limit:de80db723d949fe67bc66deb72cd444e",
+            "context_record_limit:d978860c0fc615e1a6363e56f17c8fb5",
+            "context_record_limit:d75836b564b2e4ab9981c6d525c9cfac",
+            "context_record_limit:d032ba15b7434778ce14fa5d8a597d31",
+            "context_record_limit:cefef4489d10f569c266e9ed2c9bce3d",
+            "context_record_limit:caa6cefd8ba0291080ceb162b2c9fc4f",
+            "context_record_limit:ae3cdbba9e7aecb61eeacf65f5bd2c5c",
+            "context_record_limit:a094858f74175925bafb9d067aee6855",
+            "context_record_limit:7ff2eee1135be6219b9bafa271f3e865",
+            "context_record_limit:5aa781307b4b287024b29026ff4516f1",
+            "context_record_limit:28d9557dc0031af70b900c4f45ed761c",
+            "context_record_limit:02fc941b967bf85dd236c0735e45d06a",
+            "context_record_limit:0190c928c7a8e2fde308262fe980f550",
+            "context_fact_limit:ac3dece8ed36381fd24d4943caa593ae"
+          ]
+        }
+      ]
+    }
+  ],
+  "redacted_output_example": "{\"sections\":[{\"title\":\"source_facts\",\"claims\":[{\"requirement_orders\": [0],\"mode\": \"fact\",\"fact_id\": \"source:327c0d49c4b9d5c79da6bf0615c783fe\",\"record_ids\": [\"327c0d49c4b9d5c79da6bf0615c783fe\"],\"text\": \"Indexed source at extension/src/sourceNavigation.ts:12-31.\"}]}],\"coverage\":[{\"order\": 0,\"state\": \"partial\"}]}",
+  "confirmed_reproductions": {
+    "dropped_list_target": "Who calls verifiedSourcePath and verifiedPreviewSource? -> only verifiedSourcePath",
+    "cleared_session": {
+      "query_submitted_after_clear": 1,
+      "answers_rendered_after_clear": 1
+    }
+  },
+  "ruled_out": [
+    "hybridExpired already filters the supplied answer key",
+    "FastAPI already maps HTTP detail to the error string consumed by the extension"
+  ]
+}

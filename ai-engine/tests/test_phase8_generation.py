@@ -338,8 +338,9 @@ class GenerationTests(unittest.TestCase):
     def test_unresolved_plain_text_targets_are_not_guessed(self):
         with self.owner.session() as executor:
             package = self.package(executor)
-            query = self.owner.request("Compare login and entry")
+            query = self.owner.request("Compare noSuchFunction and entry")
             normalized = executor.understand(query)
+            self.assertEqual(normalized.entities[0].resolution, "not_found")
             request = GenerationRequest(query=query, normalized=normalized, package_id=package.package_id, explanation_type="comparison",
                 bindings={item.order: [coverage.requirement_id for coverage in package.requirements] for item in normalized.requirements})
             client = FakeLocal()

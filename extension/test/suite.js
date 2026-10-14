@@ -53,6 +53,7 @@ async function run() {
   }
   await require('./presentationSuite').run();
   await require('./hybridSuite').run();
+  await require('./stabilizationRealSuite').run();
 }
 
 module.exports = { run };

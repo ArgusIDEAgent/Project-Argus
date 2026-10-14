@@ -95,8 +95,12 @@ function declaration(symbol) {
   const declarations = symbol.declarations || [];
   // Union receivers can expose declarations from several classes. They do
   // not provide a single verified callee. Overloads share one owner.
-  const owners = new Set(declarations.map((decl) =>
-    `${decl.getSourceFile().fileName}:${decl.parent.pos}:${decl.parent.end}`));
+  const owners = new Set(declarations.map((decl) => {
+    // Namespace aliases resolve to the module's SourceFile, an AST root with
+    // no parent. Other declarations retain their existing overload/union owner.
+    const owner = ts.isSourceFile(decl) ? decl : decl.parent;
+    return `${decl.getSourceFile().fileName}:${owner.pos}:${owner.end}`;
+  }));
   const implementations = declarations.filter((decl) => decl.body);
   if (owners.size > 1 || implementations.length > 1) return null;
   const candidate = implementations[0] || symbol.valueDeclaration

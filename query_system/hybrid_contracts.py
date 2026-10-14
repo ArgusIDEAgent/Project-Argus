@@ -20,6 +20,7 @@ class HybridLimits(ContractModel):
 
 class HybridQueryRequest(ContractModel):
     query: QueryRequest
+    previous_answer_token: str | None = Field(default=None, pattern=r"^[a-f0-9]{48}$")
     allow_generation: bool = True
     limits: HybridLimits = Field(default_factory=HybridLimits)
 

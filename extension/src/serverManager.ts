@@ -99,8 +99,9 @@ export class ServerManager implements vscode.Disposable {
     return this.request('POST', '/ask', { repoId, query, limit: 5 });
   }
 
-  async hybridQuery(query: HybridQueryInput, allowGeneration: boolean): Promise<HybridReply> {
-    return this.request('POST', '/v1/hybrid/query', { query, allow_generation: allowGeneration });
+  async hybridQuery(query: HybridQueryInput, allowGeneration: boolean, previousAnswerToken?: string): Promise<HybridReply> {
+    return this.request('POST', '/v1/hybrid/query', { query, allow_generation: allowGeneration,
+      ...(previousAnswerToken ? { previous_answer_token: previousAnswerToken } : {}) });
   }
 
   async hybridReadiness(repoId: string): Promise<{ enabled: boolean; snapshot_ready: boolean; legacy_available: boolean }> {

@@ -55,6 +55,7 @@ class GenerationUnitTests(unittest.TestCase):
         reply.__enter__.return_value = reply
         reply.geturl.return_value = LOCAL_CHAT_URL
         reply.read.return_value = json.dumps(payload).encode()
+        reply.read1.side_effect = [json.dumps(payload).encode(), b""]
         return reply
 
     def test_local_request_reuses_configuration_and_has_no_tools(self):
@@ -121,10 +122,11 @@ class GenerationUnitTests(unittest.TestCase):
         client = LocalOllama(self.answers)
         reply = self.reply()
         reply.read.return_value = b"x" * (self.budget.max_response_bytes+1)
+        reply.read1.side_effect = [b"x" * (self.budget.max_response_bytes+1)]
         with patch.dict(os.environ, {"CODEMIND_LOCAL_MODEL": "local"}), patch.object(client.opener, "open", return_value=reply), self.assertRaises(LocalModelFailure) as raised:
             client.generate(self.context, self.budget, monotonic()+5)
         self.assertEqual(raised.exception.category, "response_budget")
-        reply.read.assert_called_once_with(self.budget.max_response_bytes+1)
+        reply.read1.assert_called_once_with(65536)
 
 
 if __name__ == "__main__":

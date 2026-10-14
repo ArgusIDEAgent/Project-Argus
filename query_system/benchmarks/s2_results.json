@@ -1,0 +1,3286 @@
+{
+  "evaluation": "41 hand-labeled development queries over the existing synthetic fixture; not general language understanding",
+  "repository_id": "6e14a480769d1bf4889e604b",
+  "generation_id": "b60a5ce757e144eab2cf8e13faf007ec",
+  "dataset_sha256": "c9546d88c0759c227bacad89c914b64782ddfdf97a97dcabcd23d4a7543c5977",
+  "one_pinned_generation": true,
+  "baseline_source_sha256": "d81d872e3ff885fc08f0dd4714f96722e895bc75c3f8839753c3349f41cc6243",
+  "before": {
+    "metrics": {
+      "questions": 41,
+      "intent_accuracy": 0.9024390243902439,
+      "target_preservation": 0.5365853658536586,
+      "requirement_preservation": 0.8780487804878049,
+      "correct_clarification_rate": 1,
+      "clarification_decision_accuracy": 0.7073170731707317,
+      "incorrect_ambiguity_rate": 0.08823529411764706,
+      "router_operation_agreement": 0.8292682926829268
+    },
+    "by_category": {
+      "ambiguous_exact_names": {
+        "questions": 3,
+        "intent_accuracy": 1,
+        "target_preservation": 0.3333333333333333,
+        "requirement_preservation": 1,
+        "correct_clarification_rate": 1,
+        "clarification_decision_accuracy": 1,
+        "incorrect_ambiguity_rate": null,
+        "router_operation_agreement": 1
+      },
+      "compound_comparisons": {
+        "questions": 5,
+        "intent_accuracy": 1,
+        "target_preservation": 0,
+        "requirement_preservation": 0.8,
+        "correct_clarification_rate": null,
+        "clarification_decision_accuracy": 0.4,
+        "incorrect_ambiguity_rate": 0.2,
+        "router_operation_agreement": 0.6
+      },
+      "exact_graph": {
+        "questions": 3,
+        "intent_accuracy": 1,
+        "target_preservation": 1,
+        "requirement_preservation": 1,
+        "correct_clarification_rate": null,
+        "clarification_decision_accuracy": 1,
+        "incorrect_ambiguity_rate": 0,
+        "router_operation_agreement": 1
+      },
+      "exact_lookup": {
+        "questions": 2,
+        "intent_accuracy": 1,
+        "target_preservation": 0.5,
+        "requirement_preservation": 1,
+        "correct_clarification_rate": null,
+        "clarification_decision_accuracy": 0.5,
+        "incorrect_ambiguity_rate": 0,
+        "router_operation_agreement": 0.5
+      },
+      "feature_discovery": {
+        "questions": 8,
+        "intent_accuracy": 0.75,
+        "target_preservation": 0.75,
+        "requirement_preservation": 0.75,
+        "correct_clarification_rate": null,
+        "clarification_decision_accuracy": 0.625,
+        "incorrect_ambiguity_rate": 0.25,
+        "router_operation_agreement": 0.625
+      },
+      "missing_symbols": {
+        "questions": 2,
+        "intent_accuracy": 1,
+        "target_preservation": 0.5,
+        "requirement_preservation": 1,
+        "correct_clarification_rate": 1,
+        "clarification_decision_accuracy": 1,
+        "incorrect_ambiguity_rate": null,
+        "router_operation_agreement": 1
+      },
+      "multiple_features": {
+        "questions": 2,
+        "intent_accuracy": 0.5,
+        "target_preservation": 0,
+        "requirement_preservation": 0.5,
+        "correct_clarification_rate": null,
+        "clarification_decision_accuracy": 0.5,
+        "incorrect_ambiguity_rate": 0,
+        "router_operation_agreement": 0.5
+      },
+      "previous_context": {
+        "questions": 3,
+        "intent_accuracy": 1,
+        "target_preservation": 1,
+        "requirement_preservation": 1,
+        "correct_clarification_rate": 1,
+        "clarification_decision_accuracy": 1,
+        "incorrect_ambiguity_rate": 0,
+        "router_operation_agreement": 1
+      },
+      "qualified_identifiers": {
+        "questions": 4,
+        "intent_accuracy": 1,
+        "target_preservation": 0.75,
+        "requirement_preservation": 1,
+        "correct_clarification_rate": null,
+        "clarification_decision_accuracy": 0.75,
+        "incorrect_ambiguity_rate": 0,
+        "router_operation_agreement": 1
+      },
+      "repeated_comparisons": {
+        "questions": 2,
+        "intent_accuracy": 1,
+        "target_preservation": 0.5,
+        "requirement_preservation": 1,
+        "correct_clarification_rate": null,
+        "clarification_decision_accuracy": 0.5,
+        "incorrect_ambiguity_rate": 0,
+        "router_operation_agreement": 1
+      },
+      "simple_comparisons": {
+        "questions": 4,
+        "intent_accuracy": 1,
+        "target_preservation": 0.25,
+        "requirement_preservation": 1,
+        "correct_clarification_rate": null,
+        "clarification_decision_accuracy": 0.5,
+        "incorrect_ambiguity_rate": 0,
+        "router_operation_agreement": 1
+      },
+      "unsupported_requests": {
+        "questions": 3,
+        "intent_accuracy": 0.6666666666666666,
+        "target_preservation": 0.6666666666666666,
+        "requirement_preservation": 0.6666666666666666,
+        "correct_clarification_rate": 1,
+        "clarification_decision_accuracy": 1,
+        "incorrect_ambiguity_rate": 0,
+        "router_operation_agreement": 1
+      }
+    },
+    "proofs_checked": 30,
+    "valid_proofs": 30,
+    "details": [
+      {
+        "category": "exact_lookup",
+        "question": "Where is validateToken defined?",
+        "expected_rows": [
+          [
+            "SYMBOL_LOCATION",
+            [
+              "validateToken"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "SYMBOL_LOCATION",
+            [
+              "validateToken"
+            ]
+          ]
+        ],
+        "status": "success",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "graph.find_definition"
+        ],
+        "operations": [
+          "graph.find_definition"
+        ],
+        "router_agrees": true
+      },
+      {
+        "category": "exact_lookup",
+        "question": "Find function login",
+        "expected_rows": [
+          [
+            "SYMBOL_LOCATION",
+            [
+              "login"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "SYMBOL_LOCATION",
+            [
+              "Find",
+              "login"
+            ]
+          ]
+        ],
+        "status": "unresolved",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": false,
+        "expected_clarification": false,
+        "clarification": true,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "graph.find_definition"
+        ],
+        "operations": [],
+        "router_agrees": false
+      },
+      {
+        "category": "exact_graph",
+        "question": "Who calls login?",
+        "expected_rows": [
+          [
+            "DIRECT_CALLERS",
+            [
+              "login"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "DIRECT_CALLERS",
+            [
+              "login"
+            ]
+          ]
+        ],
+        "status": "success",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "graph.find_callers"
+        ],
+        "operations": [
+          "graph.find_callers"
+        ],
+        "router_agrees": true
+      },
+      {
+        "category": "exact_graph",
+        "question": "What does login call?",
+        "expected_rows": [
+          [
+            "DIRECT_CALLEES",
+            [
+              "login"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "DIRECT_CALLEES",
+            [
+              "login"
+            ]
+          ]
+        ],
+        "status": "success",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "graph.find_callees"
+        ],
+        "operations": [
+          "graph.find_callees"
+        ],
+        "router_agrees": true
+      },
+      {
+        "category": "exact_graph",
+        "question": "Dependency path from entry to validateToken",
+        "expected_rows": [
+          [
+            "DEPENDENCY_PATH",
+            [
+              "entry",
+              "validateToken"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "DEPENDENCY_PATH",
+            [
+              "entry",
+              "validateToken"
+            ]
+          ]
+        ],
+        "status": "success",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "graph.find_paths"
+        ],
+        "operations": [
+          "graph.find_paths"
+        ],
+        "router_agrees": true
+      },
+      {
+        "category": "feature_discovery",
+        "question": "Find the code that handles login",
+        "expected_rows": [
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "Find the code that handles login"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "Find the code that handles login"
+            ]
+          ]
+        ],
+        "status": "success",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "semantic.hybrid_search"
+        ],
+        "operations": [
+          "semantic.hybrid_search"
+        ],
+        "router_agrees": true
+      },
+      {
+        "category": "feature_discovery",
+        "question": "Where is authentication implemented?",
+        "expected_rows": [
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "Where is authentication implemented?"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "Where is authentication implemented?"
+            ]
+          ]
+        ],
+        "status": "success",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "semantic.hybrid_search"
+        ],
+        "operations": [
+          "semantic.hybrid_search"
+        ],
+        "router_agrees": true
+      },
+      {
+        "category": "feature_discovery",
+        "question": "Find the function responsible for email validation",
+        "expected_rows": [
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "Find the function responsible for email validation"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "SYMBOL_LOCATION",
+            [
+              "responsible"
+            ]
+          ]
+        ],
+        "status": "unresolved",
+        "intent_correct": false,
+        "requirements_preserved": false,
+        "targets_preserved": false,
+        "expected_clarification": false,
+        "clarification": true,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "semantic.hybrid_search"
+        ],
+        "operations": [],
+        "router_agrees": false
+      },
+      {
+        "category": "feature_discovery",
+        "question": "Show the code that processes uploaded files",
+        "expected_rows": [
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "Show the code that processes uploaded files"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "UNRESOLVED",
+            [
+              "this/it"
+            ]
+          ]
+        ],
+        "status": "unresolved",
+        "intent_correct": false,
+        "requirements_preserved": false,
+        "targets_preserved": false,
+        "expected_clarification": false,
+        "clarification": true,
+        "incorrect_ambiguity": true,
+        "expected_operations": [
+          "semantic.hybrid_search"
+        ],
+        "operations": [],
+        "router_agrees": false
+      },
+      {
+        "category": "feature_discovery",
+        "question": "Which part of the repository handles payment retries?",
+        "expected_rows": [
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "Which part of the repository handles payment retries?"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "Which part of the repository handles payment retries?"
+            ]
+          ]
+        ],
+        "status": "success",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "semantic.hybrid_search"
+        ],
+        "operations": [
+          "semantic.hybrid_search"
+        ],
+        "router_agrees": true
+      },
+      {
+        "category": "feature_discovery",
+        "question": "Find code that verifies source file hashes before opening citations",
+        "expected_rows": [
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "Find code that verifies source file hashes before opening citations"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "Find code that verifies source file hashes before opening citations"
+            ]
+          ]
+        ],
+        "status": "success",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": true,
+        "incorrect_ambiguity": true,
+        "expected_operations": [
+          "semantic.hybrid_search"
+        ],
+        "operations": [],
+        "router_agrees": false
+      },
+      {
+        "category": "feature_discovery",
+        "question": "Find code that handles login and payment retries",
+        "expected_rows": [
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "Find code that handles login and payment retries"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "Find code that handles login and payment retries"
+            ]
+          ]
+        ],
+        "status": "success",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "semantic.hybrid_search"
+        ],
+        "operations": [
+          "semantic.hybrid_search"
+        ],
+        "router_agrees": true
+      },
+      {
+        "category": "feature_discovery",
+        "question": "Find \"refund  eligibility and retries\"",
+        "expected_rows": [
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "Find \"refund  eligibility and retries\""
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "Find \"refund  eligibility and retries\""
+            ]
+          ]
+        ],
+        "status": "success",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "semantic.hybrid_search"
+        ],
+        "operations": [
+          "semantic.hybrid_search"
+        ],
+        "router_agrees": true
+      },
+      {
+        "category": "multiple_features",
+        "question": "Find code that checks access and find code that sends mail",
+        "expected_rows": [
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "Find code that checks access"
+            ]
+          ],
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "find code that sends mail"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "Find code that checks access and find code that sends mail"
+            ]
+          ],
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "Find code that checks access and find code that sends mail"
+            ]
+          ]
+        ],
+        "status": "success",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": false,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "semantic.hybrid_search",
+          "semantic.hybrid_search"
+        ],
+        "operations": [
+          "semantic.hybrid_search",
+          "semantic.hybrid_search"
+        ],
+        "router_agrees": true
+      },
+      {
+        "category": "multiple_features",
+        "question": "Show the code that processes uploaded files and find the function responsible for email validation",
+        "expected_rows": [
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "Show the code that processes uploaded files"
+            ]
+          ],
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "find the function responsible for email validation"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "SYMBOL_LOCATION",
+            [
+              "responsible"
+            ]
+          ]
+        ],
+        "status": "unresolved",
+        "intent_correct": false,
+        "requirements_preserved": false,
+        "targets_preserved": false,
+        "expected_clarification": false,
+        "clarification": true,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "semantic.hybrid_search",
+          "semantic.hybrid_search"
+        ],
+        "operations": [],
+        "router_agrees": false
+      },
+      {
+        "category": "simple_comparisons",
+        "question": "Compare login and entry",
+        "expected_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "login",
+              "entry"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "this/it"
+            ]
+          ]
+        ],
+        "status": "unsupported",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": false,
+        "expected_clarification": false,
+        "clarification": true,
+        "incorrect_ambiguity": false,
+        "expected_operations": [],
+        "operations": [],
+        "router_agrees": true
+      },
+      {
+        "category": "simple_comparisons",
+        "question": "Compare `login` and `entry`",
+        "expected_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "login",
+              "entry"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "login",
+              "entry"
+            ]
+          ]
+        ],
+        "status": "unsupported",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [],
+        "operations": [],
+        "router_agrees": true
+      },
+      {
+        "category": "simple_comparisons",
+        "question": "Compare login with entry",
+        "expected_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "login",
+              "entry"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "this/it"
+            ]
+          ]
+        ],
+        "status": "unsupported",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": false,
+        "expected_clarification": false,
+        "clarification": true,
+        "incorrect_ambiguity": false,
+        "expected_operations": [],
+        "operations": [],
+        "router_agrees": true
+      },
+      {
+        "category": "simple_comparisons",
+        "question": "Difference between validateToken and standalone",
+        "expected_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "validateToken",
+              "standalone"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "validateToken"
+            ]
+          ]
+        ],
+        "status": "unsupported",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": false,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [],
+        "operations": [],
+        "router_agrees": true
+      },
+      {
+        "category": "compound_comparisons",
+        "question": "Compare login and entry and explain their dependencies",
+        "expected_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "login",
+              "entry"
+            ]
+          ],
+          [
+            "FUNCTION_EXPLANATION",
+            [
+              "login",
+              "entry"
+            ]
+          ],
+          [
+            "DEPENDENCY_PATH",
+            [
+              "login"
+            ]
+          ],
+          [
+            "DEPENDENCY_PATH",
+            [
+              "entry"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "this/it"
+            ]
+          ],
+          [
+            "FUNCTION_EXPLANATION",
+            [
+              "this/it"
+            ]
+          ],
+          [
+            "DEPENDENCY_PATH",
+            [
+              "this/it"
+            ]
+          ]
+        ],
+        "status": "unresolved",
+        "intent_correct": true,
+        "requirements_preserved": false,
+        "targets_preserved": false,
+        "expected_clarification": false,
+        "clarification": true,
+        "incorrect_ambiguity": true,
+        "expected_operations": [
+          "rules.dependency_summary",
+          "rules.dependency_summary"
+        ],
+        "operations": [],
+        "router_agrees": false
+      },
+      {
+        "category": "compound_comparisons",
+        "question": "Compare login and entry and find tests for both",
+        "expected_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "login",
+              "entry"
+            ]
+          ],
+          [
+            "TEST_DISCOVERY",
+            [
+              "login",
+              "entry"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "this/it"
+            ]
+          ],
+          [
+            "TEST_DISCOVERY",
+            [
+              "both"
+            ]
+          ]
+        ],
+        "status": "unresolved",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": false,
+        "expected_clarification": false,
+        "clarification": true,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "rules.reference_test_analysis",
+          "rules.reference_test_analysis"
+        ],
+        "operations": [],
+        "router_agrees": false
+      },
+      {
+        "category": "compound_comparisons",
+        "question": "Find callers of login and compare entry and validateToken",
+        "expected_rows": [
+          [
+            "DIRECT_CALLERS",
+            [
+              "login"
+            ]
+          ],
+          [
+            "CODE_COMPARISON",
+            [
+              "entry",
+              "validateToken"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "DIRECT_CALLERS",
+            [
+              "login"
+            ]
+          ],
+          [
+            "CODE_COMPARISON",
+            [
+              "login"
+            ]
+          ]
+        ],
+        "status": "partial",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": false,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "graph.find_callers"
+        ],
+        "operations": [
+          "graph.find_callers"
+        ],
+        "router_agrees": true
+      },
+      {
+        "category": "compound_comparisons",
+        "question": "Compare login with entry and explain both",
+        "expected_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "login",
+              "entry"
+            ]
+          ],
+          [
+            "FUNCTION_EXPLANATION",
+            [
+              "login",
+              "entry"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "this/it"
+            ]
+          ],
+          [
+            "FUNCTION_EXPLANATION",
+            [
+              "both"
+            ]
+          ]
+        ],
+        "status": "unresolved",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": false,
+        "expected_clarification": false,
+        "clarification": true,
+        "incorrect_ambiguity": false,
+        "expected_operations": [],
+        "operations": [],
+        "router_agrees": true
+      },
+      {
+        "category": "compound_comparisons",
+        "question": "Explain `login` and compare `login` and `entry`",
+        "expected_rows": [
+          [
+            "FUNCTION_EXPLANATION",
+            [
+              "login"
+            ]
+          ],
+          [
+            "CODE_COMPARISON",
+            [
+              "login",
+              "entry"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "FUNCTION_EXPLANATION",
+            [
+              "login"
+            ]
+          ],
+          [
+            "CODE_COMPARISON",
+            [
+              "login"
+            ]
+          ]
+        ],
+        "status": "partial",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": false,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [],
+        "operations": [],
+        "router_agrees": true
+      },
+      {
+        "category": "repeated_comparisons",
+        "question": "Compare login and entry, and compare validateToken and standalone",
+        "expected_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "login",
+              "entry"
+            ]
+          ],
+          [
+            "CODE_COMPARISON",
+            [
+              "validateToken",
+              "standalone"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "this/it"
+            ]
+          ],
+          [
+            "CODE_COMPARISON",
+            [
+              "validateToken"
+            ]
+          ]
+        ],
+        "status": "unsupported",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": false,
+        "expected_clarification": false,
+        "clarification": true,
+        "incorrect_ambiguity": false,
+        "expected_operations": [],
+        "operations": [],
+        "router_agrees": true
+      },
+      {
+        "category": "repeated_comparisons",
+        "question": "Compare `login` with `entry`; compare `standalone` versus `validateToken`",
+        "expected_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "login",
+              "entry"
+            ]
+          ],
+          [
+            "CODE_COMPARISON",
+            [
+              "standalone",
+              "validateToken"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "login",
+              "entry"
+            ]
+          ],
+          [
+            "CODE_COMPARISON",
+            [
+              "standalone",
+              "validateToken"
+            ]
+          ]
+        ],
+        "status": "unsupported",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [],
+        "operations": [],
+        "router_agrees": true
+      },
+      {
+        "category": "qualified_identifiers",
+        "question": "Who calls AuthService.check?",
+        "expected_rows": [
+          [
+            "DIRECT_CALLERS",
+            [
+              "AuthService.check"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "DIRECT_CALLERS",
+            [
+              "AuthService.check"
+            ]
+          ]
+        ],
+        "status": "success",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "graph.find_callers"
+        ],
+        "operations": [
+          "graph.find_callers"
+        ],
+        "router_agrees": true
+      },
+      {
+        "category": "qualified_identifiers",
+        "question": "Find callers of auth.ts::validateToken",
+        "expected_rows": [
+          [
+            "DIRECT_CALLERS",
+            [
+              "validateToken"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "DIRECT_CALLERS",
+            [
+              "validateToken"
+            ]
+          ]
+        ],
+        "status": "success",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "graph.find_callers"
+        ],
+        "operations": [
+          "graph.find_callers"
+        ],
+        "router_agrees": true
+      },
+      {
+        "category": "qualified_identifiers",
+        "question": "Compare AuthService.check with snake_case",
+        "expected_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "AuthService.check",
+              "snake_case"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "AuthService.check",
+              "snake_case"
+            ]
+          ]
+        ],
+        "status": "unsupported",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [],
+        "operations": [],
+        "router_agrees": true
+      },
+      {
+        "category": "qualified_identifiers",
+        "question": "Compare `auth.ts::sharedName` and `other.ts::sharedName`",
+        "expected_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "sharedName",
+              "sharedName"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "this/it"
+            ]
+          ]
+        ],
+        "status": "unsupported",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": false,
+        "expected_clarification": false,
+        "clarification": true,
+        "incorrect_ambiguity": false,
+        "expected_operations": [],
+        "operations": [],
+        "router_agrees": true
+      },
+      {
+        "category": "ambiguous_exact_names",
+        "question": "Where is duplicate defined?",
+        "expected_rows": [
+          [
+            "SYMBOL_LOCATION",
+            [
+              "duplicate"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "SYMBOL_LOCATION",
+            [
+              "duplicate"
+            ]
+          ]
+        ],
+        "status": "ambiguous",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": true,
+        "clarification": true,
+        "incorrect_ambiguity": false,
+        "expected_operations": [],
+        "operations": [],
+        "router_agrees": true
+      },
+      {
+        "category": "ambiguous_exact_names",
+        "question": "Compare duplicate and entry",
+        "expected_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "duplicate",
+              "entry"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "this/it"
+            ]
+          ]
+        ],
+        "status": "unsupported",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": false,
+        "expected_clarification": true,
+        "clarification": true,
+        "incorrect_ambiguity": false,
+        "expected_operations": [],
+        "operations": [],
+        "router_agrees": true
+      },
+      {
+        "category": "ambiguous_exact_names",
+        "question": "Compare login and entry and show its callers",
+        "expected_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "login",
+              "entry"
+            ]
+          ],
+          [
+            "DIRECT_CALLERS",
+            [
+              "login",
+              "entry"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "this/it"
+            ]
+          ],
+          [
+            "DIRECT_CALLERS",
+            [
+              "this/it"
+            ]
+          ]
+        ],
+        "status": "unresolved",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": false,
+        "expected_clarification": true,
+        "clarification": true,
+        "incorrect_ambiguity": false,
+        "expected_operations": [],
+        "operations": [],
+        "router_agrees": true
+      },
+      {
+        "category": "missing_symbols",
+        "question": "Where is missingFunction defined?",
+        "expected_rows": [
+          [
+            "SYMBOL_LOCATION",
+            [
+              "missingFunction"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "SYMBOL_LOCATION",
+            [
+              "missingFunction"
+            ]
+          ]
+        ],
+        "status": "unresolved",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": true,
+        "clarification": true,
+        "incorrect_ambiguity": false,
+        "expected_operations": [],
+        "operations": [],
+        "router_agrees": true
+      },
+      {
+        "category": "missing_symbols",
+        "question": "Compare noSuchFunction and entry",
+        "expected_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "noSuchFunction",
+              "entry"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "noSuchFunction"
+            ]
+          ]
+        ],
+        "status": "unsupported",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": false,
+        "expected_clarification": true,
+        "clarification": true,
+        "incorrect_ambiguity": false,
+        "expected_operations": [],
+        "operations": [],
+        "router_agrees": true
+      },
+      {
+        "category": "previous_context",
+        "question": "What about it?",
+        "expected_rows": [
+          [
+            "DIRECT_CALLERS",
+            [
+              "login"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "DIRECT_CALLERS",
+            [
+              "login"
+            ]
+          ]
+        ],
+        "status": "success",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "graph.find_callers"
+        ],
+        "operations": [
+          "graph.find_callers"
+        ],
+        "router_agrees": true
+      },
+      {
+        "category": "previous_context",
+        "question": "Who calls this function?",
+        "expected_rows": [
+          [
+            "DIRECT_CALLERS",
+            [
+              "login"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "DIRECT_CALLERS",
+            [
+              "login"
+            ]
+          ]
+        ],
+        "status": "success",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "graph.find_callers"
+        ],
+        "operations": [
+          "graph.find_callers"
+        ],
+        "router_agrees": true
+      },
+      {
+        "category": "previous_context",
+        "question": "Who calls this function?",
+        "expected_rows": [
+          [
+            "DIRECT_CALLERS",
+            [
+              "this/it"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "DIRECT_CALLERS",
+            [
+              "this/it"
+            ]
+          ]
+        ],
+        "status": "unresolved",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": true,
+        "clarification": true,
+        "incorrect_ambiguity": false,
+        "expected_operations": [],
+        "operations": [],
+        "router_agrees": true
+      },
+      {
+        "category": "unsupported_requests",
+        "question": "Contract of class Service",
+        "expected_rows": [
+          [
+            "FUNCTION_CONTRACT",
+            [
+              "Service"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "FUNCTION_CONTRACT",
+            [
+              "Service"
+            ]
+          ]
+        ],
+        "status": "unsupported",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [],
+        "operations": [],
+        "router_agrees": true
+      },
+      {
+        "category": "unsupported_requests",
+        "question": "Who calls validate_token in legacy.py?",
+        "expected_rows": [
+          [
+            "DIRECT_CALLERS",
+            [
+              "validate_token"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "DIRECT_CALLERS",
+            [
+              "validate_token"
+            ]
+          ]
+        ],
+        "status": "unsupported",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [],
+        "operations": [],
+        "router_agrees": true
+      },
+      {
+        "category": "unsupported_requests",
+        "question": "Compare login and entry and deploy server",
+        "expected_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "login",
+              "entry"
+            ]
+          ],
+          [
+            "UNRESOLVED",
+            []
+          ]
+        ],
+        "actual_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "this/it"
+            ]
+          ]
+        ],
+        "status": "unsupported",
+        "intent_correct": false,
+        "requirements_preserved": false,
+        "targets_preserved": false,
+        "expected_clarification": true,
+        "clarification": true,
+        "incorrect_ambiguity": false,
+        "expected_operations": [],
+        "operations": [],
+        "router_agrees": true
+      }
+    ]
+  },
+  "after": {
+    "metrics": {
+      "questions": 41,
+      "intent_accuracy": 1,
+      "target_preservation": 1,
+      "requirement_preservation": 1,
+      "correct_clarification_rate": 1,
+      "clarification_decision_accuracy": 1,
+      "incorrect_ambiguity_rate": 0,
+      "router_operation_agreement": 1
+    },
+    "by_category": {
+      "ambiguous_exact_names": {
+        "questions": 3,
+        "intent_accuracy": 1,
+        "target_preservation": 1,
+        "requirement_preservation": 1,
+        "correct_clarification_rate": 1,
+        "clarification_decision_accuracy": 1,
+        "incorrect_ambiguity_rate": null,
+        "router_operation_agreement": 1
+      },
+      "compound_comparisons": {
+        "questions": 5,
+        "intent_accuracy": 1,
+        "target_preservation": 1,
+        "requirement_preservation": 1,
+        "correct_clarification_rate": null,
+        "clarification_decision_accuracy": 1,
+        "incorrect_ambiguity_rate": 0,
+        "router_operation_agreement": 1
+      },
+      "exact_graph": {
+        "questions": 3,
+        "intent_accuracy": 1,
+        "target_preservation": 1,
+        "requirement_preservation": 1,
+        "correct_clarification_rate": null,
+        "clarification_decision_accuracy": 1,
+        "incorrect_ambiguity_rate": 0,
+        "router_operation_agreement": 1
+      },
+      "exact_lookup": {
+        "questions": 2,
+        "intent_accuracy": 1,
+        "target_preservation": 1,
+        "requirement_preservation": 1,
+        "correct_clarification_rate": null,
+        "clarification_decision_accuracy": 1,
+        "incorrect_ambiguity_rate": 0,
+        "router_operation_agreement": 1
+      },
+      "feature_discovery": {
+        "questions": 8,
+        "intent_accuracy": 1,
+        "target_preservation": 1,
+        "requirement_preservation": 1,
+        "correct_clarification_rate": null,
+        "clarification_decision_accuracy": 1,
+        "incorrect_ambiguity_rate": 0,
+        "router_operation_agreement": 1
+      },
+      "missing_symbols": {
+        "questions": 2,
+        "intent_accuracy": 1,
+        "target_preservation": 1,
+        "requirement_preservation": 1,
+        "correct_clarification_rate": 1,
+        "clarification_decision_accuracy": 1,
+        "incorrect_ambiguity_rate": null,
+        "router_operation_agreement": 1
+      },
+      "multiple_features": {
+        "questions": 2,
+        "intent_accuracy": 1,
+        "target_preservation": 1,
+        "requirement_preservation": 1,
+        "correct_clarification_rate": null,
+        "clarification_decision_accuracy": 1,
+        "incorrect_ambiguity_rate": 0,
+        "router_operation_agreement": 1
+      },
+      "previous_context": {
+        "questions": 3,
+        "intent_accuracy": 1,
+        "target_preservation": 1,
+        "requirement_preservation": 1,
+        "correct_clarification_rate": 1,
+        "clarification_decision_accuracy": 1,
+        "incorrect_ambiguity_rate": 0,
+        "router_operation_agreement": 1
+      },
+      "qualified_identifiers": {
+        "questions": 4,
+        "intent_accuracy": 1,
+        "target_preservation": 1,
+        "requirement_preservation": 1,
+        "correct_clarification_rate": null,
+        "clarification_decision_accuracy": 1,
+        "incorrect_ambiguity_rate": 0,
+        "router_operation_agreement": 1
+      },
+      "repeated_comparisons": {
+        "questions": 2,
+        "intent_accuracy": 1,
+        "target_preservation": 1,
+        "requirement_preservation": 1,
+        "correct_clarification_rate": null,
+        "clarification_decision_accuracy": 1,
+        "incorrect_ambiguity_rate": 0,
+        "router_operation_agreement": 1
+      },
+      "simple_comparisons": {
+        "questions": 4,
+        "intent_accuracy": 1,
+        "target_preservation": 1,
+        "requirement_preservation": 1,
+        "correct_clarification_rate": null,
+        "clarification_decision_accuracy": 1,
+        "incorrect_ambiguity_rate": 0,
+        "router_operation_agreement": 1
+      },
+      "unsupported_requests": {
+        "questions": 3,
+        "intent_accuracy": 1,
+        "target_preservation": 1,
+        "requirement_preservation": 1,
+        "correct_clarification_rate": 1,
+        "clarification_decision_accuracy": 1,
+        "incorrect_ambiguity_rate": 0,
+        "router_operation_agreement": 1
+      }
+    },
+    "proofs_checked": 57,
+    "valid_proofs": 57,
+    "details": [
+      {
+        "category": "exact_lookup",
+        "question": "Where is validateToken defined?",
+        "expected_rows": [
+          [
+            "SYMBOL_LOCATION",
+            [
+              "validateToken"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "SYMBOL_LOCATION",
+            [
+              "validateToken"
+            ]
+          ]
+        ],
+        "status": "success",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "graph.find_definition"
+        ],
+        "operations": [
+          "graph.find_definition"
+        ],
+        "router_agrees": true
+      },
+      {
+        "category": "exact_lookup",
+        "question": "Find function login",
+        "expected_rows": [
+          [
+            "SYMBOL_LOCATION",
+            [
+              "login"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "SYMBOL_LOCATION",
+            [
+              "login"
+            ]
+          ]
+        ],
+        "status": "success",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "graph.find_definition"
+        ],
+        "operations": [
+          "graph.find_definition"
+        ],
+        "router_agrees": true
+      },
+      {
+        "category": "exact_graph",
+        "question": "Who calls login?",
+        "expected_rows": [
+          [
+            "DIRECT_CALLERS",
+            [
+              "login"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "DIRECT_CALLERS",
+            [
+              "login"
+            ]
+          ]
+        ],
+        "status": "success",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "graph.find_callers"
+        ],
+        "operations": [
+          "graph.find_callers"
+        ],
+        "router_agrees": true
+      },
+      {
+        "category": "exact_graph",
+        "question": "What does login call?",
+        "expected_rows": [
+          [
+            "DIRECT_CALLEES",
+            [
+              "login"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "DIRECT_CALLEES",
+            [
+              "login"
+            ]
+          ]
+        ],
+        "status": "success",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "graph.find_callees"
+        ],
+        "operations": [
+          "graph.find_callees"
+        ],
+        "router_agrees": true
+      },
+      {
+        "category": "exact_graph",
+        "question": "Dependency path from entry to validateToken",
+        "expected_rows": [
+          [
+            "DEPENDENCY_PATH",
+            [
+              "entry",
+              "validateToken"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "DEPENDENCY_PATH",
+            [
+              "entry",
+              "validateToken"
+            ]
+          ]
+        ],
+        "status": "success",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "graph.find_paths"
+        ],
+        "operations": [
+          "graph.find_paths"
+        ],
+        "router_agrees": true
+      },
+      {
+        "category": "feature_discovery",
+        "question": "Find the code that handles login",
+        "expected_rows": [
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "Find the code that handles login"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "Find the code that handles login"
+            ]
+          ]
+        ],
+        "status": "success",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "semantic.hybrid_search"
+        ],
+        "operations": [
+          "semantic.hybrid_search"
+        ],
+        "router_agrees": true
+      },
+      {
+        "category": "feature_discovery",
+        "question": "Where is authentication implemented?",
+        "expected_rows": [
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "Where is authentication implemented?"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "Where is authentication implemented?"
+            ]
+          ]
+        ],
+        "status": "success",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "semantic.hybrid_search"
+        ],
+        "operations": [
+          "semantic.hybrid_search"
+        ],
+        "router_agrees": true
+      },
+      {
+        "category": "feature_discovery",
+        "question": "Find the function responsible for email validation",
+        "expected_rows": [
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "Find the function responsible for email validation"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "Find the function responsible for email validation"
+            ]
+          ]
+        ],
+        "status": "success",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "semantic.hybrid_search"
+        ],
+        "operations": [
+          "semantic.hybrid_search"
+        ],
+        "router_agrees": true
+      },
+      {
+        "category": "feature_discovery",
+        "question": "Show the code that processes uploaded files",
+        "expected_rows": [
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "Show the code that processes uploaded files"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "Show the code that processes uploaded files"
+            ]
+          ]
+        ],
+        "status": "success",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "semantic.hybrid_search"
+        ],
+        "operations": [
+          "semantic.hybrid_search"
+        ],
+        "router_agrees": true
+      },
+      {
+        "category": "feature_discovery",
+        "question": "Which part of the repository handles payment retries?",
+        "expected_rows": [
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "Which part of the repository handles payment retries?"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "Which part of the repository handles payment retries?"
+            ]
+          ]
+        ],
+        "status": "success",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "semantic.hybrid_search"
+        ],
+        "operations": [
+          "semantic.hybrid_search"
+        ],
+        "router_agrees": true
+      },
+      {
+        "category": "feature_discovery",
+        "question": "Find code that verifies source file hashes before opening citations",
+        "expected_rows": [
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "Find code that verifies source file hashes before opening citations"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "Find code that verifies source file hashes before opening citations"
+            ]
+          ]
+        ],
+        "status": "success",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "semantic.hybrid_search"
+        ],
+        "operations": [
+          "semantic.hybrid_search"
+        ],
+        "router_agrees": true
+      },
+      {
+        "category": "feature_discovery",
+        "question": "Find code that handles login and payment retries",
+        "expected_rows": [
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "Find code that handles login and payment retries"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "Find code that handles login and payment retries"
+            ]
+          ]
+        ],
+        "status": "success",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "semantic.hybrid_search"
+        ],
+        "operations": [
+          "semantic.hybrid_search"
+        ],
+        "router_agrees": true
+      },
+      {
+        "category": "feature_discovery",
+        "question": "Find \"refund  eligibility and retries\"",
+        "expected_rows": [
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "Find \"refund  eligibility and retries\""
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "Find \"refund  eligibility and retries\""
+            ]
+          ]
+        ],
+        "status": "success",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "semantic.hybrid_search"
+        ],
+        "operations": [
+          "semantic.hybrid_search"
+        ],
+        "router_agrees": true
+      },
+      {
+        "category": "multiple_features",
+        "question": "Find code that checks access and find code that sends mail",
+        "expected_rows": [
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "Find code that checks access"
+            ]
+          ],
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "find code that sends mail"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "Find code that checks access"
+            ]
+          ],
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "find code that sends mail"
+            ]
+          ]
+        ],
+        "status": "success",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "semantic.hybrid_search",
+          "semantic.hybrid_search"
+        ],
+        "operations": [
+          "semantic.hybrid_search",
+          "semantic.hybrid_search"
+        ],
+        "router_agrees": true
+      },
+      {
+        "category": "multiple_features",
+        "question": "Show the code that processes uploaded files and find the function responsible for email validation",
+        "expected_rows": [
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "Show the code that processes uploaded files"
+            ]
+          ],
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "find the function responsible for email validation"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "Show the code that processes uploaded files"
+            ]
+          ],
+          [
+            "FEATURE_DISCOVERY",
+            [
+              "find the function responsible for email validation"
+            ]
+          ]
+        ],
+        "status": "success",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "semantic.hybrid_search",
+          "semantic.hybrid_search"
+        ],
+        "operations": [
+          "semantic.hybrid_search",
+          "semantic.hybrid_search"
+        ],
+        "router_agrees": true
+      },
+      {
+        "category": "simple_comparisons",
+        "question": "Compare login and entry",
+        "expected_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "login",
+              "entry"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "login",
+              "entry"
+            ]
+          ]
+        ],
+        "status": "unsupported",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [],
+        "operations": [],
+        "router_agrees": true
+      },
+      {
+        "category": "simple_comparisons",
+        "question": "Compare `login` and `entry`",
+        "expected_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "login",
+              "entry"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "login",
+              "entry"
+            ]
+          ]
+        ],
+        "status": "unsupported",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [],
+        "operations": [],
+        "router_agrees": true
+      },
+      {
+        "category": "simple_comparisons",
+        "question": "Compare login with entry",
+        "expected_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "login",
+              "entry"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "login",
+              "entry"
+            ]
+          ]
+        ],
+        "status": "unsupported",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [],
+        "operations": [],
+        "router_agrees": true
+      },
+      {
+        "category": "simple_comparisons",
+        "question": "Difference between validateToken and standalone",
+        "expected_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "validateToken",
+              "standalone"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "validateToken",
+              "standalone"
+            ]
+          ]
+        ],
+        "status": "unsupported",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [],
+        "operations": [],
+        "router_agrees": true
+      },
+      {
+        "category": "compound_comparisons",
+        "question": "Compare login and entry and explain their dependencies",
+        "expected_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "login",
+              "entry"
+            ]
+          ],
+          [
+            "FUNCTION_EXPLANATION",
+            [
+              "login",
+              "entry"
+            ]
+          ],
+          [
+            "DEPENDENCY_PATH",
+            [
+              "login"
+            ]
+          ],
+          [
+            "DEPENDENCY_PATH",
+            [
+              "entry"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "login",
+              "entry"
+            ]
+          ],
+          [
+            "FUNCTION_EXPLANATION",
+            [
+              "login",
+              "entry"
+            ]
+          ],
+          [
+            "DEPENDENCY_PATH",
+            [
+              "login"
+            ]
+          ],
+          [
+            "DEPENDENCY_PATH",
+            [
+              "entry"
+            ]
+          ]
+        ],
+        "status": "partial",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "rules.dependency_summary",
+          "rules.dependency_summary"
+        ],
+        "operations": [
+          "rules.dependency_summary",
+          "rules.dependency_summary"
+        ],
+        "router_agrees": true
+      },
+      {
+        "category": "compound_comparisons",
+        "question": "Compare login and entry and find tests for both",
+        "expected_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "login",
+              "entry"
+            ]
+          ],
+          [
+            "TEST_DISCOVERY",
+            [
+              "login",
+              "entry"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "login",
+              "entry"
+            ]
+          ],
+          [
+            "TEST_DISCOVERY",
+            [
+              "login",
+              "entry"
+            ]
+          ]
+        ],
+        "status": "partial",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "rules.reference_test_analysis",
+          "rules.reference_test_analysis"
+        ],
+        "operations": [
+          "rules.reference_test_analysis",
+          "rules.reference_test_analysis"
+        ],
+        "router_agrees": true
+      },
+      {
+        "category": "compound_comparisons",
+        "question": "Find callers of login and compare entry and validateToken",
+        "expected_rows": [
+          [
+            "DIRECT_CALLERS",
+            [
+              "login"
+            ]
+          ],
+          [
+            "CODE_COMPARISON",
+            [
+              "entry",
+              "validateToken"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "DIRECT_CALLERS",
+            [
+              "login"
+            ]
+          ],
+          [
+            "CODE_COMPARISON",
+            [
+              "entry",
+              "validateToken"
+            ]
+          ]
+        ],
+        "status": "partial",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "graph.find_callers"
+        ],
+        "operations": [
+          "graph.find_callers"
+        ],
+        "router_agrees": true
+      },
+      {
+        "category": "compound_comparisons",
+        "question": "Compare login with entry and explain both",
+        "expected_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "login",
+              "entry"
+            ]
+          ],
+          [
+            "FUNCTION_EXPLANATION",
+            [
+              "login",
+              "entry"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "login",
+              "entry"
+            ]
+          ],
+          [
+            "FUNCTION_EXPLANATION",
+            [
+              "login",
+              "entry"
+            ]
+          ]
+        ],
+        "status": "partial",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [],
+        "operations": [],
+        "router_agrees": true
+      },
+      {
+        "category": "compound_comparisons",
+        "question": "Explain `login` and compare `login` and `entry`",
+        "expected_rows": [
+          [
+            "FUNCTION_EXPLANATION",
+            [
+              "login"
+            ]
+          ],
+          [
+            "CODE_COMPARISON",
+            [
+              "login",
+              "entry"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "FUNCTION_EXPLANATION",
+            [
+              "login"
+            ]
+          ],
+          [
+            "CODE_COMPARISON",
+            [
+              "login",
+              "entry"
+            ]
+          ]
+        ],
+        "status": "partial",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [],
+        "operations": [],
+        "router_agrees": true
+      },
+      {
+        "category": "repeated_comparisons",
+        "question": "Compare login and entry, and compare validateToken and standalone",
+        "expected_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "login",
+              "entry"
+            ]
+          ],
+          [
+            "CODE_COMPARISON",
+            [
+              "validateToken",
+              "standalone"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "login",
+              "entry"
+            ]
+          ],
+          [
+            "CODE_COMPARISON",
+            [
+              "validateToken",
+              "standalone"
+            ]
+          ]
+        ],
+        "status": "unsupported",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [],
+        "operations": [],
+        "router_agrees": true
+      },
+      {
+        "category": "repeated_comparisons",
+        "question": "Compare `login` with `entry`; compare `standalone` versus `validateToken`",
+        "expected_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "login",
+              "entry"
+            ]
+          ],
+          [
+            "CODE_COMPARISON",
+            [
+              "standalone",
+              "validateToken"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "login",
+              "entry"
+            ]
+          ],
+          [
+            "CODE_COMPARISON",
+            [
+              "standalone",
+              "validateToken"
+            ]
+          ]
+        ],
+        "status": "unsupported",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [],
+        "operations": [],
+        "router_agrees": true
+      },
+      {
+        "category": "qualified_identifiers",
+        "question": "Who calls AuthService.check?",
+        "expected_rows": [
+          [
+            "DIRECT_CALLERS",
+            [
+              "AuthService.check"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "DIRECT_CALLERS",
+            [
+              "AuthService.check"
+            ]
+          ]
+        ],
+        "status": "success",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "graph.find_callers"
+        ],
+        "operations": [
+          "graph.find_callers"
+        ],
+        "router_agrees": true
+      },
+      {
+        "category": "qualified_identifiers",
+        "question": "Find callers of auth.ts::validateToken",
+        "expected_rows": [
+          [
+            "DIRECT_CALLERS",
+            [
+              "validateToken"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "DIRECT_CALLERS",
+            [
+              "validateToken"
+            ]
+          ]
+        ],
+        "status": "success",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "graph.find_callers"
+        ],
+        "operations": [
+          "graph.find_callers"
+        ],
+        "router_agrees": true
+      },
+      {
+        "category": "qualified_identifiers",
+        "question": "Compare AuthService.check with snake_case",
+        "expected_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "AuthService.check",
+              "snake_case"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "AuthService.check",
+              "snake_case"
+            ]
+          ]
+        ],
+        "status": "unsupported",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [],
+        "operations": [],
+        "router_agrees": true
+      },
+      {
+        "category": "qualified_identifiers",
+        "question": "Compare `auth.ts::sharedName` and `other.ts::sharedName`",
+        "expected_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "sharedName",
+              "sharedName"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "sharedName",
+              "sharedName"
+            ]
+          ]
+        ],
+        "status": "unsupported",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [],
+        "operations": [],
+        "router_agrees": true
+      },
+      {
+        "category": "ambiguous_exact_names",
+        "question": "Where is duplicate defined?",
+        "expected_rows": [
+          [
+            "SYMBOL_LOCATION",
+            [
+              "duplicate"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "SYMBOL_LOCATION",
+            [
+              "duplicate"
+            ]
+          ]
+        ],
+        "status": "ambiguous",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": true,
+        "clarification": true,
+        "incorrect_ambiguity": false,
+        "expected_operations": [],
+        "operations": [],
+        "router_agrees": true
+      },
+      {
+        "category": "ambiguous_exact_names",
+        "question": "Compare duplicate and entry",
+        "expected_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "duplicate",
+              "entry"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "duplicate",
+              "entry"
+            ]
+          ]
+        ],
+        "status": "ambiguous",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": true,
+        "clarification": true,
+        "incorrect_ambiguity": false,
+        "expected_operations": [],
+        "operations": [],
+        "router_agrees": true
+      },
+      {
+        "category": "ambiguous_exact_names",
+        "question": "Compare login and entry and show its callers",
+        "expected_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "login",
+              "entry"
+            ]
+          ],
+          [
+            "DIRECT_CALLERS",
+            [
+              "login",
+              "entry"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "login",
+              "entry"
+            ]
+          ],
+          [
+            "DIRECT_CALLERS",
+            [
+              "login",
+              "entry"
+            ]
+          ]
+        ],
+        "status": "ambiguous",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": true,
+        "clarification": true,
+        "incorrect_ambiguity": false,
+        "expected_operations": [],
+        "operations": [],
+        "router_agrees": true
+      },
+      {
+        "category": "missing_symbols",
+        "question": "Where is missingFunction defined?",
+        "expected_rows": [
+          [
+            "SYMBOL_LOCATION",
+            [
+              "missingFunction"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "SYMBOL_LOCATION",
+            [
+              "missingFunction"
+            ]
+          ]
+        ],
+        "status": "unresolved",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": true,
+        "clarification": true,
+        "incorrect_ambiguity": false,
+        "expected_operations": [],
+        "operations": [],
+        "router_agrees": true
+      },
+      {
+        "category": "missing_symbols",
+        "question": "Compare noSuchFunction and entry",
+        "expected_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "noSuchFunction",
+              "entry"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "noSuchFunction",
+              "entry"
+            ]
+          ]
+        ],
+        "status": "unsupported",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": true,
+        "clarification": true,
+        "incorrect_ambiguity": false,
+        "expected_operations": [],
+        "operations": [],
+        "router_agrees": true
+      },
+      {
+        "category": "previous_context",
+        "question": "What about it?",
+        "expected_rows": [
+          [
+            "DIRECT_CALLERS",
+            [
+              "login"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "DIRECT_CALLERS",
+            [
+              "login"
+            ]
+          ]
+        ],
+        "status": "success",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "graph.find_callers"
+        ],
+        "operations": [
+          "graph.find_callers"
+        ],
+        "router_agrees": true
+      },
+      {
+        "category": "previous_context",
+        "question": "Who calls this function?",
+        "expected_rows": [
+          [
+            "DIRECT_CALLERS",
+            [
+              "login"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "DIRECT_CALLERS",
+            [
+              "login"
+            ]
+          ]
+        ],
+        "status": "success",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [
+          "graph.find_callers"
+        ],
+        "operations": [
+          "graph.find_callers"
+        ],
+        "router_agrees": true
+      },
+      {
+        "category": "previous_context",
+        "question": "Who calls this function?",
+        "expected_rows": [
+          [
+            "DIRECT_CALLERS",
+            [
+              "this/it"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "DIRECT_CALLERS",
+            [
+              "this/it"
+            ]
+          ]
+        ],
+        "status": "unresolved",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": true,
+        "clarification": true,
+        "incorrect_ambiguity": false,
+        "expected_operations": [],
+        "operations": [],
+        "router_agrees": true
+      },
+      {
+        "category": "unsupported_requests",
+        "question": "Contract of class Service",
+        "expected_rows": [
+          [
+            "FUNCTION_CONTRACT",
+            [
+              "Service"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "FUNCTION_CONTRACT",
+            [
+              "Service"
+            ]
+          ]
+        ],
+        "status": "unsupported",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [],
+        "operations": [],
+        "router_agrees": true
+      },
+      {
+        "category": "unsupported_requests",
+        "question": "Who calls validate_token in legacy.py?",
+        "expected_rows": [
+          [
+            "DIRECT_CALLERS",
+            [
+              "validate_token"
+            ]
+          ]
+        ],
+        "actual_rows": [
+          [
+            "DIRECT_CALLERS",
+            [
+              "validate_token"
+            ]
+          ]
+        ],
+        "status": "unsupported",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": false,
+        "clarification": false,
+        "incorrect_ambiguity": false,
+        "expected_operations": [],
+        "operations": [],
+        "router_agrees": true
+      },
+      {
+        "category": "unsupported_requests",
+        "question": "Compare login and entry and deploy server",
+        "expected_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "login",
+              "entry"
+            ]
+          ],
+          [
+            "UNRESOLVED",
+            []
+          ]
+        ],
+        "actual_rows": [
+          [
+            "CODE_COMPARISON",
+            [
+              "login",
+              "entry"
+            ]
+          ],
+          [
+            "UNRESOLVED",
+            []
+          ]
+        ],
+        "status": "unresolved",
+        "intent_correct": true,
+        "requirements_preserved": true,
+        "targets_preserved": true,
+        "expected_clarification": true,
+        "clarification": true,
+        "incorrect_ambiguity": false,
+        "expected_operations": [],
+        "operations": [],
+        "router_agrees": true
+      }
+    ]
+  },
+  "reader_pins": 1
+}
