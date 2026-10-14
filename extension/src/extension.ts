@@ -4,10 +4,12 @@ import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { ServerManager, SearchResult, CodeResult, DocSection, DocsStatus, Job } from './serverManager';
 import { verifiedSourcePath } from './sourceNavigation';
+import { registerResponsePreview } from './responsePreview';
 
 let server: ServerManager | undefined;
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
+  registerResponsePreview(context);  // Separate opt-in preview; legacy chat stays unchanged.
   const output = vscode.window.createOutputChannel('CodeMind');
   server = new ServerManager(context.extensionPath, context.globalStorageUri.fsPath, output);
   context.subscriptions.push(output, server);

@@ -1,5 +1,32 @@
 # CodeMind Extension
 
+## Phase 9 response preview (separate from production chat)
+
+**CodeMind: Preview Validated Response (Phase 9)** opens an existing Phase 7/8
+backend packet and asks you to authorize its repository folder without scanning
+or indexing it. The preview supports Quick, Standard and Deep display, explicit
+coverage/uncertainty, shared citations and copy-only follow-up investigations.
+It never sends another query or invokes a model. Current chat message schemas and
+`/ask`/`/retrieve` remain unchanged.
+
+This development preview requires Workspace Trust, the CodeMind checkout with
+its `.venv` beside `extension/`, and the existing snapshot store selected by
+`CODEMIND_DATA_DIR` (default `~/.codemind/data`). The packet shape is
+`{"package": <EvidencePackage>, "generation": <GenerationResult or null>, "depth": "standard"}`.
+See [the Phase 9 report](../query_system/PHASE9.md) for backend export and validation
+details. Imported JSON is not authenticated; provenance verification authorizes
+canonical source navigation, not arbitrary supplied prose. Invalid/stale sources
+become non-clickable; unsaved editor changes also block navigation.
+
+Preview is not automatically connected to production chat and is not packaged as
+a standalone Python runtime inside the VSIX. Existing chat remains independently
+available if the preview runtime is absent.
+
+Tests: `npm run compile`, `node --test test/presentation.test.js`, and
+`npm run test:integration` (includes real VS Code file opening/range selection).
+
+## Existing chat
+
 VS Code interface for the local CodeMind service. The chat webview opens from the Command Palette or the CodeMind status-bar button in any VS Code window. It opens before the service starts, so connection errors appear in the panel instead of hiding the chat. Select a local Git repository to start the Phase 1 inventory and automatic refresh.
 
 The minimum declared VS Code version is 1.93. Chat remains available in Restricted Mode; scanning needs Workspace Trust.

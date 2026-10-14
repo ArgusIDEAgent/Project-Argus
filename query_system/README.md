@@ -16,6 +16,11 @@ and deterministic fallback. See [PHASE8.md](PHASE8.md) for the compatibility aud
 explicit support bindings, safeguards, benchmarks and limitations. Production
 routes and Phase 6 routing remain unchanged; explanation routing is still deferred.
 
+Phase 9 adds pure deterministic response formatting and a separate VS Code response
+preview. See [PHASE9.md](PHASE9.md) for templates, display depths, coverage retention,
+fresh citation verification, the opt-in preview command and benchmark results.
+It performs no model inference/retrieval and does not replace the production chat.
+
 `contracts.py` defines the boundary between CodeMind's existing knowledge base and
 the planned graph, semantic, rules, and Graph RAG engines. It does not change the
 current `/retrieve` or `/ask` response formats.

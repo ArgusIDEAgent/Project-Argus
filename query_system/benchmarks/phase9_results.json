@@ -1,0 +1,907 @@
+{
+  "evaluation": "Synthetic existing-producer fixtures; pure formatting, no model/retrieval/DB calls during measurements",
+  "generation_id": "4a918d0e0a764d0fa5ed44ec44dce773",
+  "workloads": 14,
+  "depths": 3,
+  "repeats": 5,
+  "runs": 210,
+  "schema_validity": 1,
+  "citation_checks": 835,
+  "citation_map_validity": 1,
+  "coverage_preservation": true,
+  "deterministic_repeats": true,
+  "actual_model_calls": 0,
+  "retrieval_calls_during_formatting": 0,
+  "response_bytes_max": 47839,
+  "formatting_median_of_case_medians_ms": 0.265,
+  "serialization_median_of_case_medians_ms": 0.016,
+  "details": [
+    {
+      "workload": "location",
+      "depth": "quick",
+      "runs": 5,
+      "status": "success",
+      "formatting": {
+        "median_ms": 0.214,
+        "p95_ms": 0.385
+      },
+      "serialization": {
+        "median_ms": 0.01,
+        "p95_ms": 0.017
+      },
+      "response_bytes": {
+        "median": 4228,
+        "max": 4228
+      },
+      "requirement_count": 1,
+      "item_count": 1,
+      "source_count": 1
+    },
+    {
+      "workload": "location",
+      "depth": "standard",
+      "runs": 5,
+      "status": "success",
+      "formatting": {
+        "median_ms": 0.135,
+        "p95_ms": 0.172
+      },
+      "serialization": {
+        "median_ms": 0.008,
+        "p95_ms": 0.009
+      },
+      "response_bytes": {
+        "median": 4257,
+        "max": 4257
+      },
+      "requirement_count": 1,
+      "item_count": 1,
+      "source_count": 1
+    },
+    {
+      "workload": "location",
+      "depth": "deep",
+      "runs": 5,
+      "status": "success",
+      "formatting": {
+        "median_ms": 0.119,
+        "p95_ms": 0.123
+      },
+      "serialization": {
+        "median_ms": 0.008,
+        "p95_ms": 0.008
+      },
+      "response_bytes": {
+        "median": 4253,
+        "max": 4253
+      },
+      "requirement_count": 1,
+      "item_count": 1,
+      "source_count": 1
+    },
+    {
+      "workload": "callers",
+      "depth": "quick",
+      "runs": 5,
+      "status": "success",
+      "formatting": {
+        "median_ms": 0.213,
+        "p95_ms": 0.266
+      },
+      "serialization": {
+        "median_ms": 0.008,
+        "p95_ms": 0.008
+      },
+      "response_bytes": {
+        "median": 4154,
+        "max": 4154
+      },
+      "requirement_count": 1,
+      "item_count": 1,
+      "source_count": 1
+    },
+    {
+      "workload": "callers",
+      "depth": "standard",
+      "runs": 5,
+      "status": "success",
+      "formatting": {
+        "median_ms": 0.213,
+        "p95_ms": 0.227
+      },
+      "serialization": {
+        "median_ms": 0.01,
+        "p95_ms": 0.012
+      },
+      "response_bytes": {
+        "median": 5708,
+        "max": 5708
+      },
+      "requirement_count": 1,
+      "item_count": 2,
+      "source_count": 2
+    },
+    {
+      "workload": "callers",
+      "depth": "deep",
+      "runs": 5,
+      "status": "success",
+      "formatting": {
+        "median_ms": 0.211,
+        "p95_ms": 0.212
+      },
+      "serialization": {
+        "median_ms": 0.01,
+        "p95_ms": 0.01
+      },
+      "response_bytes": {
+        "median": 5704,
+        "max": 5704
+      },
+      "requirement_count": 1,
+      "item_count": 2,
+      "source_count": 2
+    },
+    {
+      "workload": "callees",
+      "depth": "quick",
+      "runs": 5,
+      "status": "success",
+      "formatting": {
+        "median_ms": 0.153,
+        "p95_ms": 0.173
+      },
+      "serialization": {
+        "median_ms": 0.007,
+        "p95_ms": 0.008
+      },
+      "response_bytes": {
+        "median": 3744,
+        "max": 3744
+      },
+      "requirement_count": 1,
+      "item_count": 1,
+      "source_count": 1
+    },
+    {
+      "workload": "callees",
+      "depth": "standard",
+      "runs": 5,
+      "status": "success",
+      "formatting": {
+        "median_ms": 0.146,
+        "p95_ms": 0.151
+      },
+      "serialization": {
+        "median_ms": 0.007,
+        "p95_ms": 0.008
+      },
+      "response_bytes": {
+        "median": 3794,
+        "max": 3794
+      },
+      "requirement_count": 1,
+      "item_count": 1,
+      "source_count": 1
+    },
+    {
+      "workload": "callees",
+      "depth": "deep",
+      "runs": 5,
+      "status": "success",
+      "formatting": {
+        "median_ms": 0.145,
+        "p95_ms": 0.148
+      },
+      "serialization": {
+        "median_ms": 0.007,
+        "p95_ms": 0.008
+      },
+      "response_bytes": {
+        "median": 3790,
+        "max": 3790
+      },
+      "requirement_count": 1,
+      "item_count": 1,
+      "source_count": 1
+    },
+    {
+      "workload": "path",
+      "depth": "quick",
+      "runs": 5,
+      "status": "success",
+      "formatting": {
+        "median_ms": 0.198,
+        "p95_ms": 0.236
+      },
+      "serialization": {
+        "median_ms": 0.009,
+        "p95_ms": 0.01
+      },
+      "response_bytes": {
+        "median": 5095,
+        "max": 5095
+      },
+      "requirement_count": 1,
+      "item_count": 1,
+      "source_count": 2
+    },
+    {
+      "workload": "path",
+      "depth": "standard",
+      "runs": 5,
+      "status": "success",
+      "formatting": {
+        "median_ms": 0.195,
+        "p95_ms": 0.197
+      },
+      "serialization": {
+        "median_ms": 0.009,
+        "p95_ms": 0.01
+      },
+      "response_bytes": {
+        "median": 5179,
+        "max": 5179
+      },
+      "requirement_count": 1,
+      "item_count": 1,
+      "source_count": 2
+    },
+    {
+      "workload": "path",
+      "depth": "deep",
+      "runs": 5,
+      "status": "success",
+      "formatting": {
+        "median_ms": 0.201,
+        "p95_ms": 0.207
+      },
+      "serialization": {
+        "median_ms": 0.009,
+        "p95_ms": 0.009
+      },
+      "response_bytes": {
+        "median": 5175,
+        "max": 5175
+      },
+      "requirement_count": 1,
+      "item_count": 1,
+      "source_count": 2
+    },
+    {
+      "workload": "dependencies",
+      "depth": "quick",
+      "runs": 5,
+      "status": "success",
+      "formatting": {
+        "median_ms": 0.239,
+        "p95_ms": 0.303
+      },
+      "serialization": {
+        "median_ms": 0.009,
+        "p95_ms": 0.009
+      },
+      "response_bytes": {
+        "median": 5568,
+        "max": 5568
+      },
+      "requirement_count": 1,
+      "item_count": 1,
+      "source_count": 1
+    },
+    {
+      "workload": "dependencies",
+      "depth": "standard",
+      "runs": 5,
+      "status": "success",
+      "formatting": {
+        "median_ms": 0.261,
+        "p95_ms": 0.277
+      },
+      "serialization": {
+        "median_ms": 0.017,
+        "p95_ms": 0.017
+      },
+      "response_bytes": {
+        "median": 11300,
+        "max": 11300
+      },
+      "requirement_count": 1,
+      "item_count": 4,
+      "source_count": 4
+    },
+    {
+      "workload": "dependencies",
+      "depth": "deep",
+      "runs": 5,
+      "status": "success",
+      "formatting": {
+        "median_ms": 0.309,
+        "p95_ms": 0.378
+      },
+      "serialization": {
+        "median_ms": 0.02,
+        "p95_ms": 0.028
+      },
+      "response_bytes": {
+        "median": 12926,
+        "max": 12926
+      },
+      "requirement_count": 1,
+      "item_count": 4,
+      "source_count": 4
+    },
+    {
+      "workload": "feature",
+      "depth": "quick",
+      "runs": 5,
+      "status": "success",
+      "formatting": {
+        "median_ms": 0.246,
+        "p95_ms": 0.302
+      },
+      "serialization": {
+        "median_ms": 0.008,
+        "p95_ms": 0.008
+      },
+      "response_bytes": {
+        "median": 4169,
+        "max": 4169
+      },
+      "requirement_count": 1,
+      "item_count": 1,
+      "source_count": 1
+    },
+    {
+      "workload": "feature",
+      "depth": "standard",
+      "runs": 5,
+      "status": "success",
+      "formatting": {
+        "median_ms": 0.274,
+        "p95_ms": 0.28
+      },
+      "serialization": {
+        "median_ms": 0.016,
+        "p95_ms": 0.016
+      },
+      "response_bytes": {
+        "median": 10934,
+        "max": 10934
+      },
+      "requirement_count": 1,
+      "item_count": 5,
+      "source_count": 5
+    },
+    {
+      "workload": "feature",
+      "depth": "deep",
+      "runs": 5,
+      "status": "success",
+      "formatting": {
+        "median_ms": 0.268,
+        "p95_ms": 0.268
+      },
+      "serialization": {
+        "median_ms": 0.016,
+        "p95_ms": 0.017
+      },
+      "response_bytes": {
+        "median": 10930,
+        "max": 10930
+      },
+      "requirement_count": 1,
+      "item_count": 5,
+      "source_count": 5
+    },
+    {
+      "workload": "contract",
+      "depth": "quick",
+      "runs": 5,
+      "status": "partial",
+      "formatting": {
+        "median_ms": 0.148,
+        "p95_ms": 0.189
+      },
+      "serialization": {
+        "median_ms": 0.009,
+        "p95_ms": 0.01
+      },
+      "response_bytes": {
+        "median": 5568,
+        "max": 5568
+      },
+      "requirement_count": 1,
+      "item_count": 1,
+      "source_count": 1
+    },
+    {
+      "workload": "contract",
+      "depth": "standard",
+      "runs": 5,
+      "status": "partial",
+      "formatting": {
+        "median_ms": 0.15,
+        "p95_ms": 0.164
+      },
+      "serialization": {
+        "median_ms": 0.01,
+        "p95_ms": 0.011
+      },
+      "response_bytes": {
+        "median": 6457,
+        "max": 6457
+      },
+      "requirement_count": 1,
+      "item_count": 1,
+      "source_count": 1
+    },
+    {
+      "workload": "contract",
+      "depth": "deep",
+      "runs": 5,
+      "status": "partial",
+      "formatting": {
+        "median_ms": 0.15,
+        "p95_ms": 0.155
+      },
+      "serialization": {
+        "median_ms": 0.01,
+        "p95_ms": 0.01
+      },
+      "response_bytes": {
+        "median": 6740,
+        "max": 6740
+      },
+      "requirement_count": 1,
+      "item_count": 1,
+      "source_count": 1
+    },
+    {
+      "workload": "impact",
+      "depth": "quick",
+      "runs": 5,
+      "status": "partial",
+      "formatting": {
+        "median_ms": 0.627,
+        "p95_ms": 0.762
+      },
+      "serialization": {
+        "median_ms": 0.01,
+        "p95_ms": 0.011
+      },
+      "response_bytes": {
+        "median": 6829,
+        "max": 6829
+      },
+      "requirement_count": 1,
+      "item_count": 1,
+      "source_count": 1
+    },
+    {
+      "workload": "impact",
+      "depth": "standard",
+      "runs": 5,
+      "status": "partial",
+      "formatting": {
+        "median_ms": 0.706,
+        "p95_ms": 0.731
+      },
+      "serialization": {
+        "median_ms": 0.026,
+        "p95_ms": 0.027
+      },
+      "response_bytes": {
+        "median": 20317,
+        "max": 20317
+      },
+      "requirement_count": 1,
+      "item_count": 8,
+      "source_count": 5
+    },
+    {
+      "workload": "impact",
+      "depth": "deep",
+      "runs": 5,
+      "status": "partial",
+      "formatting": {
+        "median_ms": 0.794,
+        "p95_ms": 1.069
+      },
+      "serialization": {
+        "median_ms": 0.051,
+        "p95_ms": 0.053
+      },
+      "response_bytes": {
+        "median": 47839,
+        "max": 47839
+      },
+      "requirement_count": 1,
+      "item_count": 21,
+      "source_count": 7
+    },
+    {
+      "workload": "module",
+      "depth": "quick",
+      "runs": 5,
+      "status": "success",
+      "formatting": {
+        "median_ms": 0.627,
+        "p95_ms": 0.675
+      },
+      "serialization": {
+        "median_ms": 0.008,
+        "p95_ms": 0.009
+      },
+      "response_bytes": {
+        "median": 5093,
+        "max": 5093
+      },
+      "requirement_count": 1,
+      "item_count": 1,
+      "source_count": 1
+    },
+    {
+      "workload": "module",
+      "depth": "standard",
+      "runs": 5,
+      "status": "success",
+      "formatting": {
+        "median_ms": 0.709,
+        "p95_ms": 0.72
+      },
+      "serialization": {
+        "median_ms": 0.027,
+        "p95_ms": 0.028
+      },
+      "response_bytes": {
+        "median": 20364,
+        "max": 20364
+      },
+      "requirement_count": 1,
+      "item_count": 8,
+      "source_count": 8
+    },
+    {
+      "workload": "module",
+      "depth": "deep",
+      "runs": 5,
+      "status": "success",
+      "formatting": {
+        "median_ms": 0.772,
+        "p95_ms": 0.882
+      },
+      "serialization": {
+        "median_ms": 0.047,
+        "p95_ms": 0.056
+      },
+      "response_bytes": {
+        "median": 37690,
+        "max": 37690
+      },
+      "requirement_count": 1,
+      "item_count": 14,
+      "source_count": 14
+    },
+    {
+      "workload": "tests",
+      "depth": "quick",
+      "runs": 5,
+      "status": "success",
+      "formatting": {
+        "median_ms": 0.231,
+        "p95_ms": 0.289
+      },
+      "serialization": {
+        "median_ms": 0.009,
+        "p95_ms": 0.011
+      },
+      "response_bytes": {
+        "median": 5535,
+        "max": 5535
+      },
+      "requirement_count": 1,
+      "item_count": 1,
+      "source_count": 1
+    },
+    {
+      "workload": "tests",
+      "depth": "standard",
+      "runs": 5,
+      "status": "success",
+      "formatting": {
+        "median_ms": 0.244,
+        "p95_ms": 0.254
+      },
+      "serialization": {
+        "median_ms": 0.016,
+        "p95_ms": 0.016
+      },
+      "response_bytes": {
+        "median": 10339,
+        "max": 10339
+      },
+      "requirement_count": 1,
+      "item_count": 4,
+      "source_count": 3
+    },
+    {
+      "workload": "tests",
+      "depth": "deep",
+      "runs": 5,
+      "status": "success",
+      "formatting": {
+        "median_ms": 0.246,
+        "p95_ms": 0.255
+      },
+      "serialization": {
+        "median_ms": 0.017,
+        "p95_ms": 0.017
+      },
+      "response_bytes": {
+        "median": 11947,
+        "max": 11947
+      },
+      "requirement_count": 1,
+      "item_count": 4,
+      "source_count": 3
+    },
+    {
+      "workload": "function",
+      "depth": "quick",
+      "runs": 5,
+      "status": "success",
+      "formatting": {
+        "median_ms": 0.617,
+        "p95_ms": 0.737
+      },
+      "serialization": {
+        "median_ms": 0.02,
+        "p95_ms": 0.02
+      },
+      "response_bytes": {
+        "median": 11871,
+        "max": 11871
+      },
+      "requirement_count": 1,
+      "item_count": 1,
+      "source_count": 7
+    },
+    {
+      "workload": "function",
+      "depth": "standard",
+      "runs": 5,
+      "status": "success",
+      "formatting": {
+        "median_ms": 0.635,
+        "p95_ms": 0.643
+      },
+      "serialization": {
+        "median_ms": 0.026,
+        "p95_ms": 0.026
+      },
+      "response_bytes": {
+        "median": 15886,
+        "max": 15886
+      },
+      "requirement_count": 1,
+      "item_count": 8,
+      "source_count": 7
+    },
+    {
+      "workload": "function",
+      "depth": "deep",
+      "runs": 5,
+      "status": "success",
+      "formatting": {
+        "median_ms": 0.621,
+        "p95_ms": 0.629
+      },
+      "serialization": {
+        "median_ms": 0.026,
+        "p95_ms": 0.026
+      },
+      "response_bytes": {
+        "median": 15882,
+        "max": 15882
+      },
+      "requirement_count": 1,
+      "item_count": 8,
+      "source_count": 7
+    },
+    {
+      "workload": "workflow",
+      "depth": "quick",
+      "runs": 5,
+      "status": "success",
+      "formatting": {
+        "median_ms": 0.611,
+        "p95_ms": 0.835
+      },
+      "serialization": {
+        "median_ms": 0.019,
+        "p95_ms": 0.02
+      },
+      "response_bytes": {
+        "median": 11915,
+        "max": 11915
+      },
+      "requirement_count": 1,
+      "item_count": 1,
+      "source_count": 7
+    },
+    {
+      "workload": "workflow",
+      "depth": "standard",
+      "runs": 5,
+      "status": "success",
+      "formatting": {
+        "median_ms": 0.62,
+        "p95_ms": 0.621
+      },
+      "serialization": {
+        "median_ms": 0.026,
+        "p95_ms": 0.026
+      },
+      "response_bytes": {
+        "median": 15930,
+        "max": 15930
+      },
+      "requirement_count": 1,
+      "item_count": 8,
+      "source_count": 7
+    },
+    {
+      "workload": "workflow",
+      "depth": "deep",
+      "runs": 5,
+      "status": "success",
+      "formatting": {
+        "median_ms": 0.619,
+        "p95_ms": 0.626
+      },
+      "serialization": {
+        "median_ms": 0.026,
+        "p95_ms": 0.026
+      },
+      "response_bytes": {
+        "median": 15926,
+        "max": 15926
+      },
+      "requirement_count": 1,
+      "item_count": 8,
+      "source_count": 7
+    },
+    {
+      "workload": "behavior",
+      "depth": "quick",
+      "runs": 5,
+      "status": "partial",
+      "formatting": {
+        "median_ms": 0.599,
+        "p95_ms": 0.613
+      },
+      "serialization": {
+        "median_ms": 0.02,
+        "p95_ms": 0.02
+      },
+      "response_bytes": {
+        "median": 11941,
+        "max": 11941
+      },
+      "requirement_count": 1,
+      "item_count": 1,
+      "source_count": 7
+    },
+    {
+      "workload": "behavior",
+      "depth": "standard",
+      "runs": 5,
+      "status": "partial",
+      "formatting": {
+        "median_ms": 0.685,
+        "p95_ms": 0.798
+      },
+      "serialization": {
+        "median_ms": 0.026,
+        "p95_ms": 0.03
+      },
+      "response_bytes": {
+        "median": 15956,
+        "max": 15956
+      },
+      "requirement_count": 1,
+      "item_count": 8,
+      "source_count": 7
+    },
+    {
+      "workload": "behavior",
+      "depth": "deep",
+      "runs": 5,
+      "status": "partial",
+      "formatting": {
+        "median_ms": 0.612,
+        "p95_ms": 0.623
+      },
+      "serialization": {
+        "median_ms": 0.025,
+        "p95_ms": 0.026
+      },
+      "response_bytes": {
+        "median": 15952,
+        "max": 15952
+      },
+      "requirement_count": 1,
+      "item_count": 8,
+      "source_count": 7
+    },
+    {
+      "workload": "comparison",
+      "depth": "quick",
+      "runs": 5,
+      "status": "success",
+      "formatting": {
+        "median_ms": 0.623,
+        "p95_ms": 0.696
+      },
+      "serialization": {
+        "median_ms": 0.019,
+        "p95_ms": 0.02
+      },
+      "response_bytes": {
+        "median": 11841,
+        "max": 11841
+      },
+      "requirement_count": 1,
+      "item_count": 1,
+      "source_count": 7
+    },
+    {
+      "workload": "comparison",
+      "depth": "standard",
+      "runs": 5,
+      "status": "success",
+      "formatting": {
+        "median_ms": 0.665,
+        "p95_ms": 0.766
+      },
+      "serialization": {
+        "median_ms": 0.026,
+        "p95_ms": 0.027
+      },
+      "response_bytes": {
+        "median": 15856,
+        "max": 15856
+      },
+      "requirement_count": 1,
+      "item_count": 8,
+      "source_count": 7
+    },
+    {
+      "workload": "comparison",
+      "depth": "deep",
+      "runs": 5,
+      "status": "success",
+      "formatting": {
+        "median_ms": 0.63,
+        "p95_ms": 0.935
+      },
+      "serialization": {
+        "median_ms": 0.026,
+        "p95_ms": 0.026
+      },
+      "response_bytes": {
+        "median": 15852,
+        "max": 15852
+      },
+      "requirement_count": 1,
+      "item_count": 8,
+      "source_count": 7
+    }
+  ],
+  "limitations": [
+    "Schema/citation checks are not factual-accuracy metrics.",
+    "Fixture preparation and fresh source-navigation verification are excluded from these timings.",
+    "Mock explanations measure presentation compatibility, not answer quality."
+  ]
+}

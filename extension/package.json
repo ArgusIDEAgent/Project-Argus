@@ -20,6 +20,7 @@
   },
   "main": "./out/extension.js",
   "activationEvents": [
+    "onCommand:codemind.previewResponse",
     "onStartupFinished",
     "onCommand:codemind.openChat",
     "onCommand:codemind.checkConnection",
@@ -29,6 +30,10 @@
   ],
   "contributes": {
     "commands": [
+      {
+        "command": "codemind.previewResponse",
+        "title": "CodeMind: Preview Validated Response (Phase 9)"
+      },
       {
         "command": "codemind.openChat",
         "title": "CodeMind: Open Chat"
