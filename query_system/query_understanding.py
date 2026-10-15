@@ -28,10 +28,10 @@ _PATTERNS = (
     ("DIRECT_CALLEES", r"\b(?:callees\b|what (?:functions? )?does\b(?:(?!\band\b)[^?,;])*?\bcall\b|which functions (?:are called by|does)\b|calls made by\b)"),
     ("DIRECT_CALLERS", r"\b(?:who calls|what calls|which functions call|callers of\b|(?:show|list|find|what are)\s+(?:(?:me|the|its|their|known|direct|all)\s+)*callers\b|calls to\b|where\b(?:(?!\band\b)[^?,;])*?\bcalled\b)|^(?:its|their) callers\b"),
     ("FUNCTION_CONTRACT", r"\b(?:contract|signature|parameters|arguments|return (?:type|annotation)|what does\s+(?:(?!\band\b)[^?,;])+?\s+return\b|declared async|throws|exceptions)\b"),
-    ("CHANGE_IMPACT", r"\b(?:impact\b|affected\b|affect\b|break\b|breaks\b|what happens if\b)"),
+    ("CHANGE_IMPACT", r"\b(?:impacts?\b|affected\b|affect\b|break\b|breaks\b|what happens if\b)"),
     ("DEPENDENCY_PATH", r"\b(?:dependency path|call path|path from|dependencies|dependents|depends on|imports|importers)\b"),
     ("MODULE_OVERVIEW", r"\b(?:module overview|overview of|summarize (?:the )?module|list (?:the )?(?:exports|definitions))\b"),
-    ("TEST_DISCOVERY", r"\b(?:tests? (?:cover|covers|for|reference|references)|which tests|what tests|test coverage)\b"),
+    ("TEST_DISCOVERY", r"\b(?:tests? (?:cover|covers|for|reference|references)|which (?:related )?tests|what (?:related )?tests|test coverage)\b"),
     ("WORKFLOW_EXPLANATION", r"\b(?:workflow|flow through|request flow|end.to.end|pipeline)\b"),
     ("BEHAVIOR_INVESTIGATION", r"\b(?:why\b|debug\b|investigate\b|runtime behavior|unexpected behavior)"),
     ("CODE_COMPARISON", r"\b(?:compare|difference between)\b"),
@@ -185,7 +185,7 @@ def parse_question(question: str) -> NormalizedQuery:
         prefix = masked[max(0, match.start()-16):match.start()]
         add(match.group(), "module" if re.search(r"\bmodule\s*$", prefix, re.I) else "file", match.start(), match.end())
     for match in re.finditer(rf"\b(function|method|class|symbol|module|file)\s+(?:named\s+)?({IDENTIFIER})", masked, re.I):
-        if not any(a <= match.start(2) < b for a, b, _ in mentions):
+        if match.group(2).casefold() not in {"and", "or", "under", "with", "without"} and not any(a <= match.start(2) < b for a, b, _ in mentions):
             add(match.group(2), match.group(1).lower(), match.start(2), match.end(2), explicit=True)
     for match in re.finditer(rf"\b({IDENTIFIER})\s+(function|method|class|module)\b", masked, re.I):
         if _REQUEST_START.fullmatch(match.group(1)):

@@ -78,6 +78,10 @@
           "type": "boolean", "default": true,
           "description": "Allow grounded local Ollama explanations in opt-in hybrid mode; deterministic questions never invoke it."
         },
+        "codemind.debug.showAnswerEngine": {
+          "type": "boolean", "default": false,
+          "description": "Developer-only: show answer engine attribution at the bottom of CodeMind chat responses."
+        },
         "codemind.checkReuseOnSave": {
           "type": "boolean", "default": true,
           "description": "Check newly indexed symbols for reusable implementations after saving."
@@ -89,8 +93,9 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "test": "npm run compile && node --test test/presentation.test.js test/stabilization.test.js test/runtime.test.js ../knowledge_base/test_semantic_resolver.cjs",
+    "test": "npm run compile && node --test test/presentation.test.js test/stabilization.test.js test/runtime.test.js test/debugAnswerEngine.test.js ../knowledge_base/test_semantic_resolver.cjs",
     "test:integration": "npm run compile && node test/runTest.js",
+    "test:docs": "npm run compile && node test/runDocsTest.js",
     "package:vsix": "vsce package --out ../codemind-extension-0.4.1.vsix"
   },
   "dependencies": {},

@@ -45,6 +45,7 @@ class OperationDiagnostic(ContractModel):
     operation: str
     status: str
     supporting: bool
+    finding_ids: list[str] = Field(default_factory=list)
 
 
 class GenerationDiagnostic(ContractModel):
@@ -54,6 +55,7 @@ class GenerationDiagnostic(ContractModel):
     fallback_status: str
     failure_category: str | None
     model_attempts: int
+    claim_operation_ids: dict[str, list[str]] = Field(default_factory=dict)
 
 
 class HybridResponse(ContractModel):

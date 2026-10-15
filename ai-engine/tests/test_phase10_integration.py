@@ -22,6 +22,7 @@ from test_phase8_generation import FakeLocal, valid_answer
 from query_system.contracts import QueryRequest
 from query_system.hybrid_contracts import HybridLimits, HybridQueryRequest, HybridResponse
 from query_system.generation_contracts import GenerationBudget
+from query_system.evidence_contracts import EvidenceLimits
 from query_system.local_ollama import LocalModelFailure
 from query_system.orchestration import compose_presentation, run_hybrid
 
@@ -70,6 +71,47 @@ class HybridIntegrationTests(unittest.TestCase):
         with patch("query_system.graph_rag.LocalOllama", side_effect=AssertionError("model")), patch("api.answer_question", side_effect=AssertionError("legacy ask")):
             run = self.run_question("Who calls login?")
         self.assertEqual(run.response.generations, [])
+
+    def test_plural_impact_and_related_tests_use_existing_rules_without_generation(self):
+        fake = FakeLocal()
+        run = self.run_question("What are the potential impacts of modifying validateToken(), and which related tests should be reviewed?", fake)
+        self.assertEqual([row.intent for row in run.original.requirements], ["CHANGE_IMPACT", "TEST_DISCOVERY"])
+        self.assertEqual([(item.engine, item.operation) for item in run.response.operations],
+                         [("rules", "change_impact"), ("rules", "reference_test_analysis")])
+        self.assertTrue(all(item.finding_ids for item in run.response.operations))
+        self.assertEqual(fake.calls, 0)
+        self.assertEqual(run.response.generations, [])
+
+    def test_generation_gate_skips_missing_target_and_keeps_independent_explanation(self):
+        with patch("query_system.graph_rag.GraphRagGenerator.generate", side_effect=AssertionError("Phase 8 should not prepare missing evidence")):
+            missing = self.run_question("Explain noSuchFunction")
+        self.assertEqual(missing.response.generations, [])
+        self.assertEqual(missing.response.presentation.requirements[0].state, "not_found")
+        fake = FakeLocal()
+        run = self.run_question("Explain login and explain duplicate", fake)
+        self.assertEqual(fake.calls, 1)
+        self.assertEqual(run.response.generations[0].original_orders, [0])
+        self.assertEqual([item.state for item in run.response.presentation.requirements], ["partial", "ambiguous"])
+        self.assertTrue(run.response.presentation.clarifications)
+
+    def test_optional_relationship_omissions_do_not_suppress_source_grounded_explanation(self):
+        request = self.request("Explain login")
+        request.limits.evidence = EvidenceLimits(max_records=1)
+        fake = FakeLocal()
+        run = asyncio.run(run_hybrid(self.owner.store, request, self.owner.channels, answers, client=fake))
+        self.assertTrue(run.package.omissions)
+        self.assertEqual(fake.calls, 1)
+        self.assertEqual(run.response.generations[0].model_status, "success")
+
+    def test_hybrid_diagnostics_transport_accepted_finding_ids(self):
+        run = self.run_question("Who calls login?")
+        accepted = {operation.operation_id: operation.finding_ids for operation in run.package.operations}
+        self.assertTrue(any(accepted.values()))
+        self.assertEqual({item.operation_id: item.finding_ids for item in run.response.operations}, accepted)
+        generated = self.run_question("Explain `login`")
+        owners = {item.operation_id for item in generated.response.operations}
+        for diagnostic in generated.response.generations:
+            self.assertTrue(all(set(ids) <= owners for ids in diagnostic.claim_operation_ids.values()))
 
     def test_one_pin_and_legitimate_internal_stage_differences(self):
         with patch.object(self.owner.store, "pin_view", wraps=self.owner.store.pin_view) as pins:

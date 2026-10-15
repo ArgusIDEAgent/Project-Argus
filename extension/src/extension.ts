@@ -6,6 +6,7 @@ import { ServerManager, SearchResult, CodeResult, DocSection, DocsStatus, Job } 
 import { verifiedSourcePath } from './sourceNavigation';
 import { registerResponsePreview } from './responsePreview';
 import { HybridChatSession, hybridEnabled } from './hybridChat';
+import { debugLegacyAnswerEngineFooter } from './debugAnswerEngine';
 
 let server: ServerManager | undefined;
 
@@ -42,6 +43,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   let refreshTimer: NodeJS.Timeout | undefined;
   let gitStateTimer: NodeJS.Timeout | undefined;
   let selectedRepository: { id: string; rootPath: string } | undefined;
+  let docsSyncRunning = false;
   let lastGitState: string | undefined;
   let lastSynchronizationStatus: string | undefined;
   let refreshing = false;
@@ -52,7 +54,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   const resultActions = new Map<string, { result: CodeResult; repoId: string; queryHash?: string }>();
   const docSourceActions = new Map<string, { repoId: string; path: string; sourceHash: string; startLine: number; endLine: number }>();
 
-  async function showResults(result: SearchResult, title: string): Promise<void> {
+  async function showResults(result: SearchResult, title: string, answer = false): Promise<void> {
     const selected = selectedRepository;
     if (!panel || !selected) return;
     resultActions.clear();
@@ -61,13 +63,20 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       resultActions.set(key, { result: item, repoId: selected.id, queryHash: result.queryHash });
       return { ...item, key, canIgnore: Boolean(result.queryHash) };
     });
-    await panel.webview.postMessage({ type: 'results', title, results, warning: result.warning, answer: result.answer });
+    const debug = answer && vscode.workspace.getConfiguration('codemind').get<boolean>('debug.showAnswerEngine', false);
+    await panel.webview.postMessage({ type: 'results', title, results, warning: result.warning, answer: result.answer,
+      ...(debug ? { debugFooter: debugLegacyAnswerEngineFooter(result) } : {}) });
   }
 
   async function updateDocsStatus(selected: { id: string }, known?: DocsStatus): Promise<void> {
     if (!panel || !server) return;
-    const status = known ?? (await server.docSections(selected.id)).status;
-    if (selectedRepository === selected) await panel.webview.postMessage({ type: 'docsStatus', status });
+    try {
+      const status = known ?? (await server.docSections(selected.id)).status;
+      if (selectedRepository === selected) await panel.webview.postMessage({ type: 'docsStatus', status });
+    } catch (error) {
+      if (selectedRepository === selected) await panel.webview.postMessage({ type: 'docsUnavailable',
+        text: error instanceof Error ? error.message : 'Documentation status is unavailable.' });
+    }
   }
 
   async function showDoc(section: DocSection | null): Promise<void> {
@@ -77,7 +86,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     if (selectedRepository !== selected) return;
     docSourceActions.clear();
     const seen = new Set<string>();
-    const evidence = (section?.evidence || []).filter(item => {
+    const evidence = (section?.freshness === 'current' ? section.evidence : []).filter(item => {
       if (!item.path || !item.sourceHash || seen.has(item.entityId)) return false;
       seen.add(item.entityId);
       return true;
@@ -89,6 +98,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     });
     await panel.webview.postMessage({ type: 'docs', section, sections: listing.sections, evidence });
     await updateDocsStatus(selected, listing.status);
+    if (listing.lastOutcome === 'partial' && listing.lastWarning) {
+      await panel.webview.postMessage({ type: 'docsWarning', text: listing.lastWarning });
+    }
   }
 
   async function openIndexedSource(selected: { id: string; rootPath: string }, source: {
@@ -326,7 +338,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         return;
       }
       const result = reuse ? await server!.reuse(selected.id, { query }) : answer ? await server!.ask(selected.id, query) : await server!.search(selected.id, query);
-      if (selectedRepository === selected) await showResults(result, reuse ? 'Reuse suggestions' : 'Code search');
+      if (selectedRepository === selected) await showResults(result, reuse ? 'Reuse suggestions' : 'Code search', answer);
     } catch (error) {
       if (panel) await panel.webview.postMessage({ type: 'error', text: error instanceof Error ? error.message : 'Search failed.' });
     } finally {
@@ -340,8 +352,14 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     if (!selectedRepository) await selectRepository();
     const selected = selectedRepository;
     if (!selected || !vscode.workspace.isTrusted) return;
-    try { await showDoc(await server!.docsOverview(selected.id)); }
-    catch (error) { await panel?.webview.postMessage({ type: 'error', text: error instanceof Error ? error.message : 'Could not open documentation.' }); }
+    try {
+      await panel?.webview.postMessage({ type: 'docsOverviewBusy', busy: true });
+      await showDoc(await server!.docsOverview(selected.id));
+    } catch (error) {
+      const text = error instanceof Error ? error.message : 'Could not open documentation.';
+      await panel?.webview.postMessage({ type: 'docsUnavailable', text });
+      await panel?.webview.postMessage({ type: 'error', text });
+    } finally { await panel?.webview.postMessage({ type: 'docsOverviewBusy', busy: false }); }
   }
 
   async function syncDocs(): Promise<void> {
@@ -349,16 +367,30 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     if (!selectedRepository) await selectRepository();
     const selected = selectedRepository;
     if (!selected || !vscode.workspace.isTrusted) return;
+    if (docsSyncRunning) return;
+    docsSyncRunning = true;
     try {
       await panel?.webview.postMessage({ type: 'docsBusy', busy: true });
       const listing = await server!.docSections(selected.id);
       const result = await server!.syncDocs(selected.id, listing.status.sectionCount ? 'incremental' : 'baseline');
+      if (result.repoId !== selected.id || !result.snapshotId ||
+          !['success', 'no_changes', 'partial'].includes(result.outcome) || !result.status ||
+          !Array.isArray(result.updated) || !Array.isArray(result.removed)) {
+        throw new Error('Documentation backend returned an invalid synchronization result.');
+      }
       if (selectedRepository === selected) {
         await updateDocsStatus(selected, result.status);
         await showDoc(result.overview);
+        const summary = result.outcome === 'no_changes' ? 'Documentation is already current; no sections regenerated.' :
+          `Documentation ${result.outcome}: ${result.updated.length} updated, ${result.removed.length} removed, ${result.reusedCount} reused.`;
+        await panel?.webview.postMessage({ type: 'docsSyncResult', text: summary + (result.warning ? ` ${result.warning}` : '') });
       }
-    } catch (error) { await panel?.webview.postMessage({ type: 'error', text: error instanceof Error ? error.message : 'Documentation sync failed.' }); }
-    finally { await panel?.webview.postMessage({ type: 'docsBusy', busy: false }); }
+    } catch (error) {
+      const text = error instanceof Error ? error.message : 'Documentation sync failed.';
+      await panel?.webview.postMessage({ type: 'docsUnavailable', text });
+      await panel?.webview.postMessage({ type: 'error', text });
+    }
+    finally { docsSyncRunning = false; await panel?.webview.postMessage({ type: 'docsBusy', busy: false }); }
   }
   context.subscriptions.push(vscode.commands.registerCommand('codemind.openDocsOverview', openDocsOverview));
   context.subscriptions.push(vscode.commands.registerCommand('codemind.syncDocs', syncDocs));
@@ -618,6 +650,7 @@ export function chatHtml(webview: vscode.Webview): string {
     .result-actions { display: flex; gap: 8px; margin-top: 6px; }
     .docs-status { margin-top: 6px; font-size: 11px; color: var(--vscode-descriptionForeground); }
     .docs-view { width: 100%; line-height: 1.5; overflow-wrap: anywhere; }
+    .debug-answer-engine { display:block; border-top:1px solid var(--vscode-panel-border); margin-top:12px; padding-top:7px; color:var(--vscode-descriptionForeground); font-size:11px; }
     .docs-view h2 { font-size: 16px; margin: 12px 0 6px; }
     .docs-view h3 { font-size: 14px; margin: 10px 0 4px; }
     .docs-view p, .docs-view ul, .docs-view pre { margin: 4px 0 8px; }
@@ -653,6 +686,7 @@ export function chatHtml(webview: vscode.Webview): string {
     const button = document.getElementById('send-button');
     const repositoryStatus = document.getElementById('repository-status');
     const docsStatus = document.getElementById('docs-status');
+    const openDocsButton = document.getElementById('open-docs');
     const syncDocsButton = document.getElementById('sync-docs');
     document.getElementById('select-repository').addEventListener('click', () => vscode.postMessage({ type: 'selectRepository' }));
     document.getElementById('search-code').addEventListener('click', () => vscode.postMessage({ type: 'search', text: input.value }));
@@ -756,6 +790,7 @@ export function chatHtml(webview: vscode.Webview): string {
       while (messages.children.length > 200) messages.firstElementChild.remove();
       messages.append(wrapper);
       messages.scrollTop = messages.scrollHeight;
+      return wrapper;
     }
 
     let pendingTimer;
@@ -796,12 +831,16 @@ export function chatHtml(webview: vscode.Webview): string {
       if (message.type === 'docsStatus') {
         const status = message.status;
         docsStatus.textContent = status.sectionCount === 0 ? 'Docs not generated' :
-          status.staleCount ? status.staleCount + ' documentation sections need sync' :
           status.affectedCount ? status.affectedCount + ' documentation sections reflect uncommitted changes' :
+          status.staleCount ? status.staleCount + ' documentation sections need sync' :
           status.currentCount + ' documentation sections current';
         return;
       }
-      if (message.type === 'docsBusy') { syncDocsButton.disabled = Boolean(message.busy); return; }
+      if (message.type === 'docsUnavailable') { docsStatus.textContent = message.text; return; }
+      if (message.type === 'docsWarning') { docsStatus.textContent = 'Documentation partial: ' + message.text; return; }
+      if (message.type === 'docsOverviewBusy') { openDocsButton.disabled = Boolean(message.busy); if (message.busy) docsStatus.textContent = 'Loading documentation...'; return; }
+      if (message.type === 'docsBusy') { syncDocsButton.disabled = Boolean(message.busy); if (message.busy) docsStatus.textContent = 'Synchronizing documentation...'; return; }
+      if (message.type === 'docsSyncResult') { addMessage('CodeMind', message.text, 'server'); return; }
       if (message.type === 'docs') { showDocs(message); return; }
       if (message.type === 'ignored') { document.getElementById(message.key)?.remove(); return; }
       if (message.type === 'useReference') { input.value = message.text; input.focus(); return; }
@@ -832,6 +871,7 @@ export function chatHtml(webview: vscode.Webview): string {
           }
           item.append(title, location, reason, context, actions); messages.append(item);
         }
+        if (message.debugFooter) messages.insertAdjacentHTML('beforeend', message.debugFooter);
         messages.scrollTop = messages.scrollHeight;
       }
       if (message.type === 'reply') addMessage('CodeMind server', message.text, 'server');

@@ -62,6 +62,7 @@ from knowledge_base.identity import relative_path as normalized_relative_path
 from knowledge_base.semantic import keyword_search, matches_filters
 from knowledge_base.retrieval import HybridRetriever, plan_query
 from knowledge_base.synchronization import SnapshotStore, SyncManager
+from documentation import DocumentationError, DocumentationService
 
 logger = logging.getLogger(__name__)
 
@@ -337,6 +338,11 @@ class SearchRequest(BaseModel):
         return value
 
 
+class DocsSyncRequest(BaseModel):
+    repoId: str = Field(pattern=r"^[a-f0-9]{24}$")
+    mode: Literal['baseline', 'incremental'] = 'incremental'
+
+
 # ─────────────────────────────────────────────────────────────
 # Endpoints
 # ─────────────────────────────────────────────────────────────
@@ -387,18 +393,21 @@ def get_job(job_id: str):
         job = _JOBS.get(job_id)
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
+    result = job.get("result") or {
+        "fileCount": 0, "commitHash": "latest", "branch": "main", "dirtyFingerprint": "clean",
+        "semantic": {"state": "pending", "error": None, "chunkCount": 0},
+        "docs": dict(_EMPTY_DOCS_STATUS),
+    }
+    if os.environ.get("CODEMIND_ENABLE_DOCS") == "1" and job["state"] == JobState.COMPLETED:
+        try:
+            result = {**result, "docs": _documentation(job["repoId"]).list()["status"]}
+        except (DocumentationError, ValueError, OSError):
+            pass
     return {
         "id": job["id"],
         "state": job["state"].value if isinstance(job["state"], JobState) else job["state"],
         "error": job.get("error"),
-        "result": job.get("result") or {
-            "fileCount": 0,
-            "commitHash": "latest",
-            "branch": "main",
-            "dirtyFingerprint": "clean",
-            "semantic": {"state": "pending", "error": None, "chunkCount": 0},
-            "docs": dict(_EMPTY_DOCS_STATUS),
-        },
+        "result": result,
     }
 
 
@@ -433,31 +442,62 @@ def live_state(repo_id: str):
 
 # ── Documentation ────────────────────────────────────────────
 
+def _documentation(repo_id: str) -> DocumentationService:
+    if os.environ.get("CODEMIND_ENABLE_DOCS") != "1":
+        raise HTTPException(status_code=503, detail="Documentation is awaiting the product scope decision. Set CODEMIND_ENABLE_DOCS=1 only in an approved environment.")
+    if not re.fullmatch(r"[a-f0-9]{24}", repo_id):
+        raise HTTPException(status_code=422, detail="Invalid repository identity.")
+    entry = _REGISTERED_REPOS.get(repo_id)
+    if not entry:
+        raise HTTPException(status_code=404, detail="Repository is not registered.")
+    try:
+        return DocumentationService(entry["rootPath"], repo_id, DEFAULT_DATA_DIR)
+    except (ValueError, OSError) as exc:
+        raise HTTPException(status_code=409, detail="Repository identity or root is unavailable.") from exc
+
+
+def _docs_call(action):
+    try:
+        return action()
+    except DocumentationError as exc:
+        code = {"missing_snapshot": 409, "stale_source": 409, "resource_limit": 429,
+                "unsupported": 400, "failed": 500}.get(exc.status, 500)
+        raise HTTPException(status_code=code, detail=str(exc)) from exc
+
+
 @app.get("/docs/sections")
-def doc_sections(repoId: str = "0" * 24):
-    return {
-        "repoId": repoId,
-        "sections": [],
-        "status": dict(_EMPTY_DOCS_STATUS),
-    }
+def doc_sections(repoId: str):
+    service = _documentation(repoId)
+    return _docs_call(service.list)
 
 
 @app.get("/docs/overview")
-def doc_overview(repoId: str = "0" * 24):
-    # The extension expects a 404 with {"error": ...} when no docs exist.
-    # Returning 200 with empty sections causes a misleading "up to date" state.
-    raise HTTPException(status_code=404, detail="Documentation not found")
+def doc_overview(repoId: str):
+    service = _documentation(repoId)
+    return _docs_call(service.overview)
 
 
 @app.get("/docs/section/{section_id}")
-def doc_section(section_id: str):
-    """Return a single documentation section by ID.  Stub."""
-    raise HTTPException(status_code=404, detail="Section not found")
+def doc_section(section_id: str, repoId: str):
+    if not re.fullmatch(r"[a-f0-9]{40}", section_id):
+        raise HTTPException(status_code=422, detail="Invalid documentation section identity.")
+    result = _docs_call(lambda: _documentation(repoId).section(section_id))
+    if result is None:
+        raise HTTPException(status_code=404, detail="Documentation section not found.")
+    return result
+
+
+@app.get("/docs/stale")
+def doc_stale(repoId: str):
+    service = _documentation(repoId)
+    listing = _docs_call(service.list)
+    return {**listing, "sections": [row for row in listing["sections"] if row["freshness"] != "current"]}
 
 
 @app.post("/docs/sync")
-def doc_sync():
-    return {"updated": [], "affected": [], "status": dict(_EMPTY_DOCS_STATUS), "overview": None}
+def doc_sync(req: DocsSyncRequest):
+    service = _documentation(req.repoId)
+    return _docs_call(lambda: service.sync(req.mode))
 
 
 # ── Analysis / Reuse ─────────────────────────────────────────

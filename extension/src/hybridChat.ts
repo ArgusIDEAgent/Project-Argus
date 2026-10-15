@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 import { renderResponseBody, ResponsePresentation } from './responsePresentation';
 import { openVerifiedPreviewSource } from './responsePreview';
 import { HybridQueryInput, ServerManager } from './serverManager';
+import { debugAnswerEngineFooter } from './debugAnswerEngine';
 
 export function hybridEnabled(): boolean {
   return vscode.workspace.getConfiguration('codemind').get<boolean>('hybridEnabled', false) === true;
@@ -28,6 +29,9 @@ export function editorQueryContext(rootPath: string, question?: string): Partial
 }
 
 type Answer = { repoId: string; rootPath: string; token: string; view: ResponsePresentation;
+  operations?: { operation_id: string; engine: string; status: string; finding_ids?: string[] }[];
+  generations?: { original_orders: number[]; model_status: string; fallback_status: string;
+    claim_operation_ids?: Record<string, string[]> }[];
   sources: Map<string, string>; copies: Map<string, string>; version: number };
 
 export class HybridChatSession {
@@ -49,7 +53,9 @@ export class HybridChatSession {
       if (item.mode !== 'copy_query' || !item.prompt) return;
       const action = randomBytes(12).toString('hex'); answer.copies.set(action, item.prompt); copyKeys[index] = action;
     });
-    await this.send({ type: 'hybridResults', key, html: renderResponseBody(answer.view, sourceKeys, copyKeys, 'hybrid', 'hybrid-' + key + '-') });
+    const html = renderResponseBody(answer.view, sourceKeys, copyKeys, 'hybrid', 'hybrid-' + key + '-');
+    const debug = vscode.workspace.getConfiguration('codemind').get<boolean>('debug.showAnswerEngine', false);
+    await this.send({ type: 'hybridResults', key, html: html + (debug ? debugAnswerEngineFooter(answer.view, answer.operations, answer.generations) : '') });
   }
 
   async ask(selected: { id: string; rootPath: string }, question: string, current: () => boolean): Promise<void> {
@@ -77,6 +83,7 @@ export class HybridChatSession {
     if (response.presentation.repository_id !== selected.id || response.presentation.snapshot_id !== response.snapshot_id) throw new Error('Hybrid response repository/generation mismatch.');
     const key = randomBytes(12).toString('hex');
     const answer: Answer = { repoId: selected.id, rootPath: selected.rootPath, token: response.navigation_token || '', view: response.presentation,
+      operations: response.operations, generations: response.generations,
       sources: new Map(), copies: new Map(), version: 0 };
     this.previous = answer.token ? { repoId: answer.repoId, rootPath: answer.rootPath, token: answer.token } : undefined;
     this.answers.set(key, answer);

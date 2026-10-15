@@ -10,7 +10,10 @@ export type HybridQueryInput = { repository_id: string; question: string; depth:
   active_file?: string; cursor?: { line: number; column: number };
   selection?: { start: { line: number; column: number }; end: { line: number; column: number } } };
 export type HybridReply = { schema_version: 'hybrid-v1'; status: string; presentation: ResponsePresentation | null;
-  navigation_token: string | null; snapshot_id: string | null; error: { message: string } | null };
+  navigation_token: string | null; snapshot_id: string | null; error: { message: string } | null;
+  operations?: { operation_id: string; engine: string; status: string; finding_ids?: string[] }[];
+  generations?: { original_orders: number[]; model_status: string; fallback_status: string;
+    claim_operation_ids?: Record<string, string[]> }[] };
 
 type HelloResponse = { reply: string };
 export type Repository = { id: string; rootPath: string; defaultBranch: string };
@@ -20,7 +23,8 @@ export type Job = { id: string; state: 'queued' | 'running' | 'completed' | 'fai
     docs?: DocsStatus } | null };
 export type CodeResult = { entityId: string; path: string; name: string; startLine: number; endLine: number;
   reason: string; classification?: string; confidence?: number; revision: string; sourceHash: string;
-  callers: { name: string }[]; tests: { name: string }[]; docSectionId?: string; docKind?: string };
+  callers: { name: string }[]; tests: { name: string }[]; docSectionId?: string; docKind?: string;
+  retrievalMethods?: string[] };
 export type SearchResult = { results: CodeResult[]; mode: string; warning: string | null; queryHash?: string; answer?: string; answerMode?: string };
 export type DocsStatus = { sectionCount: number; currentCount: number; staleCount: number; affectedCount: number; generatedCount: number };
 export type DocEvidence = { entityId: string; type: string; path: string; name: string; kind: string;
@@ -28,7 +32,11 @@ export type DocEvidence = { entityId: string; type: string; path: string; name: 
 export type DocSection = { repoId: string; sectionId: string; title: string; kind: string;
   contentMarkdown: string; sourceCommit: string | null; generationReason: string; freshness: string;
   generated: boolean; proposedMarkdown: string | null; affectedBy: string[]; evidence: DocEvidence[] };
-export type DocList = { repoId: string; sections: { sectionId: string; title: string; kind: string; freshness: string }[]; status: DocsStatus };
+export type DocList = { repoId: string; sections: { sectionId: string; title: string; kind: string; freshness: string }[];
+  status: DocsStatus; snapshotId?: string | null; snapshotFresh?: boolean; lastOutcome?: string | null; lastWarning?: string | null };
+export type DocsSyncResult = { repoId: string; snapshotId: string; outcome: 'success' | 'no_changes' | 'partial';
+  updated: string[]; removed: string[]; reusedCount: number; pendingCount: number; warning: string | null;
+  status: DocsStatus; overview: DocSection | null };
 
 const MAX_RESPONSE_BYTES = 10 * 1024 * 1024;
 
@@ -129,7 +137,7 @@ export class ServerManager implements vscode.Disposable {
   }
 
   async docsOverview(repoId: string): Promise<DocSection | null> {
-    try { return await this.request('GET', `/docs/overview?repoId=${encodeURIComponent(repoId)}`); }
+    try { return await this.request('GET', `/docs/overview?repoId=${encodeURIComponent(repoId)}`, undefined, 90000, true); }
     catch (error) { if (error instanceof Error && /Documentation not found/.test(error.message)) return null; throw error; }
   }
 
@@ -145,11 +153,12 @@ export class ServerManager implements vscode.Disposable {
     return this.request('GET', `/docs/stale?repoId=${encodeURIComponent(repoId)}`);
   }
 
-  async syncDocs(repoId: string, mode: 'baseline' | 'incremental'): Promise<{ updated: string[]; affected: string[]; status: DocsStatus; overview: DocSection | null }> {
+  async syncDocs(repoId: string, mode: 'baseline' | 'incremental'): Promise<DocsSyncResult> {
     return this.request('POST', '/docs/sync', { repoId, mode }, 600000);
   }
 
-  private async request<T>(method: 'GET' | 'POST', requestPath: string, payload?: unknown, timeoutMs = 90000): Promise<T> {
+  private async request<T>(method: 'GET' | 'POST', requestPath: string, payload?: unknown,
+    timeoutMs = 90000, allowNull = false): Promise<T> {
     await this.start();
     if (!this.port) throw new Error('Local server is unavailable.');
     const token = this.readToken();
@@ -179,12 +188,15 @@ export class ServerManager implements vscode.Disposable {
         response.on('close', () => { if (!response.complete) reject(new Error('Local server closed the connection early.')); });
         response.on('end', () => {
           try {
-            const result = JSON.parse(Buffer.concat(chunks).toString()) as T & { error?: string };
-            if (result === null || typeof result !== 'object' || Array.isArray(result)) throw new Error('Invalid response envelope');
+            const result = JSON.parse(Buffer.concat(chunks).toString()) as T & { error?: string; detail?: string };
             if (!response.statusCode || response.statusCode < 200 || response.statusCode >= 300) {
-              reject(new Error(result.error ?? `Server returned ${response.statusCode}.`));
+              const detail = result && typeof result === 'object' && !Array.isArray(result)
+                ? (result.error ?? result.detail) : undefined;
+              reject(new Error(typeof detail === 'string' ? detail : `Server returned ${response.statusCode}.`));
               return;
             }
+            if (result === null && allowNull) { resolve(result); return; }
+            if (result === null || typeof result !== 'object' || Array.isArray(result)) throw new Error('Invalid response envelope');
             resolve(result);
           } catch {
             reject(new Error('Local server returned an invalid response.'));

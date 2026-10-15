@@ -183,3 +183,35 @@ test('actual chat webview forwards only opaque hybrid actions and disables them 
   assert.ok(control.disabled); click({ target: { closest: () => control } });
   assert.equal(posts.length, 3);
 });
+
+test('chat answer footer appears once after the answer and source cards', () => {
+  const Module = require('node:module');
+  const native = Module._load;
+  let html;
+  try {
+    Module._load = function(name, ...args) { return name === 'vscode' ? {} : native.call(this, name, ...args); };
+    html = require('../out/extension').chatHtml({});
+  } finally { Module._load = native; }
+  const script = /<script nonce="[^"]+">([\s\S]*?)<\/script>/.exec(html)[1];
+  const nodes = new Map(); let receive;
+  function element() { return { children: [], listeners: {}, focus() {},
+    addEventListener(name, callback) { this.listeners[name] = callback; },
+    append(...values) { this.children.push(...values); },
+    insertAdjacentHTML(_, value) { this.children.push({ html: value }); },
+    querySelectorAll() { return []; } }; }
+  const document = { getElementById(id) { if (!nodes.has(id)) nodes.set(id, element()); return nodes.get(id); },
+    createElement: element };
+  vm.runInNewContext(script, { acquireVsCodeApi: () => ({ postMessage() {} }), document,
+    window: { addEventListener(_, callback) { receive = callback; } }, clearTimeout() {}, setTimeout() {} });
+  const footer = '<footer class="debug-answer-engine">Answer by: Semantic Search + Local LLM</footer>';
+  receive({ data: { type: 'results', answer: 'Explanation.\n\nSources:\n[1] auth.ts:1-2', results: [{
+    key: 'source', path: 'auth.ts', startLine: 1, endLine: 2, name: 'validateToken',
+    reason: 'Verified evidence', callers: [], tests: [], canIgnore: false,
+  }], warning: null, debugFooter: footer } });
+  const children = nodes.get('messages').children;
+  assert.equal(children.length, 3);
+  assert.equal(children[1].className, 'code-result');
+  assert.equal(children[2].html, footer);
+  assert.ok(children[0].children.some(item => item.textContent.includes('Sources:')));
+  assert.ok(!children[0].children.some(item => item.textContent?.includes('Answer by:')));
+});

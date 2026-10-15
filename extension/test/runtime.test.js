@@ -8,9 +8,9 @@ const http = require('node:http');
 const { createHash } = require('node:crypto');
 const Module = require('node:module');
 const vm = require('node:vm');
-let enabled = true, trusted = true, document, opened = 0;
+let enabled = true, trusted = true, debugEnabled = false, document, opened = 0;
 const vscode = {
-  workspace: { get isTrusted() { return trusted; }, getConfiguration: () => ({ get: (key, fallback) => key === 'hybridEnabled' ? enabled : fallback }),
+  workspace: { get isTrusted() { return trusted; }, getConfiguration: () => ({ get: (key, fallback) => key === 'hybridEnabled' ? enabled : key === 'debug.showAnswerEngine' ? debugEnabled : fallback }),
     openTextDocument: async () => document },
   window: { showTextDocument: async () => { opened++; } },
   ViewColumn: { Beside: 2 }, Range: class { constructor(...args) { this.args = args; } },
@@ -31,6 +31,25 @@ function presentation(repo = 'repo') {
 }
 function response() { return { schema_version: 'hybrid-v1', snapshot_id: 'b'.repeat(32), navigation_token: 'a'.repeat(48), presentation: presentation() }; }
 const selected = { id: 'repo', rootPath: '/unused' };
+
+test('debug flag changes only the final hybrid display footer', async () => {
+  const messages = [];
+  const value = response();
+  const session = new HybridChatSession({ hybridReadiness: async () => ({ enabled: true, snapshot_ready: true }),
+    hybridQuery: async () => value }, async message => { messages.push(message); return true; });
+  try {
+    debugEnabled = false;
+    await session.ask(selected, 'Where?', () => true);
+    const normal = messages.at(-1).html;
+    assert.doesNotMatch(normal, /Answer by:/);
+    debugEnabled = true;
+    await session.ask(selected, 'Where?', () => true);
+    const debug = messages.at(-1).html;
+    assert.equal(debug.slice(0, normal.length).replace(/hybrid-[a-f0-9]{24}-/g, 'hybrid-key-'),
+      normal.replace(/hybrid-[a-f0-9]{24}-/g, 'hybrid-key-'));
+    assert.match(debug.slice(normal.length), /Answer by: Unknown/);
+  } finally { debugEnabled = false; }
+});
 
 test('unknown malformed forged and untrusted actions cannot dispatch backend requests', async () => {
   let calls = 0;
@@ -124,8 +143,10 @@ test('backend transport reports malformed JSON primitives errors disconnects and
   const listener = http.createServer((request, reply) => {
     if (request.url === '/timeout') return;
     if (request.url === '/disconnect') { request.socket.destroy(); return; }
-    reply.writeHead(request.url === '/error' ? 500 : 200, { 'content-type': 'application/json' });
-    reply.end(({ '/null': 'null', '/array': '[]', '/invalid': '{bad', '/error': '{"error":"Safe backend error"}' })[request.url] || '{"reply":"ready"}');
+    reply.writeHead(request.url === '/error' || request.url === '/detail' ? 500 : 200, { 'content-type': 'application/json' });
+    reply.end(request.url?.startsWith('/docs/overview?') ? 'null' :
+      ({ '/null': 'null', '/array': '[]', '/invalid': '{bad', '/error': '{"error":"Safe backend error"}',
+        '/detail': '{"detail":"Published snapshot is stale."}' })[request.url] || '{"reply":"ready"}');
   });
   await new Promise(resolve => listener.listen(0, '127.0.0.1', resolve));
   const oldPort = process.env.CODEMIND_PORT, oldToken = process.env.CODEMIND_SESSION_TOKEN;
@@ -133,8 +154,10 @@ test('backend transport reports malformed JSON primitives errors disconnects and
   const server = new ServerManager('/unused', '/unused', { appendLine() {} });
   try {
     assert.equal(await server.hello('hello'), 'ready');
+    assert.equal(await server.docsOverview('a'.repeat(24)), null);
     for (const route of ['/null', '/array', '/invalid']) await assert.rejects(server.request('GET', route), /invalid response/i);
     await assert.rejects(server.request('GET', '/error'), /Safe backend error/);
+    await assert.rejects(server.request('GET', '/detail'), /Published snapshot is stale/);
     await assert.rejects(server.request('GET', '/disconnect'));
     await assert.rejects(server.request('GET', '/timeout', undefined, 20), /did not respond/);
   } finally {

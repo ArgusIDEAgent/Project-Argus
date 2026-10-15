@@ -6,7 +6,7 @@ runs the Node resolver/rendering/session/transport/navigation tests using existi
 dependencies. It launches no VS Code process and downloads nothing.
 `npm run test:integration` retains real Electron/editor suites; use
 `CODEMIND_TEST_VSCODE` for an existing binary. No local binary means explicitly
-not executed, with no automatic download. See [testing instructions](../TESTING.md).
+not executed, with no automatic download. See the project-root `TESTING.md`.
 
 ## Phase 10 development hybrid chat (default off)
 
@@ -28,7 +28,7 @@ as a scope. Named queries otherwise search the whole selected repository.
 Rollback: disable `codemind.hybridEnabled`; optionally restart the backend without
 `CODEMIND_ENABLE_HYBRID=1`. Old hybrid controls are disabled, settings/indexes remain
 intact, and legacy chat remains available. There is no automatic production-default
-migration. See [Phase 10 verification and limitations](../query_system/PHASE10.md):
+migration. See project-root `query_system/PHASE10.md` for Phase 10 verification and limitations:
 the actual target-sized knowledge-base build is currently blocked by an existing
 TypeScript resolver failure; fixture opt-in verification is not production readiness.
 
@@ -45,7 +45,7 @@ This development preview requires Workspace Trust, the CodeMind checkout with
 its `.venv` beside `extension/`, and the existing snapshot store selected by
 `CODEMIND_DATA_DIR` (default `~/.codemind/data`). The packet shape is
 `{"package": <EvidencePackage>, "generation": <GenerationResult or null>, "depth": "standard"}`.
-See [the Phase 9 report](../query_system/PHASE9.md) for backend export and validation
+See project-root `query_system/PHASE9.md` for backend export and validation
 details. Imported JSON is not authenticated; provenance verification authorizes
 canonical source navigation, not arbitrary supplied prose. Invalid/stale sources
 become non-clickable; unsaved editor changes also block navigation.
@@ -77,9 +77,15 @@ To use CodeMind in any normal VS Code window, run this from `extension/` and the
 
 ```sh
 npm run package:vsix
-code --install-extension ../codemind-extension-0.4.0.vsix --force
+code --install-extension ../codemind-extension-0.4.1.vsix --force
 ```
 
-Run `npm run test:integration` to launch an Extension Development Host and verify that the extension starts and receives the Hello reply. On non-macOS systems, set `CODEMIND_VSCODE_EXECUTABLE` to a VS Code executable or allow the test runner to download one.
+Run `npm run test:integration` to launch an Extension Development Host and verify that the extension starts and receives the Hello reply. If VS Code is not at the default macOS path, set `CODEMIND_TEST_VSCODE` to an existing executable; the test runner does not download one.
 
-After selecting and indexing a repository, chat messages search its code. **CodeMind: Search Code** and **CodeMind: Check for Reusable Code** expose search and intent checks directly. Saved new symbols receive reuse checks while the panel is open. Results can open source, insert a reference, or record an ignore decision. **CodeMind: Sync Documentation** builds and updates graph-linked docs; **CodeMind: Open Documentation Overview** opens their overview and source references. Generative chat answers remain planned. Server requests stay on loopback; the engine writes its session token to `~/.codemind/data/session_token`, and the extension sends it as the `x-codemind-session` header.
+After selecting and indexing a repository, chat messages search its code. **CodeMind: Search Code** and **CodeMind: Check for Reusable Code** expose search and intent checks directly. Saved new symbols receive reuse checks while the panel is open. Results can open source, insert a reference, or record an ignore decision. Server requests stay on loopback; the engine writes its session token to `~/.codemind/data/session_token`, and the extension sends it as the `x-codemind-session` header.
+
+### Documentation integration (scope gated)
+
+The Docs and Sync Docs controls use the standalone Python engine, which must be installed and started separately from the VSIX. The implementation is off by default because the root README's locked product scope currently excludes documentation generation. In an approved development environment, install the root `requirements.txt` into the project's `.venv`, then launch from the project root with `CODEMIND_ENABLE_DOCS=1 python3 start_codemind.py`. Restart the engine after changing the flag. Select a trusted repository and wait for its published knowledge snapshot before using Sync Docs. Generated records are stored outside the repository under the configured CodeMind data directory. Without the flag, documentation requests explain that scope approval is pending; normal repository selection and chat continue working.
+
+The implementation needs no Node documentation server or `sql.js`. `npm run test:docs` exercises the VS Code commands against a disposable Python snapshot when a local VS Code executable is available. The installed VSIX packages the compiled extension client; it does not bundle Python, the project's virtual environment, or generated documentation.

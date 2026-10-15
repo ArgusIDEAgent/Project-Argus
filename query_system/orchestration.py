@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from time import monotonic, perf_counter
 import re
 
-from query_system.contracts import EngineError, IntentRequirement, NormalizedQuery
+from query_system.contracts import EngineError, GraphFinding, IntentRequirement, NormalizedQuery
 from query_system.evidence_aggregation import EvidenceAggregator, FAILURES, stable_id
 from query_system.evidence_contracts import EvidencePackage
 from query_system.executor import MultiEngineExecutor
@@ -94,6 +94,30 @@ def _generation_request(request, original, orders, package, bindings, remaining_
         explanation_type=EXPLANATIONS[rows[0].intent], bindings={local[order]: bindings[order] for order in orders}, budget=budget)
 
 
+def _ready_for_generation(original, package, bindings, order):
+    """Require accepted target source (and a workflow path) before Phase 8 work."""
+    row = original.requirements[order]
+    targets = [original.entities[index] for index in row.entity_indices]
+    support = set(bindings.get(order, []))
+    if (row.intent not in EXPLANATIONS or not targets or
+            any(target.resolution != "resolved" or target.evidence is None for target in targets) or
+            package.validation_status in ("invalid", "stale") or
+            any(support.intersection(item.requirement_ids) for item in package.conflicts) or
+            any(item.requirement_id in support and item.clarification_required for item in package.requirements)):
+        return False
+    records = [record for record in package.evidence.values()
+               if any(use.requirement_id in support for use in record.uses)
+               and record.proof.evidence_type in ("symbol_definition", "source_range")]
+    if not all(any((record.proof.symbol_id == target.symbol_id if target.symbol_id else
+                    record.proof.file_id == target.file_id) for record in records) for target in targets):
+        return False
+    if row.intent == "WORKFLOW_EXPLANATION" and not any(
+            finding.requirement_id in support and isinstance(finding.original, GraphFinding)
+            and finding.original.path_node_ids for finding in package.findings):
+        return False
+    return True
+
+
 def compose_presentation(run, depth):
     """Combine existing projections; one package namespace, original requirements."""
     package, original = run.package, run.original
@@ -124,7 +148,7 @@ def compose_presentation(run, depth):
             display.sections[0].item_ids = ids[:DEPTH_ITEMS[depth]]
             display.supporting_requirement_ids = support
             display.hidden_items = max(0, len(ids) - DEPTH_ITEMS[depth])
-            display.limitations.append("Explanation deferred: optional generation disabled, insufficient time, or generation-call budget reached.")
+            display.limitations.append("Explanation unavailable from current validated evidence or generation disabled/budgeted.")
         targets = [original.entities[index] for index in display.original.entity_indices]
         if targets and any(target.resolution != "resolved" for target in targets):
             display.state = "not_found" if any(target.resolution == "not_found" for target in targets) else "unsupported" if any(target.resolution == "unsupported" for target in targets) else "ambiguous"
@@ -197,6 +221,9 @@ async def run_hybrid(store, request: HybridQueryRequest, channels, answers, *, c
             before = perf_counter()
             verifier = EvidenceAggregator.from_executor(executor, source_filter=PresentationSafety(answers).text)
             run.package = verifier.aggregate(report, request.limits.evidence)
+            findings_by_operation = {item.operation_id: item.finding_ids for item in run.package.operations}
+            for diagnostic in run.response.operations:
+                diagnostic.finding_ids = findings_by_operation.get(diagnostic.operation_id, [])
             timing.aggregation_ms = (perf_counter() - before) * 1000
             groups = defaultdict(list)
             for row in original.requirements:
@@ -207,15 +234,29 @@ async def run_hybrid(store, request: HybridQueryRequest, channels, answers, *, c
                 remaining = int((deadline - monotonic()) * 1000)
                 if not request.allow_generation or calls >= request.limits.max_generation_calls or remaining <= 0:
                     continue
-                generation_request = _generation_request(request, original, orders, run.package, run.bindings, remaining)
+                ready = [order for order in orders if _ready_for_generation(original, run.package, run.bindings, order)]
+                if not ready:
+                    continue
+                generation_request = _generation_request(request, original, ready, run.package, run.bindings, remaining)
                 result = GraphRagGenerator(executor, answers, client=client).generate(generation_request, run.package)
                 calls += result.model_calls
-                run.generations.append((orders, result))
+                run.generations.append((ready, result))
                 timing.llm_preparation_ms += result.preparation_ms
                 timing.llm_generation_ms += result.model_ms
                 timing.generation_total_ms += result.total_ms
-                run.response.generations.append(GenerationDiagnostic(task=kind, original_orders=orders, model_status=result.model_status,
-                    fallback_status=result.fallback_status, failure_category=result.failure_category, model_attempts=result.model_calls))
+                finding_owners = {finding.finding_id: finding.operation_id for finding in run.package.findings}
+                claim_owners = {}
+                for section in result.sections:
+                    for claim in section.claims:
+                        owners = {finding_owners[claim.finding_id]} if claim.finding_id in finding_owners else set()
+                        for record_id in claim.record_ids:
+                            record = run.package.evidence.get(record_id)
+                            if record:
+                                owners.update(use.operation_id for use in record.uses if use.operation_id)
+                        claim_owners[claim.claim_id] = sorted(owners)
+                run.response.generations.append(GenerationDiagnostic(task=kind, original_orders=ready, model_status=result.model_status,
+                    fallback_status=result.fallback_status, failure_category=result.failure_category, model_attempts=result.model_calls,
+                    claim_operation_ids=claim_owners))
             before = perf_counter(); view = compose_presentation(run, request.query.depth)
             timing.formatting_ms = (perf_counter() - before) * 1000
             before = perf_counter()
