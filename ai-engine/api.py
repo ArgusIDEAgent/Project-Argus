@@ -62,6 +62,7 @@ from knowledge_base.identity import relative_path as normalized_relative_path
 from knowledge_base.semantic import keyword_search, matches_filters
 from knowledge_base.retrieval import HybridRetriever, plan_query
 from knowledge_base.synchronization import SnapshotStore, SyncManager
+from query_system.query_understanding import classify_conversational_intent
 from documentation import DocumentationError, DocumentationService
 
 logger = logging.getLogger(__name__)
@@ -301,6 +302,16 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
 class HelloRequest(BaseModel):
     message: str = ""
 
+class ChatIntentRequest(BaseModel):
+    message: str = Field(min_length=1, max_length=2000)
+
+    @field_validator('message')
+    @classmethod
+    def non_empty_message(cls,value):
+        if not value.strip():
+            raise ValueError('Message is empty')
+        return value
+
 class RegisterRequest(BaseModel):
     rootPath: str = Field(min_length=1, max_length=4096)
     config: dict = Field(default_factory=dict)     # accepted for compatibility, intentionally ignored
@@ -351,6 +362,14 @@ class DocsSyncRequest(BaseModel):
 def hello(req: HelloRequest | None = None):
     """Handshake endpoint.  Requires the shared session token (app-level dependency)."""
     return {"reply": "Python AI Engine connected. Ready to analyze code."}
+
+
+@app.post("/v1/chat/intent")
+def chat_intent(req: ChatIntentRequest):
+    """Deterministic Phase-5 conversational boundary; performs no repository access."""
+    reply = classify_conversational_intent(req.message)
+    return {"handled": reply is not None, "category": reply.category if reply else None,
+            "reply": reply.text if reply else None}
 
 
 # ── Repository registration & indexing lifecycle ─────────────
@@ -743,6 +762,10 @@ def _keyword_search(req, *, data_dir=None, collection=None):
 
 @app.post("/ask")
 def ask(req: SearchRequest):
+    static = classify_conversational_intent(req.query)
+    if static is not None:
+        return {'mode':'static','results':[],'citations':[],'warning':None,'status':'success',
+                'answer':static.text,'answerMode':'static','staticCategory':static.category}
     retrieval = search_code(req)
     root = _REGISTERED_REPOS[req.repoId]['rootPath']
     result = answer_question(root,req.query,retrieval)

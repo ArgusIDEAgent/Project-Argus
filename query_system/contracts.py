@@ -70,6 +70,11 @@ class QueryRequest(ContractModel):
         return self
 
 
+class ConversationalReply(ContractModel):
+    category: Literal["greeting", "thanks", "farewell", "acknowledgment", "capabilities", "out_of_scope"]
+    text: str = Field(min_length=1, max_length=1000)
+
+
 Intent = Literal[
     "SYMBOL_LOCATION", "DIRECT_CALLERS", "DIRECT_CALLEES", "DEPENDENCY_PATH",
     "FEATURE_DISCOVERY", "FUNCTION_EXPLANATION", "WORKFLOW_EXPLANATION",

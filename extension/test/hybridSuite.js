@@ -7,6 +7,7 @@ const path = require('node:path');
 const vscode = require('vscode');
 const { ServerManager } = require('../out/serverManager');
 const { HybridChatSession, hybridEnabled, editorQueryContext } = require('../out/hybridChat');
+const { resolveStaticChat } = require('../out/extension');
 
 async function fixture(root) {
   const child = spawn(path.join(root, '.venv/bin/python'), [path.join(root, 'ai-engine/tests/phase10_server_fixture.py')], { cwd: root, stdio: ['pipe', 'pipe', 'pipe'] });
@@ -48,7 +49,16 @@ async function run() {
     await settings.update('hybridEnabled', false, vscode.ConfigurationTarget.Global);
     await settings.update('checkReuseOnSave', false, vscode.ConfigurationTarget.Global);
     assert.equal(hybridEnabled(), false);
+    const beforeStatic = await metrics(options);
+    const greeting = await resolveStaticChat(server, 'hi');
+    assert.equal(greeting.text, 'Hi! How can I help you understand this codebase?');
+    assert.deepEqual(await metrics(options), beforeStatic);
+    const staticLegacy = await server.ask(options.repo, 'thanks');
+    assert.equal(staticLegacy.answerMode, 'static'); assert.equal(staticLegacy.results.length, 0);
+    const afterStatic = await metrics(options);
+    assert.equal(afterStatic.retrieval, 0); assert.equal(afterStatic.legacy, 0); assert.equal(afterStatic.model, 0);
     assert.equal((await server.ask(options.repo, 'login')).answer, 'Legacy fixture answer');
+    assert.equal((await metrics(options)).retrieval, 1);
     await settings.update('hybridEnabled', true, vscode.ConfigurationTarget.Global);
     await session.ask(selected, 'Who calls login?', () => true);
     let reply = messages.findLast(message => message.type === 'hybridResults');

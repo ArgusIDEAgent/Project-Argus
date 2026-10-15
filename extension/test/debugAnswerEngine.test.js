@@ -1,7 +1,7 @@
 'use strict';
 const assert = require('node:assert/strict');
 const test = require('node:test');
-const { debugAnswerEngineFooter, debugLegacyAnswerEngineFooter } = require('../out/debugAnswerEngine');
+const { debugAnswerEngineFooter, debugLegacyAnswerEngineFooter, debugStaticAnswerEngineFooter } = require('../out/debugAnswerEngine');
 
 function view(items = [], order = 0) {
   return { items: Object.fromEntries(items.map(([id, origin]) => [id, { origin }])),
@@ -65,4 +65,11 @@ test('legacy deterministic fallback and absent execution metadata do not claim a
     /Answer by: Keyword Search \+ Evidence Summary/);
   assert.match(debugLegacyAnswerEngineFooter({ answerMode: 'evidence', results: [] }), /Answer by: Unknown/);
   assert.match(debugLegacyAnswerEngineFooter({ results: [{}] }), /Answer by: Unknown/);
+});
+
+test('static responses are attributed without claiming retrieval or generation', () => {
+  assert.match(debugLegacyAnswerEngineFooter({ answerMode: 'static', results: [] }), /Answer by: Static Response/);
+  const footer = debugStaticAnswerEngineFooter();
+  assert.match(footer, /Answer by: Static Response/);
+  assert.doesNotMatch(footer, /Graph|Semantic|Rule-Based|LLM/);
 });

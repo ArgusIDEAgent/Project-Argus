@@ -15,6 +15,7 @@ from query_system.graph_rag import GraphRagGenerator
 from query_system.hybrid_contracts import GenerationDiagnostic, HybridQueryRequest, HybridResponse, OperationDiagnostic, PipelineTiming
 from query_system.presentation_contracts import PresentationResult
 from query_system.presentation_preview import _scope_unavailable
+from query_system.query_understanding import classify_conversational_intent
 from query_system.response_presentation import DEPTH_ITEMS, format_response
 
 EXPLANATIONS = {"FUNCTION_EXPLANATION": "function", "WORKFLOW_EXPLANATION": "workflow",
@@ -193,6 +194,12 @@ async def run_hybrid(store, request: HybridQueryRequest, channels, answers, *, c
     start = perf_counter(); deadline = monotonic() + request.limits.deadline_ms / 1000
     timing = PipelineTiming()
     run = HybridRun(HybridResponse(status="error", snapshot_id=None, presentation=None, timings=timing))
+    static = classify_conversational_intent(request.query.question)
+    if static is not None:
+        run.response.status = "success"
+        run.response.static_response = static
+        timing.total_ms = (perf_counter() - start) * 1000
+        return run
     try:
         with MultiEngineExecutor.pinned(store, channels, engine_factory=engine_factory) as executor:
             executor.context.validate_request(request.query)

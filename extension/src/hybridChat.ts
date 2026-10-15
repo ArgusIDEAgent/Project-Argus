@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 import { renderResponseBody, ResponsePresentation } from './responsePresentation';
 import { openVerifiedPreviewSource } from './responsePreview';
 import { HybridQueryInput, ServerManager } from './serverManager';
-import { debugAnswerEngineFooter } from './debugAnswerEngine';
+import { debugAnswerEngineFooter, debugStaticAnswerEngineFooter } from './debugAnswerEngine';
 
 export function hybridEnabled(): boolean {
   return vscode.workspace.getConfiguration('codemind').get<boolean>('hybridEnabled', false) === true;
@@ -79,6 +79,12 @@ export class HybridChatSession {
       throw error;
     }
     if (!valid()) return;
+    if (response.schema_version === 'hybrid-v1' && response.static_response) {
+      const debug = vscode.workspace.getConfiguration('codemind').get<boolean>('debug.showAnswerEngine', false);
+      await this.send({ type: 'reply', text: response.static_response.text,
+        ...(debug ? { debugFooter: debugStaticAnswerEngineFooter() } : {}) });
+      return;
+    }
     if (response.schema_version !== 'hybrid-v1' || !response.presentation) throw new Error(response.error?.message || 'Hybrid response unavailable; legacy mode remains available.');
     if (response.presentation.repository_id !== selected.id || response.presentation.snapshot_id !== response.snapshot_id) throw new Error('Hybrid response repository/generation mismatch.');
     const key = randomBytes(12).toString('hex');

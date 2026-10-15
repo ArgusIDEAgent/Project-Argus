@@ -6,9 +6,18 @@ import { ServerManager, SearchResult, CodeResult, DocSection, DocsStatus, Job } 
 import { verifiedSourcePath } from './sourceNavigation';
 import { registerResponsePreview } from './responsePreview';
 import { HybridChatSession, hybridEnabled } from './hybridChat';
-import { debugLegacyAnswerEngineFooter } from './debugAnswerEngine';
+import { debugLegacyAnswerEngineFooter, debugStaticAnswerEngineFooter } from './debugAnswerEngine';
 
 let server: ServerManager | undefined;
+
+export async function resolveStaticChat(
+  manager: Pick<ServerManager, 'conversationIntent'>,
+  message: string,
+): Promise<{ category: string; text: string } | undefined> {
+  const result = await manager.conversationIntent(message);
+  if (!result.handled || !result.category || !result.reply) return undefined;
+  return { category: result.category, text: result.reply };
+}
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
   registerResponsePreview(context);  // Separate opt-in preview; legacy chat stays unchanged.
@@ -316,7 +325,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     const rootPath = choice.path ?? (await vscode.window.showOpenDialog({
       canSelectFolders: true, canSelectFiles: false, canSelectMany: false, openLabel: 'Select Repository',
     }))?.[0]?.fsPath;
-    if (rootPath && panel) await registerFolder(rootPath, panel);
+    if (rootPath && panel) {
+      if (isDifferentRepository(selectedRepository?.rootPath, rootPath)) {
+        await panel.webview.postMessage({ type: 'newChat' });
+      }
+      await registerFolder(rootPath, panel);
+    }
   }
 
   context.subscriptions.push(vscode.commands.registerCommand('codemind.selectRepository', selectRepository));
@@ -463,7 +477,14 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       if (!isSendMessage(message)) return;
       const currentPanel = panel;
       try {
-        if (selectedRepository && !/^(hi|hello)$/i.test(message.text.trim())) {
+        const conversational = await resolveStaticChat(server, message.text);
+        if (conversational) {
+          const debug = vscode.workspace.getConfiguration('codemind').get<boolean>('debug.showAnswerEngine', false);
+          if (panel === currentPanel) await currentPanel.webview.postMessage({ type: 'reply', text: conversational.text,
+            ...(debug ? { debugFooter: debugStaticAnswerEngineFooter() } : {}) });
+          return;
+        }
+        if (selectedRepository) {
           await runSearch(false, message.text, true);
           return;
         }
@@ -501,6 +522,15 @@ function isSendMessage(value: unknown): value is { type: 'send'; text: string } 
 
 function isSelectMessage(value: unknown): value is { type: 'selectRepository' } {
   return typeof value === 'object' && value !== null && (value as { type?: unknown }).type === 'selectRepository';
+}
+
+export function isDifferentRepository(currentRootPath: string | undefined, nextRootPath: string): boolean {
+  if (!currentRootPath) return false;
+  const canonical = (rootPath: string): string => {
+    try { return fs.realpathSync(rootPath); }
+    catch { return path.resolve(rootPath); }
+  };
+  return canonical(currentRootPath) !== canonical(nextRootPath);
 }
 
 export function chatHtml(webview: vscode.Webview): string {
@@ -812,6 +842,16 @@ export function chatHtml(webview: vscode.Webview): string {
 
     window.addEventListener('message', event => {
       const message = event.data;
+      if (message.type === 'newChat') {
+        messages.replaceChildren();
+        input.value = '';
+        clearTimeout(pendingTimer);
+        button.disabled = false;
+        openDocsButton.disabled = false;
+        syncDocsButton.disabled = false;
+        input.focus();
+        return;
+      }
       if (message.type === 'hybridResults') {
         let view = document.querySelector('.hybrid-response[data-answer-key="' + message.key + '"]');
         if (!view) { view = document.createElement('section'); view.className = 'docs-view hybrid-response'; view.dataset.answerKey = message.key; messages.append(view); }
@@ -874,7 +914,10 @@ export function chatHtml(webview: vscode.Webview): string {
         if (message.debugFooter) messages.insertAdjacentHTML('beforeend', message.debugFooter);
         messages.scrollTop = messages.scrollHeight;
       }
-      if (message.type === 'reply') addMessage('CodeMind server', message.text, 'server');
+      if (message.type === 'reply') {
+        addMessage('CodeMind', message.text, 'server');
+        if (message.debugFooter) messages.insertAdjacentHTML('beforeend', message.debugFooter);
+      }
       if (message.type === 'error') addMessage('Error', message.text, 'error');
       clearTimeout(pendingTimer);
       button.disabled = false;

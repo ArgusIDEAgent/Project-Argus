@@ -22,6 +22,7 @@ from query_system.hybrid_contracts import HybridPresentationRequest, HybridQuery
 from query_system.orchestration import compose_presentation, run_hybrid
 from query_system.presentation_contracts import PresentationSource
 from query_system.presentation_preview import _scope_unavailable
+from query_system.query_understanding import classify_conversational_intent
 from query_system.semantic_engine import existing_api_channels
 
 
@@ -125,6 +126,9 @@ def create_hybrid_router(api):
     @router.post("/query", response_model=HybridResponse)
     def query(req: HybridQueryRequest):
         enabled()
+        static = classify_conversational_intent(req.query.question)
+        if static is not None:
+            return HybridResponse(status="success", snapshot_id=None, presentation=None, static_response=static)
         store = store_for(req.query.repository_id)
         if not slots.acquire(blocking=False): raise HTTPException(429, "Hybrid engine is busy; retry after current bounded requests finish.")
         try:

@@ -45,6 +45,45 @@ class RuntimeApiTests(unittest.TestCase):
             self.assertEqual(self.http.post(route, json={}, headers=self.headers).status_code, 422)
             self.assertEqual(self.http.post(route, content=b'{bad-json', headers=self.headers).status_code, 422)
 
+    def test_static_chat_bypasses_legacy_retrieval_and_model(self):
+        with patch.object(api, "search_code", side_effect=AssertionError("retrieval")) as retrieval, \
+                patch.object(api, "answer_question", side_effect=AssertionError("model")) as model, \
+                patch("hybrid_api.SnapshotStore", side_effect=AssertionError("snapshot access")):
+            for question in ("hi", "hello", "hey", "good morning", "thanks", "thank you", "bye",
+                             "how are you?", "what can you do?", "help", "what's the weather?"):
+                with self.subTest(question=question):
+                    intent = self.http.post("/v1/chat/intent", json={"message": question}, headers=self.headers)
+                    self.assertEqual(intent.status_code, 200)
+                    self.assertTrue(intent.json()["handled"])
+                    reply = self.http.post("/ask", json={"repoId": self.repo, "query": question}, headers=self.headers)
+                    self.assertEqual(reply.status_code, 200)
+                    self.assertEqual(reply.json()["answerMode"], "static")
+                    self.assertEqual(reply.json()["results"], [])
+                    self.assertEqual(reply.json()["citations"], [])
+            hybrid = self.http.post("/v1/hybrid/query", json={
+                "query": {"repository_id": self.repo, "question": "hi"}}, headers=self.headers)
+            self.assertEqual(hybrid.status_code, 200)
+            self.assertEqual(hybrid.json()["static_response"]["category"], "greeting")
+            self.assertIsNone(hybrid.json()["presentation"])
+            self.assertEqual(hybrid.json()["operations"], [])
+            self.assertEqual(hybrid.json()["generations"], [])
+            retrieval.assert_not_called()
+            model.assert_not_called()
+
+    def test_mixed_chat_reaches_existing_legacy_path_without_losing_query(self):
+        retrieval = {"mode": "test", "results": [], "warning": None}
+        answer = {**retrieval, "answer": "technical", "answerMode": "evidence"}
+        with patch.object(api, "search_code", return_value=retrieval) as search, \
+                patch.object(api, "answer_question", return_value=answer) as model:
+            question = "thanks, show callers of validateToken()"
+            intent = self.http.post("/v1/chat/intent", json={"message": question}, headers=self.headers)
+            self.assertFalse(intent.json()["handled"])
+            reply = self.http.post("/ask", json={"repoId": self.repo, "query": question}, headers=self.headers)
+            self.assertEqual(reply.json()["answer"], "technical")
+            search.assert_called_once()
+            model.assert_called_once()
+            self.assertEqual(search.call_args.args[0].query, question)
+
     def test_hybrid_invalid_depth_budgets_unknown_options_and_extra_fields(self):
         valid = {"query": {"repository_id": self.repo, "question": "Who calls login?"}}
         for change in (

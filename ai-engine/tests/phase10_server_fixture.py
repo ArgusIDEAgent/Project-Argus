@@ -20,7 +20,11 @@ def main():
     owner = phase6.ExecutionTests(); owner.setUp()
     api._REGISTERED_REPOS[owner.repo]["createdAt"] = api._utc_now_iso()
     token = secrets.token_hex(32)
-    counts = {"query": 0, "presentation": 0, "source": 0, "model": 0, "legacy": 0}
+    counts = {"query": 0, "presentation": 0, "source": 0, "model": 0, "legacy": 0, "retrieval": 0}
+    original_search = api.search_code
+    def retrieval(*args, **kwargs):
+        counts["retrieval"] += 1
+        return original_search(*args, **kwargs)
     def generated(_self, context, *_args):
         counts["model"] += 1
         return valid_answer(context)
@@ -41,6 +45,7 @@ def main():
             stack.enter_context(patch.object(api, "_REGISTRY_FILE", str(owner.fixture.data / "repos.json")))
             stack.enter_context(patch.dict(os.environ, {"CODEMIND_ENABLE_HYBRID": "1", "CODEMIND_ENABLE_DOCS": "1"}))
             stack.enter_context(patch("query_system.local_ollama.LocalOllama.generate", generated))
+            stack.enter_context(patch.object(api, "search_code", retrieval))
             stack.enter_context(patch("api.answer_question", legacy))
             server = uvicorn.Server(uvicorn.Config(api.app, log_level="error", lifespan="off"))
             worker = threading.Thread(target=server.run, kwargs={"sockets": [sock]}, daemon=True); worker.start()

@@ -150,7 +150,7 @@ test('existing saved settings and dependencies remain compatible with default-of
   assert.deepEqual(manifest.dependencies, {});
 });
 
-test('actual chat webview forwards only opaque hybrid actions and disables them on rollback', () => {
+test('actual chat webview forwards only opaque hybrid actions, disables them on rollback, and starts a new chat', () => {
   const Module = require('node:module');
   const native = Module._load;
   let html;
@@ -163,7 +163,10 @@ test('actual chat webview forwards only opaque hybrid actions and disables them 
   let receive;
   function element() { return { dataset: {}, children: [], listeners: {}, disabled: false, focus() {},
     addEventListener(name, callback) { this.listeners[name] = callback; },
-    append(...values) { this.children.push(...values); }, querySelectorAll() { return controls; } }; }
+    append(...values) { this.children.push(...values); },
+    insertAdjacentHTML(_position, value) { this.insertedHtml = (this.insertedHtml || '') + value; },
+    replaceChildren(...values) { this.children.splice(0, this.children.length, ...values); },
+    querySelectorAll() { return controls; } }; }
   const document = { getElementById(id) { if (!nodes.has(id)) nodes.set(id, element()); return nodes.get(id); },
     createElement: element, querySelector() { return nodes.get('answer'); } };
   vm.runInNewContext(script, { acquireVsCodeApi: () => ({ postMessage: value => posts.push(value) }), document,
@@ -182,6 +185,28 @@ test('actual chat webview forwards only opaque hybrid actions and disables them 
   receive({ data: { type: 'hybridRollback' } });
   assert.ok(control.disabled); click({ target: { closest: () => control } });
   assert.equal(posts.length, 3);
+  const messages = nodes.get('messages'); messages.append(element());
+  nodes.get('message-input').value = 'old draft'; nodes.get('send-button').disabled = true;
+  receive({ data: { type: 'newChat' } });
+  assert.equal(messages.children.length, 0);
+  assert.equal(nodes.get('message-input').value, '');
+  assert.equal(nodes.get('send-button').disabled, false);
+  receive({ data: { type: 'reply', text: 'Hi!', debugFooter: '<footer>Answer by: Static Response</footer>' } });
+  assert.equal(messages.children.at(-1).children.at(-1).textContent, 'Hi!');
+  assert.match(messages.insertedHtml, /Answer by: Static Response/);
+});
+
+test('repository comparison starts a new chat only for a different path', () => {
+  const Module = require('node:module');
+  const native = Module._load;
+  let isDifferentRepository;
+  try {
+    Module._load = function(name, ...args) { return name === 'vscode' ? {} : native.call(this, name, ...args); };
+    ({ isDifferentRepository } = require('../out/extension'));
+  } finally { Module._load = native; }
+  assert.equal(isDifferentRepository(undefined, '/repo/one'), false);
+  assert.equal(isDifferentRepository('/repo/one', '/repo/one'), false);
+  assert.equal(isDifferentRepository('/repo/one', '/repo/two'), true);
 });
 
 test('chat answer footer appears once after the answer and source cards', () => {

@@ -7,13 +7,14 @@ import re
 import sqlite3
 from time import monotonic
 from types import SimpleNamespace
+import unicodedata
 
 from knowledge_base.identity import relative_path
 from knowledge_base.metadata import trace
 from knowledge_base.parser import LANGUAGES
 from knowledge_base.retrieval import IDENTIFIER, PATH, STOP_WORDS, plan_query
 from query_system.contracts import (
-    ContractError, EditorSelection, EngineError, EntityCandidate, Evidence, IntentRequirement, NormalizedQuery,
+    ContractError, ConversationalReply, EditorSelection, EngineError, EntityCandidate, Evidence, IntentRequirement, NormalizedQuery,
     QueryContext, QueryEntity, QueryRequest, SnapshotContext, StaleIndexError,
 )
 from query_system.graph_engine import GRAPH_OPERATIONS, SymbolParameters, _BudgetExceeded, _Run
@@ -73,6 +74,37 @@ def _path(name):
 _REQUEST_START = re.compile(r"^(?:(?:and\s+)?then\s+|please\s+|tell me\s+)?(?:compare|difference between|find|locate|explain|describe|who|what|where|why|which|contract|signature|impact|overview|dependencies|dependents|imports|callers|callees|tests?|(?:show|list)\s+(?:me\s+)?(?:the\s+)?(?:code|logic|callers|callees|tests?|dependencies|exports|definitions|its|their)|(?:its|their|both)\s+(?:callers|callees|dependencies|tests))\b", re.I)
 _UNKNOWN_REQUEST = re.compile(r"^(?:deploy|execute|delete|predict|prove|count|how many|benchmark|run command)\b", re.I)
 _TARGET_LIST = re.compile(r"\b(?:who calls|what calls|callers of|callees of|tests? (?:for|cover|covers|reference|references))\b", re.I)
+
+_CONVERSATIONAL_PATTERNS = (
+    ("greeting", re.compile(r"(?:hi|hello|hey|good\s+(?:morning|afternoon|evening)|(?:hi|hello|hey)\s+there)", re.I),
+     "Hi! How can I help you understand this codebase?"),
+    ("thanks", re.compile(r"(?:thanks|thank\s+you|thanks\s+a\s+lot|many\s+thanks|much\s+appreciated)", re.I),
+     "You're welcome! Let me know if you'd like to explore another part of the repository."),
+    ("farewell", re.compile(r"(?:bye|goodbye|see\s+you|see\s+you\s+later|talk\s+to\s+you\s+later)", re.I),
+     "Goodbye! Come back whenever you'd like to explore the codebase."),
+    ("acknowledgment", re.compile(r"(?:ok|okay|got\s+it|understood|sounds\s+good|all\s+right|how\s+are\s+you)", re.I),
+     "I'm ready to help with the repository whenever you are."),
+    ("capabilities", re.compile(r"(?:help|what\s+can\s+you\s+do|how\s+can\s+you\s+help|what\s+are\s+your\s+capabilities|who\s+are\s+you)", re.I),
+     "I can find definitions, callers, callees, dependencies, tests, and feature implementations; inspect contracts and change impact; and explain code or repository workflows using current indexed evidence."),
+    ("out_of_scope", re.compile(
+        r"(?:what(?:'s|\s+is)\s+the\s+weather(?:\s+(?:today|tomorrow|outside))?|weather\s+forecast|will\s+it\s+rain(?:\s+(?:today|tomorrow))?|"
+        r"what\s+time\s+is\s+it|tell\s+me\s+a\s+joke|(?:what(?:'s|\s+is)|show\s+me)\s+the\s+(?:latest\s+)?(?:news|sports\s+score|stock\s+price)|"
+        r"(?:give\s+me|find)\s+(?:a\s+)?(?:recipe|restaurant|flight|movie\s+showtime)s?(?:\s+.*)?)", re.I),
+     "I'm focused on helping you understand the selected repository, so I can't answer that general request. Ask me about the codebase, its structure, behavior, dependencies, or tests."),
+)
+
+
+def classify_conversational_intent(message: str) -> ConversationalReply | None:
+    """Recognize bounded whole-message chat intents without retrieval or model inference."""
+    if not isinstance(message, str) or len(message) > 2000 or re.search(r"[\x00-\x08\x0b\x0c\x0e-\x1f]", message):
+        return None
+    normalized = unicodedata.normalize("NFKC", message).replace("’", "'").strip()
+    normalized = re.sub(r"\s+", " ", normalized)
+    normalized = re.sub(r"[.!?]+$", "", normalized).strip()
+    for category, pattern, text in _CONVERSATIONAL_PATTERNS:
+        if pattern.fullmatch(normalized):
+            return ConversationalReply(category=category, text=text)
+    return None
 
 
 def _discovery_clause(base, masked):
@@ -144,7 +176,7 @@ def parse_question(question: str) -> NormalizedQuery:
         if not role and any(item[2].name == name and clause_bounds(item[0])[0] == clause_bounds(start)[0] for item in mentions):
             return
         mentions.append((start, end, QueryEntity(name=name, kind=kind, file_path=file_path)))
-    operand = rf"(?:(?:the\s+)?(?:function|method|class|symbol)\s+)?(?P<ref>{_QUOTES.pattern}|{PATH}::{IDENTIFIER}|{PATH}(?![\w.])|{IDENTIFIER})(?:\s+in\s+(?P<scope>{_QUOTES.pattern}|{PATH}(?![\w.])))?"
+    operand = rf"(?:(?:the\s+)?(?:function|method|class|symbol)\s+)?(?P<ref>{_QUOTES.pattern}|{PATH}::{IDENTIFIER}|{PATH}(?![\w.])|{IDENTIFIER})(?:\s*\(\s*\))?(?:\s+in\s+(?P<scope>{_QUOTES.pattern}|{PATH}(?![\w.])))?"
     def extract_operands(header, limit, connectors):
         _, right = clause_bounds(header.start())
         offset = header.end() + re.match(r"\s*", base[header.end():right]).end()

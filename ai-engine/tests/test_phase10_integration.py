@@ -72,6 +72,18 @@ class HybridIntegrationTests(unittest.TestCase):
             run = self.run_question("Who calls login?")
         self.assertEqual(run.response.generations, [])
 
+    def test_conversational_messages_bypass_pinning_execution_evidence_and_ollama(self):
+        for question in ("hi", "thanks", "bye", "how are you?", "what can you do?", "what's the weather?"):
+            fake = FakeLocal()
+            with self.subTest(question=question), patch("query_system.orchestration.MultiEngineExecutor.pinned", side_effect=AssertionError("retrieval")):
+                run = self.run_question(question, fake)
+                self.assertEqual(run.response.status, "success")
+                self.assertIsNotNone(run.response.static_response)
+                self.assertIsNone(run.response.presentation)
+                self.assertEqual(run.response.operations, [])
+                self.assertEqual(run.response.generations, [])
+                self.assertEqual(fake.calls, 0)
+
     def test_plural_impact_and_related_tests_use_existing_rules_without_generation(self):
         fake = FakeLocal()
         run = self.run_question("What are the potential impacts of modifying validateToken(), and which related tests should be reviewed?", fake)

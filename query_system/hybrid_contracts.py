@@ -3,7 +3,7 @@
 from typing import Literal
 from pydantic import Field
 
-from query_system.contracts import ContractModel, EngineError, GenerationId, QueryRequest, ResultStatus
+from query_system.contracts import ContractModel, ConversationalReply, EngineError, GenerationId, QueryRequest, ResultStatus
 from query_system.evidence_contracts import EvidenceLimits
 from query_system.execution_contracts import ExecutionLimits
 from query_system.generation_contracts import GenerationBudget
@@ -63,6 +63,7 @@ class HybridResponse(ContractModel):
     status: ResultStatus
     snapshot_id: GenerationId | None
     presentation: PresentationResult | None
+    static_response: ConversationalReply | None = None
     navigation_token: str | None = None
     error: EngineError | None = None
     operations: list[OperationDiagnostic] = Field(default_factory=list)

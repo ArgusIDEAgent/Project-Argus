@@ -53,8 +53,13 @@ export function debugLegacyAnswerEngineFooter(reply: SearchResult): string {
   const methods = new Set(reply.results.flatMap(result => result.retrievalMethods ?? []));
   const labels = ['exact', 'literal', 'keyword', 'semantic', 'graph']
     .filter(method => methods.has(method)).map(method => names[method]);
-  if (reply.answerMode === 'local-llm') labels.push('Local LLM');
+  if (reply.answerMode === 'static') labels.push('Static Response');
+  else if (reply.answerMode === 'local-llm') labels.push('Local LLM');
   else if (reply.answerMode === 'evidence' && reply.results.length) labels.push('Evidence Summary');
   return '<footer class="debug-answer-engine" aria-label="Developer answer engine attribution">Answer by: '
     + (labels.length ? labels.join(' + ') : 'Unknown') + '</footer>';
+}
+
+export function debugStaticAnswerEngineFooter(): string {
+  return '<footer class="debug-answer-engine" aria-label="Developer answer engine attribution">Answer by: Static Response</footer>';
 }

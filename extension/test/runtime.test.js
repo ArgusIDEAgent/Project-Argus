@@ -51,6 +51,23 @@ test('debug flag changes only the final hybrid display footer', async () => {
   } finally { debugEnabled = false; }
 });
 
+test('hybrid static response renders as plain chat with no technical template', async () => {
+  const messages = [];
+  const value = { schema_version: 'hybrid-v1', status: 'success', snapshot_id: null, navigation_token: null,
+    presentation: null, static_response: { category: 'greeting', text: 'Hi! How can I help you understand this codebase?' } };
+  const session = new HybridChatSession({ hybridReadiness: async () => ({ enabled: true, snapshot_ready: true }),
+    hybridQuery: async () => value }, async message => { messages.push(message); return true; });
+  try {
+    debugEnabled = true;
+    await session.ask(selected, 'hi', () => true);
+    assert.equal(messages.length, 1);
+    assert.equal(messages[0].type, 'reply');
+    assert.equal(messages[0].text, value.static_response.text);
+    assert.match(messages[0].debugFooter, /Answer by: Static Response/);
+    assert.ok(!('html' in messages[0]));
+  } finally { debugEnabled = false; }
+});
+
 test('unknown malformed forged and untrusted actions cannot dispatch backend requests', async () => {
   let calls = 0;
   const session = new HybridChatSession({ hybridSource: async () => { calls++; } }, async () => true);
@@ -144,7 +161,7 @@ test('backend transport reports malformed JSON primitives errors disconnects and
     if (request.url === '/timeout') return;
     if (request.url === '/disconnect') { request.socket.destroy(); return; }
     reply.writeHead(request.url === '/error' || request.url === '/detail' ? 500 : 200, { 'content-type': 'application/json' });
-    reply.end(request.url?.startsWith('/docs/overview?') ? 'null' :
+    reply.end(request.url === '/v1/chat/intent' ? '{"handled":true,"category":"greeting","reply":"Hi!"}' : request.url?.startsWith('/docs/overview?') ? 'null' :
       ({ '/null': 'null', '/array': '[]', '/invalid': '{bad', '/error': '{"error":"Safe backend error"}',
         '/detail': '{"detail":"Published snapshot is stale."}' })[request.url] || '{"reply":"ready"}');
   });
@@ -154,6 +171,7 @@ test('backend transport reports malformed JSON primitives errors disconnects and
   const server = new ServerManager('/unused', '/unused', { appendLine() {} });
   try {
     assert.equal(await server.hello('hello'), 'ready');
+    assert.deepEqual(await server.conversationIntent('hi'), { handled: true, category: 'greeting', reply: 'Hi!' });
     assert.equal(await server.docsOverview('a'.repeat(24)), null);
     for (const route of ['/null', '/array', '/invalid']) await assert.rejects(server.request('GET', route), /invalid response/i);
     await assert.rejects(server.request('GET', '/error'), /Safe backend error/);

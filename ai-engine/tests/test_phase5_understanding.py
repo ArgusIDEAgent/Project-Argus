@@ -13,7 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from phase5_fixture import fixture
 from query_system.contracts import EditorSelection, QueryContext, QueryRequest
-from query_system.query_understanding import QueryUnderstandingEngine
+from query_system.query_understanding import QueryUnderstandingEngine, classify_conversational_intent
 from query_system.benchmark_understanding import DATASET, evaluate, target_matches
 
 
@@ -29,6 +29,39 @@ class UnderstandingTests(unittest.TestCase):
     def normalize(self, question, **kwargs):
         with QueryUnderstandingEngine.pinned(self.store) as engine:
             return engine.normalize(self.request(question, **kwargs))
+
+    def test_conversational_boundary_and_technical_regressions(self):
+        static = {
+            "hi": "greeting", "hello": "greeting", "hey": "greeting", "good morning": "greeting",
+            "thanks": "thanks", "thank you": "thanks", "bye": "farewell", "how are you?": "acknowledgment",
+            "what can you do?": "capabilities", "help": "capabilities", "what's the weather?": "out_of_scope",
+        }
+        for question, category in static.items():
+            with self.subTest(question=question):
+                reply = classify_conversational_intent(question)
+                self.assertIsNotNone(reply)
+                self.assertEqual(reply.category, category)
+        technical = {
+            "hi, explain login()": ["login"],
+            "hello, find authentication": ["authentication"],
+            "thanks, show callers of validateToken()": ["validateToken"],
+            "what does hello() do?": ["hello"],
+            "find the function named hi()": ["hi"],
+            "compare hello() and goodbye()": ["hello", "goodbye"],
+            "Where is sharedName defined?": ["sharedName"],
+            "Where is the logic that rejects expired sessions?": [],
+            "Find login, show its callers, and explain login": ["login"],
+        }
+        for question, targets in technical.items():
+            with self.subTest(question=question):
+                self.assertIsNone(classify_conversational_intent(question))
+                result = self.normalize(question)
+                self.assertTrue(result.requirements)
+                for target in targets:
+                    self.assertIn(target, [entity.name for entity in result.entities])
+        self.assertEqual(self.normalize("Where is sharedName defined?").status, "ambiguous")
+        self.assertEqual(self.normalize("Where is the logic that rejects expired sessions?").primary_intent, "FEATURE_DISCOVERY")
+        self.assertGreaterEqual(len(self.normalize("Find login, show its callers, and explain login").requirements), 3)
 
     def test_resolved_symbol_location_preserves_canonical_proof(self):
         result = self.normalize("Where is validateToken defined?")

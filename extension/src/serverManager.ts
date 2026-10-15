@@ -11,6 +11,7 @@ export type HybridQueryInput = { repository_id: string; question: string; depth:
   selection?: { start: { line: number; column: number }; end: { line: number; column: number } } };
 export type HybridReply = { schema_version: 'hybrid-v1'; status: string; presentation: ResponsePresentation | null;
   navigation_token: string | null; snapshot_id: string | null; error: { message: string } | null;
+  static_response?: { category: string; text: string } | null;
   operations?: { operation_id: string; engine: string; status: string; finding_ids?: string[] }[];
   generations?: { original_orders: number[]; model_status: string; fallback_status: string;
     claim_operation_ids?: Record<string, string[]> }[] };
@@ -73,6 +74,10 @@ export class ServerManager implements vscode.Disposable {
   async hello(message: string): Promise<string> {
     const result = await this.request<HelloResponse>('POST', '/hello', { message });
     return result.reply;
+  }
+
+  async conversationIntent(message: string): Promise<{ handled: boolean; category: string | null; reply: string | null }> {
+    return this.request('POST', '/v1/chat/intent', { message });
   }
 
   async registerRepository(rootPath: string): Promise<Repository> {
