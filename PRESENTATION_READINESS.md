@@ -214,8 +214,18 @@ src/controller.ts:  guardProtectedResource → authenticateRequest, requestLogin
 ```
 `git log` shows it as a normal two-commit repo, so you can demo "edit → save → re-index".
 
+**To rebuild it on another machine** (e.g. a lab PC for a dry run):
+`./setup_demo_repo.sh` — recreates it from the in-repo fixture and prints the demo questions.
+Verified: the rebuilt repo indexes to the identical 12 files / 47 chunks / 64 nodes / 138
+relationships.
+
 **Do not demo `knowledge_base/fixtures/phase8/typescript` in place** — it cannot be indexed
 (§3.1).
+
+**Repository picker is cleaned.** It now lists exactly three entries: `~/codemind-demo` (the
+demo), `~/work/learn-go` (yours), and `ai-engine/sample_code` (the README's one-file sample,
+which cannot be indexed — see §3.3). Three failed/scratch entries created during this session
+were removed from `~/.codemind/data/repos.json` along with their data directories.
 
 ---
 
