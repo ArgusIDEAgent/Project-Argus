@@ -201,6 +201,38 @@ mid-demo. The 3B model is 2.0 GB and answered in ~0.3 s on this CPU. The code's 
 first — they use the graph, not the model — so a model hiccup can only affect the two
 prose questions.
 
+### ⚠️ Memory — the most likely thing to go wrong live
+
+This machine has **7.5 GiB RAM and 4 cores**, and it is already under pressure. Measured on
+2026-10-16 with Ollama and the engine running:
+
+| State | Available RAM |
+|---|---|
+| Model unloaded | 3.9 GiB |
+| **Model loaded** (kept 30 min now) | **1.7 GiB** |
+| Cold answer (model unloaded) | +6.5 s (5.4 s of it model load) |
+
+At one point it fell to **907 MiB available with 2.0 GiB of swap in use**, and load average was
+**3.2 on 4 cores**. Add VS Code's extension host (typically 0.8–1.5 GB) and you are into
+swap-thrashing or an OOM kill *during* the demo.
+
+**Do this before you present:**
+1. **Close the browser.** Brave was holding ~1.6 GB across 10 processes — the single biggest
+   and easiest win. This alone takes you from ~1.7 GiB to ~3.3 GiB available.
+2. Run the pytest suite **before** the session starts, not during.
+3. Keep the demo to one VS Code window and one engine terminal.
+
+**Why `OLLAMA_KEEP_ALIVE=30m` is set in `start_ollama.sh`:** the default is 5 minutes, so an
+explanation pause would unload the model and make the next answer take ~6.5 s instead of
+~0.3 s. 30 minutes covers a presentation; the cost is the ~3 GB resident above.
+
+**If it does get tight live**, this is your escape hatch — free the model instantly and the
+tool keeps working in evidence mode:
+
+```
+~/.local/opt/ollama/bin/ollama stop llama3.2:3b
+```
+
 ---
 
 ## 4. The demo repo (created and verified for you)
@@ -281,6 +313,9 @@ Ollama stopped the tool degrades to ranked evidence rather than failing.
 
 **Rehearse once on battery-free power and with Wi-Fi off** to prove nothing needs the network
 at demo time. The only network dependencies were the one-off downloads, already done.
+
+**Free memory first:** close the browser and any other heavy app before you start — see
+"⚠️ Memory" above. This is the most likely cause of a live failure.
 
 ---
 

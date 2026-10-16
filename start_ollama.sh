@@ -11,6 +11,12 @@ set -euo pipefail
 OLLAMA_HOME="${HOME}/.local/opt/ollama"
 export OLLAMA_MODELS="${OLLAMA_MODELS:-$HOME/.ollama/models}"
 export LD_LIBRARY_PATH="${OLLAMA_HOME}/lib:${LD_LIBRARY_PATH:-}"
+# Hold the model in RAM for 30 minutes instead of the 5-minute default, so a pause
+# mid-presentation does not cost a ~6.5 s reload (5.4 s of which is model load).
+# This keeps ~3 GB resident, so close memory-hungry apps (a browser is typically
+# 1.5 GB) before the demo. Measured on this host: unloaded = 3.9 GiB available,
+# loaded = 1.7 GiB available.
+export OLLAMA_KEEP_ALIVE="${OLLAMA_KEEP_ALIVE:-30m}"
 
 if [ ! -x "${OLLAMA_HOME}/bin/ollama" ]; then
   echo "Ollama is not installed at ${OLLAMA_HOME}." >&2
