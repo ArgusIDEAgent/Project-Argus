@@ -95,7 +95,7 @@ knowledge_base/benchmark_semantic.py, query_system/benchmark_*.py
 | Feature | State | Detail |
 |---|---|---|
 | **Written answers (F5 prose)** | ⛔ absent | Ollama is **not installed** (`which ollama` → not found). Everything falls back to an evidence list. |
-| **Python AST graph (F3)** | ⛔ absent from the indexed path | `knowledge_base/parser.py LANGUAGES` supports **only** `.js/.jsx/.mjs/.cjs/.ts/.mts/.cts/.tsx`. No `.py`. |
+| **Python AST graph (F3)** | ⚠️ built, but not wired into the current path | `knowledge_base/parser.py LANGUAGES` supports **only** `.js/.jsx/.mjs/.cjs/.ts/.mts/.cts/.tsx` — no `.py`. A *working* Python NetworkX graph does exist for `sample_code` (`graph.json`, 24 nodes / 26 edges) and is reachable via `graph_query.py --graph-file <path>`, but `config.py:240` deliberately refuses it whenever a versioned snapshot exists, so the API and extension never see it. So: implemented, superseded, not deleted. |
 | **JS/TS graph** | ✅ present | The exact thing README §3 declares a Non-Goal. |
 | **Docs generation** | ⛔ blocked by design | `/docs/*` returns *"awaiting the product scope decision"* unless `CODEMIND_ENABLE_DOCS=1`. README §3 says OUT; the extension still ships **Open Documentation Overview** and **Sync Documentation** buttons. |
 | **Reuse detection** | ⛔ explicit stub | `/analysis/reuse` → `{"mode":"not_implemented","warning":"Reuse analysis is not implemented yet."}`. README §3 says OUT; the extension still ships a **Check for Reusable Code** button. |
@@ -199,7 +199,7 @@ README §2 defines seven features, F1–F7. My assessment of what is genuinely b
 |---|---|---|---|
 | F1 | Repository indexing | **Yes** | 12 files indexed; 1-file incremental re-index in 3 s |
 | F2 | Semantic code search | **Yes** | hybrid mode returns chunks with path + line range |
-| F3 | AST knowledge graph (**Python**) | **Only for JS/TS** | `parser.LANGUAGES` has no `.py` |
+| F3 | AST knowledge graph (**Python**) | **Only for JS/TS** — Python version exists but superseded | `parser.LANGUAGES` has no `.py`; a working Python graph exists in `graph.json` via the legacy CLI only |
 | F4 | Structural queries | **Yes, for JS/TS** | 2-hop impact chains, verified above |
 | F5 | Grounded Q&A | **Retrieval yes, prose no** | graph-augmented retrieval works; prose needs Ollama |
 | F6 | VS Code extension | **Yes** | 8 commands, chat panel, 48 tests, strict-TS clean |
