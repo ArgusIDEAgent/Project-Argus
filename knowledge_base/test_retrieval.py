@@ -29,6 +29,47 @@ class PlanningTests(unittest.TestCase):
                 self.assertEqual((plan.intent,plan.reference,plan.file),(intent,reference,file))
         self.assertEqual(plan_query('Where is authentication checked?').keywords,'authentication')
 
+    def test_impact_queries_capture_the_operand_not_the_query_keyword(self):
+        # The impact alternation mixes the specific phrase ("impact of X") with
+        # the bare verbs ("change X"). A leftmost non-overlapping search matches
+        # the verb first and consumes the query keyword as the operand.
+        cases = [
+            ('change impact of login','login'),
+            ('Change impact of login','login'),
+            ('change impact of the login function','login'),
+            ('impact of changing validate','validate'),
+            ('impact of modifying parse','parse'),
+            ('what is affected if we modify login?','login'),
+            ('what happens if I change generate_token?','generate_token'),
+            ('impact of validateToken','validateToken'),
+            ('impact of `validateToken`','validateToken'),
+            ('impact of function validateToken','validateToken'),
+        ]
+        for query,reference in cases:
+            with self.subTest(query=query):
+                plan=plan_query(query)
+                self.assertEqual((plan.intent,plan.reference),('impact',reference))
+
+    def test_bare_verb_phrases_stay_explore_by_design(self):
+        # The impact guard requires impact vocabulary somewhere in the query; a
+        # bare imperative is deliberately not classified as a change-impact ask.
+        for query in ('change login','modify login'):
+            with self.subTest(query=query):
+                self.assertEqual(plan_query(query).intent,'explore')
+
+    def test_impact_keyword_is_still_a_valid_symbol_when_it_is_the_only_operand(self):
+        # "impact of change" names a symbol literally called change; the keyword
+        # rejection must not erase the only candidate on offer.
+        plan=plan_query('impact of change')
+        self.assertEqual((plan.intent,plan.reference),('impact','change'))
+
+    def test_degenerate_impact_queries_degrade_without_raising(self):
+        for query in ('impact of','impact of the','changing','changing  ','impact of  ','Change impact of'):
+            with self.subTest(query=query):
+                plan=plan_query(query)
+                self.assertIsInstance(plan.reference,str)
+                self.assertIn(plan.intent,('impact','explore','definition','explain'))
+
     def test_empty_queries_and_question_punctuation_are_safe(self):
         for query in ('','   ','""','` `','x'*2001):
             with self.assertRaises(ValueError): plan_query(query)

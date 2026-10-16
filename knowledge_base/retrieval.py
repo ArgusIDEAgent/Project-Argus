@@ -24,6 +24,33 @@ MAX_GRAPH_DEPTH = 3
 STOP_WORDS = frozenset('where what how why which who is are the a an of to in on for and or does do can i we it this that implemented implementation logic code function method file module explain describe tell me checked raised handled'.split())
 IDENTIFIER = r'(?:[^\W\d]|[$])[\w$]*(?:\.(?:[^\W\d]|[$])[\w$]*)*'
 PATH = r'[\w@./-]+\.(?:[cm]?[jt]sx?|py|md|markdown|json|ya?ml|toml|ini|c|cpp|h|java|go|rs|rb)'
+# The impact pattern mixes the specific phrase ("impact of X") with the bare
+# verbs ("change X"), so the query keyword itself can be consumed as the operand.
+IMPACT_KEYWORDS = frozenset('impact impacts effect effects change changes changing modify modifies modifying affect affects affected break breaks breaking remove removes removing delete deletes deleting'.split())
+
+
+def _impact_match(pattern, normalized):
+    """Return the first impact candidate whose captured operand is a real symbol.
+
+    A leftmost non-overlapping search matches "change" in "change impact of
+    login" and consumes the query keyword as the operand, hiding the intended
+    "impact of login" phrasing. Search overlapping so later candidates stay
+    visible, then prefer the first capture that is not an unquoted impact
+    keyword. When every candidate is a keyword (for example "impact of change",
+    which may name a symbol literally called change) the leftmost one is kept.
+    """
+    fallback = None
+    matcher = re.compile(pattern, re.I)
+    for candidate in re.finditer(rf'(?={pattern})', normalized, re.I):
+        # The lookahead only asserts a position; re-match there to recover the
+        # operand capture (and its offset) as a normal match object.
+        inner = matcher.match(normalized, candidate.start())
+        quoted = normalized[inner.start(1)-1:inner.start(1)] in ('"',"'",'`')
+        if not quoted and inner.group(1).casefold() in IMPACT_KEYWORDS:
+            fallback = fallback or inner
+            continue
+        return inner
+    return fallback
 
 
 @dataclass
@@ -54,7 +81,7 @@ def plan_query(query):
         ('dependents',rf'\b(?:dependents of|(?:depends?|depend) on)\s+{qualifier}[`\'\"]?({PATH}|{IDENTIFIER})'),
     )
     for intent,pattern in patterns:
-        match = re.search(pattern,normalized,re.I)
+        match = _impact_match(pattern,normalized) if intent=='impact' else re.search(pattern,normalized,re.I)
         if not match:
             continue
         # "what does X do?" is not a callee/dependency query.
