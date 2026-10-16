@@ -77,6 +77,59 @@ class RecognitionTests(unittest.TestCase):
             NormalizedQuery(intents=["SYMBOL_LOCATION"], requirements=[IntentRequirement(
                 intent="SYMBOL_LOCATION", order=0, depends_on=[0])])
 
+    def test_impact_phrasing_captures_the_named_operand(self):
+        # target_prefix lists the bare impact verbs ("change", "modify") beside
+        # the noun phrase, so the lookahead anchored on the verb captured the
+        # query keyword itself ("change impact of login" -> "impact") and the
+        # operand after the preposition was never reached.
+        for question, names in (
+            ("Change impact of login", ["login"]),
+            ("change impact of login", ["login"]),
+            ("change impact of the login function", ["login"]),
+            ("Impact of login", ["login"]),
+            ("What is the impact of login?", ["login"]),
+        ):
+            with self.subTest(question=question):
+                result = parse_question(question)
+                self.assertEqual([item.name for item in result.entities], names)
+                self.assertIn("CHANGE_IMPACT", result.intents)
+
+    def test_impact_keyword_still_resolves_when_it_is_the_only_operand(self):
+        # The keyword rejection is scoped to a keyword sitting directly after
+        # impact vocabulary, so a symbol genuinely named "change" still resolves
+        # when it is quoted explicitly or reached through a non-impact anchor.
+        for question, names in (
+            ("Impact of `change`", ["change"]),
+            ("Who calls modify", ["modify"]),
+            ("modify login", ["login"]),
+            ("change login", ["login"]),
+            ("Impact of changing validateToken", ["validateToken"]),
+            ("What is the impact of changing validateToken?", ["validateToken"]),
+        ):
+            with self.subTest(question=question):
+                self.assertEqual([item.name for item in parse_question(question).entities], names)
+
+    def test_impact_gerund_never_becomes_the_target(self):
+        # Regression: the anchor-aware rejection must not depend on which later
+        # pass discovers the operand. "impacts of modifying validateToken()"
+        # captures the gerund first; it must not become the resolved target.
+        result = parse_question("What are the potential impacts of modifying validateToken(), "
+                                "and which related tests should be reviewed?")
+        names = [item.name for item in result.entities]
+        self.assertIn("validateToken", names)
+        for keyword in ("modifying", "modify", "impacts", "impact", "changing"):
+            self.assertNotIn(keyword, names)
+
+    def test_impact_family_edges_degrade_without_raising(self):
+        # A keyword-only operand stays unresolved rather than being invented; the
+        # quoted form above is the documented way to target it.
+        for question in ("Impact of", "Impact of the", "Change impact of the", "Impact of changing",
+                         "Impact of  ", "Impact of change"):
+            with self.subTest(question=question):
+                result = parse_question(question)
+                self.assertIsInstance(result.entities, list)
+                self.assertNotIn("impact", [item.name for item in result.entities])
+
     def test_generic_pronoun_followup_is_not_forced_into_feature_search(self):
         self.assertEqual(parse_question("What about it?").intents, ["UNRESOLVED"])
 

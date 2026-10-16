@@ -25,6 +25,11 @@ from query_system.semantic_engine import SEMANTIC_OPERATIONS
 _QUOTES = re.compile(r"(?<!\w)(`(?:\\.|[^`\\\n])*`|\"(?:\\.|[^\"\\\n])*\"|'(?:\\.|[^'\\\n])*')")
 _PRONOUN = re.compile(r"\b(?:this(?:\s+(?:function|method|class|module|file|code))?|that|it|its|their|both|them)\b", re.I)
 _IGNORE = STOP_WORDS | frozenset("logic code workflow feature functionality defined declared implemented callers callees dependencies contract signature parameters arguments tests overview its their that cover loginflow resource request pipeline returns return type do call named end class symbol".split())
+# The change-impact vocabulary. These words are the query's own phrasing, so a
+# capture of one is rejected when the same clause already yields a real operand.
+IMPACT_KEYWORDS = frozenset("impact impacts effect effects change changes changing modify modifies modifying affect affects affected break breaks breaking remove removes removing delete deletes deleting".split())
+# Longest-first so "changing" cannot be shadowed by "change" in the anchor test.
+IMPACT_ALTERNATION = "|".join(sorted(IMPACT_KEYWORDS, key=len, reverse=True))
 _PATTERNS = (
     ("DIRECT_CALLEES", r"\b(?:callees\b|what (?:functions? )?does\b(?:(?!\band\b)[^?,;])*?\bcall\b|which functions (?:are called by|does)\b|calls made by\b)"),
     ("DIRECT_CALLERS", r"\b(?:who calls|what calls|which functions call|callers of\b|(?:show|list|find|what are)\s+(?:(?:me|the|its|their|known|direct|all)\s+)*callers\b|calls to\b|where\b(?:(?!\band\b)[^?,;])*?\bcalled\b)|^(?:its|their) callers\b"),
@@ -224,17 +229,30 @@ def parse_question(question: str) -> NormalizedQuery:
             continue  # "Find function login" is not a function named "Find".
         add(match.group(1), match.group(2).lower(), match.start(1), match.end(1))
     target_prefix = (r"who calls|what calls|callers of|callees of|explain|describe|overview of|contract of|signature of|"
-                     r"parameters of|return type of|change|modify|changing|find|locate|where is|what does|"
+                     r"parameters of|return type of|impact(?:s)? of|effect(?:s)? of|change|modify|changing|find|locate|where is|what does|"
                      r"dependencies of|tests for|tests? (?:cover|covers|reference|references)|references to|path from|"
                      r"why does|behavior (?:of|in)|called by|calls made by|what functions? does|\bthrough|\bcall")
     if re.search(r"\b(?:dependency path|call path|path from|pipeline|workflow|flow)\b", masked, re.I):
         target_prefix += r"|\bfrom|\bto"
+    prefixed = []
     for match in re.finditer(rf"(?=\b(?:{target_prefix})\s+(?:the\s+)?({IDENTIFIER}))", masked, re.I):
         following = re.match(r"\s+(\w+)", masked[match.end(1):])
         prefix = masked[match.start():match.start(1)]
         if (re.search(r"\b(?:find|locate|where is|explain|describe)\b", prefix, re.I)
                 and match.group(1).islower() and "_" not in match.group(1) and "." not in match.group(1) and following
                 and following.group(1).lower() not in {"defined", "declared", "called", "function", "method", "class", "module", "in", "from", "to", "and", "then", "call", "do", "fail", "workflow"}):
+            continue
+        prefixed.append((match, prefix))
+    # An impact keyword captured directly after impact vocabulary is the query's
+    # own phrasing, not a target: "change impact of login" anchors on the verb and
+    # captures "impact", "impacts of modifying X" anchors on the noun and captures
+    # the gerund. Rejecting on the anchor (rather than on whether another operand
+    # was found yet) keeps the decision independent of which later loop discovers
+    # the real operand. A non-impact anchor keeps its operand, so a symbol named
+    # "modify" or "change" still resolves for "Who calls modify" or "Impact of `change`".
+    for match, prefix in prefixed:
+        if (match.group(1).casefold() in IMPACT_KEYWORDS
+                and re.search(rf"(?:{IMPACT_ALTERNATION})\s+(?:of\s+)?$", prefix, re.I)):
             continue
         if not any(a <= match.start(1) < b for a, b, _ in mentions):
             add(match.group(1), "method" if "." in match.group(1) else "function", match.start(1), match.end(1))

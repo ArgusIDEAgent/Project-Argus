@@ -182,14 +182,27 @@ _SECRET_PATTERNS = [
     re.compile(r"\bsk-[A-Za-z0-9_-]{20,}\b"),
 ]
 _ASSIGNED_SECRET = re.compile(
-    r"(?i)(\b(?:api[_-]?key|secret(?:[_-]?key)?|token|passw(?:or)?d)\b\s*[:=]\s*)(['\"])[^'\"\n]{8,}\2")
+    r"(?i)(?P<head>\b(?:[A-Za-z0-9]+[_-])*(?:api[_-]?key|secret|token|passw(?:or)?d|credential|authorization)(?:[_-][A-Za-z0-9]+)*\b(?P<namequote>['\"]?)\s*[:=]\s*)"
+    # A quoted value, or an unquoted literal that cannot be mistaken for code.
+    # The lookahead rejects a bare identifier or attribute path (password =
+    # get_password(), token = os.environ) because masking ordinary source
+    # assignments would destroy the evidence CodeMind exists to return. A
+    # consequence is that a pure-alphanumeric unquoted value is left alone; the
+    # value-shaped patterns above still cover real credential formats.
+    r"(?:(?P<quote>['\"])[^'\"\n]{8,}(?P=quote)"
+    r"|(?P<bare>(?![A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*\s*(?![A-Za-z0-9_./+=-]))[A-Za-z0-9_./+=-]{8,}))")
+
+
+def _redact_assigned(match: "re.Match[str]") -> str:
+    quote = match.group("quote") or ""
+    return f"{match.group('head')}{quote}[REDACTED]{quote}"
 
 
 def _redact_secrets(text: str) -> str:
     """Mask likely secrets but keep the number of lines unchanged so start_line/end_line stay correct."""
     for pattern in _SECRET_PATTERNS:
         text = pattern.sub(lambda m: "[REDACTED]" + "\n" * m.group(0).count("\n"), text)
-    return _ASSIGNED_SECRET.sub(lambda m: f"{m.group(1)}{m.group(2)}[REDACTED]{m.group(2)}", text)
+    return _ASSIGNED_SECRET.sub(_redact_assigned, text)
 
 
 # ─────────────────────────────────────────────────────────────
