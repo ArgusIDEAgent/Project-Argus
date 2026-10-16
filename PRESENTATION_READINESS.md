@@ -11,7 +11,7 @@ what will be asked if you cannot answer it confidently.
 
 | # | Blocker | Why it matters | Fix | Effort |
 |---|---|---|---|---|
-| **B1** | **Answer prose is missing.** `answerMode` is `evidence`, not a written answer. | README's demo says *"grounded answer … explained in plain English"*. Right now you get a ranked evidence list with a warning banner. This is the single most visible gap. | Install Ollama + a model, or present it honestly as evidence-ranked retrieval | ~20–30 min + model download |
+| **B1** | ~~Answer prose is missing~~ **RESOLVED** | README's demo says *"grounded answer … explained in plain English"*. Was returning an evidence list with a warning banner. | **Fixed:** Ollama 0.40.5 installed user-locally (no sudo) + `llama3.2:3b`; `CODEMIND_LOCAL_MODEL` pinned in `ai-engine/.env`; `answerMode` is now `local-llm` with `warning: None` — verified | done |
 | **B2** | **You cannot index the bundled `sample_code/`.** | It is one file, and it is refused outright (see §3.1). The README demo tells you to use it. | Use `~/codemind-demo` (created for you, see §4) | done |
 | **B3** | **README §2/§3 describe a different system than the code.** | §3 forbids two features that are implemented; §2 promises a Python graph that does not exist in the indexed path. An examiner with the README in hand will catch this. | Decide your story *before* the demo (see §5) | your call |
 
@@ -94,7 +94,7 @@ knowledge_base/benchmark_semantic.py, query_system/benchmark_*.py
 
 | Feature | State | Detail |
 |---|---|---|
-| **Written answers (F5 prose)** | ⛔ absent | Ollama is **not installed** (`which ollama` → not found). Everything falls back to an evidence list. |
+| **Written answers (F5 prose)** | ✅ working | Ollama 0.40.5 running user-locally on 127.0.0.1:11434 with `llama3.2:3b`; `answerMode` = `local-llm`, `warning` = `None` (verified with no env vars set — the model comes from `ai-engine/.env`). Start it with `./start_ollama.sh`. |
 | **Python AST graph (F3)** | ⚠️ built, but not wired into the current path | `knowledge_base/parser.py LANGUAGES` supports **only** `.js/.jsx/.mjs/.cjs/.ts/.mts/.cts/.tsx` — no `.py`. A *working* Python NetworkX graph does exist for `sample_code` (`graph.json`, 24 nodes / 26 edges) and is reachable via `graph_query.py --graph-file <path>`, but `config.py:240` deliberately refuses it whenever a versioned snapshot exists, so the API and extension never see it. So: implemented, superseded, not deleted. |
 | **JS/TS graph** | ✅ present | The exact thing README §3 declares a Non-Goal. |
 | **Docs generation** | ⛔ blocked by design | `/docs/*` returns *"awaiting the product scope decision"* unless `CODEMIND_ENABLE_DOCS=1`. README §3 says OUT; the extension still ships **Open Documentation Overview** and **Sync Documentation** buttons. |
@@ -174,8 +174,36 @@ is there (`graph.json`, 24 nodes/26 edges) but the CLI path is intentionally clo
 
 ---
 
-## 4. The demo repo (created and verified for you)
+## 3A. Ollama — installed for you (prose answers)
 
+**What was done** (no `sudo` — it lives entirely in your home directory):
+
+```
+~/.local/opt/ollama/            binaries + libs (v0.40.5, CPU)
+~/.ollama/models/               llama3.2:3b (2.0 GB)
+ai-engine/.env                  CODEMIND_LOCAL_MODEL=llama3.2:3b   (pinned)
+./start_ollama.sh               launcher, added to the repo
+```
+
+**Start it:** `./start_ollama.sh` (or `./start_ollama.sh --check` to test).
+It listens on `127.0.0.1:11434` only.
+
+**Why `llama3.2:3b` and not `llama3:latest`:** this machine has **7.5 GiB RAM with only
+~2.4 GiB available**. `llama3:latest` is a 4.7 GB download and would likely swap or OOM
+mid-demo. The 3B model is 2.0 GB and answered in ~0.3 s on this CPU. The code's default is
+`llama3:latest`, which is **not** installed — hence the `.env` pin. If you install
+`llama3:latest` yourself, you can delete that line and the default will work.
+
+**To uninstall completely:** delete `~/.local/opt/ollama` and `~/.ollama`.
+
+**If Ollama is not running during the demo:** the tool does **not** break. It falls back to
+`answerMode: evidence` (ranked sources with a warning banner). Ask the structural questions
+first — they use the graph, not the model — so a model hiccup can only affect the two
+prose questions.
+
+---
+
+## 4. The demo repo (created and verified for you)
 **Path:** `/home/babatunde/codemind-demo` — a standalone git repo, 12 files.
 It is the `phase8/typescript` fixture **plus** a new `src/jwt.ts` I added so the README's own
 narrative question works, wired into `src/controller.ts` to create a real multi-hop chain:
@@ -229,14 +257,19 @@ evidence-ranked output and say the explanation layer is local-model dependent.
 
 1. `cd /home/babatunde/work/Project-Argus && .venv/bin/python -m pytest -q` → expect
    **545 passed, 782 subtests**.
-2. Start the engine: `.venv/bin/python ai-engine/api.py` (keep the terminal visible; the log is
+2. Start Ollama: `./start_ollama.sh --check` (starts nothing; verifies). If it says *not
+   running*, start it with `./start_ollama.sh`.
+3. Start the engine: `.venv/bin/python ai-engine/api.py` (keep the terminal visible; the log is
    your evidence if anything misbehaves).
-3. Open the **repo root** in VS Code, press **F5**, in the Extension Development Host run
+4. Open the **repo root** in VS Code, press **F5**, in the Extension Development Host run
    **CodeMind: Open Chat**.
-4. **CodeMind: Select Repository** → `/home/babatunde/codemind-demo` → wait for "indexed".
-5. Run §7's script.
-6. Keep `BUG_AUDIT_REPORT.md` open in a tab — it documents three real defects that were found
+5. **CodeMind: Select Repository** → `/home/babatunde/codemind-demo` → wait for "indexed".
+6. Run §7's script.
+7. Keep `BUG_AUDIT_REPORT.md` open in a tab — it documents three real defects that were found
    and fixed, which is exactly the evidence-of-engineering an examiner wants.
+
+**Rehearse once on battery-free power and with Wi-Fi off** to prove nothing needs the network
+at demo time. The only network dependencies were the one-off downloads, already done.
 
 ---
 
@@ -288,7 +321,10 @@ silently. Each has a regression test now.
 
 ## 9. If you only do three things
 
-1. **Install Ollama** (or decide to present evidence-ranked output deliberately) — B1.
-2. **Demo `~/codemind-demo`, never `sample_code/`** — B2.
+1. **Ollama is installed and pinned** (B1) — `./start_ollama.sh --check` before you present.
+2. **Demo `~/codemind-demo`, never `sample_code/`** (B2).
 3. **Resolve the README §2/§3 contradiction with a scope-change entry** before the examiner
-   reads it — B3.
+   reads it (B3).
+
+**Verified end-state:** `answerMode: local-llm`, `warning: None`, grounded prose with correct
+citations, two-hop impact chains explained in English, 545 tests green.
