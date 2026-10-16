@@ -36,7 +36,7 @@
 
 ## Ledger
 
-### Open findings
+### Confirmed findings
 
 #### F1 — [HIGH] `knowledge_base/retrieval.py:52` — impact query resolves the query keyword as the target symbol
 
@@ -156,7 +156,81 @@ family above, plus negative assertions (`get_password()` assignment, `MAX_TOKEN_
 
 ---
 
-#### LOW — hygiene bundle (no behavioural change; do only with approval)
+## Resolutions (Phase 3)
+
+### F1 — RESOLVED, commit `3eb0e2d`
+
+- **Change.** `knowledge_base/retrieval.py`: added `IMPACT_KEYWORDS` and `_impact_match()`,
+  which searches the impact pattern **overlapping** (lookahead per offset, then re-match
+  there) and returns the first candidate whose operand is not an unquoted impact keyword.
+  If every candidate is a keyword the leftmost is kept, so a symbol genuinely named
+  `change` still resolves for `impact of change`. The callers/callees/imports/dependents
+  branches still use plain `re.search`; only `intent=='impact'` routes through the helper.
+- **Verified after.** `change impact of login` → `('impact','login')`; `Change impact of
+  login` → `('impact','login')`; `impact of changing validate` → `('impact','validate')`;
+  `impact of change` → `('impact','change')`. The five previously-correct forms are
+  unchanged.
+- **Tests.** `knowledge_base/test_retrieval.py`: 8 passed / 33 subtests (RED first: 5
+  sub-failures, then a deliberate split — `change login`/`modify login` keep `intent=explore`,
+  which the impact guard requires and which is now asserted explicitly rather than assumed).
+
+### F2 — RESOLVED, commit `abb4d63`
+
+- **Change.** `query_system/query_understanding.py`: added the noun forms
+  (`impact(?:s)? of|effect(?:s)? of`) to `target_prefix`; collected the prefix-anchored
+  candidates; reject a captured **unquoted impact keyword when it sits directly after impact
+  vocabulary** (`IMPACT_ALTERNATION`, longest-first) — the verb's object in "change impact
+  of X", the gerund in "impacts of modifying X".
+- **Correction made during implementation.** The first version keyed the rejection on "does
+  this clause already carry a real operand". That was wrong: the real operand
+  (`validateToken`) is only discovered by a *later* pass, so the gerund `modifying` survived
+  and became the target, breaking
+  `test_phase10_integration.py::test_plural_impact_and_related_tests_use_existing_rules_without_generation`.
+  The anchor-keyed rule is order-independent and fixes it. That case is now guarded by
+  `test_impact_gerund_never_becomes_the_target`.
+- **Verified after.** `change impact of login` → `['login']`; `Impact of login` → `['login']`;
+  `change impact of the login function` → `['login']` (spurious `impact` gone);
+  `impacts of modifying validateToken()` → `['validateToken']`, no gerund.
+  Preserved: `Who calls modify` → `['modify']`, `modify login`/`change login` → `['login']`,
+  `Impact of changing validateToken` → `['validateToken']`, the compound-clause
+  `entity_indices == [0]` contract, and the pasted-comment/fenced-code cases.
+- **Deliberate behaviour change, stated plainly.** `Impact of change` yields `[]` (unchanged
+  from before the fix — the keyword-only operand stays unresolved rather than being
+  invented). The documented escape hatch is the quoted form `Impact of \`change\`` → `['change']`.
+  F1 and F2 therefore differ here: `plan_query` keeps the leftmost keyword, `parse_question`
+  drops it. Both are safe degrades; the difference is recorded rather than papered over.
+- **Tests.** `query_system/test_understanding.py`: 10 passed / 31 subtests (RED first: 6
+  sub-failures across the four wrong inputs).
+
+### F3 — RESOLVED, commit `99e956f`
+
+- **Change.** `ai-engine/indexer.py`: the name now permits an environment prefix and a
+  multi-word suffix (`DATABASE_PASSWORD`, `STRIPE_SECRET_KEY`, `AWS_SECRET_ACCESS_KEY`) and
+  tolerates a closing quote on container keys (`{"apiKey": …}`); the value may be quoted or
+  unquoted. An unquoted value is accepted only when it cannot be read as code — a negative
+  lookahead rejects a bare identifier or attribute path. Replacement moved into
+  `_redact_assigned` so the name, separator and quote are preserved verbatim.
+- **Verified after.** all four previously-leaking syntaxes now mask the value; the
+  multiline private-key replacement still preserves the line count.
+- **Known limitation, asserted in the test.** A pure-alphanumeric unquoted value
+  (`password: swordfish123`) is deliberately left alone, because the only way to catch it is
+  also to mask ordinary source assignments such as `password = get_password()` and
+  `token = os.environ`, which would destroy the evidence CodeMind exists to return. The
+  value-shaped patterns (`AKIA…`, `gh[pousr]_…`, `sk-…`, `xox…`) still cover real
+  credential formats. Flagged for the owner as a policy choice, not hidden.
+- **Tests.** `ai-engine/tests/test_redaction.py` (new file): 8 passed / 33 subtests (RED
+  first: 10 sub-failures — 4 unquoted, 4 env-style, 2 quoted-container-key).
+
+### Deferred (not implemented, by owner-controlled scope)
+
+The LOW hygiene bundle below was **not** actioned: the approved scope was F1-F3. It remains
+open, unchanged, and is listed with its reasoning so the next session can pick it up or
+dismiss it. Note `L6`/`L7` sit in files F1-F3 did edit, so their line numbers in this table
+refer to the pre-fix revision.
+
+---
+
+#### LOW — hygiene bundle (still open; no behavioural change)
 
 | # | File:line | Rule | Note |
 |---|---|---|---|
@@ -198,13 +272,50 @@ family above, plus negative assertions (`get_password()` assignment, `MAX_TOKEN_
 
 ---
 
-## Verification plan (Phase 4, after approval)
+## Verification (Phase 4)
 
-1. `knowledge_base/test_retrieval.py`, `query_system/test_understanding.py`,
-   `ai-engine/tests/test_redaction.py` — new/extended regression tests fail before, pass after.
-2. Full suite: `.venv/bin/python -m pytest -q` → must stay **529 passed / 714 subtests** plus
-   the new tests, exit 0.
-3. `npm run compile && npm test` in `extension/` if any TS file is touched (F1-F3 touch none).
-4. Final summary of modified files, per-fix evidence, and remaining known limitations.
+| Gate | Command | Baseline | Final |
+|---|---|---|---|
+| Python suite | `.venv/bin/python -m pytest -q` | 529 passed / 714 subtests, exit 0 | **545 passed / 782 subtests, exit 0** |
+| TypeScript | `npm run compile` (`tsc -p ./`, strict) | clean | **clean** (no TS file touched) |
+| Extension tests | `npm test` (`node --test`, 5 files) | 48 passed / 0 failed | **48 passed / 0 failed** |
+| Ruff (bug rules, changed files) | `ruff check --select F,E9,B,E722,S` | — | **no new findings** (7 hits, all pre-existing and line-shifted) |
+| Mypy (changed sources) | `mypy --ignore-missing-imports --follow-imports=silent` | 11 errors in the 3 files | **same 11, none new** (line-shifted) |
 
-**STATUS: Phase 1-2 complete. Awaiting owner approval before Phase 3 (implementation).**
+The +16 tests / +68 subtests are exactly the added regression tests; no pre-existing test was
+weakened, skipped, or deleted. The only new static-analysis signal is `S105` on the test
+fixture constant `SECRET = "hunter2-total-secret"` in `test_redaction.py` — the same
+false-positive family already recorded above.
+
+Full suite time 331.75 s (0:05:31).
+
+### Modified files
+
+| File | Change |
+|---|---|
+| `knowledge_base/retrieval.py` | F1: `IMPACT_KEYWORDS` + `_impact_match()`; impact branch routes through it |
+| `knowledge_base/test_retrieval.py` | F1 tests (4 added; 2 existing cases kept) |
+| `query_system/query_understanding.py` | F2: noun forms in `target_prefix`; anchor-keyed keyword rejection |
+| `query_system/test_understanding.py` | F2 tests (3 added) |
+| `ai-engine/indexer.py` | F3: `_ASSIGNED_SECRET` rewrite + `_redact_assigned` |
+| `ai-engine/tests/test_redaction.py` | F3 tests (new file, 8 tests) |
+| `BUG_AUDIT_REPORT.md` | this ledger |
+
+No dependency was added to `requirements.txt`; `pip-audit` was installed into `.venv` only.
+
+### Commit history
+
+```
+99e956f fix(redaction): mask unquoted and env-style assigned secrets (F3)
+abb4d63 fix(understanding): stop the impact keyword becoming the resolved target (F2)
+3eb0e2d fix(retrieval): capture the real operand in change-impact queries (F1)
+19b7835 docs: record verified audit findings F1-F3 with executed evidence
+```
+
+`REPO_AUDIT_REPORT.md` is superseded as the live ledger (it still describes the
+`test_what_is_affected` failure that was fixed two commits before this pass). It is retained
+as history.
+
+**STATUS: Phase 1-4 complete. F1, F2, F3 fixed, tested and pushed. LOW hygiene bundle open
+by owner-controlled scope.**
+
