@@ -229,13 +229,13 @@ README §2 defines seven features, F1–F7. My assessment of what is genuinely b
 | F2 | Semantic code search | **Yes** | hybrid mode returns chunks with path + line range |
 | F3 | AST knowledge graph (**Python**) | **Only for JS/TS** — Python version exists but superseded | `parser.LANGUAGES` has no `.py`; a working Python graph exists in `graph.json` via the legacy CLI only |
 | F4 | Structural queries | **Yes, for JS/TS** | 2-hop impact chains, verified above |
-| F5 | Grounded Q&A | **Retrieval yes, prose no** | graph-augmented retrieval works; prose needs Ollama |
+| F5 | Grounded Q&A | **Yes** | graph-augmented retrieval **and** local-LLM prose — `answerMode: local-llm`, `warning: None`, 5 citations, verified |
 | F6 | VS Code extension | **Yes** | 8 commands, chat panel, 48 tests, strict-TS clean |
 | F7 | Evidence (pytest + evaluation) | **Yes** | 545 tests; validation/benchmark artifacts committed |
 
-**6 of 7 are substantially built**, with three honest caveats: F3 is implemented for the wrong
-language (JS/TS instead of Python), F5's prose layer needs a model that is not installed, and
-F3/F4 are unreachable on `.py` files.
+**All seven are substantially built**, with three honest caveats: F3 is implemented for the
+wrong language (JS/TS instead of Python), F3/F4 are unreachable on `.py` files, and F5's prose
+layer depends on a locally-running model (`llama3.2:3b` via Ollama) rather than a hosted API.
 
 **The thing to resolve before the viva:** README §3 says *"Do not build, stub or scaffold"*
 Docs-generation and Reuse-detection — yet both are implemented and both are visible buttons in
@@ -245,11 +245,12 @@ the graph supports, and it is the graph that powers your best demo. There is a
 §5.3 says the README and code change in the same commit) rather than leaving the contradiction
 for the examiner to find.
 
-**If asked "is this 40 % of the project?"** — the defensible answer is: *"Six of the seven
+**If asked "is this 40 % of the project?"** — the defensible answer is: *"All seven of the
 features defined in §2 are implemented and demonstrated; the knowledge graph is implemented
 for JavaScript/TypeScript rather than the Python-only scope §3 originally declared, which is
-the one scope change I would record."* Do not claim F5's prose generation works; show the
-evidence-ranked output and say the explanation layer is local-model dependent.
+the one scope change I would record."* F5's prose generation does work locally
+(`llama3.2:3b`, pinned in `ai-engine/.env`) — say it is local-model dependent, and that with
+Ollama stopped the tool degrades to ranked evidence rather than failing.
 
 ---
 
