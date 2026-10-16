@@ -230,6 +230,45 @@ refer to the pre-fix revision.
 
 ---
 
+## Class sweep — is the F1/F2 defect fixed *everywhere*?
+
+The prior report's "Verified clean" for structural-query detection was only true of one of
+three implementations, so "is the class closed?" is the question that matters more than any
+individual fix. Swept exhaustively, using `re.compile(p).groups` rather than inspection — a
+pattern table can only mis-capture a query keyword if it *captures a string at all*:
+
+| Ordered pattern table | Entries | Capture groups | Status |
+|---|---|---|---|
+| `rag_pipeline._STRUCTURAL_PATTERNS` | 12 | 2 each (symbol) | Fixed before this pass: specific-before-generic ordering + `_STRUCTURAL_NON_TARGETS`; guarded by `test_rag_detection.py` |
+| `knowledge_base/retrieval.py` `patterns` (impact branch) | 5 | 1 (operand) | **Fixed here (F1)** via overlapping search + `_impact_match` |
+| `query_system/query_understanding.py` `target_prefix` | 1 alternation | 1 (operand) | **Fixed here (F2)** via anchor-keyed keyword rejection |
+| `query_understanding._PATTERNS` (intent detection) | 12 | **0** | Structurally immune — pure detection, nothing to mis-capture |
+| `query_understanding._CONVERSATIONAL_PATTERNS` | 6 | **0** | Structurally immune (`fullmatch`, fixed replies) |
+| `indexer._SECRET_PATTERNS` (redaction) | 5 | **0** | Structurally immune (value-shaped matches) |
+
+No fourth occurrence exists. The sweep is exhaustive over every ordered regex table in
+`ai-engine`, `knowledge_base` and `query_system` (test/benchmark/tooling excluded).
+
+### Second-order check on the prior report's other claims
+
+- **"21 hits [of `except Exception`] reviewed — all deliberate degradation boundaries."**
+  The count is wrong: 25 with the same filter (24 excluding `ai-engine/manual/`). Sampled the
+  highest-stakes sites (`synchronization.py` ×5, `graph_engine.py:129`, `graph_builder.py:393`)
+  and the substance holds — each logs, sets an explicit failure state, or re-raises
+  (`synchronization.py:300` writes `state: failed` and re-raises; `graph_engine.py:129` closes
+  the DB and re-raises; `graph_builder.find_node` has a documented "Never raises" contract).
+  Recorded as a **reporting-accuracy** defect, not a code defect: the count was unreliable, the
+  conclusion was not.
+- Remaining unverified claims in `REPO_AUDIT_REPORT.md` (its coverage percentages and its mypy
+  dismissal list) were **not** re-derived. They are lower-risk than the structural-detection
+  claim that already proved scope-limited, but they carry the same unverified status.
+
+**Lesson for the next session:** in this repo, treat any "Verified clean" / "N hits reviewed"
+line as a claim about *the files that were looked at*, not about the class. Grep for the
+pattern across sibling implementations before trusting it.
+
+---
+
 #### LOW — hygiene bundle (still open; no behavioural change)
 
 | # | File:line | Rule | Note |
