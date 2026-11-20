@@ -82,7 +82,7 @@ code --install-extension ../codemind-extension-0.4.1.vsix --force
 
 Run `npm run test:integration` to launch an Extension Development Host and verify that the extension starts and receives the Hello reply. If VS Code is not at the default macOS path, set `CODEMIND_TEST_VSCODE` to an existing executable; the test runner does not download one.
 
-After selecting and indexing a repository, chat messages search its code. **CodeMind: Search Code** and **CodeMind: Check for Reusable Code** expose search and intent checks directly. Saved new symbols receive reuse checks while the panel is open. Results can open source, insert a reference, or record an ignore decision. Server requests stay on loopback; the engine writes its session token to `~/.codemind/data/session_token`, and the extension sends it as the `x-codemind-session` header.
+After selecting and indexing a repository, chat messages search its code. **CodeMind: Search Code** exposes search directly. Saving refreshes the repository index. The older **Check for Reusable Code** command currently reports that reuse analysis is unavailable; the retained `codemind.checkReuseOnSave` setting is deprecated and has no effect. Results can open source or insert a reference. Server requests stay on loopback; the engine writes its session token to `~/.codemind/data/session_token`, and the extension sends it as the `x-codemind-session` header.
 
 ### Documentation integration (scope gated)
 

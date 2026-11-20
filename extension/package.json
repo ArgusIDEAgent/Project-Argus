@@ -84,7 +84,8 @@
         },
         "codemind.checkReuseOnSave": {
           "type": "boolean", "default": true,
-          "description": "Check newly indexed symbols for reusable implementations after saving."
+          "description": "Retained for settings compatibility; automatic reuse checks are unavailable.",
+          "deprecationMessage": "Automatic reuse checks are unavailable. Saving still refreshes the repository index."
         }
       }
     }

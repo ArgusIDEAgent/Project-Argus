@@ -1,0 +1,71 @@
+{
+  "origin": "extension/server",
+  "baseline": "37e5cf6",
+  "purpose": "Inert Node source corpus; never import or execute from the application.",
+  "files": [
+    {
+      "sha256": "04ed21c867e8bb1f552d5e239c46258cd89cc21383e571eeff9c2154370e46d6",
+      "path": "chunker.js"
+    },
+    {
+      "sha256": "e805a5c26034e7e3a55aa84ae02292d39107ac2fcb88d414ae2a793f3a8f323c",
+      "path": "codeParser.js"
+    },
+    {
+      "sha256": "d2b43504220b4781037d5ccd471ddb6fe01632a335f95bd666b22568ddb923a2",
+      "path": "docPlanner.js"
+    },
+    {
+      "sha256": "cbb79270ec4e23dc08133c5b166ee1f1f27af6abb67ec322e9be665c87ee3825",
+      "path": "docStore.js"
+    },
+    {
+      "sha256": "9bfbf723ad6cb8826342907912a232f5f236d8a5105880b449a8a1a27bf7fe6e",
+      "path": "embeddingProvider.js"
+    },
+    {
+      "sha256": "ccce4df36c55c875003fcd035d1785b11e60ac8198b59f7cdcf175a3a821b584",
+      "path": "frameworkAdapters.js"
+    },
+    {
+      "sha256": "27cba7dddb0681f9721b113fa2ca6971180ac69596ed307544da89dae04f59bf",
+      "path": "gitService.js"
+    },
+    {
+      "sha256": "81d01b3637e88143ef40ba3a28c67e69a5d37d12e46ac3f3320c6488d2b1ff03",
+      "path": "graphBuilder.js"
+    },
+    {
+      "sha256": "f1bed81bd1e6993877e31d306eca2b6d0dfe154bce482f739278377632367e2a",
+      "path": "graphStore.js"
+    },
+    {
+      "sha256": "fab8203c8b740b291ee7438c72910a72aeac263b5bf8ba0cf8234eaa26fb071f",
+      "path": "modelProvider.js"
+    },
+    {
+      "sha256": "125980158364c7fb281c1cbd85ec104b6cfcc7bb4f7b4752a7051a703b91fd26",
+      "path": "registry.js"
+    },
+    {
+      "sha256": "ffc36b82e53794d9c698a7f961309dd9861069a2a6837c2f85539d79282cd8dd",
+      "path": "retrievalService.js"
+    },
+    {
+      "sha256": "44f190be72d524c64e082ca08edba3895b97c0ea991fbc8543b25d03130836bd",
+      "path": "reuseAnalyzer.js"
+    },
+    {
+      "sha256": "3358ef3d8369cc57ba875705700b8567a1e198f66192d6ef3b7278c2b1d295d1",
+      "path": "semanticCalibration.js"
+    },
+    {
+      "sha256": "5bc0b621530c8c2ace35056315dd9e888d643567451edf3d36d7dfddd53b78d8",
+      "path": "semanticStore.js"
+    },
+    {
+      "sha256": "d98f3ba92cd732f7082727eed1b5f9c2ab64312e0cfc63be6db0301a21503889",
+      "path": "server.js"
+    }
+  ]
+}

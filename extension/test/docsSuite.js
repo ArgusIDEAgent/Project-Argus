@@ -1,7 +1,6 @@
 'use strict';
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
-const path = require('node:path');
 const vscode = require('vscode');
 const { ServerManager } = require('../out/serverManager');
 const { verifiedSourcePath } = require('../out/sourceNavigation');
@@ -22,7 +21,7 @@ async function run() {
   assert.equal(vscode.workspace.isTrusted, true);
   assert.equal(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath, root);
   const output = vscode.window.createOutputChannel('CodeMind Docs E2E');
-  const server = new ServerManager(path.resolve(__dirname, '../..'), root, output);
+  const server = new ServerManager(output);
   try {
     await server.start();
     const empty = await server.docSections(repo);
@@ -46,11 +45,23 @@ async function run() {
     const source = overview.evidence[0];
     const real = verifiedSourcePath(root, source.path, source.sourceHash);
     const document = await vscode.workspace.openTextDocument(real);
-    await vscode.window.showTextDocument(document);
+    const editor = await vscode.window.showTextDocument(document);
     assert.equal(fs.realpathSync(vscode.window.activeTextEditor.document.uri.fsPath), real);
     const unchanged = await server.syncDocs(repo, 'incremental');
     assert.equal(unchanged.outcome, 'no_changes');
     assert.equal(unchanged.updated.length, 0);
+    // Saving must still refresh the selected repository after retired reuse
+    // tracking is removed. Exercise the actual editor event and HTTP job flow.
+    const beforeSave = await server.liveState(repo);
+    assert.ok(await editor.edit(edit => edit.insert(document.positionAt(document.getText().length),
+      '\n// Saved editor refresh probe.\n')));
+    assert.ok(await document.save());
+    await waitFor(async () => {
+      const state = await server.liveState(repo);
+      if (state.indexState === 'failed') throw new Error('Save-triggered refresh failed');
+      return state.indexState === 'completed' && state.jobId !== beforeSave.jobId;
+    }, 'save-triggered repository refresh');
+    console.log('Real editor save -> automatic repository refresh PASS');
     fs.appendFileSync(real, '\n// Changed after documentation generation.\n');
     assert.throws(() => verifiedSourcePath(root, source.path, source.sourceHash));
     assert.ok((await server.docSections(repo)).status.staleCount > 0);

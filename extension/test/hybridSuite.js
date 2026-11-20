@@ -39,7 +39,7 @@ async function run() {
   const oldPort = process.env.CODEMIND_PORT, oldToken = process.env.CODEMIND_SESSION_TOKEN;
   process.env.CODEMIND_PORT = String(options.port); process.env.CODEMIND_SESSION_TOKEN = options.token;
   const output = vscode.window.createOutputChannel('CodeMind Phase10 test');
-  const server = new ServerManager(root, options.rootPath, output);
+  const server = new ServerManager(output);
   const panel = vscode.window.createWebviewPanel('codemind-phase10-test', 'CodeMind Hybrid Integration', vscode.ViewColumn.One, { enableScripts: true });
   const messages = [];
   const session = new HybridChatSession(server, message => { messages.push(message); panel.webview.html = message.html || panel.webview.html; return panel.webview.postMessage(message); });

@@ -61,7 +61,6 @@ from config import (
 )
 import graph_builder
 
-from knowledge_base.identity import chunk_id
 from knowledge_base.metadata import SCHEMA_VERSION, SemanticIndex
 from knowledge_base.chunking import CHUNKING_VERSION, chunk_source
 
@@ -97,16 +96,6 @@ def _sha256(file_path: str) -> str:
 def _rel_posix(abs_path: str, root: str) -> str:
     """Return a forward-slash relative path so Windows and POSIX produce identical keys."""
     return os.path.relpath(abs_path, root).replace(os.sep, "/")
-
-
-def _point_id(repo_id: str, file_rel_path: str, chunk_index: int) -> str:
-    """Generate a deterministic UUID-string for a (repo, file, chunk_index) triple.
-
-    Including repo_id prevents collisions when multiple repos share a
-    Qdrant collection — e.g. src/app.py in Repo A won't overwrite
-    src/app.py in Repo B.
-    """
-    return chunk_id(repo_id, file_rel_path, chunk_index)
 
 
 def _data_dir_for_repo(repo_id: str, base_data_dir: str) -> str:

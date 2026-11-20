@@ -51,7 +51,7 @@ from config import (
     get_qdrant_client,
     make_repo_id,
 )
-from indexer import IndexingError, _discover_files, index_directory
+from indexer import index_directory
 from lexical_search import search_exact_code
 from answers import answer_question
 

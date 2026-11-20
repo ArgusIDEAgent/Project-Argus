@@ -38,7 +38,7 @@ async function run() {
     owner = await fixture(project);
     const options = owner.options;
     process.env.CODEMIND_PORT = String(options.port); process.env.CODEMIND_SESSION_TOKEN = options.token;
-    server = new ServerManager(project, options.rootPath, output);
+    server = new ServerManager(output);
     await server.start();
     await settings.update('hybridEnabled', true, vscode.ConfigurationTarget.Global);
     await settings.update('hybridAllowGeneration', false, vscode.ConfigurationTarget.Global);
@@ -127,7 +127,7 @@ async function run() {
     // Restart only the ephemeral server; original engine/index remains untouched.
     server.dispose(); const oldOwner = owner; owner = undefined; await oldOwner.close(); owner = await fixture(project);
     process.env.CODEMIND_PORT = String(owner.options.port); process.env.CODEMIND_SESSION_TOKEN = owner.options.token;
-    server = new ServerManager(project, options.rootPath, output); await server.start();
+    server = new ServerManager(output); await server.start();
     await assert.rejects(server.hybridPresentation(selected.id, authority.navigation_token, 'quick'), /ask the question again/i);
     passed.push('backend_restart_expired_handle');
     await settings.update('hybridEnabled', true, vscode.ConfigurationTarget.Global);
@@ -136,7 +136,7 @@ async function run() {
       server.dispose(); const previousOwner = owner; owner = undefined; await previousOwner.close();
       owner = await fixture(project, fault);
       process.env.CODEMIND_PORT = String(owner.options.port); process.env.CODEMIND_SESSION_TOKEN = owner.options.token;
-      server = new ServerManager(project, options.rootPath, output); await server.start();
+      server = new ServerManager(output); await server.start();
       session.clear(); session = new HybridChatSession(server, async message => { messages.push(message); if (message.html) panel.webview.html = message.html; return panel.webview.postMessage(message); });
       await settings.update('hybridAllowGeneration', true, vscode.ConfigurationTarget.Global);
       const question = fault === 'graph_failure'

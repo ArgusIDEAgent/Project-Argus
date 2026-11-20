@@ -1,6 +1,5 @@
 """SQLite FTS5 keyword index and common Phase 5 metadata filters."""
 from contextlib import closing
-import json
 from pathlib import Path
 import re
 import sqlite3

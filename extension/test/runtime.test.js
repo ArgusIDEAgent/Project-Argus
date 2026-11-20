@@ -168,7 +168,7 @@ test('backend transport reports malformed JSON primitives errors disconnects and
   await new Promise(resolve => listener.listen(0, '127.0.0.1', resolve));
   const oldPort = process.env.CODEMIND_PORT, oldToken = process.env.CODEMIND_SESSION_TOKEN;
   process.env.CODEMIND_PORT = String(listener.address().port); process.env.CODEMIND_SESSION_TOKEN = 'fake-runtime-token';
-  const server = new ServerManager('/unused', '/unused', { appendLine() {} });
+  const server = new ServerManager({ appendLine() {} });
   try {
     assert.equal(await server.hello('hello'), 'ready');
     assert.deepEqual(await server.conversationIntent('hi'), { handled: true, category: 'greeting', reply: 'Hi!' });

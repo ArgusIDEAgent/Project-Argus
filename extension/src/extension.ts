@@ -22,7 +22,7 @@ export async function resolveStaticChat(
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
   registerResponsePreview(context);  // Separate opt-in preview; legacy chat stays unchanged.
   const output = vscode.window.createOutputChannel('CodeMind');
-  server = new ServerManager(context.extensionPath, context.globalStorageUri.fsPath, output);
+  server = new ServerManager(output);
   context.subscriptions.push(output, server);
 
   const statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
@@ -59,7 +59,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   let refreshAgain = false;
   let refreshFailures = 0;
   let autoRefreshPaused = false;
-  const pendingSymbols = new Map<string, Set<string>>();
   const resultActions = new Map<string, { result: CodeResult; repoId: string; queryHash?: string }>();
   const docSourceActions = new Map<string, { repoId: string; path: string; sourceHash: string; startLine: number; endLine: number }>();
 
@@ -141,7 +140,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     gitStateTimer = undefined;
     selectedRepository = undefined;
     lastGitState = undefined;
-    pendingSymbols.clear();
     resultActions.clear();
     docSourceActions.clear();
   }
@@ -179,17 +177,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         await panel.webview.postMessage({ type: 'repository',
           text: indexedLabel(selected.rootPath, job.result) + (job.result?.semantic?.state === 'degraded' ? ' - lexical search' : ' - semantic search') + ' - saved files only' });
         await updateDocsStatus(selected, job.result?.docs);
-        const checks = [...pendingSymbols];
-        pendingSymbols.clear();
-        for (const [filePath, previous] of checks) {
-          if (selectedRepository !== selected) break;
-          const graph = await server.graphFile(selected.id, filePath);
-          for (const node of graph.nodes.filter(node => node.type === 'symbol' &&
-              ['function', 'method', 'class', 'component', 'ml_entry'].includes(node.kind) && !previous.has(node.id)).slice(0, 3)) {
-            const result = await server.reuse(selected.id, { entityId: node.id });
-            if (selectedRepository === selected && result.results.length) await showResults(result, 'Reuse suggestions');
-          }
-        }
       }
       refreshFailures = 0;
     } catch (error) {
@@ -263,16 +250,10 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     }, 3000);
   }
   context.subscriptions.push({ dispose: stopWatching });
-  context.subscriptions.push(vscode.workspace.onDidSaveTextDocument(async document => {
+  context.subscriptions.push(vscode.workspace.onDidSaveTextDocument(document => {
     const selected = selectedRepository;
     if (selected && document.uri.scheme === 'file' &&
         isInside(selected.rootPath, document.uri.fsPath)) {
-      if (vscode.workspace.getConfiguration('codemind').get('checkReuseOnSave', true)) {
-        const filePath = path.relative(selected.rootPath, document.uri.fsPath).split(path.sep).join('/');
-        const previous = await server!.graphFile(selected.id, filePath).catch(() => ({ nodes: [] }));
-        if (selectedRepository !== selected) return;
-        if (!pendingSymbols.has(filePath)) pendingSymbols.set(filePath, new Set(previous.nodes.map(node => node.id)));
-      }
       scheduleRefresh();
     }
   }));
@@ -500,7 +481,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         }
       }
     });
-    panel.webview.html = chatHtml(panel.webview);
+    panel.webview.html = chatHtml();
     const activeFolder = vscode.window.activeTextEditor &&
       vscode.workspace.getWorkspaceFolder(vscode.window.activeTextEditor.document.uri);
     const folder = activeFolder ?? (vscode.workspace.workspaceFolders?.length === 1 ? vscode.workspace.workspaceFolders[0] : undefined);
@@ -533,7 +514,7 @@ export function isDifferentRepository(currentRootPath: string | undefined, nextR
   return canonical(currentRootPath) !== canonical(nextRootPath);
 }
 
-export function chatHtml(webview: vscode.Webview): string {
+export function chatHtml(): string {
   const nonce = randomBytes(16).toString('base64');
   return `<!DOCTYPE html>
 <html lang="en">

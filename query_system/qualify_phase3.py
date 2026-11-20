@@ -37,7 +37,7 @@ PROFILES = {
     "extension": (PROJECT / "extension", "extension"),
     "react": (PROJECT.parent.parent / "StudyTrackerWeb/frontend", ""),
     "cnn": (PROJECT.parent.parent / "CNN_CrackDataset_CaseStudy", ""),
-    "node": (PROJECT / "extension/server", ""),
+    "node": (PROJECT / "query_system/benchmarks/fixtures/vendor/legacy_node_server", ""),
     "target": (PROJECT, ""),
 }
 

@@ -30,8 +30,6 @@ load_dotenv()   # every entry point (api, indexer, search, rag) now sees QDRANT_
 COLLECTION_NAME = "codemind_codebase"
 VECTOR_SIZE = 384  # BAAI/bge-small-en-v1.5 output dimension
 EMBEDDING_MODEL_NAME = "BAAI/bge-small-en-v1.5"
-QDRANT_HOST = "127.0.0.1"
-QDRANT_PORT = 6333
 
 # ──────────────────────────────────────────────
 # Data directory (stores index state & graph outside target repos)
@@ -151,22 +149,6 @@ def make_repo_id(target_dir: str) -> str:
 
 _VECTOR_LOCK = threading.RLock()
 _VECTOR_CLIENT = None
-
-
-class _LocalVectorClient:
-    """Serialize embedded Qdrant operations across FastAPI worker threads."""
-    def __init__(self, client):
-        self.client = client
-        self.is_embedded = True
-
-    def __getattr__(self, name):
-        member = getattr(self.client, name)
-        if not callable(member):
-            return member
-        def call(*args, **kwargs):
-            with _VECTOR_LOCK:
-                return member(*args, **kwargs)
-        return call
 
 
 def get_qdrant_client():

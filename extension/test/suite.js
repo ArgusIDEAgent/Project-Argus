@@ -28,7 +28,7 @@ async function run() {
   assert.ok(commands.includes('codemind.checkReuse'));
   assert.ok(commands.includes('codemind.openDocsOverview'));
   assert.ok(commands.includes('codemind.syncDocs'));
-  const html = require('../out/extension').chatHtml({});
+  const html = require('../out/extension').chatHtml();
   const script = /<script nonce="[^"]+">([\s\S]*?)<\/script>/.exec(html);
   assert.ok(script);
   assert.match(script[1], /type: 'ask'/);

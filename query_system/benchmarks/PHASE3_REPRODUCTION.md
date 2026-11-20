@@ -1,5 +1,11 @@
 # Phase 3 qualification evidence
 
+The `node` profile now reads the frozen, byte-preserved source corpus under
+`query_system/benchmarks/fixtures/vendor/legacy_node_server/`, relocated from
+`extension/server/`. Relative filenames and existing labels are unchanged.
+The original source hashes are recorded in `fixtures/legacy_node_manifest.json`.
+Historical result files retain their original paths and are not rewritten.
+
 All commands run from the CodeMind project root (its directory name has a trailing
 space), using the existing `.venv`, installed Node/VS Code, cached
 `BAAI/bge-small-en-v1.5` and configured installed `llama3:latest` only. No model,

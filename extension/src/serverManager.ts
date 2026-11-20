@@ -46,8 +46,6 @@ export class ServerManager implements vscode.Disposable {
   private disposed = false;
 
   constructor(
-    private readonly extensionPath: string,
-    private readonly dataDir: string,
     private readonly output: vscode.OutputChannel,
   ) {}
 
@@ -131,10 +129,6 @@ export class ServerManager implements vscode.Disposable {
 
   async reuse(repoId: string, input: { query: string } | { entityId: string }): Promise<SearchResult> {
     return this.request('POST', '/analysis/reuse', { repoId, ...input, limit: 3 });
-  }
-
-  async graphFile(repoId: string, filePath: string): Promise<{ nodes: { id: string; type: string; kind: string; startLine: number; endLine: number }[] }> {
-    return this.request('GET', `/graph/file/${encodeURIComponent(filePath)}?repoId=${encodeURIComponent(repoId)}`);
   }
 
   async feedback(repoId: string, queryHash: string, entityId: string, decision: 'use' | 'ignore'): Promise<void> {

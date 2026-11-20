@@ -156,7 +156,7 @@ test('actual chat webview forwards only opaque hybrid actions, disables them on 
   let html;
   try {
     Module._load = function(name, ...args) { return name === 'vscode' ? {} : native.call(this, name, ...args); };
-    html = require('../out/extension').chatHtml({});
+    html = require('../out/extension').chatHtml();
   } finally { Module._load = native; }
   const script = /<script nonce="[^"]+">([\s\S]*?)<\/script>/.exec(html)[1];
   const nodes = new Map(), posts = [], controls = [];
@@ -215,7 +215,7 @@ test('chat answer footer appears once after the answer and source cards', () => 
   let html;
   try {
     Module._load = function(name, ...args) { return name === 'vscode' ? {} : native.call(this, name, ...args); };
-    html = require('../out/extension').chatHtml({});
+    html = require('../out/extension').chatHtml();
   } finally { Module._load = native; }
   const script = /<script nonce="[^"]+">([\s\S]*?)<\/script>/.exec(html)[1];
   const nodes = new Map(); let receive;
