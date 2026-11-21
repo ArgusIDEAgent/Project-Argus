@@ -189,7 +189,8 @@ class MultiEngineExecutor:
                         state.failure(operation, "skipped", "No executable dependency frontier")
                 break
             submitted = monotonic()
-            futures = {operation.operation_id: loop.run_in_executor(self.pool, self._worker, operation) for operation in runnable}
+            from contextvars import copy_context
+            futures = {operation.operation_id: loop.run_in_executor(self.pool, copy_context().run, self._worker, operation) for operation in runnable}
             drain = asyncio.gather(*futures.values(), return_exceptions=True)
             try:
                 _, unfinished = await asyncio.wait(list(futures.values()), timeout=max(0., deadline - monotonic()))

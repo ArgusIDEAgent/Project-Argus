@@ -205,11 +205,14 @@ def _inventory(root: Path, git_repo: bool, exclusions: tuple[str, ...],
 
 
 def _prepare_database(path: Path) -> sqlite3.Connection:
+    from knowledge_base.storage import checked_path
+    path = checked_path(path)
     path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
     if not path.exists():
         fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
         os.close(fd)
     connection = sqlite3.connect(path)
+    connection.execute('PRAGMA temp_store=MEMORY')
     connection.execute("PRAGMA foreign_keys=ON")
     connection.executescript("""
         CREATE TABLE IF NOT EXISTS repositories (
@@ -243,9 +246,10 @@ def scan_repository(repo_root: str | Path, *, data_dir: str | Path | None = None
         raise ValueError("Repository root must be an existing project directory")
     if max_file_bytes <= 0:
         raise ValueError("max_file_bytes must be positive")
-    base = Path(data_dir or os.environ.get("CODEMIND_DATA_DIR", "~/.codemind/data")).expanduser().resolve()
-    if base == root or root in base.parents:
-        raise ValueError("Inventory data directory must be outside the repository")
+    from knowledge_base.storage import RepositoryStorage
+    storage = RepositoryStorage(root, data_dir)
+    base = storage.base
+    storage.prepare()
     repo_id = repository_id(root)
     db_path = base / repo_id / "metadata.db"
     git_repo, revision = _git_context(root)
@@ -299,7 +303,7 @@ def scan_repository(repo_root: str | Path, *, data_dir: str | Path | None = None
 def main() -> None:
     parser = argparse.ArgumentParser(description="Build a local CodeMind file inventory")
     parser.add_argument("--repo", required=True, help="Local repository root")
-    parser.add_argument("--data-dir", help="Private data directory outside the repository")
+    parser.add_argument("--data-dir", help="Explicit offline storage override; default <repo>/.codemind")
     parser.add_argument("--exclude", action="append", default=[], help="Extra glob to exclude (repeatable)")
     parser.add_argument("--max-file-bytes", type=int, default=DEFAULT_MAX_BYTES)
     parser.add_argument("--explain", help="Explain one repository-relative path after scanning")

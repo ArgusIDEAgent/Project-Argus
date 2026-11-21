@@ -11,6 +11,7 @@ import hashlib
 import json
 from pathlib import Path
 import sqlite3
+from knowledge_base.database import connect
 import uuid
 
 from knowledge_base.identity import entity_id, file_id, relative_path, repository_id
@@ -249,7 +250,7 @@ def trace(database, repo_id, identifier):
     """Read-only canonical lookup, checking source hash and saved-source bounds."""
     if not Path(database).is_file():
         raise ValueError("Metadata index is missing; refresh the repository")
-    with closing(sqlite3.connect(f"{Path(database).resolve().as_uri()}?mode=ro", uri=True)) as db:
+    with closing(connect(f"{Path(database).resolve().as_uri()}?mode=ro", uri=True)) as db:
         db.row_factory = sqlite3.Row
         row = db.execute("SELECT * FROM code_chunks WHERE repository_id=? AND id=?", (repo_id, identifier)).fetchone()
         kind = 'chunk'
@@ -316,7 +317,7 @@ def trace(database, repo_id, identifier):
 
 
 def audit(database):
-    with closing(sqlite3.connect(f"{Path(database).resolve().as_uri()}?mode=ro", uri=True)) as db:
+    with closing(connect(f"{Path(database).resolve().as_uri()}?mode=ro", uri=True)) as db:
         dangling = list(db.execute("PRAGMA foreign_key_check"))
         dangling += list(db.execute("SELECT 'symbols',id FROM symbols WHERE parent_symbol_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM symbols p WHERE p.id=symbols.parent_symbol_id AND p.repository_id=symbols.repository_id)"))
         for repo,path,identifier in db.execute('SELECT repository_id,relative_path,id FROM files'):
@@ -339,9 +340,10 @@ class SemanticIndex:
         self.repo_id = repo_id
         if repo_id != repository_id(self.root):
             raise ValueError('Repository ID does not match its canonical root')
-        base = Path(data_dir).expanduser().resolve()
-        if base == self.root or self.root in base.parents:
-            raise ValueError('Metadata storage must be outside the repository')
+        from knowledge_base.storage import RepositoryStorage
+        storage = RepositoryStorage(self.root, data_dir)
+        base = storage.base
+        storage.prepare()
         git, revision = _git_context(self.root)
         if not git and _has_gitignore(self.root):
             raise ValueError('A Git repository is required to evaluate .gitignore rules')
@@ -464,7 +466,8 @@ def main():
     parser.add_argument('--trace',help='Graph node, relationship, symbol or chunk ID')
     args = parser.parse_args()
     import os
-    base = Path(args.data_dir or os.environ.get('CODEMIND_DATA_DIR','~/.codemind/data')).expanduser()
+    from knowledge_base.storage import storage_base
+    base = storage_base(args.repo, args.data_dir)
     repo = repository_id(args.repo)
     from knowledge_base.synchronization import SnapshotStore
     try:

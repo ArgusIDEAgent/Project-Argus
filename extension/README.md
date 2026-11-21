@@ -1,5 +1,19 @@
 # CodeMind Extension
 
+## Repository storage
+
+Each selected repository owns `.codemind/`, containing read-only published
+knowledge generations and a persistent disposable query cache. Reopening and
+selecting the same repository reuses a valid snapshot; saving changed sources
+requests an incremental generation from the engine. Storage writes are excluded
+from all extension watchers/save hooks. **CodeMind: Show Repository Storage**
+opens a read-only status document with the location, snapshot ID, freshness and
+cache size. **CodeMind: Clear Query Cache** discards memoized queries without
+changing published knowledge. **CodeMind: Rebuild Repository Index** requests a
+full validated replacement. The Python engine is the application writer; the extension uses its
+authenticated API. Old machine-level data is retained. Restart the engine after
+upgrading; `CODEMIND_DATA_DIR` controls its token/model cache, not repo knowledge.
+
 Offline regression command: `npm test` in this directory (or
 `npm --prefix extension test` from the project root). It compiles TypeScript and
 runs the Node resolver/rendering/session/transport/navigation tests using existing
@@ -42,8 +56,8 @@ It never sends another query or invokes a model. Current chat message schemas an
 `/ask`/`/retrieve` remain unchanged.
 
 This development preview requires Workspace Trust, the CodeMind checkout with
-its `.venv` beside `extension/`, and the existing snapshot store selected by
-`CODEMIND_DATA_DIR` (default `~/.codemind/data`). The packet shape is
+its `.venv` beside `extension/`, and the selected repository's `.codemind`
+snapshot store. The packet shape is
 `{"package": <EvidencePackage>, "generation": <GenerationResult or null>, "depth": "standard"}`.
 See project-root `query_system/PHASE9.md` for backend export and validation
 details. Imported JSON is not authenticated; provenance verification authorizes

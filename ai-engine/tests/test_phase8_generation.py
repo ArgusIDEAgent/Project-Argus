@@ -151,6 +151,22 @@ class GenerationTests(unittest.TestCase):
         self.assertEqual(result.failure_category, "unsupported_fact_text")
         self.assertFalse(any("constant time" in claim.text for section in result.sections for claim in section.claims))
 
+    def test_fact_only_and_unknown_only_answers_still_require_evidence_fallback(self):
+        for mode in ("fact", "unknown"):
+            def no_explanation(context, *_):
+                body = json.loads(valid_answer(context))
+                if mode == "fact":
+                    body["sections"][0]["claims"] = [claim for claim in body["sections"][0]["claims"] if claim["mode"] == "fact"]
+                else:
+                    body["sections"][0]["claims"] = [{"requirement_orders": [0], "mode": "unknown",
+                        "record_ids": [], "text": "Insufficient source to explain the behavior."}]
+                body["coverage"][0]["state"] = "partial"
+                return json.dumps(body)
+            with self.subTest(mode=mode):
+                result, _ = self.run_generation(callback=no_explanation)
+                self.assertEqual(result.failure_category, "no_usable_explanation")
+                self.assertEqual(result.fallback_status, "evidence_summary")
+
     def test_stale_hash_mixed_generation_and_invalid_citation_block_calls(self):
         for change in ("hash", "generation", "citation"):
             def mutate(package):

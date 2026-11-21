@@ -11,6 +11,7 @@ import hashlib
 from pathlib import Path, PurePosixPath
 import re
 import sqlite3
+from knowledge_base.database import connect
 import unicodedata
 
 from knowledge_base.graph import KnowledgeGraph
@@ -164,7 +165,7 @@ class HybridRetriever:
     def _read(self,sql,args=()):
         if not self.database.is_file():
             return []
-        with closing(sqlite3.connect(self.database.resolve().as_uri()+'?mode=ro',uri=True)) as db:
+        with closing(connect(self.database.resolve().as_uri()+'?mode=ro',uri=True)) as db:
             db.row_factory = sqlite3.Row
             return [dict(row) for row in db.execute(sql,args)]
 

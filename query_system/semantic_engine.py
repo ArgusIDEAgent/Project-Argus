@@ -4,6 +4,7 @@ from contextlib import closing, contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 import sqlite3
+from knowledge_base.database import connect
 from time import monotonic
 from typing import Callable, Literal
 
@@ -85,7 +86,7 @@ def existing_api_channels(api, embedding_model: str):
                     if not client.collection_exists(collection):
                         return ChannelResult("unavailable", [], "Pinned semantic index is unavailable")
                     database = Path(view["data_dir"]) / repo / "metadata.db"
-                    with closing(sqlite3.connect(database.resolve().as_uri() + "?mode=ro", uri=True)) as db:
+                    with closing(connect(database.resolve().as_uri() + "?mode=ro", uri=True)) as db:
                         expected = db.execute("SELECT count(*) FROM code_chunks WHERE repository_id=?", (repo,)).fetchone()[0]
                     scope = api.Filter(must=[api.FieldCondition(key="repo_id", match=api.MatchValue(value=repo))])
                     actual = client.count(collection, exact=True, count_filter=scope).count
@@ -151,7 +152,7 @@ class SemanticSearchEngine:
     def _index_health(self):
         if not self.database.is_file():
             raise StaleIndexError("Pinned metadata is missing")
-        with closing(sqlite3.connect(self.database.resolve().as_uri() + "?mode=ro", uri=True)) as db:
+        with closing(connect(self.database.resolve().as_uri() + "?mode=ro", uri=True)) as db:
             rows = db.execute("""SELECT DISTINCT c.collection_name,x.embedding_model,s.state
                 FROM code_chunks c LEFT JOIN chunk_context x ON x.id=c.id
                 LEFT JOIN index_snapshots s ON s.id=c.snapshot_id AND s.repository_id=c.repository_id

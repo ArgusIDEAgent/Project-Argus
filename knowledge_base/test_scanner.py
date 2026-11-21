@@ -92,9 +92,11 @@ class ScannerTests(unittest.TestCase):
             self.assertEqual(db.execute("SELECT count(*) FROM inventory_runs").fetchone()[0], 2)
             self.assertEqual(db.execute("PRAGMA foreign_key_check").fetchall(), [])
 
-    def test_refuses_storage_inside_repository(self):
-        with self.assertRaisesRegex(ValueError, "outside"):
-            scan_repository(self.root, data_dir=self.root / ".codemind")
+    def test_only_reserved_repository_storage_is_allowed(self):
+        result = scan_repository(self.root)
+        self.assertTrue(Path(result['database']).is_relative_to(self.root.resolve() / '.codemind'))
+        with self.assertRaisesRegex(ValueError, "reserved"):
+            scan_repository(self.root, data_dir=self.root / "arbitrary-data")
 
     def test_git_root_with_trailing_space(self):
         spaced_root = self.root.with_name("repo ")

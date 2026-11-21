@@ -6,6 +6,7 @@ import hashlib
 import json
 from pathlib import Path
 import sqlite3
+from knowledge_base.database import connect
 
 from query_system.contracts import Evidence, GraphFinding, RuleFinding, SemanticFinding, validate_engine_result
 from query_system.evidence_contracts import (
@@ -101,7 +102,7 @@ class EvidenceAggregator:
         return info
 
     def _connection(self):
-        db = sqlite3.connect(self.database.resolve().as_uri() + "?mode=ro", uri=True)
+        db = connect(self.database.resolve().as_uri() + "?mode=ro", uri=True)
         db.row_factory = sqlite3.Row
         db.execute("PRAGMA query_only=ON")
         return db

@@ -47,18 +47,23 @@ class FaissClient:
     is_embedded = True
     backend = 'faiss'
 
-    def __init__(self, path):
-        self.path = Path(path).expanduser().resolve()
-        self.path.mkdir(parents=True,exist_ok=True,mode=0o700)
+    def __init__(self, path, *, readonly=False, database_name='vectors.sqlite3'):
+        from knowledge_base.storage import checked_path
+        self.path = checked_path(path)
+        self.readonly = readonly
+        if not readonly:
+            self.path.mkdir(parents=True,exist_ok=True,mode=0o700)
         self.lock = threading.RLock()
         self.file_lock = FileLock(str(self.path/'writer.lock'),timeout=30)
-        database = self.path/'vectors.sqlite3'
-        if not database.exists():
+        database = checked_path(self.path/database_name)
+        if not readonly and not database.exists():
             fd = os.open(database,os.O_CREAT|os.O_EXCL|os.O_WRONLY,0o600)
             os.close(fd)
-        self.db = sqlite3.connect(database,check_same_thread=False,timeout=30)
+        self.db = sqlite3.connect(database.as_uri()+'?mode=ro',uri=True,check_same_thread=False,timeout=30) if readonly else sqlite3.connect(database,check_same_thread=False,timeout=30)
+        self.db.execute('PRAGMA temp_store=MEMORY')
         self.db.execute('PRAGMA foreign_keys=ON')
-        self.db.executescript('''
+        if not readonly:
+            self.db.executescript('''
             CREATE TABLE IF NOT EXISTS collections(name TEXT PRIMARY KEY,dimensions INTEGER NOT NULL,generation INTEGER NOT NULL,index_hash TEXT);
             CREATE TABLE IF NOT EXISTS vectors(collection_name TEXT NOT NULL REFERENCES collections(name) ON DELETE CASCADE,
                 chunk_id TEXT NOT NULL,vector_id INTEGER NOT NULL,embedding BLOB NOT NULL,payload TEXT NOT NULL,
@@ -68,8 +73,12 @@ class FaissClient:
 
     @contextmanager
     def _guard(self):
-        with self.lock, self.file_lock:
-            yield
+        with self.lock:
+            if self.readonly:
+                yield
+            else:
+                with self.file_lock:
+                    yield
 
     def close(self):
         with self.lock:
@@ -115,7 +124,8 @@ class FaissClient:
                 if matches(json.loads(payload),condition)]
 
     def _index_path(self, name):
-        return self.path/(hashlib.sha256(name.encode()).hexdigest()+'.faiss')
+        from knowledge_base.storage import checked_path
+        return checked_path(self.path/(hashlib.sha256(name.encode()).hexdigest()+'.faiss'))
 
     def _load(self, name):
         dimension,generation,digest = self._collection(name)
@@ -133,6 +143,9 @@ class FaissClient:
             rows = self._rows(name)
             if rows:
                 index.add_with_ids(np.asarray([r[2] for r in rows],dtype='float32'),np.asarray([r[1] for r in rows],dtype='int64'))
+            if self.readonly:
+                self.cache[name] = (generation,index)
+                return index
             temporary = path.with_name(path.name+'.'+uuid.uuid4().hex+'.tmp')
             try:
                 faiss.write_index(index,str(temporary))
@@ -185,6 +198,8 @@ class FaissClient:
 
     def count(self, collection_name, exact=True, count_filter=None):
         with self._guard():
+            if count_filter is None:
+                return Result(count=self.db.execute('SELECT count(*) FROM vectors WHERE collection_name=?', (collection_name,)).fetchone()[0])
             return Result(count=len(self._rows(collection_name,count_filter)))
 
     def delete(self, collection_name, points_selector):
@@ -217,3 +232,75 @@ class FaissClient:
                 for row in self._rows(collection_name):
                     if row[0] in selected:
                         self.db.execute('UPDATE vectors SET payload=? WHERE collection_name=? AND chunk_id=?',(json.dumps({**row[3],**payload}),collection_name,row[0]))
+
+
+class RepositoryVectors:
+    """Route collection names into that repository's immutable generation DBs.
+
+    Vector records share metadata.db; FAISS files are derived accelerators beside it.
+    No repository content is written into the machine-wide vector journal.
+    """
+    backend = 'faiss'
+    is_embedded = True
+    _clients = {}
+    _lock = threading.RLock()
+
+    def __init__(self, storage):
+        self.storage = storage
+
+    def _path(self, name):
+        import re
+        from knowledge_base.storage import checked_path
+        match = re.fullmatch(r'codemind_codebase_' + self.storage.repo_id + r'_([a-f0-9]{32})', name)
+        if match:
+            return checked_path(self.storage.path/'generations'/match[1]/self.storage.repo_id)
+        if name != 'codemind_codebase':
+            raise ValueError('Collection does not belong to the selected repository')
+        return checked_path(self.storage.base/self.storage.repo_id)
+
+    def _client(self, name):
+        path = self._path(name)
+        readonly = (path/'generation.json').is_file()
+        key = (str(path), readonly)
+        with self._lock:
+            if key not in self._clients:
+                self._clients[key] = FaissClient(path, readonly=readonly, database_name='metadata.db')
+            return self._clients[key]
+
+    def collection_exists(self, collection_name):
+        path = self._path(collection_name)
+        if not (path/'metadata.db').is_file():
+            return False
+        client = self._client(collection_name)
+        return client.collection_exists(collection_name)
+
+    def seal(self, collection_name):
+        self.release(collection_name)
+
+    def release(self, collection_name):
+        path = str(self._path(collection_name))
+        with self._lock:
+            for key in list(self._clients):
+                if key[0] == path:
+                    self._clients.pop(key).close()
+
+    def delete_collection(self, collection_name):
+        # SnapshotStore removes retired generation directories under its reader lock.
+        self.release(collection_name)
+
+    def create_collection(self, collection_name, vectors_config):
+        client = self._client(collection_name)
+        # A staged SQLite backup includes the previous vector journal. Keep only
+        # this generation's collection; prior vectors are read from the old DB.
+        with client.db:
+            client.db.execute('DELETE FROM collections WHERE name<>?', (collection_name,))
+        return client.create_collection(collection_name, vectors_config)
+
+    def get_collections(self):
+        return Result(collections=[])
+
+    def __getattr__(self, method):
+        def call(*args, **kwargs):
+            name = kwargs.get('collection_name') or args[0]
+            return getattr(self._client(name), method)(*args, **kwargs)
+        return call

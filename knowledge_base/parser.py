@@ -15,6 +15,7 @@ import json
 import os
 from pathlib import Path
 import sqlite3
+from knowledge_base.database import connect
 from typing import Any
 
 from tree_sitter import Language, Node, Parser
@@ -318,7 +319,7 @@ def parse_repository(repo_root: str | Path, *, data_dir: str | Path | None = Non
     repo_id = inventory["repository_id"]
     counts = {"parsed": 0, "partial": 0, "error": 0, "symbols": 0,
               "references": 0, "comments": 0}
-    with closing(sqlite3.connect(inventory["database"])) as db:
+    with closing(connect(inventory["database"])) as db:
         db.execute("PRAGMA foreign_keys=ON")
         _ensure_schema(db)
         with db:

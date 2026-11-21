@@ -15,6 +15,7 @@ import json
 import os
 from pathlib import Path
 import sqlite3
+from knowledge_base.database import connect
 import subprocess
 from typing import Any
 
@@ -122,7 +123,7 @@ def build_graph(repo_root: str | Path, *, data_dir: str | Path | None = None,
     root = Path(inventory["root_path"])
     repo_id = inventory["repository_id"]
     db_path = inventory["database"]
-    with closing(sqlite3.connect(db_path)) as db:
+    with closing(connect(db_path)) as db:
         db.row_factory = sqlite3.Row
         db.execute("PRAGMA foreign_keys=ON")
         _schema(db)
@@ -348,7 +349,7 @@ class KnowledgeGraph:
         self.repository_id = repository_id
 
     def _connection(self) -> sqlite3.Connection:
-        db = sqlite3.connect(self.database)
+        db = connect(Path(self.database).resolve().as_uri() + '?mode=ro', uri=True)
         db.row_factory = sqlite3.Row
         try:
             current = db.execute("""SELECT r.root_path, r.last_scanned_at, s.inventory_scanned_at

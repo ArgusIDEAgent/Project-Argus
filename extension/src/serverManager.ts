@@ -83,9 +83,13 @@ export class ServerManager implements vscode.Disposable {
     return result.repository;
   }
 
-  async indexRepository(id: string): Promise<string> {
-    const result = await this.request<{ jobId: string }>('POST', `/repos/${encodeURIComponent(id)}/index`);
+  async indexRepository(id: string, full = false): Promise<string> {
+    const result = await this.request<{ jobId: string }>('POST', `/repos/${encodeURIComponent(id)}/index${full ? '?full=true' : ''}`);
     return result.jobId;
+  }
+
+  async clearRepositoryCache(id: string): Promise<void> {
+    await this.request('POST', `/repos/${encodeURIComponent(id)}/cache/clear`);
   }
 
   async refreshRepository(id: string): Promise<string> {
@@ -98,6 +102,8 @@ export class ServerManager implements vscode.Disposable {
   }
 
   async liveState(id: string): Promise<{ commitHash: string; branch: string;
+    storage?: { directory: string; mode: string; snapshotReadOnly: boolean; legacyDataPreserved: boolean;
+      snapshotId: string | null; cacheBytes: number };
     synchronization?: { fresh: boolean; state: string; error: string | null; savedFilesOnly: boolean } }> {
     return this.request('GET', `/repos/${encodeURIComponent(id)}/live-state`);
   }

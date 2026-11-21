@@ -29,6 +29,7 @@ import os
 import re
 import sys
 import sqlite3
+from pathlib import Path
 
 import networkx as nx
 from dotenv import load_dotenv
@@ -36,7 +37,7 @@ from litellm import completion
 
 from config import (
     COLLECTION_NAME,
-    DEFAULT_DATA_DIR,
+    DEFAULT_REPOSITORY_DATA_DIR as DEFAULT_DATA_DIR,
     embed_texts,
     find_graph_file,
     get_qdrant_client,
@@ -55,7 +56,9 @@ def _verified_chunks(points, repo_id, collection):
         payload = point.payload or {}
         scoped_repo = repo_id or payload.get('repo_id','')
         try:
-            info = validate_vector(os.path.join(DEFAULT_DATA_DIR,scoped_repo,'metadata.db'),scoped_repo,point,collection)
+            from knowledge_base.storage import current_storage
+            base = DEFAULT_DATA_DIR or (current_storage().base if current_storage() else Path.cwd()/'.codemind')
+            info = validate_vector(os.path.join(base,scoped_repo,'metadata.db'),scoped_repo,point,collection)
         except (ValueError,OSError,sqlite3.Error):
             logging.warning('Skipped stale or unmapped vector evidence; refresh the repository index')
             continue

@@ -32,9 +32,11 @@ VECTOR_SIZE = 384  # BAAI/bge-small-en-v1.5 output dimension
 EMBEDDING_MODEL_NAME = "BAAI/bge-small-en-v1.5"
 
 # ──────────────────────────────────────────────
-# Data directory (stores index state & graph outside target repos)
+# Machine runtime directory (downloaded models and engine session credentials)
 # ──────────────────────────────────────────────
 DEFAULT_DATA_DIR = os.path.expanduser(os.environ.get("CODEMIND_DATA_DIR", "~/.codemind/data"))
+# Session credentials/models use machine runtime storage; repository content does not.
+DEFAULT_REPOSITORY_DATA_DIR = None
 
 # ──────────────────────────────────────────────
 # Indexer defaults
@@ -53,6 +55,7 @@ REPO_ID_RE = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
 # Directories to skip during recursive walk
 # ──────────────────────────────────────────────
 IGNORE_DIRS: set[str] = {
+    ".codemind",
     ".git",
     ".hg",
     ".svn",
@@ -152,15 +155,17 @@ _VECTOR_CLIENT = None
 
 
 def get_qdrant_client():
-    """Compatibility factory name: local FAISS unless QDRANT_URL is explicit."""
-    global _VECTOR_CLIENT
-    with _VECTOR_LOCK:
-        if _VECTOR_CLIENT is None:
-            _VECTOR_CLIENT = _create_vector_client()
-        return _VECTOR_CLIENT
+    """Compatibility name; active requests always use repository-owned FAISS."""
+    from knowledge_base.storage import current_storage, RepositoryStorage
+    storage = current_storage() or RepositoryStorage(Path.cwd())
+    if os.environ.get('QDRANT_URL'):
+        raise ValueError('Remote Qdrant is disabled for repository-local storage')
+    from knowledge_base.vector_store import RepositoryVectors
+    return RepositoryVectors(storage)
 
 
 def _create_vector_client():
+    """Legacy offline qualification factory; active application uses repository scope."""
     api_key = os.environ.get("QDRANT_API_KEY") or None
     url = os.environ.get("QDRANT_URL")
     if url:
@@ -209,9 +214,14 @@ def sanitize_text(text: str) -> str:
     return _CONTROL_CHARS.sub("", text)
 
 
-def latest_repo_id() -> str | None:
-    states = glob.glob(os.path.join(DEFAULT_DATA_DIR, "*", INDEX_STATE_FILENAME))
-    states += glob.glob(os.path.join(DEFAULT_DATA_DIR,'*','active_snapshot.json'))
+def latest_repo_id(data_dir=None) -> str | None:
+    if data_dir is None:
+        root = Path.cwd()
+        repo = repository_id(root)
+        return repo if ((root/'.codemind'/'active_snapshot.json').is_file()
+            or (root/'.codemind'/repo/INDEX_STATE_FILENAME).is_file()) else None
+    states = glob.glob(os.path.join(data_dir, "*", INDEX_STATE_FILENAME))
+    states += glob.glob(os.path.join(data_dir,'*','active_snapshot.json'))
     return os.path.basename(os.path.dirname(max(states, key=os.path.getmtime))) if states else None
 
 
@@ -219,7 +229,8 @@ def find_graph_file(repo_id: str | None = None) -> str | None:
     repo_id = repo_id or latest_repo_id()
     if not repo_id or not REPO_ID_RE.fullmatch(repo_id):
         return None
-    if os.path.isfile(os.path.join(DEFAULT_DATA_DIR,repo_id,'active_snapshot.json')):
+    base = Path.cwd()/'.codemind'
+    if (base/'active_snapshot.json').is_file():
         return None  # The old NetworkX file cannot represent a versioned JS/TS graph.
-    candidate = os.path.join(DEFAULT_DATA_DIR, repo_id, GRAPH_FILENAME)
+    candidate = str(base/repo_id/GRAPH_FILENAME)
     return candidate if os.path.isfile(candidate) else None

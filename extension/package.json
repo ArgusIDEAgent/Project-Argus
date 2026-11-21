@@ -31,6 +31,12 @@
   "contributes": {
     "commands": [
       {
+        "command": "codemind.showStorage",
+        "title": "CodeMind: Show Repository Storage"
+      },
+      { "command": "codemind.clearCache", "title": "CodeMind: Clear Query Cache" },
+      { "command": "codemind.rebuildIndex", "title": "CodeMind: Rebuild Repository Index" },
+      {
         "command": "codemind.previewResponse",
         "title": "CodeMind: Preview Validated Response (Phase 9)"
       },

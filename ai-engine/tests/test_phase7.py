@@ -161,7 +161,7 @@ class Phase7Tests(unittest.TestCase):
 
     def test_latest_repo_lookup_finds_versioned_indexes(self):
         with patch.object(config,'DEFAULT_DATA_DIR',str(self.data)):
-            self.assertEqual(config.latest_repo_id(),self.repo)
+            self.assertEqual(config.latest_repo_id(data_dir=self.data),self.repo)
             self.assertIsNone(config.find_graph_file(self.repo))
 
     def test_unchanged_importer_is_reresolved_after_export_rename(self):

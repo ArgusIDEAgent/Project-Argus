@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 import sqlite3
+from knowledge_base.database import connect
 from typing import Annotated, Literal, Protocol
 
 from pydantic import BaseModel, ConfigDict, Field, JsonValue, StringConstraints, model_validator
@@ -219,7 +220,7 @@ class SnapshotContext(ContractModel):
         database = Path(view["data_dir"]) / repository_id / "metadata.db"
         if not database.is_file():
             raise StaleIndexError("Pinned generation has no metadata database")
-        with closing(sqlite3.connect(database.resolve().as_uri() + "?mode=ro", uri=True)) as db:
+        with closing(connect(database.resolve().as_uri() + "?mode=ro", uri=True)) as db:
             ready = frozenset(row[0] for row in db.execute(
                 "SELECT id FROM index_snapshots WHERE repository_id=? AND state='ready'",
                 (repository_id,),

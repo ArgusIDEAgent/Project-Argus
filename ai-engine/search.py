@@ -21,7 +21,7 @@ from qdrant_client.models import Filter, FieldCondition, MatchValue
 from config import (
     COLLECTION_NAME,
     DEFAULT_TOP_K,
-    DEFAULT_DATA_DIR,
+    DEFAULT_REPOSITORY_DATA_DIR as DEFAULT_DATA_DIR,
     embed_texts,
     get_qdrant_client,
     latest_repo_id,
@@ -34,17 +34,26 @@ from knowledge_base.synchronization import repository_view,SnapshotStore
 
 def search_codebase(
     query: str, *, top_k: int = DEFAULT_TOP_K,
-    collection: str = COLLECTION_NAME, repo_id: str | None = None,
+    collection: str = COLLECTION_NAME, repo_id: str | None = None, repo_dir: str | None = None,
 ) -> list[dict]:
+    from pathlib import Path
+    from knowledge_base.storage import RepositoryStorage
+    root = Path(repo_dir or Path.cwd()).resolve()
+    repo_id = repo_id or make_repo_id(str(root))
+    base = DEFAULT_DATA_DIR
+    if base is None and repo_id != make_repo_id(str(root)):
+        raise ValueError('Pass --repo-dir for the repository being searched')
     if repo_id:
-        try: view = repository_view(repo_id,DEFAULT_DATA_DIR)
+        try:
+            view = SnapshotStore(root, repo_id).view() if base is None else repository_view(repo_id,base)
         except (ValueError,OSError,KeyError):
             print('Knowledge snapshot unavailable; use the engine refresh endpoint.')
             return []
-        if view:
-            with SnapshotStore(view['manifest']['root'],repo_id,DEFAULT_DATA_DIR).pin_view() as pinned:
+        if view and view['manifest']:
+            with SnapshotStore(view['manifest']['root'],repo_id,base).pin_view() as pinned:
                 return _search_codebase(query,top_k=top_k,collection=collection,repo_id=repo_id,view=pinned)
-    return _search_codebase(query,top_k=top_k,collection=collection,repo_id=repo_id)
+    with RepositoryStorage(root, base).scope():
+        return _search_codebase(query,top_k=top_k,collection=collection,repo_id=repo_id)
 
 
 def _search_codebase(
@@ -64,7 +73,9 @@ def _search_codebase(
     Returns a list of dicts with keys: file_path, code_snippet, language, score.
     """
     client = get_qdrant_client()
-    data_dir = DEFAULT_DATA_DIR
+    from pathlib import Path
+    from knowledge_base.storage import current_storage
+    data_dir = DEFAULT_DATA_DIR or str((current_storage().base if current_storage() else Path.cwd()/'.codemind'))
     if view:
         if not view['fresh']:
             print('Knowledge snapshot is stale; wait for synchronization or refresh.')
@@ -197,6 +208,7 @@ def main() -> None:
         top_k=args.top_k,
         collection=args.collection,
         repo_id=repo_id,
+        repo_dir=args.repo_dir,
     )
 
 

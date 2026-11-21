@@ -42,7 +42,7 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from config import (
     COLLECTION_NAME,
-    DEFAULT_DATA_DIR,
+    DEFAULT_REPOSITORY_DATA_DIR as DEFAULT_DATA_DIR,
     REPO_ID_RE,
     SESSION_TOKEN_FILENAME,
     atomic_write_text,
@@ -78,8 +78,10 @@ _SYNC_MANAGER = None
 
 def _issue_session_token() -> str:
     token = os.environ.get("CODEMIND_SESSION_TOKEN", "").strip() or secrets.token_hex(32)
-    ensure_private_dir(DEFAULT_DATA_DIR)
-    path = os.path.join(DEFAULT_DATA_DIR, SESSION_TOKEN_FILENAME)
+    import config
+    runtime = DEFAULT_DATA_DIR or config.DEFAULT_DATA_DIR
+    ensure_private_dir(runtime)
+    path = os.path.join(runtime, SESSION_TOKEN_FILENAME)
     fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
     with os.fdopen(fd, "w", encoding="utf-8") as fh:
         fh.write(token)
@@ -125,7 +127,7 @@ app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost
 _REGISTERED_REPOS: dict[str, dict] = {}
 
 _REPOS_LOCK = threading.Lock()
-_REGISTRY_FILE = os.path.join(DEFAULT_DATA_DIR, "repos.json")
+_REGISTRY_FILE = None  # Historical registries are preserved but never read/written.
 _MAX_REPOS = 64
 _FORBIDDEN_COMPONENTS = {".ssh", ".aws", ".gnupg", ".kube", ".docker"}
 
@@ -171,19 +173,12 @@ def _validate_root(raw: str) -> tuple[str, str]:
 
 
 def _save_registry() -> None:                      # caller holds _REPOS_LOCK
-    atomic_write_text(_REGISTRY_FILE, json.dumps(_REGISTERED_REPOS, indent=2))
+    # Re-register open folders each session; the repository holds its knowledge.
+    pass
 
 
 def _load_registry() -> None:
-    try:
-        with open(_REGISTRY_FILE, "r", encoding="utf-8") as fh:
-            data = json.load(fh)
-    except (OSError, ValueError):
-        return
-    for repo_id, entry in (data.items() if isinstance(data, dict) else []):
-        root = entry.get("rootPath") if isinstance(entry, dict) else None
-        if REPO_ID_RE.fullmatch(str(repo_id)) and isinstance(root, str) and os.path.isdir(root):
-            _REGISTERED_REPOS[repo_id] = {"rootPath": root, "createdAt": str(entry.get("createdAt") or _utc_now_iso())}
+    pass  # Historical registries remain untouched; open folders register each session.
 
 
 # ─────────────────────────────────────────────────────────────
@@ -247,9 +242,11 @@ def _run_index_job(job_id: str, repo_id: str, root_path: str, full_reindex: bool
         store = None
         try:
             store = SnapshotStore(root_path,repo_id,DEFAULT_DATA_DIR)
-            result = store.publish(client=get_qdrant_client(),collection=COLLECTION_NAME,
-                index_directory=index_directory,build_graph=build_graph,full=full_reindex,
-                on_progress=lambda msg:logger.info('[job %s] %s',job_id[:8],msg))
+            from knowledge_base.storage import RepositoryStorage
+            with RepositoryStorage(root_path, DEFAULT_DATA_DIR).scope():
+                result = store.publish(client=get_qdrant_client(),collection=COLLECTION_NAME,
+                    index_directory=index_directory,build_graph=build_graph,full=full_reindex,
+                    on_progress=lambda msg:logger.info('[job %s] %s',job_id[:8],msg))
             chunk_count = result['chunk_count']
             job["result"] = {
                 "fileCount": result["files_indexed"] + result["files_skipped"],
@@ -377,6 +374,10 @@ def chat_intent(req: ChatIntentRequest):
 @app.post("/repos/register")
 def register_repo(req: RegisterRequest):
     abs_root, repo_id = _validate_root(req.rootPath)
+    if os.environ.get('QDRANT_URL'):
+        raise HTTPException(status_code=400, detail='Unset QDRANT_URL: repository-local storage uses local FAISS.')
+    from knowledge_base.storage import RepositoryStorage
+    RepositoryStorage(abs_root, DEFAULT_DATA_DIR).prepare()
     with _REPOS_LOCK:
         if repo_id not in _REGISTERED_REPOS and len(_REGISTERED_REPOS) >= _MAX_REPOS:
             raise HTTPException(status_code=429, detail="Too many registered repositories.")
@@ -451,7 +452,12 @@ def live_state(repo_id: str):
             else latest_job["state"]
         )
         result["jobId"] = latest_job["id"]
-    view = SnapshotStore(entry['rootPath'],repo_id,DEFAULT_DATA_DIR).view()
+    store = SnapshotStore(entry['rootPath'],repo_id,DEFAULT_DATA_DIR)
+    view = store.view()
+    result['storage'] = {'directory': str(store.path), 'mode': 'repository-local' if store.storage.local else 'explicit-offline',
+                         'snapshotReadOnly': bool(store.storage.local and view['manifest']), 'legacyDataPreserved': True,
+                         'snapshotId': view['snapshotId'],
+                         'cacheBytes': (store.path/'cache.db').stat().st_size if (store.path/'cache.db').is_file() else 0}
     if _SYNC_MANAGER and not view['manifest']:
         view.update(fresh=False,error='Waiting for the first consistent knowledge snapshot.')
     result['synchronization'] = {k:view[k] for k in ('snapshotId','fresh','state','error','savedFilesOnly')}
@@ -460,6 +466,15 @@ def live_state(repo_id: str):
 
 
 # ── Documentation ────────────────────────────────────────────
+
+@app.post('/repos/{repo_id}/cache/clear')
+def clear_repository_cache(repo_id: str):
+    entry = _REGISTERED_REPOS.get(repo_id)
+    if not entry: raise HTTPException(status_code=404, detail='Repository is not registered.')
+    from knowledge_base.storage import RepositoryStorage
+    from knowledge_base.cache import RepositoryCache
+    RepositoryCache(RepositoryStorage(entry['rootPath'], DEFAULT_DATA_DIR)).clear()
+    return {'cleared': True}
 
 def _documentation(repo_id: str) -> DocumentationService:
     if os.environ.get("CODEMIND_ENABLE_DOCS") != "1":
@@ -639,7 +654,8 @@ def _retrieve_pinned(req,view):
 
 
 def _semantic_search(req, *, data_dir=None, collection=None):
-    data_dir,collection = data_dir or DEFAULT_DATA_DIR,collection or COLLECTION_NAME
+    from knowledge_base.storage import storage_base
+    data_dir,collection = data_dir or str(storage_base(_REGISTERED_REPOS[req.repoId]['rootPath'], DEFAULT_DATA_DIR)),collection or COLLECTION_NAME
     entry = _REGISTERED_REPOS[req.repoId]
     conversational = bool(re.match(r"^(?:where|what|how|why|which|explain|describe|tell|who)\b", req.query, re.I))
     try:
@@ -654,13 +670,26 @@ def _semantic_search(req, *, data_dir=None, collection=None):
         scope = Filter(must=conditions)
         if client.count(collection, exact=True, count_filter=scope).count == 0:
             return {"mode": "semantic", "warning": "No semantic evidence is indexed for this repository. Refresh its index.", "results": []}
-        points = client.query_points(
-            collection_name=collection,
-            query=embed_texts([req.query])[0],
-            query_filter=scope,
-            score_threshold=0.5,
-            limit=req.limit * 3,
-        ).points
+        from knowledge_base.cache import query_cache, cache_get, cache_put
+        from types import SimpleNamespace
+        from config import EMBEDDING_MODEL_NAME
+        from knowledge_base.synchronization import PIPELINE_VERSION
+        cache = query_cache()
+        key = [collection, req.query, req.filters.model_dump(), req.limit, EMBEDDING_MODEL_NAME, PIPELINE_VERSION]
+        cached = cache_get(cache, 'semantic-candidates-v1', key)
+        if isinstance(cached, list) and all(isinstance(p, dict) and set(p) == {'id','payload','score'}
+                and isinstance(p['payload'],dict) and isinstance(p['score'],(int,float)) for p in cached):
+            points = [SimpleNamespace(**point) for point in cached]
+        else:
+            vector_key = [req.query, EMBEDDING_MODEL_NAME]
+            vector = cache_get(cache, 'query-embedding-v1', vector_key)
+            if not isinstance(vector, list) or len(vector) != 384 or not all(isinstance(v,(int,float)) for v in vector):
+                vector = embed_texts([req.query])[0]
+                cache_put(cache, 'query-embedding-v1', vector_key, vector)
+            points = client.query_points(collection_name=collection, query=vector,
+                query_filter=scope, score_threshold=0.5, limit=req.limit * 3).points
+            cache_put(cache, 'semantic-candidates-v1', key,
+                [{'id': str(p.id), 'payload': p.payload, 'score': float(p.score)} for p in points])
     except Exception:
         logger.exception("Semantic search unavailable")
         return {"mode": "unavailable", "warning": "No exact match. Semantic search is unavailable; check the local embedding/vector engine log.", "results": []}
@@ -734,7 +763,9 @@ def _semantic_search(req, *, data_dir=None, collection=None):
 
 
 def _keyword_search(req, *, data_dir=None, collection=None):
-    database = os.path.join(data_dir or DEFAULT_DATA_DIR,req.repoId,'metadata.db')
+    from knowledge_base.storage import storage_base
+    base = data_dir or storage_base(_REGISTERED_REPOS[req.repoId]['rootPath'], DEFAULT_DATA_DIR)
+    database = os.path.join(base,req.repoId,'metadata.db')
     results,stale = [],False
     try:
         rows = keyword_search(database,req.repoId,req.query,filters=req.filters.model_dump(),limit=req.limit*3)

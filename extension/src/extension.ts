@@ -156,7 +156,33 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     }
     return undefined;   // selection or panel changed
   }
-  const IGNORED = /(^|\/)(node_modules|build|dist|out|target|coverage|vendor|\.next|\.venv|venv|__pycache__|\.pytest_cache|\.mypy_cache|\.idea|\.vscode-test)(\/|$)|\.egg-info(\/|$)/;
+  const IGNORED = /(^|\/)(\.codemind|node_modules|build|dist|out|target|coverage|vendor|\.next|\.venv|venv|__pycache__|\.pytest_cache|\.mypy_cache|\.idea|\.vscode-test)(\/|$)|\.egg-info(\/|$)/;
+  context.subscriptions.push(vscode.workspace.registerTextDocumentContentProvider('codemind-storage', {
+    provideTextDocumentContent: async () => {
+      const selected = selectedRepository;
+      if (!selected || !server) return 'Select a repository in CodeMind first.';
+      const state = await server.liveState(selected.id);
+      return JSON.stringify({ repository: selected.rootPath, storage: state.storage,
+        synchronization: state.synchronization }, null, 2);
+    },
+  }));
+  context.subscriptions.push(vscode.commands.registerCommand('codemind.showStorage', async () => {
+    const uri = vscode.Uri.parse(`codemind-storage:knowledge-${Date.now()}.json`);
+    await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(uri), { preview: true });
+  }));
+  context.subscriptions.push(vscode.commands.registerCommand('codemind.clearCache', async () => {
+    if (!selectedRepository || !server) { void vscode.window.showInformationMessage('Select a repository in CodeMind first.'); return; }
+    await server.clearRepositoryCache(selectedRepository.id);
+    void vscode.window.showInformationMessage('CodeMind query cache cleared. Published knowledge is retained.');
+  }));
+  context.subscriptions.push(vscode.commands.registerCommand('codemind.rebuildIndex', async () => {
+    const selected = selectedRepository;
+    if (!selected || !server || !vscode.workspace.isTrusted) return;
+    const jobId = await server.indexRepository(selected.id, true);
+    const job = await waitForJob(jobId, () => selectedRepository === selected);
+    if (job?.state === 'failed') throw new Error(job.error || 'Repository rebuild failed.');
+    if (job?.state === 'completed') void vscode.window.showInformationMessage('CodeMind repository snapshot rebuilt.');
+  }));
   function isInside(root: string, file: string): boolean {
     const rel = path.relative(root, file);
     return rel !== '' && rel !== '..' && !rel.startsWith('..' + path.sep) && !path.isAbsolute(rel);
@@ -253,7 +279,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   context.subscriptions.push(vscode.workspace.onDidSaveTextDocument(document => {
     const selected = selectedRepository;
     if (selected && document.uri.scheme === 'file' &&
-        isInside(selected.rootPath, document.uri.fsPath)) {
+        isInside(selected.rootPath, document.uri.fsPath) &&
+        !IGNORED.test(path.relative(selected.rootPath, document.uri.fsPath).split(path.sep).join('/'))) {
       scheduleRefresh();
     }
   }));

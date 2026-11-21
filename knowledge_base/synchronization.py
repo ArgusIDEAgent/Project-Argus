@@ -14,7 +14,9 @@ from pathlib import Path
 import re
 import shutil
 import sqlite3
+from knowledge_base.database import connect
 import stat
+import sys
 import threading
 import time
 import uuid
@@ -24,21 +26,36 @@ from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
 from knowledge_base.identity import repository_id
+from knowledge_base.storage import RepositoryStorage, checked_path
 from knowledge_base.scanner import DEFAULT_MAX_BYTES, EXCLUDED_DIRS, _git_context, _has_gitignore, _inventory
 
 logger = logging.getLogger(__name__)
-PIPELINE_VERSION = 'phase8-hardening-1'
+PIPELINE_VERSION = 'repo-local-storage-v1'
+
+
+def pipeline_identity():
+    from knowledge_base.chunking import CHUNKING_VERSION
+    from knowledge_base.metadata import SCHEMA_VERSION
+    config = sys.modules.get('config')
+    return {'schema': SCHEMA_VERSION, 'chunking': CHUNKING_VERSION,
+            'embeddingModel': getattr(config, 'EMBEDDING_MODEL_NAME', 'BAAI/bge-small-en-v1.5'),
+            'dimensions': getattr(config, 'VECTOR_SIZE', 384)}
+
+
+def compatible(manifest):
+    return bool(manifest and manifest.get('pipelineVersion') == PIPELINE_VERSION
+                and manifest.get('configuration') == pipeline_identity())
 
 
 def _read_json(path):
     try:
-        return json.loads(Path(path).read_text())
+        return json.loads(checked_path(path).read_text())
     except FileNotFoundError:
         return None
 
 
 def _write_json(path, value):
-    path = Path(path)
+    path = checked_path(path)
     temporary = path.with_name(path.name+'.'+uuid.uuid4().hex+'.tmp')
     try:
         with open(temporary,'x',opener=lambda p,f:os.open(p,f,0o600)) as handle:
@@ -59,6 +76,8 @@ def observe_sources(root):
     sources,inventory = {},[]
     for row in entries:
         path,kind,status,reason = row[:4]
+        if path == '.codemind' or path.startswith('.codemind/'):
+            continue
         if status=='error': raise OSError('Cannot observe repository file: '+path)
         digest = row[7]
         if status=='unsupported':
@@ -94,16 +113,15 @@ def _incomplete_parsing(result):
 
 
 class SnapshotStore:
-    def __init__(self,root,repo_id,data_dir):
+    def __init__(self,root,repo_id,data_dir=None):
         self.root = Path(root).resolve(strict=True)
         if repository_id(self.root)!=repo_id: raise ValueError('Repository identity mismatch')
         self.repo_id = repo_id
-        self.base = Path(data_dir).expanduser().resolve()
-        if self.base==self.root or self.root in self.base.parents:
-            raise ValueError('Snapshot storage must be outside the repository')
-        self.path = self.base/repo_id
+        self.storage = RepositoryStorage(self.root, data_dir)
+        self.base, self.path = self.storage.base, self.storage.path
 
     def active(self):
+        checked_path(self.path/'active_snapshot.json')
         manifest = _read_json(self.path/'active_snapshot.json')
         if manifest is not None:
             if (not isinstance(manifest,dict) or manifest.get('repoId')!=self.repo_id
@@ -122,10 +140,16 @@ class SnapshotStore:
         return manifest
 
     def data_for(self,manifest):
-        return self.path/'generations'/manifest['id'] if manifest else self.base
+        return checked_path(self.path/'generations'/manifest['id']) if manifest else self.base
 
     @contextmanager
     def pin_view(self):
+        with self.storage.scope():
+            with self._pin_view() as view:
+                yield view
+
+    @contextmanager
+    def _pin_view(self):
         # A collector may retire an older generation between pointer read and
         # lock acquisition. Retry selection, never recreate a removed snapshot.
         for _ in range(3):
@@ -160,12 +184,12 @@ class SnapshotStore:
         if not re.fullmatch(r'[a-f0-9]{32}',str(identifier)): return False
         try:
             manifest = _read_json(self.data_for({'id':identifier})/self.repo_id/'generation.json')
-            return bool(manifest and manifest.get('pipelineVersion')==PIPELINE_VERSION
+            return bool(compatible(manifest)
                         and manifest['sources']['digest']==observe_sources(self.root)['digest'])
         except (OSError,ValueError,KeyError): return False
 
     def failed(self,exc):
-        self.path.mkdir(parents=True,exist_ok=True,mode=0o700)
+        self.storage.prepare()
         try: previous = self.active()
         except (ValueError,OSError): previous = None
         _write_json(self.path/'sync_state.json',{'state':'failed','activeSnapshotId':previous['id'] if previous else None,
@@ -182,32 +206,51 @@ class SnapshotStore:
         fresh,error = True,None
         if managed:
             try:
-                fresh = bool(manifest and manifest.get('pipelineVersion')==PIPELINE_VERSION
+                fresh = bool(compatible(manifest)
                              and not _incomplete_parsing(manifest['result'])
                              and manifest['sources']['digest']==observe_sources(self.root)['digest'])
             except (OSError,ValueError): fresh = False
-            if manifest and not (self.data_for(manifest)/self.repo_id/'metadata.db').is_file(): fresh = False
+            if manifest:
+                try:
+                    if not checked_path(self.data_for(manifest)/self.repo_id/'metadata.db').is_file(): fresh = False
+                except ValueError:
+                    fresh, error = False, 'Snapshot storage path is invalid; refresh is required.'
             if state.get('state')=='failed': fresh = False
             if not fresh:
                 error = state.get('lastError') or ('Knowledge pipeline changed; refresh is required.'
-                    if manifest and manifest.get('pipelineVersion')!=PIPELINE_VERSION
+                    if manifest and not compatible(manifest)
                     else 'Saved files changed; knowledge index is stale or updating.')
         return {'manifest':manifest,'data_dir':self.data_for(manifest),
                 'snapshotId':manifest['id'] if manifest else None,'managed':managed,
                 'fresh':fresh,'state':state.get('state','unmanaged'),'error':error,'savedFilesOnly':True}
 
     def publish(self,*,client,collection,index_directory,build_graph,full=False,on_progress=None):
-        self.path.mkdir(parents=True,exist_ok=True,mode=0o700)
+        with self.storage.scope():
+            return self._publish(client=client, collection=collection, index_directory=index_directory,
+                build_graph=build_graph, full=full, on_progress=on_progress)
+
+    def _publish(self,*,client,collection,index_directory,build_graph,full=False,on_progress=None):
+        self.storage.prepare()
         with FileLock(str(self.path/'synchronization.lock'),timeout=60):
-            previous = self.active()
+            retained = None
+            try:
+                previous = self.active()
+            except ValueError:
+                relocated = _read_json(self.path/'active_snapshot.json')
+                if not isinstance(relocated,dict) or (relocated.get('root') == str(self.root) and relocated.get('repoId') == self.repo_id):
+                    raise
+                retained = relocated.get('id')
+                if not re.fullmatch(r'[a-f0-9]{32}', str(retained)):
+                    raise ValueError('Invalid relocated snapshot identity')
+                previous = None  # Never reuse provenance copied from a different root.
             before = observe_sources(self.root)
             store_ready = bool(previous and (self.data_for(previous)/self.repo_id/'metadata.db').is_file()
                                and client.collection_exists(previous['collection']))
             if store_ready:
-                with closing(sqlite3.connect((self.data_for(previous)/self.repo_id/'metadata.db').resolve().as_uri()+'?mode=ro',uri=True)) as db:
+                with closing(connect((self.data_for(previous)/self.repo_id/'metadata.db').resolve().as_uri()+'?mode=ro',uri=True)) as db:
                     expected_count = db.execute('SELECT count(*) FROM code_chunks WHERE repository_id=?',(self.repo_id,)).fetchone()[0]
                 store_ready = client.count(previous['collection'],exact=True).count==expected_count
-            if (previous and previous.get('pipelineVersion')==PIPELINE_VERSION and not full
+            if (compatible(previous) and not full
                 and store_ready and not _incomplete_parsing(previous['result'])
                 and previous['sources']['digest']==before['digest']):
                 _write_json(self.path/'sync_state.json',{'state':'ready','activeSnapshotId':previous['id'],
@@ -232,10 +275,10 @@ class SnapshotStore:
                 changed_files = {p for p in set(previous_files)|set(before['files']) if previous_files.get(p)!=before['files'].get(p)}
                 affected_files = set(changed_files)
                 if old_database.is_file():
-                    with closing(sqlite3.connect(old_database.resolve().as_uri()+'?mode=ro',uri=True)) as source,closing(sqlite3.connect(database)) as target:
+                    with closing(connect(old_database.resolve().as_uri()+'?mode=ro',uri=True)) as source,closing(connect(database)) as target:
                         source.backup(target)
                     os.chmod(database,0o600)
-                    with closing(sqlite3.connect(database)) as db:
+                    with closing(connect(database)) as db:
                         tables = {r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
                         dependencies = list(db.execute('''SELECT a.relative_path,b.relative_path FROM graph_relationships e
                             JOIN graph_nodes a ON a.id=e.source_id JOIN graph_nodes b ON b.id=e.target_id
@@ -259,7 +302,7 @@ class SnapshotStore:
                             client.upsert(collection_name=new_collection,points=[PointStruct(id=p.id,vector=p.vector,payload=p.payload) for p in points])
                         if offset is None: break
                     if database.is_file():
-                        with closing(sqlite3.connect(database)) as db,db:
+                        with closing(connect(database)) as db,db:
                             db.execute('UPDATE code_chunks SET collection_name=? WHERE repository_id=?',(new_collection,self.repo_id))
                 graph = build_graph(self.root,data_dir=staged,incremental=True)
                 if _incomplete_parsing({'graph': graph}):
@@ -269,7 +312,7 @@ class SnapshotStore:
                 if result['files_failed']: raise RuntimeError('Some files failed indexing')
                 if audit(database)['dangling_references']: raise RuntimeError('Dangling metadata references')
                 # Prune orphan vectors even if a legacy state file was missing.
-                with closing(sqlite3.connect(database)) as db:
+                with closing(connect(database)) as db:
                     ids = {r[0] for r in db.execute('SELECT id FROM code_chunks WHERE repository_id=?',(self.repo_id,))}
                 offset,seen = None,set()
                 while True:
@@ -289,21 +332,31 @@ class SnapshotStore:
                     'resolutionScope':'all included JS/TS files (conservative dependency invalidation)'}
                 manifest = {'id':identifier,'repoId':self.repo_id,'root':str(self.root),'state':'ready',
                     'pipelineVersion':PIPELINE_VERSION,
+                    'configuration':pipeline_identity(),
                     'collection':new_collection,'sources':after,'result':published,'savedFilesOnly':True,
-                    'previousId':previous['id'] if previous else None}
+                    'previousId':previous['id'] if previous else retained}
                 _write_json(repo_dir/'generation.json',manifest)
+                if self.storage.local:
+                    if hasattr(client, 'seal'): client.seal(new_collection)
+                    with closing(connect(database.resolve().as_uri()+'?mode=ro',uri=True)) as db:
+                        if db.execute('PRAGMA integrity_check').fetchone()[0] != 'ok':
+                            raise RuntimeError('Snapshot integrity check failed')
+                    for item in staged.rglob('*'):
+                        checked_path(item)
+                        if item.is_file(): os.chmod(item,0o400)
                 _write_json(self.path/'active_snapshot.json',manifest)
                 _write_json(self.path/'sync_state.json',{'state':'ready','activeSnapshotId':identifier,
                     'lastError':None,'savedFilesOnly':True})
-                self.collect(client,collection,{identifier,previous['id'] if previous else None})
+                self.collect(client,collection,{identifier,previous['id'] if previous else retained})
                 return published
             except Exception as exc:
                 _write_json(self.path/'sync_state.json',{'state':'failed','pendingSnapshotId':identifier,
                     'activeSnapshotId':previous['id'] if previous else None,
                     'lastError':type(exc).__name__+': indexing failed; see engine log.','savedFilesOnly':True})
                 try:
-                    active = self.active()
-                    self.collect(client,collection,{active['id'] if active else None,active.get('previousId') if active else None})
+                    if retained is None:
+                        active = self.active()
+                        self.collect(client,collection,{active['id'] if active else None,active.get('previousId') if active else None})
                 except Exception: logger.exception('Unpublished snapshot cleanup failed')
                 raise
 
@@ -393,7 +446,7 @@ class SyncManager:
 def repository_view(repo_id,data_dir):
     """Resolve managed snapshots for retained read-only CLI callers."""
     if not re.fullmatch(r'[a-f0-9]{24}',str(repo_id)): raise ValueError('Invalid repository identity')
-    path = Path(data_dir)/repo_id
+    path = Path(data_dir)/repo_id if data_dir is not None else RepositoryStorage(Path.cwd()).path
     manifest = _read_json(path/'active_snapshot.json')
     if manifest is None:
         if (path/'sync_state.json').exists(): raise ValueError('No consistent knowledge snapshot is ready')

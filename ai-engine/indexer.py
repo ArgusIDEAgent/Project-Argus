@@ -42,7 +42,7 @@ from config import (
     VECTOR_SIZE,
     DEFAULT_CHUNK_SIZE,
     DEFAULT_CHUNK_OVERLAP,
-    DEFAULT_DATA_DIR,
+    DEFAULT_REPOSITORY_DATA_DIR as DEFAULT_DATA_DIR,
     EMBEDDING_MODEL_NAME,
     IGNORE_DIRS,
     INDEX_STATE_FILENAME,
@@ -216,8 +216,11 @@ def index_directory(
     repo_id = repo_id or make_repo_id(canonical_root)
     if not REPO_ID_RE.fullmatch(repo_id):
         raise IndexingError('Invalid repo_id')
-    with SemanticIndex(canonical_root, repo_id, data_dir or DEFAULT_DATA_DIR) as metadata:
-        return _index_directory(canonical_root, repo_id=repo_id, data_dir=data_dir,
+    from knowledge_base.storage import RepositoryStorage, current_storage, storage_base
+    base = storage_base(canonical_root, data_dir)
+    storage = current_storage() or RepositoryStorage(canonical_root, data_dir)
+    with storage.scope(), SemanticIndex(canonical_root, repo_id, base) as metadata:
+        return _index_directory(canonical_root, repo_id=repo_id, data_dir=str(base),
             collection=collection, full_reindex=full_reindex, chunk_size=chunk_size,
             chunk_overlap=chunk_overlap, build_graph=build_graph, on_progress=on_progress, metadata=metadata)
 
@@ -525,7 +528,7 @@ def main() -> None:
     parser.add_argument(
         "--data-dir",
         default=None,
-        help=f"Directory to store index state and graph files (default: {DEFAULT_DATA_DIR}/<repo_hash>/).",
+        help="Explicit offline working directory; default publishes read-only snapshots in <repo>/.codemind/.",
     )
     parser.add_argument(
         "--repo-id",
@@ -565,6 +568,18 @@ def main() -> None:
     args = parser.parse_args()
 
     try:
+        if args.data_dir is None:
+            from knowledge_base.synchronization import SnapshotStore
+            from knowledge_base.graph import build_graph as build_semantic_graph
+            store = SnapshotStore(args.dir, args.repo_id or make_repo_id(args.dir))
+            def configured_index(target, **options):
+                return index_directory(target, chunk_size=args.chunk_size, chunk_overlap=args.chunk_overlap, **options)
+            with store.storage.scope():
+                result = store.publish(client=get_qdrant_client(), collection=args.collection,
+                    index_directory=configured_index, build_graph=build_semantic_graph,
+                    full=args.full_reindex, on_progress=print)
+            print(json.dumps(result, indent=2))
+            return
         result = index_directory(
             target_dir=args.dir,
             repo_id=args.repo_id,

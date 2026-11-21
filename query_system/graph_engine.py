@@ -3,6 +3,7 @@
 from contextlib import closing, contextmanager
 from pathlib import Path
 import sqlite3
+from knowledge_base.database import connect
 from time import monotonic
 
 from pydantic import Field, ValidationError, model_validator
@@ -101,7 +102,7 @@ class _BudgetGraph(KnowledgeGraph):
         self.check()
         # Override only connection policy. The existing query/traversal methods
         # are reused unchanged; mode=ro cannot recreate a removed index.
-        db = sqlite3.connect(Path(self.database).resolve().as_uri() + "?mode=ro", uri=True)
+        db = connect(Path(self.database).resolve().as_uri() + "?mode=ro", uri=True)
         db.row_factory = sqlite3.Row
         try:
             self.check()

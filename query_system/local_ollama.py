@@ -53,25 +53,32 @@ class LocalOllama:
         if context.sources and context.facts:
             claim = schema["$defs"]["ModelClaim"]["properties"]
             claim["record_ids"]["items"]["enum"] = [source.record_id for source in context.sources]
-            claim["fact_id"]["anyOf"][0]["enum"] = [fact.fact_id for fact in context.facts]
             claim["requirement_orders"]["items"]["enum"] = list(context.core_ready)
             schema["$defs"]["ModelCoverage"]["properties"]["order"]["enum"] = list(context.core_ready)
-            # Schema guidance complements, never replaces, backend validation.
+            # Generation supplies explanation prose; canonical facts are already
+            # rendered by the application. Allowing a fact-only response here
+            # contradicted the backend's no_usable_explanation gate and made the
+            # local model repeatedly copy a source-location fact instead.
+            # Keep unknown available for honest abstention, and keep all backend
+            # provenance/claim checks independent of this decoding guidance.
             base = schema["$defs"]["ModelClaim"]
-            verified = [fact for fact in context.facts if fact.classification not in ("hypothetical_consequence", "unresolved_assertion")]
             variants = []
-            for modes in (["fact"], ["interpretation", "hypothesis"], ["unknown"]):
-                if modes == ["fact"] and not verified:
-                    continue
+            for modes in (["interpretation", "hypothesis"], ["unknown"]):
                 variant = deepcopy(base)
                 properties = variant["properties"]
                 properties["mode"] = {"type": "string", "enum": modes}
-                properties["fact_id"] = {"type": "string", "enum": [fact.fact_id for fact in verified]} if modes == ["fact"] else {"type": "null"}
-                properties["text"] = {"anyOf": [{"type": "null"}, {"type": "string", "enum": [fact.statement for fact in verified]}]} if modes == ["fact"] else {"type": "string", "minLength": 1, "maxLength": 1600}
+                properties["fact_id"] = {"type": "null"}
+                properties["text"] = {"type": "string", "minLength": 1, "maxLength": 1600}
                 properties["record_ids"]["minItems"] = 0 if modes == ["unknown"] else 1
                 variant["required"] = ["requirement_orders", "mode", "fact_id", "record_ids", "text"]
                 variants.append(variant)
             schema["$defs"]["ModelClaim"] = {"anyOf": variants}
+            # One short section avoids spending the bounded output budget on
+            # repeated fact lists and headings rather than the requested prose.
+            schema["properties"]["sections"]["maxItems"] = 1
+            section = schema["$defs"]["ModelSection"]["properties"]
+            section["title"]["enum"] = ["explanation", "possible_causes", "comparison", "limitations"]
+            section["claims"]["maxItems"] = min(budget.max_claims, max(1, len(context.core_ready)))
         payload = {"model": model, "stream": False, "format": schema,
                    "messages": context.messages,
                    "options": {"temperature": 0, "num_predict": budget.num_predict, "num_ctx": budget.num_ctx}}

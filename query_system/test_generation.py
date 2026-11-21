@@ -10,6 +10,7 @@ from urllib.error import HTTPError
 from urllib.request import Request
 
 from pydantic import ValidationError
+from jsonschema import Draft202012Validator
 
 from query_system.generation_contracts import GenerationBudget, ModelAnswer, PreparedContext, PreparedFact, PreparedSource
 from query_system.generation_safety import PresentationSafety
@@ -86,7 +87,7 @@ class GenerationUnitTests(unittest.TestCase):
                 client.generate(self.context, self.budget, monotonic()-1)
             opened.assert_not_called()
 
-    def test_structured_format_constrains_facts_separately_from_prose(self):
+    def test_explanation_format_excludes_fact_only_output_and_binds_evidence(self):
         self.context.sources = [PreparedSource(record_id="r", data={}, excerpt="source")]
         self.context.facts = [PreparedFact(fact_id="f", finding_id=None, requirement_id="q", record_ids=["r"],
             classification="verified_source_observation", statement="Canonical fact.", data={}, limitations=[])]
@@ -94,10 +95,35 @@ class GenerationUnitTests(unittest.TestCase):
         client = LocalOllama(self.answers)
         with patch.dict(os.environ, {"CODEMIND_LOCAL_MODEL": "local"}), patch.object(client.opener, "open", return_value=self.reply()) as opened:
             client.generate(self.context, self.budget, monotonic()+5)
-        variants = json.loads(opened.call_args.args[0].data)["format"]["$defs"]["ModelClaim"]["anyOf"]
-        self.assertEqual(variants[0]["properties"]["fact_id"]["enum"], ["f"])
-        self.assertEqual(variants[1]["properties"]["fact_id"], {"type": "null"})
-        self.assertEqual(variants[1]["properties"]["record_ids"]["items"]["enum"], ["r"])
+        schema = json.loads(opened.call_args.args[0].data)["format"]
+        validator = Draft202012Validator(schema)
+        def body(mode, record_ids, text, fact_id=None):
+            return {"sections": [{"title": "explanation", "claims": [{"requirement_orders": [0],
+                "mode": mode, "fact_id": fact_id, "record_ids": record_ids, "text": text}]}],
+                "coverage": [{"order": 0, "state": "partial"}]}
+        self.assertFalse(validator.is_valid(body("fact", ["r"], "Canonical fact.", "f")))
+        self.assertTrue(validator.is_valid(body("interpretation", ["r"], "The supplied source checks the input.")))
+        self.assertTrue(validator.is_valid(body("hypothesis", ["r"], "The input may cause rejection.")))
+        self.assertTrue(validator.is_valid(body("unknown", [], "The source does not establish this.")))
+        self.assertFalse(validator.is_valid(body("interpretation", ["invented"], "Unsupported.")))
+        self.assertFalse(validator.is_valid(body("interpretation", [], "Missing support.")))
+        self.assertFalse(validator.is_valid(body("interpretation", ["r"], "Bad fact reference.", "f")))
+        variants = schema["$defs"]["ModelClaim"]["anyOf"]
+        self.assertTrue(all(variant["properties"]["fact_id"] == {"type": "null"} for variant in variants))
+
+    def test_explanation_format_bounds_sections_and_claims_by_request(self):
+        self.context.sources = [PreparedSource(record_id="r", data={}, excerpt="source")]
+        self.context.facts = [PreparedFact(fact_id="f", finding_id=None, requirement_id="q", record_ids=["r"],
+            classification="verified_source_observation", statement="Canonical fact.", data={}, limitations=[])]
+        self.context.core_ready = {0: True, 1: True}
+        client = LocalOllama(self.answers)
+        with patch.dict(os.environ, {"CODEMIND_LOCAL_MODEL": "local"}), patch.object(client.opener, "open", return_value=self.reply()) as opened:
+            client.generate(self.context, self.budget.model_copy(update={"max_claims": 1}), monotonic()+5)
+        schema = json.loads(opened.call_args.args[0].data)["format"]
+        self.assertEqual(schema["properties"]["sections"]["maxItems"], 1)
+        self.assertEqual(schema["$defs"]["ModelSection"]["properties"]["claims"]["maxItems"], 1)
+        self.assertEqual(schema["properties"]["coverage"]["minItems"], 2)
+        self.assertEqual(schema["properties"]["coverage"]["maxItems"], 2)
 
     def test_redirects_and_proxy_configuration_cannot_select_remote_transport(self):
         with self.assertRaises(LocalModelFailure):

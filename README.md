@@ -71,12 +71,12 @@ VS Code extension (TypeScript) ──HTTP + session token──▶ FastAPI engin
 |---|---|---|
 | Front end | VS Code extension, TypeScript, webview chat panel (VS Code ≥ 1.93) | No bundler or UI framework; Node's built-in `http` client |
 | Engine API | FastAPI + Uvicorn on `127.0.0.1:8000` | `x-codemind-session` token on every route; background indexing jobs |
-| Vector DB | Qdrant (Docker, loopback, API key) | One collection `codemind_codebase`, cosine, 384-dim, filtered by `repo_id` |
+| Vector DB | Repository-local SQLite vector records + FAISS | Cosine, 384 dimensions; immutable collections per repository snapshot; remote Qdrant disabled in the active application |
 | Embeddings | FastEmbed — `BAAI/bge-small-en-v1.5` | Local, CPU-only |
 | Chunking | LangChain Text Splitters — `RecursiveCharacterTextSplitter.from_language` | 1200 chars, 150 overlap |
 | Code analysis | Python `ast` → NetworkX `DiGraph` | JSON node-link file per repo |
 | LLM | LiteLLM → OpenRouter, free-tier model | Model is configuration (`CODEMIND_LLM_MODEL`), intentionally not locked here |
-| State & config | python-dotenv; state in `~/.codemind/data/` | Outside target repos, so file watchers never loop |
+| State & config | python-dotenv; repository knowledge/cache in `<repo>/.codemind/` | Read-only published SQLite/FAISS generations, persistent query cache, storage excluded from scanners/watchers; machine runtime token/model downloads remain in `~/.codemind/data/` |
 | Testing | `@vscode/test-electron` (extension), pytest (engine, F7) | |
 
 ## 5. Scope-Change Protocol
@@ -121,4 +121,5 @@ python api.py
 
 | # | Date | Change | Confirmed by |
 |---|------|--------|--------------|
+| 1 | 2026-11-20 | Repository-local persistence: reuse `.codemind` snapshots and cache across sessions; extension-triggered atomic publication of read-only generations; preserve historical external data. Replaces the outside-repository storage contract and active remote-vector storage. | Owner explicitly requested implementation in chat |
 | 0 | 2026-10-09 | Baseline v1.0, derived from a review of the repository. Versus the original vision: **dropped** Jira bug-history, Git history/blame and the graphical dependency graph; **added** F7 (Evidence) and the Definition of Done; Docs-generation and Reuse-detection (built into the extension, absent from the vision) declared OUT. | Owner — on approval of this file |

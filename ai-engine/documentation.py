@@ -11,6 +11,7 @@ import os
 from pathlib import Path
 import re
 import sqlite3
+from knowledge_base.database import connect
 
 from filelock import FileLock, Timeout
 
@@ -158,7 +159,7 @@ class DocumentationService:
         database = self.snapshot.data_for(manifest) / self.repo_id / "metadata.db"
         if not database.is_file():
             raise DocumentationError("missing_snapshot", "Published metadata is unavailable. Refresh the repository.")
-        with closing(sqlite3.connect(database.resolve().as_uri() + "?mode=ro", uri=True)) as db:
+        with closing(connect(database.resolve().as_uri() + "?mode=ro", uri=True)) as db:
             db.row_factory = sqlite3.Row
             files = db.execute("""SELECT id,relative_path,kind,language,content_sha256,size_bytes FROM files
                 WHERE repository_id=? AND status='included' ORDER BY relative_path LIMIT ?""",

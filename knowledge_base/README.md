@@ -1,5 +1,42 @@
 # Knowledge base: Phases 1–8
 
+## Repository-local persistence (current storage contract)
+
+The extension registers the selected canonical folder each session and reuses
+`<repo>/.codemind/active_snapshot.json`. Valid unchanged snapshots are a no-op:
+they are not parsed, embedded or published again. A changed folder identity
+(copy/move) requires rebuilding provenance before reuse.
+
+Published data is at `.codemind/generations/<snapshot>/<repo-id>/metadata.db`.
+This SQLite file contains inventory, symbols, graph, FTS chunks and vector records;
+derived `.faiss` files live beside it. The writer builds a separate generation,
+checks source stability, integrity and metadata/vector membership, closes its
+writers, marks files owner-read-only (0400 on POSIX), then atomically switches
+the pointer. Readers use SQLite `mode=ro`; corrupt FAISS accelerators rebuild in
+memory without modifying published files. Failed updates keep the previous
+published snapshot. One previous generation is retained; pinned older readers
+are protected from collection.
+
+`.codemind/cache.db` holds bounded, expiring query embeddings and semantic
+candidate results. Candidate keys include collection/snapshot, exact query,
+filters, limit, embedding model and pipeline version. Every hit still passes
+canonical source/metadata validation. Session tokens and navigation authority
+are never persisted in this cache. The cache is disposable, not source truth.
+
+All scanner, watcher and save-hook paths exclude `.codemind`. Its own `.gitignore`
+contains `*`; do not force-add these source-derived artifacts. Storage symlinks
+are rejected. Unwritable roots fail without falling back to a global index.
+Multiple sessions coordinate through repository locks. Owner-read-only protects
+against accidental edits; it cannot prevent the same OS user changing permissions.
+
+`CODEMIND_DATA_DIR` now controls machine runtime credentials/downloaded models
+only. Existing global indexes, registries and vectors are never migrated, deleted
+or overwritten by normal repository registration. The first local index is built
+and verified independently. Remote `QDRANT_URL` is rejected in this mode.
+Explicit `--data-dir` on standalone phase tools remains an offline diagnostic
+override; the extension never uses it. Historical phase paths below describe the
+older qualification fixtures, not the active application default.
+
 Run from the project root:
 
 ```sh
@@ -13,7 +50,7 @@ python3 -m knowledge_base.graph --repo /absolute/path/to/local/git/repository
 
 The Python entry point is `knowledge_base.scanner.scan_repository(...)`. It returns the repository ID, Git revision, SQLite location, scan time, and coverage counts. Optional `--exclude` globs and `--max-file-bytes` override the default one-megabyte limit.
 
-Standalone phase commands store their private database at `~/.codemind/data/<repository-id>/metadata.db` (or under `CODEMIND_DATA_DIR` / `--data-dir`), outside the scanned repository. Phase 7's engine uses immutable generation databases described below; use the metadata inspection command to locate its active database. The inventory stores repository metadata, one row per observed file or pruned directory, and scan history. Each file row includes a repository-relative path, kind, language, status and reason, size, content SHA-256 for included files, and parsing status. The scanner itself stores no source contents; Phase 5 stores redacted eligible chunks locally for keyword retrieval. A successful rescan upserts file rows in one transaction, retaining stable IDs and unchanged evidence while removing deleted paths.
+Standalone phase commands default to `<repo>/.codemind/<repository-id>/metadata.db`; explicit `--data-dir` overrides are for offline tools/tests. The engine uses the immutable generations described above. Use the metadata inspection command to locate its active database. The inventory stores repository metadata, one row per observed file or pruned directory, and scan history. Each file row includes a repository-relative path, kind, language, status and reason, size, content SHA-256 for included files, and parsing status. The scanner itself stores no source contents; Phase 5 stores redacted eligible chunks locally for keyword retrieval. A successful rescan upserts file rows in one transaction, retaining stable IDs and unchanged evidence while removing deleted paths.
 
 This phase recognizes JavaScript/TypeScript source files and common JS/TS project manifests. Other file types are reported as unsupported. Git's own ignore matcher handles nested `.gitignore` rules and negations for Git repositories. Sensitive filenames, symlinks, generated directories, binary files, oversized files, and high-confidence embedded secret markers are excluded separately. Ignored directories are counted once; their descendants are intentionally not enumerated. A non-Git directory can be scanned only if it contains no `.gitignore` rules to evaluate.
 

@@ -167,8 +167,7 @@ export function registerResponsePreview(context: vscode.ExtensionContext): void 
         openLabel: 'Authorize repository for preview (no scan)' }))?.[0];
       if (!root) return;
       if (fs.statSync(input.fsPath).size > MAX_PACKET_BYTES) throw new Error('Preview packet is too large.');
-      const dataSetting = process.env.CODEMIND_DATA_DIR || path.join(os.homedir(), '.codemind', 'data');
-      const dataDir = dataSetting.replace(/^~(?=$|[\\/])/, os.homedir());
+      const dataDir = path.join(fs.realpathSync(root.fsPath), '.codemind');
       await openResponsePreview(path.resolve(context.extensionPath, '..'), {
         rootPath: fs.realpathSync(root.fsPath), dataDir, packet: JSON.parse(fs.readFileSync(input.fsPath, 'utf8')),
       });

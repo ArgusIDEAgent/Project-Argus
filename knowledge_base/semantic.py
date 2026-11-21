@@ -3,6 +3,7 @@ from contextlib import closing
 from pathlib import Path
 import re
 import sqlite3
+from knowledge_base.database import connect
 
 
 def ensure_semantic_schema(db):
@@ -58,7 +59,7 @@ def keyword_search(database, repo_id, query, *, filters=None, limit=10):
         if values:
             conditions.append(f'x.{column} IN ({",".join("?" for _ in values)})')
             parameters.extend(values)
-    with closing(sqlite3.connect(Path(database).resolve().as_uri()+'?mode=ro',uri=True)) as db:
+    with closing(connect(Path(database).resolve().as_uri()+'?mode=ro',uri=True)) as db:
         db.row_factory = sqlite3.Row
         if not db.execute("SELECT 1 FROM sqlite_master WHERE name='chunk_fts'").fetchone():
             return []
