@@ -83,6 +83,20 @@ class HybridIntegrationTests(unittest.TestCase):
         self.assertTrue(claims)
         self.assertTrue(run.response.presentation.sources)
 
+    def test_feature_generation_rejects_unsupplied_cross_file_relationships(self):
+        def invented_flow(context, *_):
+            record = next(source.record_id for source in context.sources if source.excerpt)
+            return json.dumps({"sections": [{"title": "explanation", "claims": [{
+                "requirement_orders": [0], "mode": "interpretation", "record_ids": [record],
+                "text": "The chat sends the question to this candidate, then it dispatches the final answer."}]}],
+                "coverage": [{"order": 0, "state": "addressed"}]})
+        run = self.run_question("How does chat reach the final answer?", FakeLocal(invented_flow))
+        self.assertEqual(run.response.generations[0].model_status, "validation_failed")
+        self.assertEqual(run.response.generations[0].failure_category, "feature_relationship_without_structural_evidence")
+        self.assertEqual(run.response.generations[0].fallback_status, "evidence_summary")
+        self.assertFalse(any(item.origin == "generation" and not item.authoritative
+                             for item in run.response.presentation.items.values()))
+
     def test_conversational_messages_bypass_pinning_execution_evidence_and_ollama(self):
         for question in ("hi", "thanks", "bye", "how are you?", "what can you do?", "what's the weather?"):
             fake = FakeLocal()

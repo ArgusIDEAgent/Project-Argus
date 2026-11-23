@@ -224,18 +224,25 @@ class HybridRetriever:
             AND c.symbol_id IS NULL AND x.language='python' AND x.symbol_kind IN ('function','method','class')
             AND (x.symbol_name=? OR x.qualified_name=?) {scope} ORDER BY x.path,c.start_line LIMIT 100''',
             (self.repo_id,reference,reference,*args))
-        admitted = {}
+        grouped = {}
         for row in contexts:
             key = (row['path'],row['parent_symbol_key'] or row['qualified_name'])
-            if admitted.get(key, 0) >= 6: continue
-            admitted[key] = admitted.get(key, 0) + 1
-            try:
-                result = self._symbol_result({**row,'kind':row['symbol_kind'],
-                    'definitionKey':'python-context:' + '|'.join(str(value) for value in key)})
-                if file and result['path'] != file and PurePosixPath(result['path']).name != file: continue
-                if self._matches(result,filters): results.append(result)
-            except (ValueError,OSError):
-                self.warnings.append('Some exact definitions changed. Refresh the repository index.')
+            grouped.setdefault(key, []).append(row)
+        for key, rows in grouped.items():
+            # Cover the beginning, middle and final branches of a long symbol
+            # without increasing the normal five-result/model-context bound.
+            if len(rows) > 5:
+                selected = [rows[round(index * (len(rows)-1) / 4)] for index in range(5)]
+            else:
+                selected = rows
+            for row in selected:
+                try:
+                    result = self._symbol_result({**row,'kind':row['symbol_kind'],
+                        'definitionKey':'python-context:' + '|'.join(str(value) for value in key)})
+                    if file and result['path'] != file and PurePosixPath(result['path']).name != file: continue
+                    if self._matches(result,filters): results.append(result)
+                except (ValueError,OSError):
+                    self.warnings.append('Some exact definitions changed. Refresh the repository index.')
         return results
 
     def _matches(self,item,filters):

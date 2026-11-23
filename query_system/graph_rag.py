@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+import re
 from time import monotonic, perf_counter
 from types import SimpleNamespace
 
@@ -45,7 +46,7 @@ TASK_GUIDANCE = {
     "workflow": "Explain the supplied indexed static path in evidence-linked prose, not just copied facts. Resolved edges do not prove runtime order; mark missing evidence unknown.",
     "behavior": "Describe source-supported possible causes and missing diagnostic evidence. A possible cause is a hypothesis, never a verified root cause from static evidence alone.",
     "comparison": "Compare both explicit targets in evidence-linked prose, not copied facts: signatures, implementations, supplied relationships. Mark unknowns; never infer performance or equivalence.",
-    "feature": "Explain what the retrieved implementation excerpts directly show and how the visible pieces may fit the requested feature. Similarity is only candidate selection: do not assert calls, ordering or dependencies unless supplied as verified relationships. Mark missing links unknown.",
+    "feature": "Explain what each retrieved implementation excerpt directly shows. Similarity is only candidate selection: never assert that one candidate calls, sends to, precedes or depends on another unless a verified relationship fact explicitly supplies that link. For an end-to-end question with no verified links, state that the complete handoff is unknown instead of inventing steps.",
 }
 
 
@@ -301,8 +302,9 @@ class GraphRagGenerator:
             required = self._required_support(request.normalized.requirements[order], request.bindings[order], package)
             analysis_ids = {item.requirement_id for item in package.requirements if item.requirement_id in required
                             and item.original.intent not in ("SYMBOL_LOCATION", "DEPENDENCY_PATH")}
-            if any(finding.requirement_id in analysis_ids and not any(fact.finding_id == finding.finding_id for fact in facts)
-                   for finding in package.findings):
+            if (request.explanation_type != "feature" and
+                    any(finding.requirement_id in analysis_ids and not any(fact.finding_id == finding.finding_id for fact in facts)
+                        for finding in package.findings)):
                 gaps[order].append("required_support_context_omitted")
             if request.explanation_type == "workflow" and not any(fact.requirement_id in request.bindings[order] and fact.fact_id in essential_facts for fact in facts):
                 gaps[order].append("workflow_requires_resolved_relationships")
@@ -357,6 +359,12 @@ class GraphRagGenerator:
                     classification = "model_interpretation" if mode == "interpretation" else "hypothetical_consequence" if mode == "hypothesis" else "unknown"
                     verification, authoritative = "unknown" if mode == "unknown" else "citation_linked_not_fact_checked", False
                     relevant_requirements = {use.requirement_id for key in item.record_ids for use in package.evidence[key].uses}
+                    if (request.explanation_type == "feature" and mode == "interpretation"
+                            and re.search(r"\b(?:calls?|invokes?|sends?|passes?|routes?|dispatches?|then)\b|\bmoves?\s+from\b|\bfollowing\s+steps\b", text, re.I)
+                            and not any(isinstance(finding.original, GraphFinding)
+                                        and set(finding.evidence_record_ids) & set(item.record_ids)
+                                        for finding in package.findings)):
+                        raise ValueError("feature_relationship_without_structural_evidence")
                     if (mode == "interpretation" and request.explanation_type != "feature"
                             and all(package.evidence[key].proof.evidence_type == "code_chunk" for key in item.record_ids)):
                         # Similarity alone cannot explain verified target behavior.

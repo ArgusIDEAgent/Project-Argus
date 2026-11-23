@@ -38,6 +38,22 @@ def test_large_source_leaves_room_for_later_evidence_and_marks_gaps():
             assert len(reply['citations']) == 2
 
 
+def test_exact_definition_chunks_supply_the_verified_continuous_function():
+    with tempfile.TemporaryDirectory() as folder:
+        root = Path(folder)
+        path = root / 'flow.py'
+        path.write_text('\n'.join(f'line_{number}' for number in range(1, 101)) + '\n')
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        base = dict(path='flow.py', sourceHash=digest, reason='Exact source definition; not proof of runtime behavior',
+                    name='flow', definitionKey='python-context:flow.py|flow')
+        verified, evidence = evidence_for(root, [{**base, 'startLine': 1, 'endLine': 10},
+                                                 {**base, 'startLine': 91, 'endLine': 100}])
+        assert len(verified) == 2
+        assert len(evidence) == 1
+        assert 'line_50' in evidence[0]
+        assert 'line_100' in evidence[0]
+
+
 def test_workflow_expansion_is_bounded_and_location_queries_skip_it():
     retriever = object.__new__(HybridRetriever)
     retriever._verify = lambda item: True

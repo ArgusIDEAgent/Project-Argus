@@ -159,7 +159,7 @@ def compose_presentation(run, depth):
             display.hidden_items = max(0, len(ids) - DEPTH_ITEMS[depth])
             display.limitations.append("Explanation unavailable from current validated evidence or generation disabled/budgeted.")
         targets = [original.entities[index] for index in display.original.entity_indices]
-        if targets and any(target.resolution != "resolved" for target in targets):
+        if display.original.intent != "FEATURE_DISCOVERY" and targets and any(target.resolution != "resolved" for target in targets):
             display.state = "not_found" if any(target.resolution == "not_found" for target in targets) else "unsupported" if any(target.resolution == "unsupported" for target in targets) else "ambiguous"
         display.target_context = [target.name + (" · " + target.file_path if target.file_path else "") for target in targets]
     used = {key for req in view.requirements for section in req.sections for key in section.item_ids}
