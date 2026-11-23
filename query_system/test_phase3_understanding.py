@@ -74,7 +74,7 @@ class Phase3ModelSchemaTests(unittest.TestCase):
                 self.assertEqual(schema["minItems"], len(orders))
                 self.assertEqual(schema["maxItems"], len(orders))
                 self.assertTrue(schema["uniqueItems"])
-                self.assertEqual(captured[0]["options"], {"temperature": 0, "num_predict": 350, "num_ctx": 8192})
+                self.assertEqual(captured[0]["options"], {"temperature": 0, "num_predict": 700, "num_ctx": 8192})
 
 
 if __name__ == "__main__": unittest.main()

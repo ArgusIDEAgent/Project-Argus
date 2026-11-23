@@ -69,7 +69,7 @@ class GenerationUnitTests(unittest.TestCase):
         self.assertEqual(body["model"], "configured-local-model")
         self.assertFalse(body["stream"])
         self.assertNotIn("tools", body)
-        self.assertEqual(body["options"]["num_predict"], 350)
+        self.assertEqual(body["options"]["num_predict"], 700)
         self.assertEqual(body["options"]["num_ctx"], 8192)
         self.assertEqual(body["format"], ModelAnswer.model_json_schema())
         self.assertEqual(opened.call_count, 1)

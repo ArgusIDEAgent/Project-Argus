@@ -32,7 +32,7 @@ QUESTIONS = [
     ("Who calls login?", "DIRECT_CALLERS", "graph", "find_callers", 0),
     ("What does login call?", "DIRECT_CALLEES", "graph", "find_callees", 0),
     ("Dependency path from entry to validateToken", "DEPENDENCY_PATH", "graph", "find_paths", 0),
-    ("Find code that checks access", "FEATURE_DISCOVERY", "semantic", "hybrid_search", 0),
+    ("Find code that checks access", "FEATURE_DISCOVERY", "semantic", "hybrid_search", 1),
     ("Contract of validateToken", "FUNCTION_CONTRACT", "rules", "function_contract", 0),
     ("What tests cover login?", "TEST_DISCOVERY", "rules", "reference_test_analysis", 0),
     ("Impact of changing login", "CHANGE_IMPACT", "rules", "change_impact", 0),
@@ -72,6 +72,17 @@ class HybridIntegrationTests(unittest.TestCase):
             run = self.run_question("Who calls login?")
         self.assertEqual(run.response.generations, [])
 
+    def test_feature_discovery_uses_claim_validated_generation_without_symbol_promotion(self):
+        fake = FakeLocal()
+        run = self.run_question("Find code that checks access", fake)
+        self.assertEqual(fake.calls, 1)
+        self.assertEqual(run.response.generations[0].task, "feature")
+        self.assertEqual([item.original.intent for item in run.package.requirements], ["FEATURE_DISCOVERY"])
+        self.assertEqual(run.response.status, "success")
+        claims = [item for item in run.response.presentation.items.values() if not item.authoritative]
+        self.assertTrue(claims)
+        self.assertTrue(run.response.presentation.sources)
+
     def test_conversational_messages_bypass_pinning_execution_evidence_and_ollama(self):
         for question in ("hi", "thanks", "bye", "how are you?", "what can you do?", "what's the weather?"):
             fake = FakeLocal()
@@ -103,7 +114,7 @@ class HybridIntegrationTests(unittest.TestCase):
         run = self.run_question("Explain login and explain duplicate", fake)
         self.assertEqual(fake.calls, 1)
         self.assertEqual(run.response.generations[0].original_orders, [0])
-        self.assertEqual([item.state for item in run.response.presentation.requirements], ["partial", "ambiguous"])
+        self.assertEqual([item.state for item in run.response.presentation.requirements], ["addressed", "ambiguous"])
         self.assertTrue(run.response.presentation.clarifications)
 
     def test_optional_relationship_omissions_do_not_suppress_source_grounded_explanation(self):
@@ -114,6 +125,68 @@ class HybridIntegrationTests(unittest.TestCase):
         self.assertTrue(run.package.omissions)
         self.assertEqual(fake.calls, 1)
         self.assertEqual(run.response.generations[0].model_status, "success")
+        self.assertEqual(run.response.status, "success")
+        self.assertEqual(run.response.presentation.requirements[0].state, "addressed")
+
+    def test_optional_contract_limits_do_not_make_full_source_explanation_partial(self):
+        run = self.run_question("Explain login")
+        contract = next(item for item in run.package.requirements if item.original.intent == "FUNCTION_CONTRACT")
+        self.assertEqual(contract.state, "partially_satisfied")
+        self.assertEqual(run.response.status, "success")
+        self.assertEqual(run.response.presentation.requirements[0].state, "addressed")
+        self.assertTrue(run.response.presentation.limitations)
+
+    def test_explicit_contract_keeps_its_partial_coverage_alongside_explanation(self):
+        run = self.run_question("Contract of login and explain login")
+        rows = {item.original.intent: item.state for item in run.response.presentation.requirements}
+        self.assertEqual(rows["FUNCTION_CONTRACT"], "partially_satisfied")
+        self.assertEqual(rows["FUNCTION_EXPLANATION"], "addressed")
+        self.assertEqual(run.response.status, "partial")
+
+    def test_model_reported_partial_is_not_promoted_by_complete_source(self):
+        def partial(context, *_):
+            body = json.loads(valid_answer(context))
+            body["coverage"][0]["state"] = "partial"
+            return json.dumps(body)
+        run = self.run_question("Explain login", FakeLocal(partial))
+        self.assertEqual(run.response.presentation.requirements[0].state, "partial")
+        self.assertEqual(run.response.status, "partial")
+
+    def test_optional_context_trimming_preserves_complete_source_coverage(self):
+        request = self.request("Explain login")
+        request.limits.generation.max_records = 1
+        request.limits.generation.max_facts = 1
+        run = asyncio.run(run_hybrid(self.owner.store, request, self.owner.channels, answers, client=FakeLocal()))
+        context = run.generations[0][1].context
+        self.assertTrue(context.omissions)
+        self.assertTrue(context.core_ready[0])
+        self.assertEqual(context.gaps[0], [])
+        payload = json.loads(context.messages[1]["content"])
+        required_ids = {item.requirement_id for item in run.package.requirements if item.original.intent == "SYMBOL_LOCATION"}
+        self.assertEqual({item["requirement_id"] for item in payload["coverage"]}, required_ids)
+        self.assertEqual(run.response.status, "success")
+
+    def test_trimmed_required_workflow_path_blocks_generation(self):
+        request = self.request("Explain the workflow from entry to validateToken")
+        request.limits.generation.max_records = 2
+        fake = FakeLocal()
+        run = asyncio.run(run_hybrid(self.owner.store, request, self.owner.channels, answers, client=fake))
+        context = run.generations[0][1].context
+        self.assertEqual(fake.calls, 0)
+        self.assertEqual(sum(bool(source.excerpt) for source in context.sources), 2)
+        self.assertFalse(any(fact.data.get("path_node_ids") for fact in context.facts))
+        self.assertIn("workflow_requires_resolved_relationships", context.gaps[0])
+        self.assertFalse(context.core_ready[0])
+        self.assertNotEqual(run.response.status, "success")
+
+    def test_missing_target_source_still_blocks_generation(self):
+        request = self.request("Explain login")
+        request.limits.generation.max_source_bytes = 0
+        fake = FakeLocal()
+        run = asyncio.run(run_hybrid(self.owner.store, request, self.owner.channels, answers, client=fake))
+        self.assertEqual(fake.calls, 0)
+        self.assertIn("missing_complete_target_source", run.generations[0][1].context.gaps[0])
+        self.assertNotEqual(run.response.status, "success")
 
     def test_hybrid_diagnostics_transport_accepted_finding_ids(self):
         run = self.run_question("Who calls login?")
@@ -271,7 +344,8 @@ class HybridIntegrationTests(unittest.TestCase):
         request.limits.evidence.max_records = 1
         run = asyncio.run(run_hybrid(self.owner.store, request, self.owner.channels, answers, client=FakeLocal()))
         self.assertLessEqual(len(run.package.evidence), 1)
-        self.assertNotEqual(run.response.status, "success")
+        self.assertEqual(run.response.status, "success")
+        self.assertTrue(run.package.omissions)
         self.assertLess(len(run.response.model_dump_json()), 100000)
 
     def test_oversized_source_is_not_admitted_to_a_new_snapshot(self):

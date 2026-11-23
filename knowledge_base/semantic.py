@@ -4,6 +4,7 @@ from pathlib import Path
 import re
 import sqlite3
 from knowledge_base.database import connect
+from knowledge_base.source_ranking import preferred_role, role_priority
 
 
 def ensure_semantic_schema(db):
@@ -63,10 +64,13 @@ def keyword_search(database, repo_id, query, *, filters=None, limit=10):
         db.row_factory = sqlite3.Row
         if not db.execute("SELECT 1 FROM sqlite_master WHERE name='chunk_fts'").fetchone():
             return []
+        preferred = preferred_role(query)
+        db.create_function('codemind_source_priority', 1, lambda path: role_priority(path, preferred), deterministic=True)
         rows = db.execute(f'''SELECT x.*,c.file_id,c.symbol_id,c.snapshot_id,c.source_hash,c.start_line,c.end_line,
                 bm25(chunk_fts,1.0,4.0,2.0,1.0,2.0) AS rank
             FROM chunk_fts JOIN chunk_context x ON x.rowid=chunk_fts.rowid
             JOIN code_chunks c ON c.id=x.id JOIN index_snapshots s ON s.id=c.snapshot_id
-            WHERE chunk_fts MATCH ? AND {' AND '.join(conditions)} ORDER BY rank,x.path,c.start_line LIMIT ?''',
+            WHERE chunk_fts MATCH ? AND {' AND '.join(conditions)}
+            ORDER BY codemind_source_priority(x.path),rank,x.path,c.start_line LIMIT ?''',
             [expression,*parameters,limit]).fetchall()
         return [dict(row) for row in rows]

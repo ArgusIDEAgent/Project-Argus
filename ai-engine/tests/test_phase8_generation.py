@@ -224,7 +224,8 @@ class GenerationTests(unittest.TestCase):
         result, _ = self.run_generation(budget=GenerationBudget(max_records=2, max_facts=2, num_ctx=32768, max_context_bytes=24000))
         self.assertLessEqual(len(result.context.sources), 2)
         self.assertLessEqual(len(result.context.facts), 2)
-        self.assertEqual(result.status, "partial")
+        self.assertTrue(result.context.omissions)
+        self.assertEqual(result.status, "success")
 
     def test_missing_requirement_coverage_falls_back(self):
         def missing(context, *_):

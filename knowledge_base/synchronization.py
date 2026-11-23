@@ -6,6 +6,7 @@ Native events accelerate updates; periodic content-hash reconciliation catches
 missed events, restarts, renames, ignore changes and edits with unchanged mtimes.
 """
 from contextlib import closing,contextmanager
+from contextvars import ContextVar
 import hashlib
 import json
 import logging
@@ -31,6 +32,7 @@ from knowledge_base.scanner import DEFAULT_MAX_BYTES, EXCLUDED_DIRS, _git_contex
 
 logger = logging.getLogger(__name__)
 PIPELINE_VERSION = 'repo-local-storage-v1'
+_validation_scope = ContextVar('codemind_query_validation', default=None)
 
 
 def pipeline_identity():
@@ -184,9 +186,45 @@ class SnapshotStore:
         if not re.fullmatch(r'[a-f0-9]{32}',str(identifier)): return False
         try:
             manifest = _read_json(self.data_for({'id':identifier})/self.repo_id/'generation.json')
+            scoped = _validation_scope.get()
+            if scoped is not None and scoped[0] is self and scoped[1].get('id') == identifier:
+                # Only the hybrid request opts into deferring redundant whole-
+                # repository observations. Canonical trace()/source checks still
+                # run in every layer; the enclosing scope must validate on exit.
+                return bool(compatible(manifest) and manifest == scoped[1])
             return bool(compatible(manifest)
                         and manifest['sources']['digest']==observe_sources(self.root)['digest'])
         except (OSError,ValueError,KeyError): return False
+
+    def freshness_checkpoint(self, identifier):
+        """Always re-observe source bytes, even in an optimized request scope."""
+        token = _validation_scope.set(None)
+        try:
+            return self.matches(identifier)
+        finally:
+            _validation_scope.reset(token)
+
+    @contextmanager
+    def validation_scope(self, view):
+        """Defer duplicate full scans until release, never across requests.
+
+        The pin has already observed every source byte. Immutable metadata and
+        per-evidence source hashes remain checked during intermediate stages.
+        A final unconditional observation catches missed events, new/deleted
+        files, ignore changes and edits that preserve size/mtime. Exceptions or
+        cancellation cannot release an answer through this scope.
+        """
+        manifest = view.get('manifest')
+        if not view.get('fresh') or not manifest:
+            raise ValueError('A fresh pinned snapshot is required')
+        token = _validation_scope.set((self, manifest))
+        try:
+            yield
+            if ((self.active() or {}).get('id') != manifest['id']
+                    or not self.freshness_checkpoint(manifest['id'])):
+                raise ValueError('Saved source or active snapshot changed before answer release')
+        finally:
+            _validation_scope.reset(token)
 
     def failed(self,exc):
         self.storage.prepare()

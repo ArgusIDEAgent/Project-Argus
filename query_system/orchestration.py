@@ -19,7 +19,8 @@ from query_system.query_understanding import classify_conversational_intent
 from query_system.response_presentation import DEPTH_ITEMS, format_response
 
 EXPLANATIONS = {"FUNCTION_EXPLANATION": "function", "WORKFLOW_EXPLANATION": "workflow",
-                "BEHAVIOR_INVESTIGATION": "behavior", "CODE_COMPARISON": "comparison"}
+                "BEHAVIOR_INVESTIGATION": "behavior", "CODE_COMPARISON": "comparison",
+                "FEATURE_DISCOVERY": "feature"}
 STATISTICS = re.compile(r"(?is)^\s*(?:how many|count(?: all)?|total(?: number)? of|number of)\b.*\b(?:files|functions|classes|lines|modules|symbols|methods)\b")
 
 
@@ -45,6 +46,9 @@ def _project_support(original):
     wanted = []
     for row in original.requirements:
         if row.intent not in EXPLANATIONS:
+            continue
+        if row.intent == "FEATURE_DISCOVERY":
+            bindings[row.order] = [f"req-{row.order:03d}"]
             continue
         targets = row.entity_indices
         for index in targets:
@@ -100,11 +104,15 @@ def _ready_for_generation(original, package, bindings, order):
     row = original.requirements[order]
     targets = [original.entities[index] for index in row.entity_indices]
     support = set(bindings.get(order, []))
-    if (row.intent not in EXPLANATIONS or not targets or
-            any(target.resolution != "resolved" or target.evidence is None for target in targets) or
-            package.validation_status in ("invalid", "stale") or
+    if (row.intent not in EXPLANATIONS or package.validation_status in ("invalid", "stale") or
             any(support.intersection(item.requirement_ids) for item in package.conflicts) or
             any(item.requirement_id in support and item.clarification_required for item in package.requirements)):
+        return False
+    if row.intent == "FEATURE_DISCOVERY":
+        return any(record.proof.evidence_type == "code_chunk" and
+                   any(use.requirement_id in support for use in record.uses)
+                   for record in package.evidence.values())
+    if not targets or any(target.resolution != "resolved" or target.evidence is None for target in targets):
         return False
     records = [record for record in package.evidence.values()
                if any(use.requirement_id in support for use in record.uses)
@@ -192,6 +200,7 @@ def compose_presentation(run, depth):
 async def run_hybrid(store, request: HybridQueryRequest, channels, answers, *, client=None, engine_factory=None, conversation=None):
     request = HybridQueryRequest.model_validate(request.model_dump(), strict=True)
     start = perf_counter(); deadline = monotonic() + request.limits.deadline_ms / 1000
+    release_started = None
     timing = PipelineTiming()
     run = HybridRun(HybridResponse(status="error", snapshot_id=None, presentation=None, timings=timing))
     static = classify_conversational_intent(request.query.question)
@@ -201,7 +210,7 @@ async def run_hybrid(store, request: HybridQueryRequest, channels, answers, *, c
         timing.total_ms = (perf_counter() - start) * 1000
         return run
     try:
-        with MultiEngineExecutor.pinned(store, channels, engine_factory=engine_factory) as executor:
+        with MultiEngineExecutor.pinned(store, channels, engine_factory=engine_factory) as executor, store.validation_scope(executor.view):
             executor.context.validate_request(request.query)
             run.response.snapshot_id = executor.context.snapshot_id
             before = perf_counter(); original = executor.understand(request.query, conversation)
@@ -265,6 +274,9 @@ async def run_hybrid(store, request: HybridQueryRequest, channels, answers, *, c
                     fallback_status=result.fallback_status, failure_category=result.failure_category, model_attempts=result.model_calls,
                     claim_operation_ids=claim_owners))
             before = perf_counter(); view = compose_presentation(run, request.query.depth)
+            # Retain the presentation shell for a stale outcome if final proof
+            # validation raises. The exception path removes every answer item.
+            run.response.presentation = view
             timing.formatting_ms = (perf_counter() - before) * 1000
             before = perf_counter()
             if (store.active() or {}).get("id") != executor.context.snapshot_id or not store.matches(executor.context.snapshot_id) or run.package.validation_status in ("invalid", "stale"):
@@ -281,16 +293,31 @@ async def run_hybrid(store, request: HybridQueryRequest, channels, answers, *, c
                     view.items = {}
                     for requirement in view.requirements:
                         for section in requirement.sections: section.item_ids = []
-            if monotonic() > deadline:
-                view.limitations.append("Cooperative overall deadline exceeded; synchronous work may outlast the requested deadline.")
-                if view.status == "success": view.status = "partial"
             timing.validation_ms = (perf_counter() - before) * 1000
             run.response.presentation = PresentationResult.model_validate(view.model_dump(), strict=True)
             run.response.status = run.response.presentation.status
+            release_started = perf_counter()
     except (RuntimeError, *FAILURES) as error:
-        run.response.presentation = None
         run.response.status = "stale_index" if isinstance(error, (OSError, ValueError)) else "error"
+        if run.response.status == "stale_index" and run.response.presentation is not None:
+            view = run.response.presentation
+            _scope_unavailable(view, "stale", "Saved source or active snapshot changed before answer release; ask again.")
+            view.items = {}
+            for requirement in view.requirements:
+                for section in requirement.sections:
+                    section.item_ids = []
+        else:
+            run.response.presentation = None
         run.response.error = EngineError(code="stale_index" if run.response.status == "stale_index" else "unavailable", message="Hybrid request cannot establish current canonical repository evidence. Refresh/check the registered snapshot.")
     finally:
+        if release_started is not None:
+            timing.validation_ms += (perf_counter() - release_started) * 1000
+        # Include the unconditional release-time source observation and worker
+        # drain in the cooperative deadline, as well as in total telemetry.
+        if monotonic() > deadline and run.response.presentation is not None:
+            view = run.response.presentation
+            view.limitations.append("Cooperative overall deadline exceeded; synchronous work may outlast the requested deadline.")
+            if view.status == "success":
+                view.status = run.response.status = "partial"
         timing.total_ms = (perf_counter() - start) * 1000
     return run

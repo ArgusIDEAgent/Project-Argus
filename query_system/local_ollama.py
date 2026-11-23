@@ -68,7 +68,7 @@ class LocalOllama:
                 properties = variant["properties"]
                 properties["mode"] = {"type": "string", "enum": modes}
                 properties["fact_id"] = {"type": "null"}
-                properties["text"] = {"type": "string", "minLength": 1, "maxLength": 1600}
+                properties["text"] = {"type": "string", "minLength": 1, "maxLength": 3200}
                 properties["record_ids"]["minItems"] = 0 if modes == ["unknown"] else 1
                 variant["required"] = ["requirement_orders", "mode", "fact_id", "record_ids", "text"]
                 variants.append(variant)

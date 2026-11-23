@@ -654,7 +654,10 @@ def _retrieve_pinned(req,view):
 
 
 def _semantic_search(req, *, data_dir=None, collection=None):
+    from pathlib import Path
     from knowledge_base.storage import storage_base
+    from knowledge_base.database import connect
+    from knowledge_base.source_ranking import preferred_role, rank_sources, source_role
     data_dir,collection = data_dir or str(storage_base(_REGISTERED_REPOS[req.repoId]['rootPath'], DEFAULT_DATA_DIR)),collection or COLLECTION_NAME
     entry = _REGISTERED_REPOS[req.repoId]
     conversational = bool(re.match(r"^(?:where|what|how|why|which|explain|describe|tell|who)\b", req.query, re.I))
@@ -676,7 +679,7 @@ def _semantic_search(req, *, data_dir=None, collection=None):
         from knowledge_base.synchronization import PIPELINE_VERSION
         cache = query_cache()
         key = [collection, req.query, req.filters.model_dump(), req.limit, EMBEDDING_MODEL_NAME, PIPELINE_VERSION]
-        cached = cache_get(cache, 'semantic-candidates-v1', key)
+        cached = cache_get(cache, 'semantic-candidates-v2-source-roles', key)
         if isinstance(cached, list) and all(isinstance(p, dict) and set(p) == {'id','payload','score'}
                 and isinstance(p['payload'],dict) and isinstance(p['score'],(int,float)) for p in cached):
             points = [SimpleNamespace(**point) for point in cached]
@@ -686,9 +689,22 @@ def _semantic_search(req, *, data_dir=None, collection=None):
             if not isinstance(vector, list) or len(vector) != 384 or not all(isinstance(v,(int,float)) for v in vector):
                 vector = embed_texts([req.query])[0]
                 cache_put(cache, 'query-embedding-v1', vector_key, vector)
+            # Select the requested source role before the ANN candidate cap so
+            # benchmark copies cannot crowd implementation out of the pool.
+            database = Path(data_dir) / req.repoId / 'metadata.db'
+            with closing(connect(database.resolve().as_uri()+'?mode=ro', uri=True)) as db:
+                paths = [row[0] for row in db.execute('SELECT DISTINCT f.relative_path FROM code_chunks c JOIN files f ON f.id=c.file_id AND f.repository_id=c.repository_id WHERE c.repository_id=?', (req.repoId,))]
+            preferred = preferred_role(req.query)
+            preferred_paths = [path for path in paths if source_role(path) == preferred]
+            preferred_scope = Filter(must=[*conditions, FieldCondition(key='file_path',match=MatchAny(any=preferred_paths))])
             points = client.query_points(collection_name=collection, query=vector,
-                query_filter=scope, score_threshold=0.5, limit=req.limit * 3).points
-            cache_put(cache, 'semantic-candidates-v1', key,
+                query_filter=preferred_scope, score_threshold=0.5, limit=req.limit * 3).points if preferred_paths else []
+            if len(points) < req.limit:
+                fallback = client.query_points(collection_name=collection, query=vector,
+                    query_filter=scope, score_threshold=0.5, limit=req.limit * 3).points
+                admitted = {str(point.id) for point in points}
+                points = [*points, *(point for point in fallback if str(point.id) not in admitted)]
+            cache_put(cache, 'semantic-candidates-v2-source-roles', key,
                 [{'id': str(p.id), 'payload': p.payload, 'score': float(p.score)} for p in points])
     except Exception:
         logger.exception("Semantic search unavailable")
@@ -696,14 +712,8 @@ def _semantic_search(req, *, data_dir=None, collection=None):
 
     results = []
     stale = False
-    if conversational:
-        def implementation_rank(point):
-            path = str((point.payload or {}).get("file_path", "")).lower()
-            penalty = 0.15 if (path.endswith((".md", ".markdown")) or
-                any(part in {"tests", "test", "__tests__"} for part in path.split("/")) or
-                os.path.basename(path).startswith("test_")) else 0
-            return point.score - penalty
-        points = sorted(points, key=implementation_rank, reverse=True)
+    points = rank_sources(points, req.query, path=lambda point: str((point.payload or {}).get('file_path', '')),
+                          score=lambda point: point.score)
     for pt in points:
         payload = pt.payload or {}
         if not matches_filters(payload,req.filters.model_dump()):
@@ -768,7 +778,9 @@ def _keyword_search(req, *, data_dir=None, collection=None):
     database = os.path.join(base,req.repoId,'metadata.db')
     results,stale = [],False
     try:
+        from knowledge_base.source_ranking import rank_sources
         rows = keyword_search(database,req.repoId,req.query,filters=req.filters.model_dump(),limit=req.limit*3)
+        rows = rank_sources(rows, req.query, path=lambda row: row['path'], score=lambda row: -row['rank'])
         for row in rows:
             try:
                 info = trace(database,req.repoId,row['id'])

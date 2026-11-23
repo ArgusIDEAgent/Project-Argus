@@ -65,6 +65,16 @@ class Phase6Tests(unittest.TestCase):
         self.assertTrue(any(set(r['retrievalMethods'])=={'keyword','semantic'} for r in result['results']))
         self.assertTrue(all(r['source_verified'] for r in result['results']))
 
+    def test_feature_question_literal_echo_does_not_short_circuit_hybrid_retrieval(self):
+        question='Find code that rejects invalid authentication tokens'
+        benchmark=self.root/'benchmarks'; benchmark.mkdir()
+        (benchmark/'questions.json').write_text(question+'\n'+question+'\n')
+        self.refresh()
+        result=self.search(question,retrieval='hybrid')
+        self.assertEqual(result['mode'],'hybrid')
+        self.assertIn('auth.ts',{row['path'] for row in result['results']})
+        self.assertNotIn('benchmarks/questions.json',{row['path'] for row in result['results']})
+
     def test_same_named_definitions_are_ambiguous_not_guessed(self):
         (self.root/'other.ts').write_text('export function validateToken(token: string) { return false; }\n')
         self.refresh()

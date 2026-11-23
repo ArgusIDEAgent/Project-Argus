@@ -7,7 +7,7 @@ from pydantic import Field, JsonValue, model_validator
 from query_system.contracts import ContractModel, GenerationId, IntentRequirement, NormalizedQuery, QueryRequest, RepositoryId, ResultStatus
 from query_system.evidence_contracts import Citation, ClaimClass
 
-ExplanationType = Literal["function", "workflow", "behavior", "comparison"]
+ExplanationType = Literal["function", "workflow", "behavior", "comparison", "feature"]
 
 
 class GenerationBudget(ContractModel):
@@ -16,7 +16,7 @@ class GenerationBudget(ContractModel):
     max_source_bytes: int = Field(default=8000, ge=0, le=64000)
     max_context_bytes: int = Field(default=20000, ge=2048, le=65536)
     num_ctx: int = Field(default=8192, ge=4096, le=65536)
-    num_predict: int = Field(default=350, ge=64, le=2048)
+    num_predict: int = Field(default=700, ge=64, le=2048)
     deadline_ms: int = Field(default=30000, ge=1, le=120000)
     max_response_bytes: int = Field(default=65536, ge=2048, le=262144)
     max_claims: int = Field(default=24, ge=1, le=64)
@@ -78,7 +78,7 @@ class ModelClaim(ContractModel):
     mode: Literal["fact", "interpretation", "hypothesis", "unknown"]
     fact_id: str | None = None
     record_ids: list[str] = Field(default_factory=list, max_length=64)
-    text: str | None = Field(default=None, min_length=1, max_length=1600)
+    text: str | None = Field(default=None, min_length=1, max_length=3200)
 
 
 class ModelSection(ContractModel):

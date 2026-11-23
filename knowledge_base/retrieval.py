@@ -18,6 +18,7 @@ from knowledge_base.graph import KnowledgeGraph
 from knowledge_base.identity import relative_path
 from knowledge_base.metadata import trace
 from knowledge_base.semantic import matches_filters
+from knowledge_base.source_ranking import rank_sources, source_priority
 
 RRF_K = 60
 MAX_CANDIDATES = 100
@@ -109,12 +110,20 @@ def plan_query(query):
         quoted = re.search(r'[`\'"]('+IDENTIFIER+r')[`\'"]',normalized)
         named = next((m for m in re.finditer(r'\b(?:explain|describe|definition of|where is|defined|function|method|symbol)\s+(?:(?:the|function|method|symbol|file|module)\s+)*[`\'"]?('+IDENTIFIER+r')',normalized,re.I)
                       if m.group(1).lower() not in STOP_WORDS),None)
+        # Code-shaped identifiers remain explicit targets even when natural
+        # language occurs between "explain" and the name. Plain product words
+        # such as "CodeMind" stay feature-discovery queries.
+        code_named = next((m for m in re.finditer(IDENTIFIER, normalized)
+                           if ('_' in m.group(0) or '.' in m.group(0))
+                           and not re.fullmatch(PATH, m.group(0), re.I)), None)
         if (re.fullmatch(IDENTIFIER,normalized) or re.fullmatch(r'[a-f0-9]{64}',normalized)) and normalized.lower() not in STOP_WORDS:
             plan.reference = normalized
         elif quoted:
             plan.reference = quoted.group(1)
         elif named and named.group(1).lower() not in STOP_WORDS:
             plan.reference = named.group(1)
+        elif re.search(r'\b(?:explain|describe)\b',normalized,re.I) and code_named:
+            plan.reference = code_named.group(0)
         if re.search(r'\b(?:explain|describe)\b',normalized,re.I):
             plan.intent = 'explain'
         elif re.search(r'\b(?:defined|definition)\b',normalized,re.I):
@@ -175,7 +184,8 @@ class HybridRetriever:
             'path','startLine','endLine','sourceHash')},'name':row['qualified_name'],
             'language':row['language'],'module':str(PurePosixPath(info['path']).with_suffix('')),
             'symbolType':row['kind'],'reason':'Exact source definition; not proof of runtime behavior',
-            'resolution':'syntax_only','confidence':1.,'revision':'latest','callers':[],'tests':[]}
+            'resolution':'syntax_only','confidence':1.,'revision':'latest','callers':[],'tests':[],
+            'definitionKey':row.get('definitionKey') or row['id']}
 
     def _lookup(self,reference,filters,file=''):
         def restrictions(columns):
@@ -214,13 +224,14 @@ class HybridRetriever:
             AND c.symbol_id IS NULL AND x.language='python' AND x.symbol_kind IN ('function','method','class')
             AND (x.symbol_name=? OR x.qualified_name=?) {scope} ORDER BY x.path,c.start_line LIMIT 100''',
             (self.repo_id,reference,reference,*args))
-        seen = set()
+        admitted = {}
         for row in contexts:
-            key = (row['path'],row['parent_symbol_key'])
-            if key in seen: continue
-            seen.add(key)
+            key = (row['path'],row['parent_symbol_key'] or row['qualified_name'])
+            if admitted.get(key, 0) >= 6: continue
+            admitted[key] = admitted.get(key, 0) + 1
             try:
-                result = self._symbol_result({**row,'kind':row['symbol_kind']})
+                result = self._symbol_result({**row,'kind':row['symbol_kind'],
+                    'definitionKey':'python-context:' + '|'.join(str(value) for value in key)})
                 if file and result['path'] != file and PurePosixPath(result['path']).name != file: continue
                 if self._matches(result,filters): results.append(result)
             except (ValueError,OSError):
@@ -352,7 +363,7 @@ class HybridRetriever:
             return [],'not_found',[]
 
     def _expand(self,plan,rankings,filters,budget):
-        if plan.intent!='explain' and not re.search(r'\b(?:dependencies|dependency|relationships|calls)\b',plan.query,re.I):
+        if plan.intent!='explain' and not re.search(r'\b(?:dependencies|dependency|relationships|calls|workflow|flow|how)\b',plan.query,re.I):
             return rankings
         seeds = fuse_rankings({k:[r for r in values if self._verify(r)] for k,values in rankings.items()})
         expanded,seen = [],set()
@@ -381,10 +392,11 @@ class HybridRetriever:
         # Exact evidence takes precedence. Context then uses rank-based evidence
         # reliability/implementation ordering; raw score scales are never mixed.
         results.sort(key=lambda r:('exact' not in r['retrievalMethods'],
-            plan.intent=='explore' and (r['path'].endswith(('.md','.markdown')) or
-                any(p in ('tests','test','__tests__') for p in r['path'].split('/'))),
+            source_priority(r['path'], plan.query) if plan.intent in ('explore', 'explain') else 0,
             bool(re.search(r'\b(?:function|method)\b',plan.query,re.I)) and r.get('symbolType') not in ('function','method'),
             -r['fusionScore'],r['path'],r['startLine']))
+        if plan.intent in ('explore', 'explain') and not any('exact' in item['retrievalMethods'] for item in results):
+            results = rank_sources(results, plan.query)
         final = [r for r in results if self._verify(r)]
         if len(final)!=len(results):
             self.warnings.append('Source evidence changed during final verification. Refresh the repository index.')
@@ -428,7 +440,7 @@ class HybridRetriever:
         if not self.indexed_ready:
             self.warnings.append('Knowledge snapshot is stale or unavailable. Saved-file lookup remains available while synchronization retries.')
             literal = [] if plan.intent in ('callers','callees','impact','imports','dependents') else self.exact_search(plan.query,filters,budget)
-            if re.match(r'^(?:where|what|how|why|which|explain|describe|tell|who)\b',plan.query,re.I):
+            if re.match(r'^(?:where|what|how|why|which|explain|describe|tell|who|find|show|list|locate|search)\b',plan.query,re.I):
                 literal = [r for r in literal if r['reason'].startswith('Requested file:')]
             ambiguous = len({r['path'] for r in literal if r['reason'].startswith('Requested file:')})>1
             return self._finish(plan,{'literal':literal},limit,status='ambiguous' if ambiguous else None)
@@ -439,7 +451,8 @@ class HybridRetriever:
             except sqlite3.Error:
                 definitions = []
                 self.warnings.append('Exact symbol metadata is unavailable. Refresh the repository index.')
-            if len(definitions)>1:
+            definition_count = len({item.get('definitionKey', (item['path'], item['name'])) for item in definitions})
+            if definition_count>1:
                 self.warnings.append('Symbol is ambiguous. Use its qualified name and/or a file filter.')
                 return self._finish(plan,{'exact':definitions},limit,status='ambiguous')
             if plan.intent in ('callers','callees','impact','imports','dependents'):
@@ -460,7 +473,7 @@ class HybridRetriever:
                 if ambiguous: self.warnings.append('Module is ambiguous. Use its repository-relative path.')
                 return self._finish(plan,{'literal':literal},limit,status='ambiguous' if ambiguous else None)
             literal = self.exact_search(plan.query,filters,budget)
-            conversational = bool(re.match(r'^(?:where|what|how|why|which|explain|describe|tell|who)\b',plan.query,re.I))
+            conversational = bool(re.match(r'^(?:where|what|how|why|which|explain|describe|tell|who|find|show|list|locate|search)\b',plan.query,re.I))
             if conversational: literal = [r for r in literal if r['reason'].startswith('Requested file:')]
             if plan.file:
                 literal = [r for r in literal if not '/' in plan.file or r['path']==plan.file]

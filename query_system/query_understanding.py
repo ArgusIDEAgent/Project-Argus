@@ -115,6 +115,9 @@ def classify_conversational_intent(message: str) -> ConversationalReply | None:
 def _discovery_clause(base, masked):
     """A functional description is not a request for an exact symbol named by prose."""
     text = masked.strip()
+    if (re.match(r"(?:(?:explain|describe)\s+how\b|how\s+(?:does|do|is|are)\s+(?:a|an|the)\b)", text, re.I)
+            and not (_QUOTES.search(base) or "::" in base)):
+        return True
     # Architecture/algorithm questions describe functionality, not a canonical
     # symbol named after an uppercase domain acronym (e.g. CNN). Keep explicit
     # quoted/qualified code targets on their existing exact-resolution path.
@@ -127,6 +130,8 @@ def _discovery_clause(base, masked):
         return False
     if re.search(r"\b(?:defined|declared|named)\b", text, re.I):
         return False
+    if re.search(r"\b(?:benchmarks?|evaluation)\s+(?:results?|metrics)\b|\b(?:documentation|configuration)\s+(?:for|about|of)\b", text, re.I):
+        return True
     if re.search(r"\b(?:code|logic|implementation|functionality|feature)\b|\b(?:function|method)\s+(?:responsible for|that)\b|^which part\b", text, re.I):
         return True
     if re.match(r"where (?:is|are)\b", text, re.I) and re.search(r"\bimplemented\b", text, re.I):
