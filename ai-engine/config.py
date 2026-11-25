@@ -16,7 +16,6 @@ from functools import lru_cache
 
 from dotenv import load_dotenv
 from langchain_text_splitters import Language
-from qdrant_client import QdrantClient
 from fastembed import TextEmbedding
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
@@ -150,10 +149,6 @@ def make_repo_id(target_dir: str) -> str:
     return repository_id(Path(target_dir).expanduser())
 
 
-_VECTOR_LOCK = threading.RLock()
-_VECTOR_CLIENT = None
-
-
 def get_qdrant_client():
     """Compatibility name; active requests always use repository-owned FAISS."""
     from knowledge_base.storage import current_storage, RepositoryStorage
@@ -162,17 +157,6 @@ def get_qdrant_client():
         raise ValueError('Remote Qdrant is disabled for repository-local storage')
     from knowledge_base.vector_store import RepositoryVectors
     return RepositoryVectors(storage)
-
-
-def _create_vector_client():
-    """Legacy offline qualification factory; active application uses repository scope."""
-    api_key = os.environ.get("QDRANT_API_KEY") or None
-    url = os.environ.get("QDRANT_URL")
-    if url:
-        return QdrantClient(url=url, api_key=api_key, timeout=30)
-    from knowledge_base.vector_store import FaissClient
-    # Keep the previous Qdrant directory untouched; rebuild into a new local store.
-    return FaissClient(ensure_private_dir(os.path.join(DEFAULT_DATA_DIR, "faiss")))
 
 
 @lru_cache(maxsize=1)

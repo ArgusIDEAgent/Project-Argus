@@ -155,6 +155,14 @@ class GraphRagGenerator:
             return "Resolved static " + original.relationship + ": " + str(original.source_name or original.source_node_id) + " → " + str(original.target_name or original.target_node_id)
         if isinstance(original, RuleFinding):
             return original.statement
+        edge_id = original.ranking_signals.get("edge_id")
+        if edge_id:
+            from knowledge_base.metadata import trace
+            edge = trace(self.verifier.database, self.executor.context.repository_id, edge_id)
+            source = trace(self.verifier.database, self.executor.context.repository_id,
+                           original.ranking_signals["from_chunk_id"])
+            target = trace(self.verifier.database, self.executor.context.repository_id, original.chunk_id)
+            return "Resolved indexed " + edge["relationship"] + " link: " + source["qualified_name"] + " → " + target["qualified_name"] + "."
         return "Retrieved source candidate at rank " + str(original.rank) + " by " + "/".join(original.retrieval_methods) + "; similarity is not a graph dependency."
 
     def prepare(self, request, package):
@@ -188,7 +196,11 @@ class GraphRagGenerator:
                     essential_facts.add(path.finding_id)
                     priority.update(path.evidence_record_ids)
         sources, source_bytes, omissions = [], 0, []
-        for key in [*sorted(target_priority), *sorted(priority - target_priority), *sorted(available_sources.keys() - priority)]:
+        feature_order = [key for finding in package.findings if finding.requirement_id in selected_requirements
+                         for key in finding.evidence_record_ids if key in target_priority]
+        ordered_targets = ([*dict.fromkeys(feature_order), *sorted(target_priority - set(feature_order))]
+                           if request.explanation_type == "feature" else sorted(target_priority))
+        for key in [*ordered_targets, *sorted(priority - target_priority), *sorted(available_sources.keys() - priority)]:
             if len(sources) >= budget.max_records:
                 omissions.append("record_limit:" + key)
                 continue
@@ -363,6 +375,11 @@ class GraphRagGenerator:
                             and re.search(r"\b(?:calls?|invokes?|sends?|passes?|routes?|dispatches?|then)\b|\bmoves?\s+from\b|\bfollowing\s+steps\b", text, re.I)
                             and not any(isinstance(finding.original, GraphFinding)
                                         and set(finding.evidence_record_ids) & set(item.record_ids)
+                                        or (finding.original.kind == "semantic"
+                                            and finding.original.ranking_signals.get("edge_id")
+                                            and set(finding.evidence_record_ids) <= set(item.record_ids)
+                                            and any(package.evidence[key].proof.evidence_id == finding.original.ranking_signals.get("from_chunk_id")
+                                                    for key in item.record_ids))
                                         for finding in package.findings)):
                         raise ValueError("feature_relationship_without_structural_evidence")
                     if (mode == "interpretation" and request.explanation_type != "feature"

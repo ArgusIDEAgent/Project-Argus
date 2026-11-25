@@ -158,6 +158,24 @@ class EvidenceAggregator:
         elif isinstance(finding, SemanticFinding):
             if finding.chunk_id not in finding.evidence_ids or infos[finding.chunk_id]["kind"] != "chunk":
                 raise _Invalid("claim_provenance", "Semantic relevance lacks its canonical code chunk")
+            edge_id = finding.ranking_signals.get("edge_id")
+            if edge_id:
+                source_id = finding.ranking_signals.get("from_chunk_id")
+                if not isinstance(source_id, str):
+                    raise _Invalid("claim_provenance", "Expanded graph source is missing")
+                edge = trace(self.database, self.context.repository_id, edge_id)
+                source = trace(self.database, self.context.repository_id, source_id)
+                target = infos[finding.chunk_id]
+                with closing(self._connection()) as db:
+                    endpoints = db.execute("""SELECT a.symbol_id,b.symbol_id FROM graph_nodes a
+                        JOIN graph_nodes b ON b.id=? AND b.repository_id=a.repository_id
+                        WHERE a.id=? AND a.repository_id=?""",
+                        (edge["target_id"], edge["source_id"], self.context.repository_id)).fetchone()
+                if (edge["kind"] != "relationship" or edge["resolution"] != "resolved"
+                        or edge["relationship"] not in ("CALLS", "IMPORTS") or not endpoints
+                        or source_id not in infos or source["kind"] != "chunk" or source["symbolId"] != endpoints[0]
+                        or target["symbolId"] != endpoints[1]):
+                    raise _Invalid("claim_provenance", "Expansion link is not a resolved edge between these sources")
         elif isinstance(finding, RuleFinding):
             if finding.rule_id != operation.request.name:
                 raise _Invalid("claim_provenance", "Rule ID differs from executed deterministic operation")

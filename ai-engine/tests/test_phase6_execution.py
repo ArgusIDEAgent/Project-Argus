@@ -17,7 +17,8 @@ from phase5_fixture import fixture
 from query_system.contracts import IntentRequirement, QueryRequest
 from query_system.execution_contracts import ExecutionLimits, ExecutionReport
 from query_system.executor import MultiEngineExecutor, existing_engines
-from query_system.semantic_engine import existing_api_channels
+from query_system.semantic_engine import ChannelResult, RetrievalChannels, SemanticSearchEngine, existing_api_channels
+from knowledge_base.database import connect
 
 
 class ExecutionTests(unittest.TestCase):
@@ -64,6 +65,44 @@ class ExecutionTests(unittest.TestCase):
         self.assertEqual({proof.snapshot_id for proof in report.evidence.values()},{report.snapshot_id})
         self.assertGreater(len({proof.index_snapshot_id for proof in report.evidence.values()}),1)
         self.assertEqual(ExecutionReport.model_validate_json(report.model_dump_json()),report)
+
+    def test_workflow_expansion_follows_resolved_callee_within_bound(self):
+        with SemanticSearchEngine.pinned(self.store, self.channels) as engine:
+            with connect(engine.database.resolve().as_uri() + '?mode=ro', uri=True) as db:
+                row = db.execute('''SELECT c.id FROM code_chunks c JOIN chunk_context x ON x.id=c.id
+                    WHERE c.repository_id=? AND x.qualified_name='login' LIMIT 1''', (self.repo,)).fetchone()
+            self.assertIsNotNone(row)
+            expanded = engine._expand_workflow([{'entityId': row[0]}], 5)
+            from knowledge_base.metadata import trace
+            names = [trace(engine.database, self.repo, item['entityId']).get('qualified_name') for item in expanded]
+            self.assertIn('validateToken', names)
+            self.assertLessEqual(len(expanded), 5)
+
+    def test_expanded_hop_is_accepted_by_canonical_evidence_verifier(self):
+        from knowledge_base.metadata import trace
+        from query_system.contracts import OperationRequest
+        from query_system.evidence_aggregation import EvidenceAggregator
+        from types import SimpleNamespace
+        with SemanticSearchEngine.pinned(self.store, self.channels) as engine:
+                request = api.SearchRequest(repoId=self.repo, query='login', limit=10)
+                seed = next(item for item in api._keyword_search(request,
+                    data_dir=str(engine.view['data_dir']), collection=engine.collection)['results'] if item['name'] == 'login')
+                engine.channels = RetrievalChannels(
+                    semantic_search=lambda *_: ChannelResult('available', [seed]),
+                    keyword_search=lambda *_: ChannelResult('available', [seed]),
+                    embedding_model=config.EMBEDDING_MODEL_NAME)
+                operation = OperationRequest(engine='semantic', name='hybrid_search', repository_id=self.repo,
+                    snapshot_id=engine.context.snapshot_id,
+                    parameters={'query':'How does the login workflow flow to validation?', 'limit':5})
+                result = asyncio.run(engine.execute(operation, engine.context))
+                self.assertEqual(result.status, 'success', result.error)
+                hops = [finding for finding in result.findings if finding.ranking_signals.get('edge_id')]
+                self.assertTrue(hops)
+                verifier = EvidenceAggregator.from_executor(SimpleNamespace(
+                    _active=True, store=self.store, view=engine.view, context=engine.context))
+                for finding in hops:
+                    infos = {key: trace(verifier.database, self.repo, key) for key in result.evidence_ids}
+                    verifier._finding(finding, None, infos)
 
     def test_all_supported_intents_execute_existing_entry_points(self):
         for question,operation in (("Where is login defined?","find_definition"),("Who calls login?","find_callers"),

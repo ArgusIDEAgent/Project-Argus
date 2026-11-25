@@ -13,6 +13,7 @@ from pydantic import Field, model_validator
 from knowledge_base.identity import relative_path
 from knowledge_base.metadata import trace
 from knowledge_base.retrieval import HybridRetriever, evidence_key, plan_query
+from knowledge_base.source_ranking import source_role
 from knowledge_base.semantic import matches_filters
 from query_system.contracts import (
     ContractError, ContractModel, EngineError, EngineResult, Evidence, OperationRequest,
@@ -164,6 +165,73 @@ class SemanticSearchEngine:
         models = {row[1] for row in rows}
         return keyword_ready, not models or models == {self.channels.embedding_model}
 
+    def _expand_workflow(self, seeds, limit):
+        """Follow indexed neighbors under the same pin; every added unit is traced below.
+
+        A retrieval candidate is never itself proof of a call. The expansion
+        metadata identifies why a neighboring source was selected, while the
+        normal evidence package still validates each source independently.
+        """
+        if not seeds or limit < 3:
+            return seeds
+        selected = list(seeds[:2])
+        seen = {item["entityId"] for item in selected}
+        frontier = [(item, 0) for item in selected]
+        with closing(connect(self.database.resolve().as_uri() + "?mode=ro", uri=True)) as db:
+            db.row_factory = sqlite3.Row
+            db.execute("PRAGMA query_only=ON")
+            # Sources with resolved graph connectivity get the first expansion
+            # slots; unrelated nearby chunks must not crowd out a real hop.
+            frontier.sort(key=lambda pair: -db.execute("""SELECT count(*) FROM graph_nodes n
+                JOIN graph_relationships e ON e.source_id=n.id AND e.repository_id=n.repository_id
+                JOIN code_chunks c ON c.symbol_id=n.symbol_id AND c.repository_id=n.repository_id
+                WHERE c.id=? AND e.resolution='resolved' AND e.relationship IN ('CALLS','IMPORTS')""",
+                (pair[0]["entityId"],)).fetchone()[0])
+            while frontier and len(selected) < limit:
+                seed, depth = frontier.pop(0)
+                info = trace(self.database, self.context.repository_id, seed["entityId"])
+                candidates = []
+                # A chunked method can span several units; also include its
+                # neighboring methods so the request and response are visible.
+                if depth < 2 and info.get("symbolId"):
+                    candidates.extend(db.execute("""SELECT c.id, 'resolved_edge' AS reason, e.id AS edge_id FROM graph_nodes n
+                        JOIN graph_relationships e ON e.source_id=n.id AND e.repository_id=n.repository_id
+                        JOIN graph_nodes target ON target.id=e.target_id AND target.repository_id=e.repository_id
+                        JOIN code_chunks c ON c.symbol_id=target.symbol_id AND c.repository_id=e.repository_id
+                        WHERE n.repository_id=? AND n.symbol_id=? AND e.resolution='resolved'
+                          AND e.relationship IN ('CALLS','IMPORTS')
+                        ORDER BY e.relationship, target.relative_path, c.chunk_index LIMIT 8""",
+                        (self.context.repository_id, info["symbolId"])).fetchall())
+                candidates.extend(db.execute("""SELECT c.id, 'adjacent' AS reason, NULL AS edge_id FROM code_chunks c
+                    JOIN chunk_context x ON x.id=c.id
+                    WHERE c.repository_id=? AND c.file_id=? AND c.chunk_index BETWEEN ? AND ? AND c.id!=?
+                    ORDER BY CASE WHEN c.symbol_id=? THEN 0
+                                  WHEN x.qualified_name LIKE '%.ask' OR x.qualified_name LIKE '%.query' THEN 1
+                                  ELSE 2 END,
+                             abs(c.chunk_index-?), c.chunk_index LIMIT 6""",
+                    (self.context.repository_id, info["fileId"], max(0, info["chunk_index"]-3),
+                     info["chunk_index"]+3, info["entityId"], info.get("symbolId"), info["chunk_index"])).fetchall())
+                for row in candidates:
+                    if row["id"] in seen:
+                        continue
+                    neighbor = trace(self.database, self.context.repository_id, row["id"])
+                    if source_role(neighbor["path"]) != "implementation":
+                        continue
+                    seen.add(row["id"])
+                    item = {"entityId": row["id"], "path": neighbor["path"],
+                            "fileId": neighbor["fileId"], "symbolId": neighbor["symbolId"],
+                            "snapshotId": neighbor["snapshotId"],
+                            "startLine": neighbor["startLine"], "endLine": neighbor["endLine"],
+                            "sourceHash": neighbor["sourceHash"], "expansionReason": row["reason"]}
+                    if row["edge_id"]:
+                        item.update(expansionEdge=row["edge_id"], expansionFrom=seed["entityId"])
+                    selected.append(item)
+                    if depth < 2:
+                        frontier.append((item, depth+1))
+                    if len(selected) >= limit:
+                        break
+        return selected
+
     async def execute(self, operation: OperationRequest, context: SnapshotContext) -> EngineResult:
         started = monotonic()
         def failure(status, code, message):
@@ -232,10 +300,14 @@ class SemanticSearchEngine:
             retrieval = self.retriever._finish(plan, rankings, parameters.limit)
             if self.retriever.warnings:
                 raise StaleIndexError("Evidence changed during rank fusion")
+            workflow = mode == "hybrid" and any(term in parameters.query.lower() for term in
+                ("workflow", "flow", "end-to-end", "from the", "through the", "to the final answer"))
+            candidates = (self._expand_workflow(retrieval["results"], parameters.limit) if workflow
+                          and not parameters.filters else retrieval["results"])
             findings, evidence = [], {}
             raw_scores = {method: {evidence_key(item): item for item in items}
                           for method, items in rankings.items()}
-            for rank, item in enumerate(retrieval["results"], 1):
+            for rank, item in enumerate(candidates, 1):
                 info = trace(self.database, context.repository_id, item["entityId"])
                 if any(info.get(field) != item.get(field) for field in (
                     "path", "sourceHash", "snapshotId", "fileId", "symbolId", "startLine", "endLine")):
@@ -249,8 +321,11 @@ class SemanticSearchEngine:
                     chunk_id=source.evidence_id, rank=rank,
                     name=info.get("qualified_name") or info["path"],
                     retrieval_score=semantic.get("confidence"), keyword_score=keyword.get("keywordScore"),
-                    fusion_score=item["fusionScore"], retrieval_methods=item["retrievalMethods"],
-                    ranking_signals=item["rankingSignals"], evidence_ids=[source.evidence_id],
+                    fusion_score=item.get("fusionScore"), retrieval_methods=item.get("retrievalMethods", []),
+                    ranking_signals=({"expansion": item["expansionReason"],
+                        **({"edge_id": item["expansionEdge"], "from_chunk_id": item["expansionFrom"]}
+                           if "expansionEdge" in item else {})} if "expansionReason" in item else item["rankingSignals"]),
+                    evidence_ids=[source.evidence_id],
                 ))
             if not self.store.matches(context.snapshot_id):
                 raise StaleIndexError("Saved sources changed during retrieval")

@@ -3,7 +3,6 @@ import hashlib
 import json
 import os
 import sqlite3
-from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 import subprocess
 import sys
@@ -118,18 +117,6 @@ class SemanticTests(unittest.TestCase):
             result = index_directory(str(self.root), repo_id=self.repo_id, data_dir=str(self.data), build_graph=False)
         self.assertEqual(result['files_indexed'], 1)
         self.assertTrue(self.search('Where is authentication checked?')['results'])
-
-    def test_embedded_storage_survives_restart_and_worker_threads(self):
-        with patch.object(config, 'DEFAULT_DATA_DIR', str(self.data)), patch.dict(os.environ, {'QDRANT_URL': ''}):
-            client = config._create_vector_client()
-            client.create_collection('persist', vectors_config={'size': 384, 'distance': 'Cosine'})
-            client.close()
-            reopened = config._create_vector_client()
-            try:
-                with ThreadPoolExecutor(max_workers=4) as workers:
-                    self.assertEqual(list(workers.map(lambda _: reopened.collection_exists('persist'), range(8))), [True]*8)
-            finally:
-                reopened.close()
 
     def test_changed_and_deleted_files_never_return_stale_citations(self):
         self.file.write_text('export const changed = 1;\n')
