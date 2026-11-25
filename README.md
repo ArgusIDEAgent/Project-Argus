@@ -39,6 +39,16 @@
 
 If a feature is not on this path and not in the table above, it is not part of the project.
 
+### Approved change-analysis foundation (2026-11-25)
+
+The owner authorized Phase 1 of `CHANGE_ANALYSIS_IMPLEMENTATION_PLAN.md`: an opt-in Python library capturing saved JS/TS source against HEAD. This narrowly extends the Git-refresh-only restriction below. It does not replace F1–F7 or enable a new UI, API, structural analyzer, model call or test runner. The Python-only structural contract is unchanged by source capture.
+
+`change_analysis.CaptureStore` captures one explicitly selected folder, including a folder inside a larger Git root. It records separate baseline/saved bytes, staging metadata, exclusions, conflicts and bounded content-based diffs. Captures are immutable Python values in bounded session memory; no source checkout, developer-file/index writes or persisted capture artifacts occur. See `change_analysis/PHASE1.md` for support, limits, verification and consistency limitations.
+
+The 2026-11-26 owner request additionally authorizes the APFS atomic capture adapter and the initial Phase 2 source-evidence layer. `python -m change_analysis.atomic_session /path/to/repository` runs as the developer, delegates only mount/unmount authorization to Apple tools in Terminal, validates the read-only snapshot identity, and cleans up its private mount. Time Machine manages snapshot retention. The initially supported atomic layout has a contained `.git` directory; external metadata, linked worktrees and Git config includes fail closed. No resident privileged service is installed.
+
+Phase 2 currently derives bounded syntax evidence from captured bytes into separate before/after EvidencePackages with source hashes, citations and conservative symbol correspondence. It does not yet establish resolved relationship changes, caller impact or framework behavior. See `change_analysis/PHASE2.md`.
+
 ## 3. Non-Goals (OUT of scope)
 
 Deliberately excluded. Do not build, stub or scaffold any of these.
@@ -121,5 +131,7 @@ python api.py
 
 | # | Date | Change | Confirmed by |
 |---|------|--------|--------------|
+| 3 | 2026-11-26 | Qualified administrator-assisted APFS capture; began Phase 2 with versioned JS/TS syntax evidence and symbol correspondence. Existing chat/indexing and execution availability unchanged. | Owner requested safe atomic setup, Phase 1 completion and Phase 2 implementation in chat |
+| 2 | 2026-11-25 | Phase 1 saved JS/TS change capture against HEAD, isolated from existing chat/indexing. Git baseline reads are permitted for this library; later analysis/UI/execution phases remain deferred. | Owner explicitly requested Phase 1 implementation in chat |
 | 1 | 2026-11-20 | Repository-local persistence: reuse `.codemind` snapshots and cache across sessions; extension-triggered atomic publication of read-only generations; preserve historical external data. Replaces the outside-repository storage contract and active remote-vector storage. | Owner explicitly requested implementation in chat |
 | 0 | 2026-10-09 | Baseline v1.0, derived from a review of the repository. Versus the original vision: **dropped** Jira bug-history, Git history/blame and the graphical dependency graph; **added** F7 (Evidence) and the Definition of Done; Docs-generation and Reuse-detection (built into the extension, absent from the vision) declared OUT. | Owner — on approval of this file |
