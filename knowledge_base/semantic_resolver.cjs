@@ -8,6 +8,10 @@ const ts = require("../extension/node_modules/typescript");
 
 const input = JSON.parse(fs.readFileSync(0, "utf8"));
 const root = path.resolve(input.root);
+// Change analysis supplies captured bytes as strings. In this mode the compiler
+// host must never fall through to the developer's working tree.
+const captured = input.sources === undefined ? null : new Map(
+  Object.entries(input.sources).map(([file, content]) => [path.resolve(root, file), content]));
 const allowed = new Set(input.files.map((file) => path.resolve(root, file)));
 const configPaths = new Set(input.configs.map((file) => path.resolve(root, file)));
 const allowedDirectories = new Set([root]);
@@ -21,6 +25,7 @@ const relative = (file) => inRoot(path.resolve(file)) ? path.relative(root, file
 function safeFile(file, inventory) {
   const absolute = path.resolve(file);
   if (!inventory.has(absolute) || !inRoot(absolute)) return false;
+  if (captured) return captured.has(absolute);
   try {
     return fs.lstatSync(absolute).isFile() && fs.realpathSync(absolute) === absolute;
   } catch {
@@ -30,6 +35,7 @@ function safeFile(file, inventory) {
 const included = (file) => safeFile(file, allowed);
 const events = [];
 const diagnostics = [];
+let omittedEvents = 0;
 
 const tsconfig = path.join(root, "tsconfig.json");
 let configOptions = {};
@@ -68,8 +74,13 @@ const options = {
 // Phase 1 scanner excluded. This also keeps sensitive files out of the pass.
 const host = ts.createCompilerHost(options);
 const originalGetSourceFile = host.getSourceFile.bind(host);
-host.getSourceFile = (file, ...rest) => included(file) ? originalGetSourceFile(file, ...rest) : undefined;
-host.readFile = (file) => included(file) ? fs.readFileSync(file, "utf8") : undefined;
+host.getSourceFile = (file, ...rest) => {
+  if (!included(file)) return undefined;
+  return captured ? ts.createSourceFile(file, captured.get(path.resolve(file)), rest[0], true)
+    : originalGetSourceFile(file, ...rest);
+};
+host.readFile = (file) => included(file) ? (captured
+  ? captured.get(path.resolve(file)) : fs.readFileSync(file, "utf8")) : undefined;
 host.fileExists = (file) => included(file);
 host.directoryExists = (dir) => allowedDirectories.has(path.resolve(dir));
 host.getDirectories = (dir) => [...allowedDirectories].filter((item) => path.dirname(item) === path.resolve(dir));
@@ -133,7 +144,8 @@ function configuredAlias(specifier) {
 }
 
 function add(kind, node, source, details) {
-  events.push({kind, ...place(node, source), ...details});
+  if (!captured || events.length < 10000) events.push({kind, ...place(node, source), ...details});
+  else omittedEvents++;
 }
 
 function exportEvidence(source, exportedName, target) {
@@ -233,4 +245,5 @@ for (const file of [...allowed].sort()) {
   }
 }
 
-process.stdout.write(JSON.stringify({typescriptVersion: ts.version, events, diagnostics}));
+process.stdout.write(JSON.stringify({typescriptVersion: ts.version, events, diagnostics,
+  omittedEvents}));

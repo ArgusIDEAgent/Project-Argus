@@ -16,6 +16,7 @@ from knowledge_base.parser import parse_source, SYNTAX_SCHEMA_VERSION
 from query_system.contracts import ContractModel, Evidence, RepositoryId, SourceHash
 from query_system.evidence_contracts import Citation, EvidenceLimits, EvidencePackage, EvidenceRecord
 from .capture import CaptureError
+from .structure import semantic_events, canonical_relationships
 
 
 # Resolve trusted parser distribution versions once when loading the adapter.
@@ -40,11 +41,26 @@ class CapturedSymbol(ContractModel):
     changed: bool
 
 
+class CapturedRelationship(ContractModel):
+    relationship_id: str
+    source_id: str
+    target_id: str
+    relationship: Literal['CALLS', 'IMPORTS', 'EXPORTS']
+    path: str
+    line: int = Field(ge=1)
+    start_byte: int = Field(ge=0)
+    end_byte: int = Field(ge=0)
+    record_id: str
+
+
 class VersionEvidence(ContractModel):
     version: Literal['before', 'after']
     package: EvidencePackage
     manifest: dict[str, SourceHash]
     symbols: list[CapturedSymbol]
+    relationships: list[CapturedRelationship] = Field(default_factory=list)
+    unresolved: list[str] = Field(default_factory=list)
+    omitted_relationships: int = Field(default=0, ge=0)
     omitted_records: int = Field(ge=0)
     limitations: list[str]
 
@@ -69,6 +85,17 @@ class VersionEvidence(ContractModel):
                 raise ValueError('Source proof differs from its version manifest')
             if proof.file_id != file_id(self.package.repository_id, proof.file_path):
                 raise ValueError('Source file identity differs from repository ownership')
+        nodes = seen | {file_id(self.package.repository_id, path) for path in self.manifest}
+        edges = set()
+        for edge in self.relationships:
+            if edge.relationship_id in edges or edge.source_id not in nodes or edge.target_id not in nodes:
+                raise ValueError('Relationship has duplicate identity or dangling endpoint')
+            edges.add(edge.relationship_id)
+            proof = self.package.evidence[edge.record_id].proof
+            if (proof.evidence_id, proof.evidence_type, proof.resolution, proof.file_path,
+                    proof.start_line) != (edge.relationship_id, 'graph_relationship', 'resolved',
+                                          edge.path, edge.line):
+                raise ValueError('Relationship lacks its version-owned source proof')
         return self
 
 
@@ -163,6 +190,7 @@ def _version(snapshot, side, limit):
         citations[ref] = Citation(reference=ref, record_id=key, source=proof)
         return True
 
+    source_limit = limit - min(40, limit // 5)
     for source in sorted(sources, key=lambda v: v.path):
         relative_path(source.path)
         if source.path in seen_paths:
@@ -179,8 +207,11 @@ def _version(snapshot, side, limit):
                       index_snapshot_id=f'capture:{snapshot.id}:{side}', file_id=fid,
                       file_path=source.path, source_hash=source.digest, schema_version=SYNTAX_SCHEMA_VERSION)
         lines = max(1, len(source.data.splitlines()))
-        record(Evidence(evidence_id=fid, evidence_type='source_range', start_line=1,
-                        end_line=lines, resolution='not_applicable', **common))
+        if len(records) < source_limit:
+            record(Evidence(evidence_id=fid, evidence_type='source_range', start_line=1,
+                            end_line=lines, resolution='not_applicable', **common))
+        else:
+            omitted += 1
         parsed = parse_source(source.data, suffix=PurePosixPath(source.path).suffix.lower(),
                               repository_id=snapshot.repository_id, relative_path=source.path)
         if parsed.status != 'parsed':
@@ -190,20 +221,53 @@ def _version(snapshot, side, limit):
             proof = Evidence(evidence_id=symbol['id'], symbol_id=symbol['id'],
                              evidence_type='symbol_definition', resolution='syntax_only',
                              start_line=symbol['start_line'], end_line=end, **common)
-            if record(proof):
+            if len(records) < source_limit and record(proof):
                 symbols.append(CapturedSymbol(symbol_id=symbol['id'], path=source.path,
                     name=symbol['name'], qualified_name=symbol['qualified_name'], kind=symbol['kind'],
                     start_line=symbol['start_line'], end_line=end, record_id=proof.evidence_id,
                     changed=_changed(snapshot, side, source.path, symbol['start_line'], end)))
+            else:
+                omitted += 1
+    semantic = semantic_events(snapshot, side)
+    edge_data, unresolved, omitted_nodes = canonical_relationships(
+        snapshot, side, {s.symbol_id for s in symbols},
+        {record.proof.file_id for record in records.values()
+         if record.proof.evidence_type == 'source_range'}, semantic['events'])
+    relationships = []
+    for edge in edge_data:
+        if len(records) >= limit:
+            omitted_nodes += 1
+            continue
+        source = next(v for v in sources if v.path == edge['path'])
+        proof = Evidence(evidence_id=edge['id'], evidence_type='graph_relationship',
+                         repository_id=snapshot.repository_id, snapshot_id=sid,
+                         index_snapshot_id=f'capture:{snapshot.id}:{side}',
+                         file_id=file_id(snapshot.repository_id, source.path),
+                         file_path=source.path, source_hash=source.digest,
+                         start_line=edge['line'], end_line=edge['line'],
+                         resolution='resolved', schema_version=SYNTAX_SCHEMA_VERSION)
+        if record(proof):
+            relationships.append(CapturedRelationship(relationship_id=edge['id'],
+                source_id=edge['source_id'], target_id=edge['target_id'],
+                relationship=edge['relationship'], path=edge['path'], line=edge['line'],
+                start_byte=edge['start_byte'], end_byte=edge['end_byte'], record_id=edge['id']))
+    if omitted_nodes or semantic.get('omittedEvents'):
+        limitations.append(f'{side}: omitted {omitted_nodes} relationships due to record/endpoint budget '
+                           f'and {semantic.get("omittedEvents", 0)} semantic events due to resolver budget')
+    if semantic['diagnostics']:
+        limitations.append(f'{side}: semantic resolver reported {len(semantic["diagnostics"])} diagnostics')
     if omitted:
         limitations.append(f'{side}: record budget omitted {omitted} file/definition records')
     package = EvidencePackage(package_id=pid, query_id=f'change:{snapshot.id}', execution_id=pid,
         repository_id=snapshot.repository_id, snapshot_id=sid, question=None,
         limits=EvidenceLimits(max_records=limit, max_package_bytes=1048576), evidence=records, findings=[], requirements=[], operations=[],
         requirement_evidence={}, citations=citations, conflicts=[], missing_evidence=[], clarifications=[],
-        omissions=[], resource_limits=['record_budget'] if omitted else [], status='partial',
-        validation_status='partial', limitations=['Syntax evidence only; resolved relationships are not implemented.'])
+        omissions=[], resource_limits=['record_budget'] if omitted or omitted_nodes else [], status='partial',
+        validation_status='partial', limitations=['Only uniquely resolved captured calls/imports/exports are graph relationships.'])
     return VersionEvidence(version=side, package=package, manifest=manifest, symbols=symbols,
+                           relationships=relationships,
+                           unresolved=[f'{path}:{line}:{kind}:{reason}' for path, line, kind, reason in unresolved],
+                           omitted_relationships=omitted_nodes + semantic.get('omittedEvents', 0),
                            omitted_records=omitted, limitations=limitations)
 
 
@@ -232,7 +296,7 @@ def build_change_evidence(snapshot, *, max_records_per_version=200):
         repository_id=snapshot.repository_id, atomic_snapshot_id=snapshot.atomic_snapshot_id,
         before=before, after=after, correspondence=mappings,
         adapter_versions=dict(_ADAPTER_VERSIONS),
-        limitations=['Phase 2 foundation: no resolved relationships, caller traversal or framework adapters yet.',
+        limitations=['Phase 2 progress: resolved captured calls/imports/exports; caller traversal and framework adapters pending.',
                      'Unmatched symbols may be removed, renamed or omitted; unmatched does not prove deletion.',
                      'Declaration correspondence is structural association, not proof of equivalent behavior.',
                      'Snapshot evidence is historical; current workspace freshness is not implied.'])
