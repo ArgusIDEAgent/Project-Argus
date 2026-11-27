@@ -258,10 +258,23 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       output.appendLine(`Repository watcher unavailable: ${error instanceof Error ? error.message : error}`);
       startVscodeWatcher(repository.rootPath);
     }
+    let polling = false;
+    let reconnectFailures = 0;
+    let nextPoll = 0;
     gitStateTimer = setInterval(() => {
-      if (selectedRepository !== repository || !server) return;
-      void server.liveState(repository.id).then(state => {
-        if (selectedRepository !== repository) return;
+      if (selectedRepository !== repository || !server || !vscode.workspace.isTrusted || polling || Date.now() < nextPoll) return;
+      polling = true;
+      void server.selectedRepositoryState(repository, () => selectedRepository === repository).then(state => {
+        if (!state || selectedRepository !== repository || !vscode.workspace.isTrusted) return;
+        if (reconnectFailures) {
+          output.appendLine('Repository connection restored.');
+          hybrid.clear();
+          lastSynchronizationStatus = undefined;
+          refreshFailures = 0;
+          autoRefreshPaused = false;
+          scheduleRefresh();
+        }
+        reconnectFailures = 0;
         if (state.synchronization) {
           const fresh = state.synchronization.fresh;
           const status = `${fresh}:${state.synchronization.state}`;
@@ -274,7 +287,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         }
         const current = `${state.commitHash}:${state.branch}`;
         if (current !== lastGitState) { lastGitState = current; scheduleRefresh(); }
-      }).catch(error => output.appendLine(`Git state check failed: ${error instanceof Error ? error.message : error}`));
+      }).catch(error => {
+        if (selectedRepository !== repository) return;
+        reconnectFailures++;
+        nextPoll = Date.now() + Math.min(30000, 3000 * 2 ** Math.min(reconnectFailures - 1, 4));
+        output.appendLine(`Repository reconnect pending: ${error instanceof Error ? error.message : error}`);
+      }).finally(() => { polling = false; });
     }, 3000);
   }
   context.subscriptions.push({ dispose: stopWatching });

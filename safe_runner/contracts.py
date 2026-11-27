@@ -27,8 +27,11 @@ class CapturedFile:
 @dataclass(frozen=True)
 class NodeCheck:
     path: str
+    structured: bool = False
 
     def __post_init__(self):
+        if type(self.structured) is not bool:
+            raise ValueError('Invalid reporter mode')
         CapturedFile(self.path, b'', sha256(b'').hexdigest())
         if PurePosixPath(self.path).suffix not in ('.js', '.mjs', '.cjs'):
             raise ValueError('Only native Node test files are supported')

@@ -93,10 +93,13 @@ def test_orphan_cleanup_ownership_and_repeatability(tmp_path):
     journal=tmp_path/'active.json';journal.write_text(json.dumps(record))
     runtime.call.return_value = subprocess.CompletedProcess([],0,json.dumps([{'Config':{'Labels':{'org.codemind.isolation':'v1','org.codemind.owner':OWNER}}}]).encode(),b'')
     broker=Broker(runtime)
+    inspection = runtime.call.return_value
+    runtime.call.side_effect = lambda *args, **kwargs: subprocess.CompletedProcess([],0,b'',b'') if args[:2] == ('container','ls') else inspection
     with patch('safe_runner.broker.os.kill',side_effect=ProcessLookupError):
         assert broker.reconcile() == {'reconciled':1}
     assert broker.reconcile() == {'reconciled':0}
     journal.write_text(json.dumps(record))
+    runtime.call.side_effect = None
     runtime.call.return_value = subprocess.CompletedProcess([],0,json.dumps([{'Config':{'Labels':{'org.codemind.isolation':'unrelated'}}}]).encode(),b'')
     runtime.call.reset_mock()
     with patch('safe_runner.broker.os.kill',side_effect=ProcessLookupError), pytest.raises(RunnerError, match='ownership'):

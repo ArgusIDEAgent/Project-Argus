@@ -197,3 +197,80 @@ test('Electron runner refuses a missing local runtime before any download reques
   assert.equal(context.process.exitCode, 1);
   assert.ok(diagnostics.some(value => /local VS Code|CODEMIND_TEST_VSCODE/.test(value)));
 });
+
+test('selected repository reconnects with the new token after backend registry loss', async () => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'cm-reconnect-'));
+  const old = { port: process.env.CODEMIND_PORT, token: process.env.CODEMIND_SESSION_TOKEN, data: process.env.CODEMIND_DATA_DIR };
+  const repository = { id: 'selected', rootPath: '/selected' };
+  let token = 'first-session', registered = true, registrations = 0, stateRequests = 0;
+  const listener = http.createServer((request, reply) => {
+    reply.setHeader('content-type', 'application/json');
+    if (request.headers['x-codemind-session'] !== token) { reply.writeHead(401); reply.end('{"detail":"Unauthorized"}'); return; }
+    if (request.url === '/repos/register') {
+      let body = ''; request.on('data', chunk => { body += chunk; });
+      request.on('end', () => {
+        assert.deepEqual(JSON.parse(body), { rootPath: '/selected' });
+        registrations++; registered = true; reply.end(JSON.stringify({ repository }));
+      }); return;
+    }
+    stateRequests++;
+    if (!registered) { reply.writeHead(404); reply.end(JSON.stringify({ detail: "Repo 'selected' not registered" })); }
+    else reply.end('{"commitHash":"head","branch":"main"}');
+  });
+  await new Promise(resolve => listener.listen(0, '127.0.0.1', resolve));
+  process.env.CODEMIND_PORT = String(listener.address().port);
+  delete process.env.CODEMIND_SESSION_TOKEN; process.env.CODEMIND_DATA_DIR = temporary;
+  fs.writeFileSync(path.join(temporary, 'session_token'), token);
+  const manager = new ServerManager({ appendLine() {} });
+  try {
+    await manager.selectedRepositoryState(repository, () => true);
+    assert.equal(registrations, 0);
+    registered = false; token = 'restarted-session'; fs.writeFileSync(path.join(temporary, 'session_token'), token);
+    assert.equal((await manager.selectedRepositoryState(repository, () => true)).branch, 'main');
+    assert.equal(registrations, 1);
+    await manager.selectedRepositoryState(repository, () => true);
+    assert.equal(registrations, 1);
+    trusted = false;
+    const previous = stateRequests;
+    assert.equal(await manager.selectedRepositoryState(repository, () => true), undefined);
+    assert.equal(stateRequests, previous);
+  } finally {
+    trusted = true; manager.dispose(); listener.closeAllConnections(); await new Promise(resolve => listener.close(resolve));
+    for (const [key, value] of [['CODEMIND_PORT', old.port], ['CODEMIND_SESSION_TOKEN', old.token], ['CODEMIND_DATA_DIR', old.data]]) {
+      if (value === undefined) delete process.env[key]; else process.env[key] = value;
+    }
+    fs.rmSync(temporary, { recursive: true, force: true });
+  }
+});
+
+test('reconnect respects selection changes, trust, identity, and unrelated server errors', async () => {
+  const { ServerResponseError } = require('../out/serverManager');
+  const repository = { id: 'selected', rootPath: '/selected' };
+  const missing = () => new ServerResponseError(404, "Repo 'selected' not registered");
+  const manager = new ServerManager({ appendLine() {} });
+  let current = true, registrations = 0, reads = 0;
+  manager.liveState = async () => { reads++; throw missing(); };
+  manager.registerRepository = async () => { registrations++; return repository; };
+  try {
+    current = false;
+    assert.equal(await manager.selectedRepositoryState(repository, () => current), undefined);
+    assert.equal(reads, 0);
+    current = true;
+    manager.liveState = async () => { current = false; throw missing(); };
+    await manager.selectedRepositoryState(repository, () => current);
+    assert.equal(registrations, 0);
+    current = true;
+    manager.liveState = async () => { throw missing(); };
+    manager.registerRepository = async () => { current = false; return repository; };
+    assert.equal(await manager.selectedRepositoryState(repository, () => current), undefined);
+    current = true;
+    manager.registerRepository = async () => ({ ...repository, id: 'foreign' });
+    await assert.rejects(manager.selectedRepositoryState(repository, () => current), /identity changed/);
+    for (const error of [new ServerResponseError(401, 'Unauthorized'), new ServerResponseError(404, 'Not Found'),
+      new ServerResponseError(500, 'Failed'), new Error('Connection refused')]) {
+      manager.liveState = async () => { throw error; };
+      manager.registerRepository = async () => { throw new Error('Must not register'); };
+      await assert.rejects(manager.selectedRepositoryState(repository, () => current), value => value === error);
+    }
+  } finally { manager.dispose(); }
+});

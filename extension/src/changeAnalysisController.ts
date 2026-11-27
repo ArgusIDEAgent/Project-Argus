@@ -2,7 +2,7 @@ import { randomBytes } from 'node:crypto';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
-import { ServerManager, Repository, ChangeJob } from './serverManager';
+import { ServerManager, Repository, ChangeJob, CapturedRun } from './serverManager';
 import { renderTestPlan, TestPlanReply } from './testPlanPresentation';
 import { renderChange, escapeChange, ChangePresentation } from './changeAnalysisPresentation';
 
@@ -29,6 +29,9 @@ export class ChangeAnalysisController implements vscode.Disposable {
   private changed = false;
   private busy = false;
   private gitIdentity = '';
+  private run?: CapturedRun;
+  private runTimer?: NodeJS.Timeout;
+  private executionBusy = false;
 
   constructor(private server: ServerManager, private selected: () => { id: string; rootPath: string } | undefined) {
     this.disposables.push(vscode.commands.registerCommand('codemind.analyzeChange', () => this.start()));
@@ -58,6 +61,7 @@ export class ChangeAnalysisController implements vscode.Disposable {
     if (!this.job || !this.repo || this.changed) return;
     const job = this.job; const repo = this.repo;
     this.changed = true;
+    if (this.run) this.run.stale_for_workspace = true;
     job.stale_for_workspace = true;
     try { await this.server.changeAction(job.id, repo.id, 'stale'); } catch { /* historical panel still labels stale */ }
     if (this.job !== job) return;
@@ -74,6 +78,9 @@ export class ChangeAnalysisController implements vscode.Disposable {
       if (this.job && this.repo) { try { await this.server.changeAction(this.job.id, this.repo.id, 'cancel'); } catch { /* expired jobs do not prevent a new capture */ } }
       if (this.timer) clearTimeout(this.timer);
       this.stopWatch(); this.actions.clear(); this.changed = false; this.mode = 'simple'; this.plan = undefined; this.presentation = undefined; this.checkActions.clear();
+      if (this.runTimer) clearTimeout(this.runTimer);
+      this.run = undefined;
+      this.executionBusy = false;
       const selected = this.selected();
       let root = selected?.rootPath ?? (vscode.workspace.workspaceFolders?.length === 1 ? vscode.workspace.workspaceFolders[0].uri.fsPath : undefined);
       if (!root) root = (await vscode.window.showOpenDialog({ canSelectFolders: true, canSelectFiles: false, canSelectMany: false, openLabel: 'Analyze saved changes' }))?.[0]?.fsPath;
@@ -146,6 +153,10 @@ export class ChangeAnalysisController implements vscode.Disposable {
     if (this.plan && this.plan.capture_id === this.presentation.capture_id) {
       this.plan.stale_for_workspace ||= this.changed || this.presentation.stale_for_workspace;
       body += renderTestPlan(this.plan, this.actions, this.checkActions);
+      const disabled = this.changed || this.plan.stale_for_workspace || !this.plan.selected_check_ids.length || this.executionBusy || !vscode.workspace.isTrusted;
+      body += `<section><h2>Isolated execution</h2><p>Prepare the empty dependency environment first, then separately authorize selected Node test files. Every test and hook in each file may run.</p><button id="prepare-run" ${disabled ? 'disabled' : ''}>Review environment preparation</button><button id="execute-run" ${disabled ? 'disabled' : ''}>Review and run selected files</button>`;
+      if (this.run) body += `<p>${escapeChange(this.run.kind)}: ${escapeChange(this.run.state)} · ${this.run.selected} selected · ${this.run.discovered} statically discovered · ${this.run.executed} runtime tests executed. Historical capture${this.run.stale_for_workspace ? ' — stale for current workspace' : ''}.</p><p>${escapeChange(this.run.attribution)}</p>${this.run.error ? `<p>${escapeChange(this.run.error)}</p>` : ''}${this.run.results.map(result => `<h3>${escapeChange(result.path)}: ${escapeChange(result.outcome)}</h3><p>Cleanup: ${result.cleanup_complete ? 'complete' : 'FAILED'}</p><pre>${escapeChange(result.console)}</pre>`).join('')}<button id="cancel-run">Cancel execution</button>`;
+      body += '</section>';
     }
     this.html(body);
   }
@@ -164,7 +175,13 @@ export class ChangeAnalysisController implements vscode.Disposable {
   private async message(message: unknown): Promise<void> {
     if (!message || typeof message !== 'object') return;
     const input = message as { type?: string; value?: string };
-    if (input.type === 'plan') {
+    if (input.type === 'prepare-run' || input.type === 'execute-run') {
+      await this.execute(input.type === 'prepare-run' ? 'prepare' : 'run');
+    } else if (input.type === 'cancel-run' && this.run && this.job && this.repo) {
+      const job = this.job, repo = this.repo, run = this.run, epoch = this.epoch;
+      const result = await this.server.capturedRun(job.id, repo.id, run.id, true);
+      if (this.epoch === epoch && this.job === job && this.repo === repo && this.run?.id === run.id) { this.run = result; this.render(); }
+    } else if (input.type === 'plan') {
       await this.loadPlan();
     } else if (input.type === 'check' && input.value && this.plan && !this.plan.stale_for_workspace && !this.changed) {
       const check = this.checkActions.get(input.value);
@@ -194,13 +211,48 @@ export class ChangeAnalysisController implements vscode.Disposable {
     }
   }
 
+  private async execute(kind: 'prepare' | 'run'): Promise<void> {
+    if (!vscode.workspace.isTrusted || this.changed || this.plan?.stale_for_workspace || !this.plan?.selected_check_ids.length || !this.job || !this.repo || this.executionBusy) return;
+    const job = this.job, repo = this.repo, plan = this.plan, epoch = this.epoch;
+    const current = () => this.epoch === epoch && this.job === job && this.repo === repo && this.plan === plan && !this.changed && vscode.workspace.isTrusted;
+    this.executionBusy = true;
+    try {
+      const review = await this.server.executionReview(job.id, repo.id, kind);
+      if (!current() || review.capture_id !== plan.capture_id || review.plan_id !== plan.plan_id) return;
+      const action = kind === 'prepare' ? 'Authorize isolated preparation' : 'Run these captured test files';
+      const accepted = await vscode.window.showWarningMessage(kind === 'prepare' ? 'Prepare the isolated Node environment?' : 'Execute the reviewed captured tests?',
+        { modal: true, detail: `${review.notice}\nCapture: ${review.capture_id}\nPlan: ${review.plan_id}\nDependencies: ${review.dependency_identity}\nCommands: ${JSON.stringify(kind === 'prepare' ? review.preparation : review.commands)}\nRuntime: ${JSON.stringify(review.identity)}\nLimits: ${JSON.stringify(review.limits)}\nAuthorization expires in 60 seconds.` }, action);
+      if (accepted !== action || !current()) return;
+      const run = await this.server.submitRun(job.id, repo.id, review);
+      if (!current()) { await this.server.capturedRun(job.id, repo.id, run.id, true); return; }
+      this.run = run;
+      const poll = async () => {
+        if (this.epoch !== epoch || this.job !== job || !this.panel || this.run?.id !== run.id) return;
+        try {
+          const result = await this.server.capturedRun(job.id, repo.id, run.id);
+          if (this.epoch !== epoch || this.run?.id !== run.id) return;
+          result.stale_for_workspace ||= this.changed;
+          this.run = result; this.render();
+          if (['queued', 'running'].includes(result.state)) this.runTimer = setTimeout(() => { void poll(); }, 1000);
+          else { this.executionBusy = false; this.render(); }
+        } catch (error) { this.executionBusy = false; this.status(String(error)); }
+      };
+      this.render(); void poll();
+    } finally {
+      if (!this.run || !['queued', 'running'].includes(this.run.state)) this.executionBusy = false;
+    }
+  }
+
   private status(message: string): void { this.actions.clear(); this.checkActions.clear(); this.html(`<p>${escapeChange(message)}</p>`); }
   private html(body: string): void {
     if (!this.panel) return;
     const nonce = randomBytes(18).toString('hex');
+    body += `<script nonce="${nonce}">document.addEventListener('click',event=>{const b=event.target.closest('button');if(b&&!b.disabled&&['prepare-run','execute-run','cancel-run'].includes(b.id))api.postMessage({type:b.id});});</script>`;
     this.panel.webview.html = `<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'nonce-${nonce}'; style-src 'nonce-${nonce}'"><style nonce="${nonce}">body{font:var(--vscode-font-size) var(--vscode-font-family);color:var(--vscode-foreground);padding:18px}li{margin:8px 0}button{margin:4px}section{margin:20px 0}</style></head><body><h1>Analyze Change</h1><nav>${['simple','detailed','flow'].map(mode => `<button data-mode="${mode}">${mode}</button>`).join('')}<button id="plan">Review test plan</button><button id="cancel">Cancel</button></nav>${body}<script nonce="${nonce}">const api=acquireVsCodeApi();document.addEventListener('click',event=>{const b=event.target.closest('button');if(!b)return;if(b.dataset.source)api.postMessage({type:'source',value:b.dataset.source});if(b.dataset.mode)api.postMessage({type:'mode',value:b.dataset.mode});if(b.id==='cancel')api.postMessage({type:'cancel'});if(b.id==='plan')api.postMessage({type:'plan'});if(b.dataset.check)api.postMessage({type:'check',value:b.dataset.check});});</script></body></html>`;
   }
   private stop(): void {
+    if (this.runTimer) clearTimeout(this.runTimer);
+    if (this.run && this.job && this.repo) void this.server.capturedRun(this.job.id, this.repo.id, this.run.id, true).catch(() => {});
     ++this.epoch; if (this.timer) clearTimeout(this.timer); this.stopWatch(); this.actions.clear(); this.checkActions.clear();
     if (this.repo && this.job) void this.server.changeAction(this.job.id, this.repo.id, 'cancel').catch(() => {});
   }

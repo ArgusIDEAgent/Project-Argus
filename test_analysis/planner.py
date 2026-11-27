@@ -10,7 +10,7 @@ from .catalog import TestCatalog
 from .contracts import TestPlan, Scenario, ProposedCheck
 from .discovery import digest, source_ref
 
-PLANNER_VERSION = 'planner-v1'
+PLANNER_VERSION = 'planner-v2'
 
 
 class TestPlanner:
@@ -108,12 +108,12 @@ class TestPlanner:
                 profile_id=profile.profile_id, scenario_ids=related_scenarios,
                 argv=[*profile.command, '--', test.source.path] if reviewable else None,
                 eligibility='reviewable_existing_test' if reviewable else 'unsupported',
-                reason='Adapter-owned proposal runs the captured test file; all tests/hooks in that file may run. Execution is unavailable in Phase 4.' if reviewable
+                reason='Adapter-owned proposal runs the captured test file; all tests/hooks in that file may run. Separate isolated preparation and exact-run authorization are required.' if reviewable
                        else 'Unsupported framework, disabled declaration, nested package or TypeScript execution adapter required.'))
         no_match = [f'{path}: No matching test found within {len(scope)} inspected captured candidate test files.' for path in sorted(changed_paths - matched)]
         if any(c.status == 'deleted' for c in changes): limitations.append('Deleted source is preserved in baseline evidence; executable baseline comparisons belong to a later phase.')
         limitations += ['Suggested scenario categories are review prompts. Outcomes are unknown until an expectation source is established.',
-                        'A selected proposal is not authorization to execute. Phase 4 has no execution route.',
+                        'A selected proposal is not authorization to execute. Use the separately authorized isolation workflow for supported profiles.',
                         'The omitted_tests count covers catalog-level omissions; per-file and AST budget limitations are reported separately.']
         if omitted_scenarios: limitations.append(f'{omitted_scenarios} scenarios omitted by the 100-scenario budget.')
         plan = TestPlan(plan_id=plan_id, capture_id=snapshot.id, capture_digest=snapshot.digest,

@@ -27,7 +27,22 @@ process.stdin.on('end', () => {
       fs.writeFileSync(target, data, {flag:'wx', mode:0o600});
     }
     if (!seen.has(input.check) || !/\.(js|mjs|cjs)$/.test(input.check)) throw Error('check');
-    const child = spawn('/usr/local/bin/node', ['--test', '--test-reporter=tap', '--', '/work/' + input.check], {
+    let reporter = 'tap';
+    if (input.structured === true) {
+      reporter = '/out/codemind-reporter.cjs';
+      fs.writeFileSync(reporter, `module.exports = async function* (events) {
+        for await (const event of events) {
+          const d = event.data;
+          if (event.type === 'test:summary')
+            yield JSON.stringify({type:d.file ? 'file_summary' : 'summary', counts:d.counts, success:d.success}) + '\\n';
+          else if (event.type === 'test:fail')
+            yield JSON.stringify({type:'failure', name:String(d.name).slice(0,500), code:d.details?.error?.cause?.code || d.details?.error?.code || '', failureType:d.details?.error?.failureType || ''}) + '\\n';
+          else if (event.type === 'test:stdout' || event.type === 'test:stderr')
+            yield JSON.stringify({type:'console', text:String(d.message)}) + '\\n';
+        }
+      };`, {flag:'wx',mode:0o400});
+    }
+    const child = spawn('/usr/local/bin/node', ['--test', '--test-reporter=' + reporter, '--', '/work/' + input.check], {
       cwd:'/work', stdio:['ignore','inherit','inherit'],
       env:{PATH:'/usr/local/bin:/usr/bin:/bin',HOME:'/work/home',LANG:'C.UTF-8',TZ:'UTC',CODEMIND_TEST:'1'},
     });

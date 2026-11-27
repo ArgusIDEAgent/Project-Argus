@@ -45,6 +45,38 @@ test('terminal shell quoting keeps command substitution literal', () => {
   assert.equal(shellQuote("a'b$(x)`z`"), "'a'\\''b$(x)`z`'");
 });
 
+test('execution requires trust and an accepted native dialog; changed selection cannot submit', async () => {
+  const controller = new ChangeAnalysisController({}, () => undefined);
+  controller.job = {id:'job',state:'completed'}; controller.repo = {id:'repo',rootPath:'/tmp'};
+  controller.plan = {plan_id:'plan',capture_id:'capture',selected_check_ids:['check'],stale_for_workspace:false};
+  const review = {capture_id:'capture',plan_id:'plan',notice:'all hooks run',commands:[],limits:{},identity:{}};
+  let reviews = 0, submissions = 0;
+  controller.server = { executionReview: async () => { reviews++; return review; },
+    submitRun: async () => { submissions++; return {id:'run',state:'completed'}; },
+    capturedRun: async () => ({id:'run',state:'completed'}),
+    changeAction: async () => {} };
+  try {
+    vscode.workspace.isTrusted = false;
+    await controller.message({type:'execute-run'});
+    assert.equal(reviews,0);
+    vscode.workspace.isTrusted = true;
+    await controller.message({type:'execute-run'});
+    assert.equal(submissions,0); // dialog dismissed
+    const original = vscode.window.showWarningMessage;
+    try {
+      vscode.window.showWarningMessage = async () => { controller.changed = true; return 'Run these captured test files'; };
+      await controller.message({type:'execute-run'});
+      assert.equal(submissions,0);
+      controller.changed = false;
+      vscode.window.showWarningMessage = async (_text, options, action) => {
+        assert.equal(options.modal,true); assert.match(options.detail,/Authorization expires/); return action;
+      };
+      await controller.message({type:'execute-run'});
+      assert.equal(submissions,1);
+    } finally { vscode.window.showWarningMessage = original; }
+  } finally { vscode.workspace.isTrusted = true; controller.dispose(); handlers.pop(); }
+});
+
 test('controller completes, changes mode without another capture and navigates captured source after save', async () => {
   calls.length = 0;
   const job = { id: 'job', repo_id: 'repo', state: 'preparing', stale_for_workspace: false, terminal: { executable: '/python', args: ['-m', 'worker', "space ' quote"], cwd: '/tmp' } };

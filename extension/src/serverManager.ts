@@ -22,6 +22,14 @@ export type HybridReply = { schema_version: 'hybrid-v1'; status: string; present
     claim_operation_ids?: Record<string, string[]> }[] };
 
 type HelloResponse = { reply: string };
+export type ExecutionReview = { authorization: string; review_digest: string; kind: 'prepare' | 'run';
+  capture_id: string; plan_id: string; selected: number; discovered: number;
+  commands: string[][]; limits: Record<string, unknown>; dependency_identity: string; notice: string;
+  identity: Record<string, unknown>; preparation: Record<string, unknown> };
+export type CapturedRun = { id: string; state: string; kind: string; capture_id: string; plan_id: string;
+  historical_capture: boolean; stale_for_workspace: boolean; selected: number; discovered: number;
+  executed: number; results: { path: string; outcome: string; console: string; executed: number;
+    cleanup_complete: boolean }[]; error: string | null; attribution: string };
 export type Repository = { id: string; rootPath: string; defaultBranch: string };
 export type Job = { id: string; state: 'queued' | 'running' | 'completed' | 'failed'; error: string | null;
   result: { fileCount: number; commitHash: string; branch: string; dirtyFingerprint: string;
@@ -45,6 +53,10 @@ export type DocsSyncResult = { repoId: string; snapshotId: string; outcome: 'suc
   status: DocsStatus; overview: DocSection | null };
 
 const MAX_RESPONSE_BYTES = 10 * 1024 * 1024;
+
+export class ServerResponseError extends Error {
+  constructor(readonly status: number, message: string) { super(message); }
+}
 
 export class ServerManager implements vscode.Disposable {
   private port: number | undefined;
@@ -98,6 +110,18 @@ export class ServerManager implements vscode.Disposable {
     return result.reply;
   }
 
+  async executionReview(id: string, repo_id: string, kind: 'prepare' | 'run'): Promise<ExecutionReview> {
+    return this.request('POST', `/v1/change-analyses/${encodeURIComponent(id)}/execution-review`, { repo_id, kind });
+  }
+  async submitRun(id: string, repo_id: string, review: ExecutionReview): Promise<CapturedRun> {
+    return this.request('POST', `/v1/change-analyses/${encodeURIComponent(id)}/runs`, {
+      repo_id, authorization: review.authorization, review_digest: review.review_digest, workspace_trusted: vscode.workspace.isTrusted });
+  }
+  async capturedRun(id: string, repo_id: string, run_id: string, cancel = false): Promise<CapturedRun> {
+    return this.request(cancel ? 'POST' : 'GET', `/v1/change-analyses/${encodeURIComponent(id)}/runs/${encodeURIComponent(run_id)}${cancel ? '/cancel' : '?repo_id=' + encodeURIComponent(repo_id)}`,
+      cancel ? { repo_id } : undefined);
+  }
+
   async conversationIntent(message: string): Promise<{ handled: boolean; category: string | null; reply: string | null }> {
     return this.request('POST', '/v1/chat/intent', { message });
   }
@@ -130,6 +154,23 @@ export class ServerManager implements vscode.Disposable {
       snapshotId: string | null; cacheBytes: number };
     synchronization?: { fresh: boolean; state: string; error: string | null; savedFilesOnly: boolean } }> {
     return this.request('GET', `/repos/${encodeURIComponent(id)}/live-state`);
+  }
+
+  async selectedRepositoryState(repository: Pick<Repository, 'id' | 'rootPath'>,
+    isCurrent: () => boolean): Promise<Awaited<ReturnType<ServerManager['liveState']>> | undefined> {
+    if (!isCurrent() || !vscode.workspace.isTrusted) return undefined;
+    try { return await this.liveState(repository.id); }
+    catch (error) {
+      if (!(error instanceof ServerResponseError) || error.status !== 404 ||
+          error.message !== `Repo '${repository.id}' not registered`) throw error;
+      if (!isCurrent() || !vscode.workspace.isTrusted) return undefined;
+      const registered = await this.registerRepository(repository.rootPath);
+      if (!isCurrent() || !vscode.workspace.isTrusted) return undefined;
+      if (registered.id !== repository.id || registered.rootPath !== repository.rootPath) {
+        throw new Error('Reconnected repository identity changed. Select the repository again.');
+      }
+      return this.liveState(repository.id);
+    }
   }
 
   async search(repoId: string, query: string): Promise<SearchResult> {
@@ -221,7 +262,8 @@ export class ServerManager implements vscode.Disposable {
             if (!response.statusCode || response.statusCode < 200 || response.statusCode >= 300) {
               const detail = result && typeof result === 'object' && !Array.isArray(result)
                 ? (result.error ?? result.detail) : undefined;
-              reject(new Error(typeof detail === 'string' ? detail : `Server returned ${response.statusCode}.`));
+              reject(new ServerResponseError(response.statusCode ?? 0,
+                typeof detail === 'string' ? detail : `Server returned ${response.statusCode}.`));
               return;
             }
             if (result === null && allowNull) { resolve(result); return; }

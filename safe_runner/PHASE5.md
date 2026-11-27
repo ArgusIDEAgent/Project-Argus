@@ -109,3 +109,10 @@ Verification commands:
 ```
 
 The dedicated VM remains running. No proposed repository test plan was launched. Installation, policy, qualification summaries and source changes are local and uncommitted; this is not P8 release certification.
+
+Phase 6 follow-up (2026-11-27): orphan absence and attestation time validation were
+tightened; authorization/reporting sources and structured reporter mode are now
+included in the enforcement identity. The 13-case isolation suite passed again
+with the new identity in `qualification-report.json`. The dependency-free product
+execution path and its remaining package-preparation limit are documented in
+`PHASE6.md`; the P5-only product-boundary statements above are historical.

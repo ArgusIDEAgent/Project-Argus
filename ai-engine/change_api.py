@@ -20,6 +20,7 @@ from change_analysis.capture import CaptureStore
 from change_analysis.service import analyze_change
 from change_analysis.transport import decode
 from test_analysis.planner import TestPlanner
+from safe_runner.execution import Executions
 
 ACTIVE = {'preparing', 'running'}
 
@@ -49,6 +50,16 @@ class Source(Owned):
     reference: str = Field(min_length=1, max_length=500)
 
 
+class RunReview(Owned):
+    kind: str
+
+
+class RunSubmit(Owned):
+    authorization: str = Field(min_length=64, max_length=64)
+    review_digest: str = Field(min_length=64, max_length=64)
+    workspace_trusted: bool = Field(strict=True)
+
+
 @dataclass
 class MemoryStore:
     snapshot: object
@@ -67,6 +78,7 @@ class ChangeJobs:
         self.pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix='change-analysis')
         self.closed = False
         self.planner = TestPlanner()
+        self.execution = Executions(self)
         self._reconcile()
         self._start_reaper()
 
@@ -113,6 +125,7 @@ class ChangeJobs:
         stop = self.stop_reaper
         def reap():
             while not stop.wait(5):
+                self.execution.prune()
                 with self.lock:
                     for job in list(self.jobs.values()):
                         if time.monotonic() - job['created'] > 900:
@@ -128,6 +141,7 @@ class ChangeJobs:
 
     def open(self):
         if self.closed:
+            self.execution = Executions(self)
             self.pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix='change-analysis')
             self.closed = False
             self._start_reaper()
@@ -142,6 +156,7 @@ class ChangeJobs:
 
     def close(self):
         with self.lock:
+            self.execution.close()
             self.closed = True
             self.stop_reaper.set()
             for job in self.jobs.values():
@@ -152,6 +167,7 @@ class ChangeJobs:
             self.planner.clear()
 
     def _cancel(self, job):
+        self.execution.invalidate(job['id'])
         if job['state'] in ACTIVE:
             job['state'] = 'cancelled'
             if job['directory']:
@@ -312,6 +328,8 @@ class ChangeJobs:
                 if len(set(request.selected_check_ids)) != len(request.selected_check_ids) or set(request.selected_check_ids) - allowed:
                     raise HTTPException(422, 'Selection contains unknown or unsupported checks')
                 plan.selected_check_ids = list(request.selected_check_ids)
+                if job.get('plan') is not None and job['plan'].selected_check_ids != plan.selected_check_ids:
+                    self.execution.invalidate(job_id)
             elif job.get('plan') is not None:
                 plan.selected_check_ids = list(job['plan'].selected_check_ids)
             job['plan'] = plan
@@ -396,5 +414,29 @@ def create_change_router(api):
     @router.post('/{job_id}/source')
     def source(job_id: str, request: Source):
         return manager.source(job_id, request)
+
+    @router.post('/{job_id}/execution-review')
+    def execution_review(job_id: str, request: RunReview):
+        if os.environ.get('CODEMIND_CHANGE_EXECUTION', '1') == '0':
+            raise HTTPException(503, 'Change execution disabled')
+        return manager.execution.review(job_id, request.repo_id, request.kind)
+
+    @router.post('/{job_id}/runs')
+    def launch(job_id: str, request: RunSubmit):
+        if os.environ.get('CODEMIND_CHANGE_EXECUTION', '1') == '0':
+            raise HTTPException(503, 'Change execution disabled')
+        return manager.execution.submit(job_id, request.repo_id, request.authorization,
+                                        request.review_digest, request.workspace_trusted)
+
+    @router.get('/{job_id}/runs/{run_id}')
+    def run_status(job_id: str, run_id: str, repo_id: str):
+        run = manager.execution.owned(job_id, repo_id, run_id)
+        return manager.execution.view(run)
+
+    @router.post('/{job_id}/runs/{run_id}/cancel')
+    def cancel_run(job_id: str, run_id: str, request: Owned):
+        run = manager.execution.owned(job_id, request.repo_id, run_id)
+        run['cancel'].set()
+        return manager.execution.view(run)
 
     return router, manager

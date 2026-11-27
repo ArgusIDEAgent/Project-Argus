@@ -55,6 +55,8 @@ Phase 4 adds static Node test discovery and reviewable scenario/check plans to A
 
 Phase 5 adds an internal isolation broker qualified on a dedicated Colima VZ Linux VM with no host directory sharing, a pinned Node image, no container network and enforced resource limits. `GET /v1/isolation/capabilities` reports its qualification separately from product execution availability. Only fixed qualification fixtures run in P5; review plans cannot execute. See `safe_runner/PHASE5.md` for setup, controls, evidence and how to stop the VM.
 
+Phase 6 adds separately confirmed environment preparation and exact-plan execution for native root-package Node tests with an empty third-party dependency set and captured npm v2/v3 lockfile. Runs require current isolation qualification and native Workspace Trust-gated review dialogs, use disposable captured bytes, and report structured historical observations. Third-party package installation remains unsupported, so P6.3 is not complete. See `safe_runner/PHASE6.md`.
+
 ## 3. Non-Goals (OUT of scope)
 
 Deliberately excluded. Do not build, stub or scaffold any of these.
@@ -137,6 +139,7 @@ python api.py
 
 | # | Date | Change | Confirmed by |
 |---|------|--------|--------------|
+| 7 | 2026-11-27 | Exact capture/plan/profile/policy authorization, separately confirmed empty-dependency preparation and isolated existing Node tests with structured historical results. External package preparation remains unsupported. | Owner requested safe Phase 6 implementation in chat |
 | 6 | 2026-11-27 | Internal isolated runner foundation and fixed adversarial qualification in a dedicated local VM. Authenticated capability inspection only; product execution stays disabled pending Phase 6 authorization. | Owner requested Phase 5 implementation in chat |
 | 5 | 2026-11-27 | Atomic test metadata capture, static Node profiles/catalog, bounded scenario plans and review selection. Product execution remains unavailable. | Owner requested Phase 4 implementation in chat |
 | 4 | 2026-11-27 | Analyze Change command, authenticated jobs, deterministic explanations and captured-source navigation. Uses qualified APFS capture with explicit Terminal authorization. | Owner requested Phase 3 implementation in chat |

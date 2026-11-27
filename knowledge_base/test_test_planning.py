@@ -17,7 +17,7 @@ def prepare(repo, test_source=None, manifest=None):
     (repo / 'a.js').write_text('export function value() { return 1; }\n')
     (repo / 'value.test.js').write_text(test_source or "import test from 'node:test';\nimport assert from 'node:assert/strict';\nimport { value } from './a.js';\ntest('value contract', () => { assert.equal(value(), 1); });\n")
     (repo / 'package.json').write_text(json.dumps(manifest or {'type': 'module', 'engines': {'node': '>=22'}, 'scripts': {'test': 'touch NEVER_EXECUTE'}}))
-    (repo / 'package-lock.json').write_text('{"lockfileVersion": 3}\n')
+    (repo / 'package-lock.json').write_text('{"lockfileVersion": 3, "packages": {"": {}}}\n')
     git(repo, 'add', '.')
     git(repo, 'commit', '-qm', 'fixture baseline')
     (repo / 'a.js').write_text('export function value() { return 2; }\n')

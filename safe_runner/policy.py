@@ -13,7 +13,7 @@ LABEL = 'org.codemind.isolation'
 
 def policy_digest(policy, image):
     modules = {name: sha256(Path(__file__).with_name(name).read_bytes()).hexdigest()
-               for name in ('policy.py','runtime.py','broker.py','contracts.py','artifacts.py','fixtures.py','qualify.py')}
+               for name in ('policy.py','runtime.py','broker.py','contracts.py','artifacts.py','fixtures.py','qualify.py','execution.py','reports.py')}
     return sha256(json.dumps([asdict(policy), image, BOOTSTRAP, modules], sort_keys=True).encode()).hexdigest()
 
 

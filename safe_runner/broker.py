@@ -33,18 +33,20 @@ class Broker:
         return {'runtime': self.runtime.fingerprint(self.image),
                 'policy_digest': policy_digest(self.policy, self.image)}
 
-    def capability(self):
+    def capability(self, during_owned_launch=False):
         result = {'isolation_qualified': False, 'execution_available': False,
-                  'reason': 'Phase 6 exact-plan authorization is not implemented.'}
+                  'reason': 'Execution requires capture-specific review, separate preparation and run authorization; dependency-free Node adapter only.'}
         try:
-            if (self.runtime.state_dir / 'active.json').exists():
-                raise RunnerError('Runner cleanup is required before qualification can be used')
+            journal = self.runtime.state_dir / 'active.json'
+            if journal.exists():
+                if not during_owned_launch or journal.is_symlink() or json.loads(journal.read_text()).get('pid') != os.getpid():
+                    raise RunnerError('Runner cleanup is required before qualification can be used')
             identity = self.identity()
             attestation = self.runtime.state_dir / 'qualification.json'
             if attestation.is_symlink() or not attestation.exists() or attestation.stat().st_size > 200000:
                 raise RunnerError('Run isolation qualification for this runtime and policy first')
             report = json.loads(attestation.read_text())
-            if report['identity'] != identity or not report['passed'] or time.time() - report['created'] > 86400:
+            if report['identity'] != identity or report['passed'] is not True or not 0 <= time.time() - report['created'] <= 86400:
                 raise RunnerError('Isolation qualification is stale or differs from the current runtime/policy')
             result.update(isolation_qualified=True, identity=identity)
         except (OSError, ValueError, KeyError, RunnerError) as error:
@@ -83,10 +85,13 @@ class Broker:
             self.runtime.call('container', 'rm', '--force', record['name'], timeout=5)
         # A failing daemon must not be mistaken for an absent container.
         self.runtime.call('info', '--format', '{{.ID}}')
+        remaining = self.runtime.call('container', 'ls', '--all', '--filter', 'name=^/' + record['name'] + '$', '--format', '{{.ID}}')
+        if remaining.stdout.strip():
+            raise RunnerError('Orphan container remains; recovery journal retained')
         journal.unlink()
         return {'reconciled': 1}
 
-    def _run_check(self, files, check, cancel=None):
+    def _run_check(self, files, check, cancel=None, before_launch=None):
         """Internal adapter operation, used only by fixed qualification fixtures in P5."""
         if not _LOCK.acquire(blocking=False):
             raise RunnerError('A runner operation is already active')
@@ -128,8 +133,10 @@ class Broker:
             verify_container(value, self.policy, identity['runtime']['image_id'], name, owner)
             if cancel and cancel.is_set():
                 raise _Cancelled()
+            if before_launch is not None:
+                before_launch()
             payload = json.dumps({'files': [{'path': f.path, 'content': base64.b64encode(f.data).decode(), 'digest': f.digest} for f in files],
-                                  'check': check.path}).encode()
+                                  'check': check.path, 'structured': check.structured}).encode()
             proc = subprocess.Popen(self.runtime.command('container', 'start', '--attach', '--interactive', name),
                                     env=self.runtime.env, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             def send():

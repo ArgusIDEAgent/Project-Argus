@@ -14,6 +14,15 @@ full validated replacement. The Python engine is the application writer; the ext
 authenticated API. Old machine-level data is retained. Restart the engine after
 upgrading; `CODEMIND_DATA_DIR` controls its token/model cache, not repo knowledge.
 
+While a repository is selected, the extension retries its connection after an
+engine restart. If live-state reports that this repository is no longer
+registered, it registers the same selected folder and retries live-state.
+Polling is serialized and backs off to 30 seconds during outages. Recovery
+requires Workspace Trust and stops when the repository selection changes or the
+extension is disposed. Session tokens are reread for every request. If
+`CODEMIND_SESSION_TOKEN` is explicitly set in the editor environment, that value
+takes precedence over the token file and must match the running engine.
+
 Offline regression command: `npm test` in this directory (or
 `npm --prefix extension test` from the project root). It compiles TypeScript and
 runs the Node resolver/rendering/session/transport/navigation tests using existing
@@ -113,3 +122,13 @@ The result panel offers Simple, Detailed and Flow views, source citations and Ca
 Leave the capture Terminal open until snapshot cleanup finishes. Supported captures require the existing macOS/APFS contained `.git` layout. Errors are shown in the panel and Terminal. See `change_analysis/PHASE3.md` at the project root for lifecycle and support limits. `CODEMIND_CHANGE_ANALYSIS=0` disables new analyses.
 
 After Analyze Change completes, click **Review test plan** or run **CodeMind: Review Test Plan**. The panel lists discovered tests, requirements, expectation sources, unknown outcomes and proposed checks. Select/deselect proposals for review; selection does not execute or authorize tests. Stale plans require a new capture before selection. Node JS test metadata is supported statically; TypeScript execution and other runner adapters remain unsupported. See `test_analysis/PHASE4.md` at the project root.
+
+For the Phase 6 native Node adapter, select checks, use **Review environment
+preparation**, and accept the native confirmation. Then use **Review and run
+selected files** and accept a separate confirmation. Every test/hook in the
+selected files may run. The adapter requires an empty third-party dependency set,
+captured npm v2/v3 lockfile, a supported Node 24 runtime requirement and current
+isolation qualification. Package installation is unsupported. Closing/cancelling
+or saving cancels execution; results remain historical observations with counts,
+setup/assertion/zero-test outcomes and bounded plain-text output. See
+`safe_runner/PHASE6.md`. Reload VS Code and restart the engine after updating.

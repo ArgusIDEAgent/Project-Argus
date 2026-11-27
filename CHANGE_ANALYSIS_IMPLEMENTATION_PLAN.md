@@ -1,7 +1,7 @@
 # CodeMind: Change Analysis, Explanation and Safe Testing
 
 **Created:** 2026-11-25  
-**Status:** P1 qualified for administrator-assisted macOS/APFS capture; P2 complete within documented static JS/TS library scope; P3 deterministic workflow qualified; P4 static planning qualified; P5 isolation boundary implemented and locally qualified
+**Status:** P1 qualified for administrator-assisted macOS/APFS capture; P2 complete within documented static JS/TS library scope; P3 deterministic workflow qualified; P4 static planning qualified; P5 isolation boundary implemented and locally qualified; P6 core qualified for empty-dependency Node tests, third-party package preparation remains open
 **Purpose:** Execution checklist for the owner-provided proposal and the repository-based architecture review.
 
 A task is complete only when its implementation and required verification are complete. The original planning review was source-only. Phase 1 implementation and verification are recorded below and in `change_analysis/PHASE1.md`. Preserve existing local changes.
@@ -550,26 +550,26 @@ Acceptance criteria:
 
 Tasks:
 
-- [ ] P6.1 Implement exact-plan authorization and pre-launch revalidation.
-- [ ] P6.2 Gate execution on Workspace Trust and explicit user action.
-- [ ] P6.3 Implement separately authorized isolated dependency preparation.
-- [ ] P6.4 Pin dependency identities and disable lifecycle scripts initially.
-- [ ] P6.5 Execute Node tests and parse structured reports.
-- [ ] P6.6 Track selected/discovered/executed counts and zero-test results.
-- [ ] P6.7 Classify setup/assertion/timeout/cancellation outcomes.
-- [ ] P6.8 Sanitize bounded artifacts and link captured evidence.
-- [ ] P6.9 Handle saves, duplicate requests, restarts and authorization expiry.
-- [ ] P6.10 Enforce one active run per repository and bounded queues initially.
+- [x] P6.1 Implement exact-plan authorization and pre-launch revalidation.
+- [x] P6.2 Gate execution on Workspace Trust and explicit user action.
+- [ ] P6.3 Implement separately authorized isolated dependency preparation. Empty-dependency Node environment preparation is implemented; installing third-party packages remains unimplemented/unsupported.
+- [x] P6.4 Pin dependency identities and disable lifecycle scripts initially (empty dependency set, npm v2/v3 lock capture, pinned Node runtime; no package-manager invocation).
+- [x] P6.5 Execute Node tests and parse structured reports.
+- [x] P6.6 Track selected/discovered/executed counts and zero-test results.
+- [x] P6.7 Classify setup/assertion/timeout/cancellation outcomes.
+- [x] P6.8 Sanitize bounded artifacts and link captured evidence.
+- [x] P6.9 Handle saves, duplicate requests, restarts and authorization expiry.
+- [x] P6.10 Enforce one active run per repository and bounded queues initially (one globally; no waiting queue).
 
 Acceptance criteria:
 
-- [ ] No run launches without authorization matching all relevant identities.
-- [ ] Source/profile/command changes require renewed review.
-- [ ] Zero tests never passes; setup failure is distinct from assertion failure.
-- [ ] Runs cannot mutate reusable dependency artifacts or developer source.
-- [ ] Historical results are not presented as new execution.
+- [x] No run launches without authorization matching all relevant identities, within the supported empty-dependency Node adapter.
+- [x] Source/profile/command changes require renewed review.
+- [x] Zero tests never passes; setup failure is distinct from assertion failure.
+- [x] Runs cannot mutate reusable dependency artifacts or developer source (fresh byte copies, no shared dependency artifacts).
+- [x] Historical results are not presented as new execution.
 
-**Evidence:** End-to-end traces, authorization races, Node fixtures and dependency-policy checks.
+**Evidence:** `safe_runner/PHASE6.md`, authorization/race/controller tests and the real VM/HTTP synthetic-capture qualifier. Phase 6 is not fully complete: third-party package preparation is unsupported. No user repository test plan was silently run.
 
 ### P7 — Controlled expansion and attribution
 
