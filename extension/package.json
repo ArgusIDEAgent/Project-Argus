@@ -67,7 +67,9 @@
       {
         "command": "codemind.syncDocs",
         "title": "CodeMind: Sync Documentation"
-      }
+      },
+      { "command": "codemind.analyzeChange", "title": "CodeMind: Analyze Change" },
+      { "command": "codemind.reviewTestPlan", "title": "CodeMind: Review Test Plan" }
     ],
     "configuration": {
       "title": "CodeMind",
@@ -100,7 +102,8 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "test": "npm run compile && node --test test/presentation.test.js test/stabilization.test.js test/runtime.test.js test/debugAnswerEngine.test.js ../knowledge_base/test_semantic_resolver.cjs",
+    "test": "npm run compile && node --test test/changeAnalysis.test.js test/presentation.test.js test/stabilization.test.js test/runtime.test.js test/debugAnswerEngine.test.js ../knowledge_base/test_semantic_resolver.cjs",
+    "test:change-integration": "npm run compile && node test/runChangeTest.cjs",
     "test:integration": "npm run compile && node test/runTest.js",
     "test:docs": "npm run compile && node test/runDocsTest.js",
     "package:vsix": "vsce package --out ../codemind-extension-0.4.1.vsix"

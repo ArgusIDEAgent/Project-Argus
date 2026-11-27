@@ -47,7 +47,13 @@ The owner authorized Phase 1 of `CHANGE_ANALYSIS_IMPLEMENTATION_PLAN.md`: an opt
 
 The 2026-11-26 owner request additionally authorizes the APFS atomic capture adapter and the initial Phase 2 source-evidence layer. `python -m change_analysis.atomic_session /path/to/repository` runs as the developer, delegates only mount/unmount authorization to Apple tools in Terminal, validates the read-only snapshot identity, and cleans up its private mount. Time Machine manages snapshot retention. The initially supported atomic layout has a contained `.git` directory; external metadata, linked worktrees and Git config includes fail closed. No resident privileged service is installed.
 
-Phase 2 currently derives bounded syntax evidence from captured bytes into separate before/after EvidencePackages with source hashes, citations and conservative symbol correspondence. It does not yet establish resolved relationship changes, caller impact or framework behavior. See `change_analysis/PHASE2.md`.
+Phase 2 derives bounded syntax and resolved call/import/export evidence from captured bytes, with conservative correspondence and caller impact. Framework behavior remains unsupported. See `change_analysis/PHASE2.md`.
+
+Phase 3 adds **CodeMind: Analyze Change**, an authenticated session job API, deterministic Simple/Detailed/Flow presentations and read-only captured-source navigation. Explicitly initiated atomic capture uses a dedicated Terminal for Apple administrator prompts. Saves and branch changes mark old results stale. Model wording remains disabled. See `change_analysis/PHASE3.md` for limits, setup and verification. This owner-approved workflow extends the earlier Git-refresh-only restriction; execution adapters and automatic source edits remain later/outside scope.
+
+Phase 4 adds static Node test discovery and reviewable scenario/check plans to Analyze Change. Allowlisted package/lock/runtime metadata is captured atomically; configuration and scripts are never evaluated. Plans retain assertion sources or explicit unknown expectations. Review selection cannot execute tests. See `test_analysis/PHASE4.md`.
+
+Phase 5 adds an internal isolation broker qualified on a dedicated Colima VZ Linux VM with no host directory sharing, a pinned Node image, no container network and enforced resource limits. `GET /v1/isolation/capabilities` reports its qualification separately from product execution availability. Only fixed qualification fixtures run in P5; review plans cannot execute. See `safe_runner/PHASE5.md` for setup, controls, evidence and how to stop the VM.
 
 ## 3. Non-Goals (OUT of scope)
 
@@ -131,6 +137,9 @@ python api.py
 
 | # | Date | Change | Confirmed by |
 |---|------|--------|--------------|
+| 6 | 2026-11-27 | Internal isolated runner foundation and fixed adversarial qualification in a dedicated local VM. Authenticated capability inspection only; product execution stays disabled pending Phase 6 authorization. | Owner requested Phase 5 implementation in chat |
+| 5 | 2026-11-27 | Atomic test metadata capture, static Node profiles/catalog, bounded scenario plans and review selection. Product execution remains unavailable. | Owner requested Phase 4 implementation in chat |
+| 4 | 2026-11-27 | Analyze Change command, authenticated jobs, deterministic explanations and captured-source navigation. Uses qualified APFS capture with explicit Terminal authorization. | Owner requested Phase 3 implementation in chat |
 | 3 | 2026-11-26 | Qualified administrator-assisted APFS capture; began Phase 2 with versioned JS/TS syntax evidence and symbol correspondence. Existing chat/indexing and execution availability unchanged. | Owner requested safe atomic setup, Phase 1 completion and Phase 2 implementation in chat |
 | 2 | 2026-11-25 | Phase 1 saved JS/TS change capture against HEAD, isolated from existing chat/indexing. Git baseline reads are permitted for this library; later analysis/UI/execution phases remain deferred. | Owner explicitly requested Phase 1 implementation in chat |
 | 1 | 2026-11-20 | Repository-local persistence: reuse `.codemind` snapshots and cache across sessions; extension-triggered atomic publication of read-only generations; preserve historical external data. Replaces the outside-repository storage contract and active remote-vector storage. | Owner explicitly requested implementation in chat |

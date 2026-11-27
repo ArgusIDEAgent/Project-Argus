@@ -5,6 +5,11 @@ import * as path from 'node:path';
 import * as vscode from 'vscode';
 import type { ResponsePresentation } from './responsePresentation';
 import type { VerificationReply } from './responsePreview';
+import type { TestPlanReply } from './testPlanPresentation';
+import type { ChangePresentation } from './changeAnalysisPresentation';
+export type ChangeJob = { id: string; repo_id: string; state: 'preparing' | 'running' | 'completed' | 'failed' | 'cancelled';
+  stale_for_workspace: boolean; error: string | null; terminal: { executable: string; cwd: string; args: string[] } };
+export type CapturedChangeSource = { content: string; capture_id: string; version: string; path: string; start_line: number; end_line: number; stale_for_workspace: boolean };
 
 export type HybridQueryInput = { repository_id: string; question: string; depth: 'quick' | 'standard' | 'deep';
   active_file?: string; cursor?: { line: number; column: number };
@@ -67,6 +72,25 @@ export class ServerManager implements vscode.Disposable {
     if (this.port) return;
     this.port = Number.parseInt(process.env.CODEMIND_PORT ?? '', 10) || 8000;
     this.output.appendLine(`Using Python AI engine at http://127.0.0.1:${this.port}`);
+  }
+
+  async startChange(repo_id: string, idempotency_key: string): Promise<ChangeJob> {
+    return this.request('POST', '/v1/change-analyses', { repo_id, idempotency_key });
+  }
+  async changeStatus(id: string, repo_id: string): Promise<ChangeJob> {
+    return this.request('GET', `/v1/change-analyses/${encodeURIComponent(id)}?repo_id=${encodeURIComponent(repo_id)}`);
+  }
+  async changeAction(id: string, repo_id: string, action: 'cancel' | 'stale'): Promise<ChangeJob> {
+    return this.request('POST', `/v1/change-analyses/${encodeURIComponent(id)}/${action}`, { repo_id });
+  }
+  async changeExplanation(id: string, repo_id: string, mode: string): Promise<ChangePresentation> {
+    return this.request('POST', `/v1/change-analyses/${encodeURIComponent(id)}/explanations`, { repo_id, mode });
+  }
+  async changeTestPlan(id: string, repo_id: string, selected_check_ids?: string[]): Promise<TestPlanReply> {
+    return this.request('POST', `/v1/change-analyses/${encodeURIComponent(id)}/test-plans`, { repo_id, ...(selected_check_ids === undefined ? {} : { selected_check_ids }) });
+  }
+  async changeSource(id: string, repo_id: string, reference: string): Promise<CapturedChangeSource> {
+    return this.request('POST', `/v1/change-analyses/${encodeURIComponent(id)}/source`, { repo_id, reference });
   }
 
   async hello(message: string): Promise<string> {

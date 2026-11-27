@@ -1,7 +1,7 @@
 # CodeMind: Change Analysis, Explanation and Safe Testing
 
 **Created:** 2026-11-25  
-**Status:** P1 qualified for administrator-assisted macOS/APFS capture; P2 source-evidence foundation implemented, impact work ongoing  
+**Status:** P1 qualified for administrator-assisted macOS/APFS capture; P2 complete within documented static JS/TS library scope; P3 deterministic workflow qualified; P4 static planning qualified; P5 isolation boundary implemented and locally qualified
 **Purpose:** Execution checklist for the owner-provided proposal and the repository-based architecture review.
 
 A task is complete only when its implementation and required verification are complete. The original planning review was source-only. Phase 1 implementation and verification are recorded below and in `change_analysis/PHASE1.md`. Preserve existing local changes.
@@ -366,10 +366,10 @@ Example result: “12 selected tests passed. Two suggested scenarios remain unve
 | --- | --- | --- | --- |
 | P0 Contract and baseline | Capture prerequisites addressed; broader phase open | None | Scope, decisions, support matrix, baseline |
 | P1 Reliable capture | Complete within qualified macOS/APFS scope | P0 | Immutable source capture/diff |
-| P2 Change evidence | Started: versioned source evidence and correspondence | P1 | Before/after evidence |
-| P3 Explanation experience | Not started | P2 | Useful Analyze Change without LLM |
-| P4 Test planner | Not started | P2 | Reviewable test plan |
-| P5 Runner qualification | Not started | P0; integration with P4 | Qualified isolation boundary |
+| P2 Change evidence | Complete within supported static JS/TS scope | P1 | Before/after evidence |
+| P3 Explanation experience | Deterministic workflow implemented; optional model wording deferred | P2 | Useful Analyze Change without LLM |
+| P4 Test planner | Implemented within static Node planning scope | P2 | Reviewable test plan |
+| P5 Runner qualification | Locally qualified Colima VZ / Docker ARM64 boundary | P0; integration with P4 | Qualified isolation boundary |
 | P6 Existing-test execution | Not started | P4, P5 | Authorized Node execution |
 | P7 Controlled expansion | Not started | P6 | Vitest, templates, baseline comparison |
 | P8 Release qualification | Not started | P3, P6; P7 if shipped | Qualified packaged release |
@@ -448,21 +448,21 @@ Acceptance criteria:
 Tasks:
 
 - [x] P2.1 Add wrapper around existing version-specific EvidencePackages. Existing package integrity validators remain unchanged.
-- [ ] P2.2 Reuse matching knowledge snapshots or derive capture-specific structure. Implemented syntax definitions directly from captured bytes; resolved structure remains pending.
-- [ ] P2.3 Map diff ranges and implement symbol correspondence. Implemented changed-line association, declaration-key candidates and exact-content file renames; broader rename/signature correspondence remains pending.
-- [ ] P2.4 Compute relationship additions/removals/changes.
-- [ ] P2.5 Add bounded traversal, cycle handling and omissions.
-- [ ] P2.6 Add only explicitly supported framework metadata adapters.
-- [ ] P2.7 Validate relationships, citations, repository and version identities. Source/citation/capture ownership and canonical syntax proofs are validated; relationship validation awaits the graph layer.
-- [x] P2.8 Remove embedding/model availability from structural critical path. Initial syntax-evidence path uses no embeddings, models or subprocesses.
-- [ ] P2.9 Verify reader-lock lifetime and freshness behavior.
+- [x] P2.2 Reuse matching knowledge snapshots or derive capture-specific structure. The initial path derives syntax and resolved calls/imports/exports directly from captured bytes; knowledge reuse is deferred and is not required for correctness.
+- [x] P2.3 Map diff ranges and implement symbol correspondence. Supports declaration keys across signature edits, exact file renames, and exact normalized declaration content across names/edited file renames. Collisions stay ambiguous; arbitrary simultaneous name/body edits remain unresolved.
+- [x] P2.4 Compute supported CALLS/IMPORTS/EXPORTS relationship deltas across uniquely mapped endpoints. Incomplete evidence suppresses definitive deltas. Qualified on fixtures and a real project snapshot; additional relationship types remain outside this milestone.
+- [x] P2.5 Add bounded traversal, cycle handling and omissions for the supported CALLS graph; limits and omissions are explicit.
+- [x] P2.6 Enforce explicit framework support: no framework adapters are enabled in this milestone. The service rejects framework adapter requests rather than claiming route/UI behavior from generic syntax.
+- [x] P2.7 Validate relationships, citations, repository and version identities for displayed supported edges. Consumption re-derives canonical captured relationships and rejects tampered endpoints/proofs.
+- [x] P2.8 Remove embedding/model availability from structural critical path. Captured structural analysis uses the trusted local TypeScript bridge; it does not require embeddings or a model.
+- [x] P2.9 Verify reader-lock lifetime and freshness behavior. Store-owned immutable bytes are analyzed without knowledge-generation locks; results carry historical_capture freshness. Real atomic qualification completed and removed the mount.
 
 Acceptance criteria:
 
-- [ ] Every displayed edge has canonical relationship proof.
+- [x] Every displayed supported edge has canonical relationship proof from its captured version.
 - [x] Deleted-code citations reference baseline content.
-- [ ] Ambiguous correspondence/dynamic behavior stays unresolved or inferred.
-- [ ] Budgets truncate transparently with stable ordering.
+- [x] Ambiguous correspondence and dynamic calls remain unresolved; unmatched renames do not produce definite relationship changes.
+- [x] Budgets truncate supported records, relationships and caller paths with explicit omitted counts and stable ordering.
 - [x] Single-version packages never mix source versions. Wrapper-negative tests reject mixed ownership.
 
 **Evidence:** Before/after fixtures, provenance-negative tests, traversal-budget results.
@@ -473,24 +473,24 @@ Acceptance criteria:
 
 Tasks:
 
-- [ ] P3.1 Add Analyze Change command and dedicated controller.
-- [ ] P3.2 Add authenticated job API and typed client methods.
-- [ ] P3.3 Render changes, flow, impact, evidence and uncertainty.
-- [ ] P3.4 Add captured-source navigation and stale-state UI.
-- [ ] P3.5 Add simple/detailed/flow variants using the same evidence.
-- [ ] P3.6 Implement cancellation, bounded queues and idempotency.
-- [ ] P3.7 Add optional local-model wording with validation/fallback.
-- [ ] P3.8 Escape repository/log content and preserve webview security.
+- [x] P3.1 Add Analyze Change command and dedicated controller.
+- [x] P3.2 Add authenticated job API and typed client methods.
+- [x] P3.3 Render changes, flow, impact, evidence and uncertainty.
+- [x] P3.4 Add captured-source navigation and stale-state UI.
+- [x] P3.5 Add simple/detailed/flow variants using the same evidence.
+- [x] P3.6 Implement cancellation, bounded queues and idempotency.
+- [ ] P3.7 Optional local-model wording is deferred. The shipped P3 path always uses deterministic templates; no generated claims enter this workflow. This optional item is not required to enable Analyze Change.
+- [x] P3.8 Escape repository/log content and preserve webview security.
 
 Acceptance criteria:
 
-- [ ] End-to-end explanation works with LLM disabled.
-- [ ] Presentation changes do not rerun structural analysis.
-- [ ] Generated claims cannot become verified facts without supporting evidence.
-- [ ] Saves/branch changes mark old results stale; navigation remains truthful.
-- [ ] Relevant chat/indexing regressions pass.
+- [x] End-to-end explanation works with LLM disabled.
+- [x] Presentation changes do not rerun structural analysis.
+- [x] Generated claims cannot become verified facts without supporting evidence.
+- [x] Saves/branch changes mark old results stale; navigation remains truthful.
+- [x] Relevant chat/indexing regressions pass.
 
-**Evidence:** Extension workflow checks, deterministic examples, stale-navigation and model-failure cases.
+**Evidence:** `change_analysis/PHASE3.md`, authenticated API lifecycle tests, controller/render tests, real atomic API qualification and a local VS Code extension-host smoke test. No optional model path is enabled; deterministic mode was qualified directly.
 
 ### P4 — Test discovery and scenario planning
 
@@ -498,25 +498,25 @@ Acceptance criteria:
 
 Tasks:
 
-- [ ] P4.1 Define and validate repository testing profile schema.
-- [ ] P4.2 Discover manifests/configuration statically without execution.
-- [ ] P4.3 Build incremental catalog and Node test metadata adapter.
-- [ ] P4.4 Map tests using explicit evidence levels.
-- [ ] P4.5 Add bounded scenarios for input, errors, permissions, state and contracts.
-- [ ] P4.6 Require expectation sources; preserve unknown intended behavior.
-- [ ] P4.7 Display selected checks, requirements and eligibility.
-- [ ] P4.8 Implement catalog/plan cache identity and invalidation.
-- [ ] P4.9 Verify planning does not run tests or evaluate executable configuration.
+- [x] P4.1 Define and validate repository testing profile schema.
+- [x] P4.2 Discover manifests/configuration statically without execution.
+- [x] P4.3 Build incremental catalog and Node test metadata adapter.
+- [x] P4.4 Map tests using explicit evidence levels.
+- [x] P4.5 Add bounded scenarios for input, errors, permissions, state and contracts.
+- [x] P4.6 Require expectation sources; preserve unknown intended behavior.
+- [x] P4.7 Display selected checks, requirements and eligibility.
+- [x] P4.8 Implement catalog/plan cache identity and invalidation.
+- [x] P4.9 Verify planning does not run tests or evaluate executable configuration.
 
 Acceptance criteria:
 
-- [ ] Association is never described as runtime coverage.
-- [ ] No-test-match results declare search scope/limitations.
-- [ ] Every scenario has evidence, expectation source or explicit unknown, and eligibility.
-- [ ] Unsupported tools produce limitations rather than guessed commands.
-- [ ] Repeated planning reuses catalog/inventory without a second understanding pipeline.
+- [x] Association is never described as runtime coverage.
+- [x] No-test-match results declare search scope/limitations.
+- [x] Every scenario has evidence, expectation source or explicit unknown, and eligibility.
+- [x] Unsupported tools produce limitations rather than guessed commands.
+- [x] Repeated planning reuses catalog/inventory without a second understanding pipeline.
 
-**Evidence:** Planner golden cases, misleading filenames, unknown expectations and cache checks.
+**Evidence:** `test_analysis/PHASE4.md`, static planner fixtures, API selection/cache/source checks, controller tests, a local VS Code host workflow and real atomic plan qualification. No product test execution occurs in P4.
 
 ### P5 — Runner isolation prototype and qualification
 
@@ -524,25 +524,25 @@ Acceptance criteria:
 
 Tasks:
 
-- [ ] P5.1 Select supported runtime and pinned image policy.
-- [ ] P5.2 Implement capability probe and fail-closed behavior.
-- [ ] P5.3 Implement broker with validated commands and mount policy.
-- [ ] P5.4 Enforce no external network, minimal environment and no host services/credentials.
-- [ ] P5.5 Enforce CPU/memory/disk/process/time/output limits.
-- [ ] P5.6 Materialize disposable workspace without developer-file hard links.
-- [ ] P5.7 Implement process-tree cancellation, cleanup and orphan reconciliation.
-- [ ] P5.8 Qualify host access, network, symlink, child-process and exhaustion fixtures.
-- [ ] P5.9 Validate artifact paths and malicious output handling.
+- [x] P5.1 Select supported runtime and pinned image policy.
+- [x] P5.2 Implement capability probe and fail-closed behavior.
+- [x] P5.3 Implement broker with validated commands and mount policy.
+- [x] P5.4 Enforce no external network, minimal environment and no host services/credentials.
+- [x] P5.5 Enforce CPU/memory/disk/process/time/output limits.
+- [x] P5.6 Materialize disposable workspace without developer-file hard links.
+- [x] P5.7 Implement process-tree cancellation, cleanup and orphan reconciliation.
+- [x] P5.8 Qualify host access, network, symlink, child-process and exhaustion fixtures.
+- [x] P5.9 Validate artifact paths and malicious output handling.
 
 Acceptance criteria:
 
-- [ ] Mandatory isolation fixtures pass on every supported configuration.
-- [ ] Missing controls disable execution with a clear reason.
-- [ ] No host fallback or runtime socket is exposed to tests.
-- [ ] Descendants terminate within documented cancellation grace period.
-- [ ] Cleanup failures are visible and orphan handling is repeatable.
+- [x] Mandatory isolation fixtures pass on every supported configuration.
+- [x] Missing controls disable execution with a clear reason.
+- [x] No host fallback or runtime socket is exposed to tests.
+- [x] Descendants terminate within documented cancellation grace period.
+- [x] Cleanup failures are visible and orphan handling is repeatable.
 
-**Evidence:** Policy, capability reports, adversarial results and crash/cleanup tests.
+**Evidence:** `safe_runner/PHASE5.md`, pinned image/policy, live 13-case VM qualification and `safe_runner/qualification-report.json`. Supported qualification is this recorded macOS ARM64 Colima VZ configuration. Product execution remains unavailable until P6.
 
 ### P6 — Authorized existing-test execution
 
@@ -725,3 +725,19 @@ Decision / next phase:
 - [VS Code Workspace Trust integration](https://code.visualstudio.com/api/extension-guides/workspace-trust)
 
 Recheck current documentation when implementing supported versions. These references inform architecture; they do not certify CodeMind's implementation.
+
+### P2 completion record — 2026-11-27
+
+Owner: Codex. Completed within the supported static JS/TS library scope. Added canonical declaration correspondence, collision handling, conservative partial-evidence deltas, depth-frontier reporting, resolver version provenance, framework capability rejection and the owning-store analysis service. Real qualification used atomic snapshot capture 602708ae12504fe08811f88650edc044 and finished mount cleanup. No CodeMind mounts remained. Full evidence and commands are in `change_analysis/PHASE2.md`.
+
+### P3 implementation record — 2026-11-27
+
+Owner: Codex. Added the Analyze Change command/controller, deterministic explanation variants, authenticated session jobs and captured-source navigation. Phase 2 changed files now precede unchanged files when evidence is truncated. Implemented queue/retention/idempotency, expiry, cancellation/publication protection, explicit same-user capture handoff, source ownership, UI escaping/CSP and backend freshness checks. Real atomic API qualification succeeded with capture a1bbd00a750e4efab402cae41a120794; mount cleanup completed. Real VS Code host command/client/render smoke exited 0 using its fixture API. Relevant Python, Node and extension checks are recorded in `change_analysis/PHASE3.md`. Optional model wording remains unchecked/deferred; P4 has not started.
+
+### P4 implementation record — 2026-11-27
+
+Owner: Codex. Fixed Phase 3 late-source navigation and binary-handoff accounting. Added atomic metadata capture, static Node test profiles/catalog, expectation-backed scenarios, bounded incremental caches and authenticated review selection. The existing panel now presents test plans and captured planning evidence. Native qualification returned 2 profiles, 64 tests, 51 scenarios and 6 proposals with execution unavailable; mounts cleaned up. Verification: 134 Python tests and 57 subtests passed; final focused planning/API run passed 24 tests; extension suite passed 52 tests and the local VS Code host smoke exited 0. Full verification and support boundaries: `test_analysis/PHASE4.md`. P5 has not started.
+
+### P5 implementation record — 2026-11-27
+
+Owner: Codex. Corrected Phase 4 unsupported Node member/assertion recognition and invalidated its adapter cache version. Installed a dedicated no-host-share Colima VZ VM and official digest-pinned Node image. Implemented policy-checked non-root containers, resource limits, captured byte materialization, cancellation/cleanup journals, orphan recovery, bounded console artifacts and authenticated capability inspection. Thirteen adversarial cases passed on the recorded local configuration; descendant cancellation completed in 0.902 seconds and no fixture containers remained. Relevant regressions: 66 Python tests and 57 subtests; final broker recheck: 17 tests. P6 authorization and product execution remain unimplemented. Full evidence and operations: `safe_runner/PHASE5.md`.

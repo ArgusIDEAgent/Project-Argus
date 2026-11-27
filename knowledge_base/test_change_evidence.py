@@ -25,14 +25,21 @@ def changed(repo):
 
 
 def test_two_versions_and_no_live_source_or_model_access(changed):
-    with patch('pathlib.Path.open', side_effect=AssertionError('No live source read')), patch('subprocess.run', side_effect=AssertionError('No model/process')):
+    import subprocess
+    native_run = subprocess.run
+    def checked_run(args, **kwargs):
+        assert args[0] == 'node' and args[1].endswith('semantic_resolver.cjs')
+        assert 'sources' in kwargs['input']
+        return native_run(args, **kwargs)
+    with patch('pathlib.Path.open', side_effect=AssertionError('No live source read')), patch('subprocess.run', side_effect=checked_run):
         package = build_change_evidence(changed)
         validate_against_capture(package, changed)
     assert package.before.package.snapshot_id != package.after.package.snapshot_id
     assert package.before.manifest['a.ts'] != package.after.manifest['a.ts']
     assert package.before.symbols[0].changed
     assert package.correspondence[0].state == 'matched'
-    assert not package.after.package.findings  # syntax references do not become resolved calls
+    assert not package.after.package.findings  # structural evidence is not a behavioral claim
+    assert any(e.relationship == 'CALLS' for e in package.after.relationships)
 
 
 def test_observed_capture_and_conflicts_are_blocked(changed):
@@ -129,3 +136,119 @@ def test_coherently_tampered_syntax_proof_cannot_claim_resolution(changed):
             citation.source.resolution = 'resolved'
     with pytest.raises(ValueError, match='canonical'):
         validate_against_capture(package, changed)
+
+
+def test_resolved_calls_imports_and_changed_relationships(changed):
+    package = build_change_evidence(changed)
+    edges = package.after.relationships
+    assert any(e.relationship == 'IMPORTS' for e in edges)
+    assert any(e.relationship == 'CALLS' for e in edges)
+    assert all(e.record_id in package.after.package.evidence for e in edges)
+    assert not any(e.relationship in ('CALLS', 'IMPORTS') for e in package.before.relationships)
+    validate_against_capture(package, changed)
+
+
+def test_ambiguous_dynamic_call_remains_unresolved(repo):
+    (repo / 'a.ts').write_text('export function dynamic(value: any) { return value.run(); }\n')
+    capture = synthetic_atomic(repo)
+    package = build_change_evidence(capture)
+    assert not any(e.relationship == 'CALLS' for e in package.after.relationships)
+    assert any('CALLS' in item for item in package.after.unresolved)
+
+
+def test_relationship_endpoint_and_proof_tampering_rejected(changed):
+    package = build_change_evidence(changed)
+    data = package.model_dump()
+    edge = next(e for e in data['after']['relationships'] if e['relationship'] == 'CALLS')
+    edge['target_id'] = 'nonexistent'
+    with pytest.raises(ValueError):
+        ChangeEvidencePackage.model_validate(data)
+    package = build_change_evidence(changed)
+    edge = next(e for e in package.after.relationships if e.relationship == 'CALLS')
+    edge.target_id = next(s.symbol_id for s in package.after.symbols if s.symbol_id != edge.target_id)
+    with pytest.raises(ValueError):
+        validate_against_capture(package, changed)
+
+
+def test_captured_semantics_ignore_later_live_edits(changed, repo):
+    original = build_change_evidence(changed)
+    (repo / 'a.ts').write_text('export function different() { return 0; }\n')
+    (repo / 'b.ts').write_text('export function unrelated() { return 9; }\n')
+    later = build_change_evidence(changed)
+    assert original == later
+    validate_against_capture(later, changed)
+
+
+def test_edited_file_rename_with_signature_change(repo):
+    (repo / 'a.ts').write_text('export function keep(value: string) { return value; }\nexport function changed() { return 1; }\n')
+    git(repo, 'add', '.')
+    git(repo, 'commit', '-qm', 'baseline')
+    (repo / 'a.ts').rename(repo / 'renamed.ts')
+    (repo / 'renamed.ts').write_text('export function keep(value: string) { return value; }\nexport function changed() { return 2; }\n')
+    capture = synthetic_atomic(repo)
+    package = build_change_evidence(capture)
+    stable = next(m for m in package.correspondence if m.basis == 'structural_content')
+    assert stable.state == 'matched'
+    validate_against_capture(package, capture)
+
+
+def test_changed_symbol_metadata_and_correspondence_cannot_be_forged(changed):
+    package = build_change_evidence(changed)
+    package.after.symbols[0].changed = not package.after.symbols[0].changed
+    with pytest.raises(ValueError, match='metadata'):
+        validate_against_capture(package, changed)
+    package = build_change_evidence(changed)
+    package.correspondence[0].state = 'unmatched'
+    package.correspondence[0].after_candidates = []
+    package.correspondence[0].basis = 'unresolved'
+    with pytest.raises(ValueError, match='Correspondence'):
+        validate_against_capture(package, changed)
+
+
+def test_phase2_owner_and_historical_lifetime(changed):
+    from change_analysis.service import analyze_change
+    from unittest.mock import Mock
+    store = Mock()
+    store.get.return_value = changed
+    result = analyze_change(store, changed.id)
+    store.get.assert_called_once_with(changed.id)
+    assert result.freshness == 'historical_capture'
+    assert result.framework_adapters == ()
+    assert result.impact.capture_id == changed.id
+
+
+def test_framework_adapter_request_is_explicitly_unsupported(changed):
+    from change_analysis.service import analyze_change
+    from unittest.mock import Mock
+    store = Mock()
+    with pytest.raises(ValueError, match='No framework'):
+        analyze_change(store, changed.id, framework_adapters=('express',))
+    store.get.assert_not_called()
+
+
+def test_signature_edit_matches_by_declaration_key(repo):
+    (repo / 'a.ts').write_text('export function keep(value: string) { return value; }\n')
+    git(repo, 'add', '.')
+    git(repo, 'commit', '-qm', 'baseline')
+    (repo / 'a.ts').write_text('export function keep(value: number, optional?: boolean) { return value; }\n')
+    capture = synthetic_atomic(repo)
+    package = build_change_evidence(capture)
+    assert package.correspondence[0].state == 'matched'
+    assert package.correspondence[0].basis == 'declaration_key'
+    validate_against_capture(package, capture)
+
+
+def test_dynamic_import_boundary_is_visible(repo):
+    (repo / 'a.ts').write_text('export async function load(path: string) { return import(path); }\n')
+    package = build_change_evidence(synthetic_atomic(repo))
+    assert any('dynamic_import_path' in item for item in package.after.unresolved)
+
+
+def test_changed_file_precedes_unchanged_files_under_record_budget(repo):
+    (repo / 'a.ts').write_text('export function unchanged() {}\n')
+    (repo / 'z.ts').write_text('export function late() { return 1; }\n')
+    git(repo, 'add', '.')
+    git(repo, 'commit', '-qm', 'baseline')
+    (repo / 'z.ts').write_text('export function late() { return 2; }\n')
+    package = build_change_evidence(synthetic_atomic(repo), max_records_per_version=1)
+    assert next(iter(package.after.package.evidence.values())).proof.file_path == 'z.ts'

@@ -21,7 +21,7 @@ def semantic_events(snapshot, side):
     # Node reads the checked-in bridge and its TypeScript dependency. The host
     # supplies every repository source byte through stdin; no repository code runs.
     env = {key: os.environ[key] for key in ('PATH', 'SYSTEMROOT', 'TMPDIR') if key in os.environ}
-    env['NODE_OPTIONS'] = ''
+    env['NODE_OPTIONS'] = '--max-old-space-size=512'
     try:
         proc = subprocess.run(['node', str(BRIDGE)], input=payload, text=True,
                               capture_output=True, timeout=30, env=env, check=False)
@@ -54,7 +54,14 @@ def canonical_relationships(snapshot, side, retained_symbols, retained_files, ev
         if start < 0 or end < start or end > len(data):
             raise ValueError('Semantic event has invalid byte span')
         kind = event.get('kind')
+        if kind == 'unresolved':
+            unresolved.append((path, data.count(b'\n', 0, start) + 1,
+                               event.get('relationship', 'UNKNOWN'), event.get('reason', 'unresolved')))
+            continue
         if kind not in ('call', 'import', 'export'):
+            continue
+        if parsed[path].status != 'parsed':
+            unresolved.append((path, data.count(b'\n', 0, start) + 1, kind, 'partial_syntax'))
             continue
         line = data.count(b'\n', 0, start) + 1
         nodes = parsed[path].symbols
@@ -72,7 +79,8 @@ def canonical_relationships(snapshot, side, retained_symbols, retained_files, ev
             target_path = descriptor.get('file')
             if target_path in parsed and isinstance(descriptor.get('startByte'), int):
                 matches = [s for s in parsed[target_path].symbols
-                           if s['start_byte'] <= descriptor['startByte'] <= s['end_byte']
+                           if s['start_byte'] <= descriptor.get('endByte', descriptor['startByte'])
+                           and s['end_byte'] >= descriptor['startByte']
                            and s['name'] == descriptor.get('name')]
                 if matches:
                     best = min(abs(s['start_byte'] - descriptor['startByte'])
@@ -81,6 +89,8 @@ def canonical_relationships(snapshot, side, retained_symbols, retained_files, ev
                               + abs(s['end_byte'] - descriptor.get('endByte', s['end_byte'])) == best]
                     if len(unique) == 1:
                         target_id = unique[0]['id']
+        if target_path in parsed and parsed[target_path].status != 'parsed':
+            target_id = None
         if not source_id or not target_id:
             unresolved.append((path, line, relationship, 'unresolved_target_or_scope'))
             continue

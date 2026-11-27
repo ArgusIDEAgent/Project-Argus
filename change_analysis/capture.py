@@ -21,6 +21,7 @@ from knowledge_base.identity import repository_id
 from knowledge_base.scanner import EXCLUDED_DIRS, SOURCE_EXTENSIONS, _sensitive
 from .contracts import CaptureLimits, ChangeSnapshot, SourceVersion
 from .diff import compare
+from .metadata_policy import POLICY, is_metadata
 
 
 class CaptureError(RuntimeError):
@@ -272,40 +273,54 @@ class CaptureStore:
             if total > limits.max_total_bytes:
                 raise CaptureError('size_limit', 'Capture exceeds total byte budget')
 
+        before_metadata, after_metadata = [], []
         for path, mode, kind, oid, size in tree_entries:
             reason = ('submodule' if mode == '160000' else 'symlink' if mode == '120000'
                       else _policy(path))
             if reason is None and int(size) > limits.max_file_bytes:
                 reason = 'oversized'
-            data = None if reason else _git(root, limits, 'cat-file', 'blob', oid)
+            metadata = is_metadata(path) and reason in (None, 'unsupported_file_type')
+            if metadata and int(size) > limits.max_file_bytes:
+                reason = 'oversized'
+                metadata = False
+            data = _git(root, limits, 'cat-file', 'blob', oid) if not reason or metadata else None
             account(data)
-            baseline.append(_version(path, mode, data, reason, oid))
+            baseline.append(_version(path, mode, None if metadata else data, reason, oid))
+            if is_metadata(path):
+                before_metadata.append(_version(path, mode, data, None if metadata else reason, oid))
         modules = {p: oid for p, mode, oid, stage in staging if mode == '160000' and stage == '0'}
         receipts = []
         root_fd = os.open(root, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
         try:
             for path in sorted(paths | ignored_paths):
                 reason = 'ignored' if path in ignored_paths else 'submodule' if path in modules else _policy(path)
-                if reason:
+                metadata = is_metadata(path) and reason in (None, 'unsupported_file_type')
+                if reason and not metadata:
                     # lstat checks presence without reading excluded source bytes.
                     # No traversal reads are performed for excluded entries.
                     if path in ignored_paths or os.path.lexists(root / path):
                         current.append(_version(path, '160000' if reason == 'submodule' else 'excluded',
                                                 exclusion=reason, object_id=modules.get(path)))
+                        if is_metadata(path):
+                            after_metadata.append(_version(path, 'excluded', exclusion=reason))
                     continue
                 saved = _read_saved(root_fd, path, limits.max_file_bytes)
                 if saved is not None:
                     mode, data, reason, signature = saved
                     receipts.append((path, signature))
                     account(data)
-                    current.append(_version(path, mode, data, reason))
+                    if metadata:
+                        after_metadata.append(_version(path, mode, data, reason))
+                        current.append(_version(path, mode, exclusion='unsupported_file_type'))
+                    else:
+                        current.append(_version(path, mode, data, reason))
         finally:
             os.close(root_fd)
         if _head(root, limits) != head:
             raise CaptureError('source_changed', 'HEAD moved during capture')
         self._check_boundary()
         return (head, tuple(sorted(baseline, key=lambda v: v.path)), tuple(current),
-                tuple(sorted(staging)), total, tuple(receipts))
+                tuple(sorted(staging)), total, tuple(receipts), tuple(before_metadata), tuple(after_metadata))
 
     def capture(self, *, require_atomic=False):
         with self._lock:
@@ -325,7 +340,7 @@ class CaptureStore:
                 second = self._observe()
                 if first != second:
                     continue
-                head, before, after, staging, total, _receipts = second
+                head, before, after, staging, total, _receipts, before_meta, after_meta = second
                 changes = compare(before, after, self.limits.max_diff_lines)
                 # Diff computation may be slow; validate again immediately before publication.
                 if self._observe() != second:
@@ -337,18 +352,22 @@ class CaptureStore:
             conflicts = tuple(sorted({p for p, _, _, stage in staging if stage != '0'}))
             identity = [1, vars(self.limits), self.repo_id, str(self.git_root), head, staging,
                         [[v.path, v.mode, v.digest, v.exclusion, v.object_id] for v in before],
-                        [[v.path, v.mode, v.digest, v.exclusion, v.object_id] for v in after]]
+                        [[v.path, v.mode, v.digest, v.exclusion, v.object_id] for v in after], POLICY,
+                        [[v.path, v.digest, v.exclusion] for v in before_meta],
+                        [[v.path, v.digest, v.exclusion] for v in after_meta]]
             notices = ('Only saved filesystem bytes are captured; unsaved editor buffers are excluded.',
                        'Ignored and unsupported entries are unanalyzed; excluded entries may be unchanged.',
                        'Rename candidates use exact content; edited renames remain added/deleted.',
                        'Submodules are not traversed; their saved staging references are recorded.',
                        'Consistency uses repeated observations, not an atomic filesystem snapshot.')
+            retained_bytes = sum(len(v.data or b'') for v in (*before, *after, *before_meta, *after_meta))
             snapshot = ChangeSnapshot(1, uuid.uuid4().hex, self.repo_id, str(self.root),
                                       str(self.git_root), head, 'head' if head else 'all_files_added',
                                       datetime.now(timezone.utc).isoformat(),
                                       _hash(json.dumps(identity, sort_keys=True).encode()),
                                       before, after, staging, changes, conflicts, notices,
-                                      not conflicts, total)
+                                      not conflicts, retained_bytes, metadata_policy=POLICY,
+                                      before_metadata=before_meta, after_metadata=after_meta)
             self._captures[snapshot.id] = snapshot
             return snapshot
         raise CaptureError('source_changed', 'Saved source, staging or HEAD kept changing; capture not published')

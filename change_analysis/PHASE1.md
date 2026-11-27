@@ -168,3 +168,7 @@ Real qualification evidence:
 Result: **119 passed, 95 subtests passed, 1 skipped** in 21.07 seconds. The skip is the opt-in real APFS fixture, already run successfully while its snapshot was mounted; it is not a missing live qualification. One existing Starlette/httpx deprecation warning remains. Later negative cases additionally cover `config.worktree` includes and non-regular Git metadata. Scoped whitespace checks and Python compilation passed.
 
 All private qualification mount directories, the disposable source repository and the completed Terminal launch scripts were removed. Time Machine retains/manages the three snapshots; no backup deletion was attempted. No further administrator interaction is pending for this completed qualification.
+
+## Phase 4 capture extension — 2026-11-27
+
+Atomic captures now include separate before/after allowlisted test metadata tuples under `metadata_policy=test-metadata-v1`. Package manifests, lockfiles, runtime hints and tsconfig JSON participate in the same inventory, read consistency, shared byte budget and capture digest. Generic source parsing still receives only supported source bytes. Private transport validates the metadata allowlist. Published `size_bytes` counts retained source/metadata bytes; read-time budget enforcement also accounts for inspected bytes excluded as binary. Existing captures with policy `none` are recognized as lacking qualified metadata. Qualification and regression evidence are recorded in `test_analysis/PHASE4.md`.

@@ -245,5 +245,11 @@ for (const file of [...allowed].sort()) {
   }
 }
 
-process.stdout.write(JSON.stringify({typescriptVersion: ts.version, events, diagnostics,
-  omittedEvents}));
+const output = JSON.stringify({typescriptVersion: ts.version, events, diagnostics,
+  omittedEvents});
+if (captured && Buffer.byteLength(output, "utf8") > 16000000) {
+  process.stderr.write("Captured semantic output exceeded its byte budget\n");
+  process.exitCode = 2;
+} else {
+  process.stdout.write(output);
+}

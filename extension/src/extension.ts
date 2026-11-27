@@ -1,3 +1,4 @@
+import { ChangeAnalysisController } from './changeAnalysisController';
 import { randomBytes } from 'node:crypto';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
@@ -52,6 +53,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   let refreshTimer: NodeJS.Timeout | undefined;
   let gitStateTimer: NodeJS.Timeout | undefined;
   let selectedRepository: { id: string; rootPath: string } | undefined;
+  context.subscriptions.push(new ChangeAnalysisController(server, () => selectedRepository));
   let docsSyncRunning = false;
   let lastGitState: string | undefined;
   let lastSynchronizationStatus: string | undefined;

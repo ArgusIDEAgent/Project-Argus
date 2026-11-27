@@ -98,6 +98,7 @@ async def _require_session(x_codemind_session: str | None = Header(default=None)
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     global _SESSION_TOKEN, _SYNC_MANAGER
+    _CHANGE_JOBS.open()
     _SESSION_TOKEN = _issue_session_token()
     try:
         _load_registry()
@@ -106,6 +107,7 @@ async def lifespan(_app: FastAPI):
             for rid,entry in list(_REGISTERED_REPOS.items()): _SYNC_MANAGER.add(rid,entry['rootPath'])
         yield
     finally:
+        _CHANGE_JOBS.close()
         _SESSION_TOKEN = ""
         try:
             if _SYNC_MANAGER: _SYNC_MANAGER.close()
@@ -827,6 +829,19 @@ def ask(req: SearchRequest):
 
 from hybrid_api import create_hybrid_router
 app.include_router(create_hybrid_router(sys.modules[__name__]))
+
+
+# Uses the application-wide session authentication and registered repository boundary.
+from change_api import create_change_router
+_change_router, _CHANGE_JOBS = create_change_router(sys.modules[__name__])
+app.include_router(_change_router)
+
+@app.get('/v1/isolation/capabilities')
+def isolation_capabilities():
+    # Read/inspect controls only. This route never creates a container or runs code.
+    from safe_runner.broker import isolation_capabilities as probe
+    return probe()
+
 
 
 if __name__ == "__main__":

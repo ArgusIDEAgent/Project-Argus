@@ -1,0 +1,143 @@
+{
+  "schema_version": 1,
+  "qualified_on": "2026-11-27",
+  "scope": "Local macOS ARM64 Colima VZ / Linux Docker configuration only",
+  "identity": {
+    "runtime": {
+      "ID": "bfa2c4c7-0942-4616-8d60-a448ce784aba",
+      "ServerVersion": "29.5.2",
+      "KernelVersion": "6.8.0-117-generic",
+      "Architecture": "aarch64",
+      "CgroupVersion": "2",
+      "DefaultRuntime": "runc",
+      "RuncCommit": {
+        "ID": "v1.3.5-0-g488fc13e"
+      },
+      "ContainerdCommit": {
+        "ID": "193637f7ee8ae5f5aa5248f49e7baa3e6164966e"
+      },
+      "image_id": "sha256:873f586f3794f52281bd039bf02c048a0be08fde619338f9941bad1eb6b34530",
+      "image": "docker.io/library/node@sha256:873f586f3794f52281bd039bf02c048a0be08fde619338f9941bad1eb6b34530",
+      "docker_cli_sha256": "cd9e0b149e447af504421ac7117044d8e17d695d66846a5c4df1312c417c22a3"
+    },
+    "policy_digest": "edadfa574cbaac622bc507f28f449a414af935a0990d9c5e96179f6c3c1708b1"
+  },
+  "policy": {
+    "version": "isolation-v1",
+    "memory": 268435456,
+    "cpus_nano": 500000000,
+    "pids": 48,
+    "workspace_bytes": 67108864,
+    "output_disk_bytes": 8388608,
+    "tmp_bytes": 16777216,
+    "file_bytes": 8388608,
+    "output_bytes": 65536,
+    "seconds": 12,
+    "cancellation_grace_seconds": 5,
+    "input_files": 128,
+    "input_bytes": 4194304
+  },
+  "passed": true,
+  "fixtures": [
+    {
+      "fixture": "controls",
+      "passed": true,
+      "state": "completed",
+      "exit_code": 0,
+      "cleanup_complete": true,
+      "elapsed_seconds": 0.415
+    },
+    {
+      "fixture": "host_and_symlink",
+      "passed": true,
+      "state": "completed",
+      "exit_code": 0,
+      "cleanup_complete": true,
+      "elapsed_seconds": 0.407
+    },
+    {
+      "fixture": "network",
+      "passed": true,
+      "state": "completed",
+      "exit_code": 0,
+      "cleanup_complete": true,
+      "elapsed_seconds": 0.457
+    },
+    {
+      "fixture": "disk",
+      "passed": true,
+      "state": "completed",
+      "exit_code": 0,
+      "cleanup_complete": true,
+      "elapsed_seconds": 0.469
+    },
+    {
+      "fixture": "processes",
+      "passed": true,
+      "state": "completed",
+      "exit_code": 0,
+      "cleanup_complete": true,
+      "elapsed_seconds": 0.412
+    },
+    {
+      "fixture": "memory",
+      "passed": true,
+      "state": "memory_limited",
+      "exit_code": 0,
+      "cleanup_complete": true,
+      "elapsed_seconds": 0.533
+    },
+    {
+      "fixture": "cpu",
+      "passed": true,
+      "state": "completed",
+      "exit_code": 0,
+      "cleanup_complete": true,
+      "elapsed_seconds": 1.753
+    },
+    {
+      "fixture": "timeout",
+      "passed": true,
+      "state": "timed_out",
+      "exit_code": 137,
+      "cleanup_complete": true,
+      "elapsed_seconds": 12.387
+    },
+    {
+      "fixture": "output",
+      "passed": true,
+      "state": "output_limited",
+      "exit_code": 137,
+      "cleanup_complete": true,
+      "elapsed_seconds": 3.498
+    },
+    {
+      "fixture": "malicious_output",
+      "passed": true,
+      "state": "completed",
+      "exit_code": 0,
+      "cleanup_complete": true,
+      "elapsed_seconds": 0.408
+    },
+    {
+      "fixture": "cancellation_descendants",
+      "passed": true,
+      "state": "cancelled",
+      "exit_code": 137,
+      "cleanup_complete": true,
+      "elapsed_seconds": 0.902
+    },
+    {
+      "fixture": "orphan_recovery",
+      "passed": true,
+      "reconciled": 1
+    },
+    {
+      "fixture": "cleanup_failure_recovery",
+      "passed": true,
+      "reconciled": 1
+    }
+  ],
+  "product_execution_available": false,
+  "attestation_max_age_seconds": 86400
+}

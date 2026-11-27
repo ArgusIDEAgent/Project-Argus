@@ -67,3 +67,6 @@ class ChangeSnapshot:
     # Conflict eligibility is separate from the filesystem consistency guarantee.
     consistency: str = 'observed_stable'
     atomic_snapshot_id: str | None = None
+    metadata_policy: str = 'none'
+    before_metadata: tuple[SourceVersion, ...] = ()
+    after_metadata: tuple[SourceVersion, ...] = ()

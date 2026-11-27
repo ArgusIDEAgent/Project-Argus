@@ -1,8 +1,7 @@
 """P2 foundation: two validated source-evidence packages from captured bytes.
 
-Syntax definitions are not a resolved call graph. This first P2 slice deliberately
-publishes no relationship claims; later impact analysis must supply canonical
-relationship evidence without weakening EvidencePackage integrity.
+Version-specific syntax and resolved relationships retain captured source proof.
+The shared EvidencePackage integrity checks remain in force.
 """
 from hashlib import sha256
 from importlib.metadata import version as distribution_version
@@ -17,6 +16,7 @@ from query_system.contracts import ContractModel, Evidence, RepositoryId, Source
 from query_system.evidence_contracts import Citation, EvidenceLimits, EvidencePackage, EvidenceRecord
 from .capture import CaptureError
 from .structure import semantic_events, canonical_relationships
+from .symbol_mapping import correspondence
 
 
 # Resolve trusted parser distribution versions once when loading the adapter.
@@ -60,6 +60,7 @@ class VersionEvidence(ContractModel):
     symbols: list[CapturedSymbol]
     relationships: list[CapturedRelationship] = Field(default_factory=list)
     unresolved: list[str] = Field(default_factory=list)
+    resolver_version: str = 'unknown'
     omitted_relationships: int = Field(default=0, ge=0)
     omitted_records: int = Field(ge=0)
     limitations: list[str]
@@ -103,7 +104,7 @@ class SymbolCorrespondence(ContractModel):
     before_id: str
     after_candidates: list[str]
     state: Literal['matched', 'ambiguous', 'unmatched']
-    basis: Literal['declaration_key', 'exact_file_rename', 'unresolved']
+    basis: Literal['declaration_key', 'exact_file_rename', 'structural_content', 'unresolved']
 
     @model_validator(mode='after')
     def cardinality(self):
@@ -111,7 +112,7 @@ class SymbolCorrespondence(ContractModel):
         if len(set(self.after_candidates)) != count:
             raise ValueError('Duplicate correspondence candidate')
         expected = 'unmatched' if count == 0 else 'matched' if count == 1 else 'ambiguous'
-        if self.state != expected:
+        if self.state != expected and not (count == 1 and self.state == 'ambiguous'):
             raise ValueError('Ambiguous correspondence must remain visible')
         return self
 
@@ -191,7 +192,8 @@ def _version(snapshot, side, limit):
         return True
 
     source_limit = limit - min(40, limit // 5)
-    for source in sorted(sources, key=lambda v: v.path):
+    changed_paths = {c.path for c in snapshot.changes if c.status != 'unanalyzed'}
+    for source in sorted(sources, key=lambda v: (v.path not in changed_paths, v.path)):
         relative_path(source.path)
         if source.path in seen_paths:
             raise ValueError('Duplicate path in capture manifest')
@@ -265,7 +267,7 @@ def _version(snapshot, side, limit):
         omissions=[], resource_limits=['record_budget'] if omitted or omitted_nodes else [], status='partial',
         validation_status='partial', limitations=['Only uniquely resolved captured calls/imports/exports are graph relationships.'])
     return VersionEvidence(version=side, package=package, manifest=manifest, symbols=symbols,
-                           relationships=relationships,
+                           relationships=relationships, resolver_version=semantic['typescriptVersion'],
                            unresolved=[f'{path}:{line}:{kind}:{reason}' for path, line, kind, reason in unresolved],
                            omitted_relationships=omitted_nodes + semantic.get('omittedEvents', 0),
                            omitted_records=omitted, limitations=limitations)
@@ -281,22 +283,12 @@ def build_change_evidence(snapshot, *, max_records_per_version=200):
         raise ValueError('Evidence record limit must be between 1 and 200')
     before = _version(snapshot, 'before', max_records_per_version)
     after = _version(snapshot, 'after', max_records_per_version)
-    mappings = []
-    renames = {c.path: c.rename_candidates for c in snapshot.changes if c.rename_candidates}
-    for old in before.symbols:
-        candidates = [new for new in after.symbols if
-                      (old.kind, old.qualified_name) == (new.kind, new.qualified_name)
-                      and (old.path == new.path or old.path in renames.get(new.path, ()))]
-        ids = sorted(new.symbol_id for new in candidates)
-        state = 'unmatched' if not ids else 'matched' if len(ids) == 1 else 'ambiguous'
-        basis = ('unresolved' if not ids else 'declaration_key' if all(new.path == old.path for new in candidates)
-                 else 'exact_file_rename')
-        mappings.append(SymbolCorrespondence(before_id=old.symbol_id, after_candidates=ids, state=state, basis=basis))
+    mappings = [SymbolCorrespondence(**m) for m in correspondence(snapshot, before, after)]
     return ChangeEvidencePackage(capture_id=snapshot.id, capture_digest=snapshot.digest,
         repository_id=snapshot.repository_id, atomic_snapshot_id=snapshot.atomic_snapshot_id,
         before=before, after=after, correspondence=mappings,
         adapter_versions=dict(_ADAPTER_VERSIONS),
-        limitations=['Phase 2 progress: resolved captured calls/imports/exports; caller traversal and framework adapters pending.',
+        limitations=['Supported relationships: captured calls/imports/exports. No framework adapters are enabled.',
                      'Unmatched symbols may be removed, renamed or omitted; unmatched does not prove deletion.',
                      'Declaration correspondence is structural association, not proof of equivalent behavior.',
                      'Snapshot evidence is historical; current workspace freshness is not implied.'])
@@ -308,6 +300,9 @@ def validate_against_capture(package, snapshot):
     if (checked.capture_id, checked.capture_digest, checked.repository_id, checked.atomic_snapshot_id) != (
             snapshot.id, snapshot.digest, snapshot.repository_id, snapshot.atomic_snapshot_id):
         raise ValueError('Change evidence belongs to a different capture')
+    expected_mapping = [SymbolCorrespondence(**m) for m in correspondence(snapshot, checked.before, checked.after)]
+    if checked.correspondence != expected_mapping:
+        raise ValueError('Correspondence differs from canonical captured declarations')
     for side in ('before', 'after'):
         sources = {v.path: v for v in getattr(snapshot, side) if v.data is not None}
         expected = {path: sha256(v.data).hexdigest() for path, v in sources.items()}
@@ -315,6 +310,22 @@ def validate_against_capture(package, snapshot):
         if value.manifest != expected:
             raise ValueError('Version manifest differs from captured source')
         parsed = {}
+        canonical_events = semantic_events(snapshot, side)
+        canonical_edges, _, _ = canonical_relationships(
+            snapshot, side, {s.symbol_id for s in value.symbols},
+            {record.proof.file_id for record in value.package.evidence.values()
+             if record.proof.evidence_type == 'source_range'}, canonical_events['events'])
+        if value.resolver_version != canonical_events['typescriptVersion']:
+            raise ValueError('Resolver version differs from evidence provenance')
+        by_id = {edge['id']: edge for edge in canonical_edges}
+        for relationship in value.relationships:
+            edge = by_id.get(relationship.relationship_id)
+            if edge is None or (relationship.source_id, relationship.target_id,
+                    relationship.relationship, relationship.path, relationship.line,
+                    relationship.start_byte, relationship.end_byte) != (
+                    edge['source_id'], edge['target_id'], edge['relationship'],
+                    edge['path'], edge['line'], edge['start_byte'], edge['end_byte']):
+                raise ValueError('Relationship differs from canonical captured structure')
         for record in value.package.evidence.values():
             proof = record.proof
             source = sources[proof.file_path]
@@ -329,7 +340,17 @@ def validate_against_capture(package, snapshot):
                 symbol = parsed[source.path].get(proof.symbol_id)
                 if symbol is None:
                     raise ValueError('Symbol is absent from captured source')
+                owner = next((s for s in value.symbols if s.record_id == proof.evidence_id), None)
+                if owner is None or (owner.name, owner.qualified_name, owner.kind, owner.changed) != (
+                        symbol['name'], symbol['qualified_name'], symbol['kind'],
+                        _changed(snapshot, side, source.path, symbol['start_line'], min(lines, symbol['end_line']))):
+                    raise ValueError('Symbol metadata differs from canonical captured declaration')
                 expected = (symbol['id'], symbol['id'], symbol['start_line'], min(lines, symbol['end_line']), 'syntax_only')
+            elif proof.evidence_type == 'graph_relationship':
+                edge = by_id.get(proof.evidence_id)
+                if edge is None or not any(e.relationship_id == proof.evidence_id for e in value.relationships):
+                    raise ValueError('Relationship proof is not backed by captured structure')
+                expected = (edge['id'], None, edge['line'], edge['line'], 'resolved')
             else:
                 raise ValueError('Source-only adapter cannot establish graph relationships')
             if (proof.evidence_id, proof.symbol_id, proof.start_line, proof.end_line, proof.resolution) != expected:
