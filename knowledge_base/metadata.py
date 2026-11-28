@@ -395,8 +395,8 @@ class SemanticIndex:
         from knowledge_base.identity import chunk_id
         entry = self.entries[relative_path(path)]
         fid = file_id(self.repo_id,path)
-        # Register semantic-only files (e.g. Python/Markdown) without pretending
-        # that a JS/TS parser extracted symbols for them.
+        # Register semantic-only files such as Markdown while retaining any
+        # structural metadata for files already parsed by the graph build.
         with self.db:
             previous = self.db.execute('SELECT content_sha256,status FROM files WHERE repository_id=? AND relative_path=?',(self.repo_id,path)).fetchone()
             if previous and previous[1] == 'included' and previous[0] != source_hash:

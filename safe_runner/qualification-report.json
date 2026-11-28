@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "qualified_on": "2026-11-27",
-  "scope": "Local macOS ARM64 Colima VZ / Linux Docker configuration only",
+  "scope": "Local macOS ARM64 Colima VZ / Linux Docker only",
   "identity": {
     "runtime": {
       "ID": "bfa2c4c7-0942-4616-8d60-a448ce784aba",
@@ -20,7 +20,7 @@
       "image": "docker.io/library/node@sha256:873f586f3794f52281bd039bf02c048a0be08fde619338f9941bad1eb6b34530",
       "docker_cli_sha256": "cd9e0b149e447af504421ac7117044d8e17d695d66846a5c4df1312c417c22a3"
     },
-    "policy_digest": "5d5f29323901e88023bf278a3bad87b2ffd7090c77922048599357278719be66"
+    "policy_digest": "6ff6fef7c3c94bfce0f6e05d9407a2e63be7be3005019d7475108ced864d9fce"
   },
   "policy": {
     "version": "isolation-v1",
@@ -45,7 +45,7 @@
       "state": "completed",
       "exit_code": 0,
       "cleanup_complete": true,
-      "elapsed_seconds": 0.794
+      "elapsed_seconds": 0.974
     },
     {
       "fixture": "host_and_symlink",
@@ -53,7 +53,7 @@
       "state": "completed",
       "exit_code": 0,
       "cleanup_complete": true,
-      "elapsed_seconds": 0.765
+      "elapsed_seconds": 1.192
     },
     {
       "fixture": "network",
@@ -61,7 +61,7 @@
       "state": "completed",
       "exit_code": 0,
       "cleanup_complete": true,
-      "elapsed_seconds": 0.751
+      "elapsed_seconds": 1.354
     },
     {
       "fixture": "disk",
@@ -69,7 +69,7 @@
       "state": "completed",
       "exit_code": 0,
       "cleanup_complete": true,
-      "elapsed_seconds": 0.74
+      "elapsed_seconds": 1.06
     },
     {
       "fixture": "processes",
@@ -77,7 +77,7 @@
       "state": "completed",
       "exit_code": 0,
       "cleanup_complete": true,
-      "elapsed_seconds": 0.669
+      "elapsed_seconds": 1.559
     },
     {
       "fixture": "memory",
@@ -85,7 +85,7 @@
       "state": "memory_limited",
       "exit_code": 0,
       "cleanup_complete": true,
-      "elapsed_seconds": 0.732
+      "elapsed_seconds": 2.328
     },
     {
       "fixture": "cpu",
@@ -93,7 +93,7 @@
       "state": "completed",
       "exit_code": 0,
       "cleanup_complete": true,
-      "elapsed_seconds": 1.893
+      "elapsed_seconds": 2.423
     },
     {
       "fixture": "timeout",
@@ -101,7 +101,7 @@
       "state": "timed_out",
       "exit_code": 137,
       "cleanup_complete": true,
-      "elapsed_seconds": 12.535
+      "elapsed_seconds": 12.728
     },
     {
       "fixture": "output",
@@ -109,7 +109,7 @@
       "state": "output_limited",
       "exit_code": 137,
       "cleanup_complete": true,
-      "elapsed_seconds": 3.516
+      "elapsed_seconds": 4.24
     },
     {
       "fixture": "malicious_output",
@@ -117,7 +117,7 @@
       "state": "completed",
       "exit_code": 0,
       "cleanup_complete": true,
-      "elapsed_seconds": 0.487
+      "elapsed_seconds": 0.864
     },
     {
       "fixture": "cancellation_descendants",
@@ -125,7 +125,7 @@
       "state": "cancelled",
       "exit_code": 137,
       "cleanup_complete": true,
-      "elapsed_seconds": 0.93
+      "elapsed_seconds": 0.928
     },
     {
       "fixture": "orphan_recovery",

@@ -46,7 +46,7 @@ class RuntimeApiTests(unittest.TestCase):
             self.assertEqual(self.http.post(route, content=b'{bad-json', headers=self.headers).status_code, 422)
 
     def test_static_chat_bypasses_legacy_retrieval_and_model(self):
-        with patch.object(api, "search_code", side_effect=AssertionError("retrieval")) as retrieval, \
+        with patch.object(api, "_search_code", side_effect=AssertionError("retrieval")) as retrieval, \
                 patch.object(api, "answer_question", side_effect=AssertionError("model")) as model, \
                 patch("hybrid_api.SnapshotStore", side_effect=AssertionError("snapshot access")):
             for question in ("hi", "hello", "hey", "good morning", "thanks", "thank you", "bye",
@@ -73,7 +73,7 @@ class RuntimeApiTests(unittest.TestCase):
     def test_mixed_chat_reaches_existing_legacy_path_without_losing_query(self):
         retrieval = {"mode": "test", "results": [], "warning": None}
         answer = {**retrieval, "answer": "technical", "answerMode": "evidence"}
-        with patch.object(api, "search_code", return_value=retrieval) as search, \
+        with patch.object(api, "_search_code", return_value=retrieval) as search, \
                 patch.object(api, "answer_question", return_value=answer) as model:
             question = "thanks, show callers of validateToken()"
             intent = self.http.post("/v1/chat/intent", json={"message": question}, headers=self.headers)

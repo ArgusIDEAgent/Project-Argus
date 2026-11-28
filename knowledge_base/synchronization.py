@@ -31,7 +31,7 @@ from knowledge_base.storage import RepositoryStorage, checked_path
 from knowledge_base.scanner import DEFAULT_MAX_BYTES, EXCLUDED_DIRS, _git_context, _has_gitignore, _inventory
 
 logger = logging.getLogger(__name__)
-PIPELINE_VERSION = 'repo-local-storage-v1'
+PIPELINE_VERSION = 'repo-local-storage-v3'
 _validation_scope = ContextVar('codemind_query_validation', default=None)
 
 
@@ -108,10 +108,35 @@ def observe_sources(root):
     return {'digest':digest,'files':sources,'revision':revision}
 
 
-def _incomplete_parsing(result):
+def _invalid_graph(result):
     graph = result.get('graph', {})
     parsing = graph.get('parsing', {}) if isinstance(graph, dict) else None
-    return not isinstance(parsing, dict) or any(parsing.get(key, 0) != 0 for key in ('error', 'partial'))
+    if not isinstance(parsing, dict) or parsing.get('error', 0) != 0:
+        return True
+    partial = parsing.get('partial', 0)
+    issues = graph.get('syntax_issues', [])
+    if not isinstance(partial, int) or not isinstance(issues, list) or not 0 <= partial <= len(issues):
+        return True
+    if not issues:
+        return False
+    excluded = graph.get('excluded_graph_files')
+    return (not isinstance(excluded, int) or excluded < len(issues)
+            or any(not isinstance(issue, dict) or not isinstance(issue.get('path'), str)
+                   or not isinstance(issue.get('message'), str) or 'line' not in issue for issue in issues))
+
+
+def graph_coverage_warning(graph):
+    issues = graph.get('syntax_issues', ())
+    if not issues:
+        return None
+    locations = ", ".join(
+        f"{issue['path']}{':' + str(issue['line']) if issue['line'] else ''} ({issue['message']})"
+        for issue in issues[:3]
+    )
+    if len(issues) > 3:
+        locations += f", and {len(issues) - 3} more with syntax errors"
+    return (f"Graph coverage is partial. Fix syntax in {locations}. "
+            f"Structural evidence from {graph['excluded_graph_files']} affected file(s) is omitted.")
 
 
 class SnapshotStore:
@@ -245,7 +270,7 @@ class SnapshotStore:
         if managed:
             try:
                 fresh = bool(compatible(manifest)
-                             and not _incomplete_parsing(manifest['result'])
+                             and not _invalid_graph(manifest['result'])
                              and manifest['sources']['digest']==observe_sources(self.root)['digest'])
             except (OSError,ValueError): fresh = False
             if manifest:
@@ -258,14 +283,21 @@ class SnapshotStore:
                 error = state.get('lastError') or ('Knowledge pipeline changed; refresh is required.'
                     if manifest and not compatible(manifest)
                     else 'Saved files changed; knowledge index is stale or updating.')
+        graph_warning = graph_coverage_warning(manifest['result'].get('graph', {})) if fresh and manifest else None
         return {'manifest':manifest,'data_dir':self.data_for(manifest),
                 'snapshotId':manifest['id'] if manifest else None,'managed':managed,
-                'fresh':fresh,'state':state.get('state','unmanaged'),'error':error,'savedFilesOnly':True}
+                'fresh':fresh,'state':state.get('state','unmanaged'),'error':error,'savedFilesOnly':True,
+                'graphWarning':graph_warning}
 
     def publish(self,*,client,collection,index_directory,build_graph,full=False,on_progress=None):
         with self.storage.scope():
             return self._publish(client=client, collection=collection, index_directory=index_directory,
                 build_graph=build_graph, full=full, on_progress=on_progress)
+
+    def _record_current(self, identifier, graph):
+        state = 'partial' if graph.get('syntax_issues') else 'ready'
+        _write_json(self.path/'sync_state.json', {'state': state, 'activeSnapshotId': identifier,
+            'lastError': None, 'savedFilesOnly': True})
 
     def _publish(self,*,client,collection,index_directory,build_graph,full=False,on_progress=None):
         self.storage.prepare()
@@ -289,10 +321,9 @@ class SnapshotStore:
                     expected_count = db.execute('SELECT count(*) FROM code_chunks WHERE repository_id=?',(self.repo_id,)).fetchone()[0]
                 store_ready = client.count(previous['collection'],exact=True).count==expected_count
             if (compatible(previous) and not full
-                and store_ready and not _incomplete_parsing(previous['result'])
+                and store_ready and not _invalid_graph(previous['result'])
                 and previous['sources']['digest']==before['digest']):
-                _write_json(self.path/'sync_state.json',{'state':'ready','activeSnapshotId':previous['id'],
-                    'lastError':None,'savedFilesOnly':True})
+                self._record_current(previous['id'], previous['result'].get('graph', {}))
                 return {**previous['result'],'unchanged':True,'activeSnapshotId':previous['id'],
                         'files_indexed':0,'files_skipped':previous['result']['files_indexed']+previous['result']['files_skipped'],
                         'files_pruned':0,'chunks_embedded':0,'chunks_reused':0}
@@ -343,8 +374,8 @@ class SnapshotStore:
                         with closing(connect(database)) as db,db:
                             db.execute('UPDATE code_chunks SET collection_name=? WHERE repository_id=?',(new_collection,self.repo_id))
                 graph = build_graph(self.root,data_dir=staged,incremental=True)
-                if _incomplete_parsing({'graph': graph}):
-                    raise RuntimeError('Source parsing is incomplete; the previous snapshot remains published')
+                if _invalid_graph({'graph': graph}):
+                    raise RuntimeError('Graph coverage could not be verified; the previous snapshot remains published')
                 result = index_directory(str(self.root),repo_id=self.repo_id,data_dir=str(staged),collection=new_collection,
                     build_graph=False,full_reindex=full or bool(previous and not store_ready),on_progress=on_progress)
                 if result['files_failed']: raise RuntimeError('Some files failed indexing')
@@ -367,7 +398,7 @@ class SnapshotStore:
                 if before!=after: raise RuntimeError('Repository changed while indexing; retrying is required')
                 published = {**result,'activeSnapshotId':identifier,'graph':graph,'unchanged':False,'chunk_count':len(ids),
                     'changed_files':sorted(changed_files),'affected_files':sorted(affected_files),
-                    'resolutionScope':'all included JS/TS files (conservative dependency invalidation)'}
+                    'resolutionScope':'all included Python and JS/TS files (conservative dependency invalidation)'}
                 manifest = {'id':identifier,'repoId':self.repo_id,'root':str(self.root),'state':'ready',
                     'pipelineVersion':PIPELINE_VERSION,
                     'configuration':pipeline_identity(),
@@ -383,8 +414,7 @@ class SnapshotStore:
                         checked_path(item)
                         if item.is_file(): os.chmod(item,0o400)
                 _write_json(self.path/'active_snapshot.json',manifest)
-                _write_json(self.path/'sync_state.json',{'state':'ready','activeSnapshotId':identifier,
-                    'lastError':None,'savedFilesOnly':True})
+                self._record_current(identifier, graph)
                 self.collect(client,collection,{identifier,previous['id'] if previous else retained})
                 return published
             except Exception as exc:

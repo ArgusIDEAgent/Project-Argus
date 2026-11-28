@@ -23,11 +23,12 @@ from datetime import datetime, timezone
 from knowledge_base.identity import file_id, repository_id
 from knowledge_base.metadata import SCHEMA_VERSION, ensure_schema, begin_snapshot, finish_snapshot
 DEFAULT_MAX_BYTES = 1_000_000
-SOURCE_EXTENSIONS = {
+JS_TS_EXTENSIONS = {
     ".js": "javascript", ".jsx": "javascript", ".mjs": "javascript",
     ".cjs": "javascript", ".ts": "typescript", ".tsx": "typescript",
     ".mts": "typescript", ".cts": "typescript",
 }
+SOURCE_EXTENSIONS = {**JS_TS_EXTENSIONS, ".py": "python"}
 CONFIG_NAMES = {
     "package.json", "package-lock.json", "npm-shrinkwrap.json", "yarn.lock",
     "pnpm-lock.yaml", "pnpm-workspace.yaml", "bun.lock", "bun.lockb",

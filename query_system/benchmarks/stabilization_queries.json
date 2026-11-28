@@ -694,8 +694,22 @@
     "clarify": false
   },
   {
-    "category": "unsupported_requests",
+    "category": "direct_callers",
     "question": "Who calls validate_token in legacy.py?",
+    "rows": [
+      [
+        "DIRECT_CALLERS",
+        [
+          "validate_token"
+        ]
+      ]
+    ],
+    "operations": ["graph.find_callers"],
+    "clarify": false
+  },
+  {
+    "category": "unsupported_requests",
+    "question": "Who calls validate_token in legacy.rb?",
     "rows": [
       [
         "DIRECT_CALLERS",

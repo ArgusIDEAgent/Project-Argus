@@ -57,7 +57,29 @@ Phase 5 adds an internal isolation broker qualified on a dedicated Colima VZ Lin
 
 Phase 6 adds separately confirmed environment preparation and exact-plan execution for native root-package Node tests with an empty third-party dependency set and captured npm v2/v3 lockfile. Runs require current isolation qualification and native Workspace Trust-gated review dialogs, use disposable captured bytes, and report structured historical observations. Third-party package installation remains unsupported, so P6.3 is not complete. See `safe_runner/PHASE6.md`.
 
+Phase 6 dependency completion adds the bounded registry-archive-v1 adapter: separately approved exact public npm tarball downloads with SHA-512 verification, offline sandbox extraction without lifecycle scripts, immutable retained archives and fresh dependency copies per run. Captured npm v2/v3 lockfiles must describe exact flat pure-JavaScript package trees. Unsupported ranges, private registries, native builds, optional/peer dependencies and layouts fail closed. This supersedes the empty-dependency-only limitation above. See `safe_runner/DEPENDENCY_PREPARATION.md` for the Phase 6 record and `safe_runner/PHASE8.md` for current qualification.
+
 ## 3. Non-Goals (OUT of scope)
+
+Phase 7 completion: Vitest 5.1.2/Vite 8.4.0 now have a separately pinned immutable
+toolchain, broker-owned JS-only configuration, independent JSON report handling
+and local isolation/lifecycle qualification. This supersedes the earlier Vitest
+gap below. Supported projects must match the exact framework lock graph and have
+no custom configs/plugins or additional dependencies. See `safe_runner/VITEST.md`.
+Phase 8 adds local release qualification, private summary export, retention cleanup
+and independent execution opt-in. Execution defaults off; explicitly set
+`CODEMIND_CHANGE_EXECUTION=1` to permit plan-specific reviews and launches after
+current qualification. The supported macOS ARM64 release matrix, retained gates,
+benchmarks, setup and limitations are in `safe_runner/PHASE8.md` and
+`safe_runner/release-report.json`. Broader platform/application certification is
+not claimed.
+
+Owner-approved Phase 7 extension: native Node paired baseline/current retries,
+conservative historical attribution and one reviewed literal-call temporary
+template. Exact temporary bytes are shown and hashed into execution authorization;
+developer source is never modified. Vitest is supported through its separately
+qualified pinned profile; Phase 7 is complete within the documented compatibility
+matrix. See `safe_runner/PHASE7.md` and `safe_runner/VITEST.md`.
 
 Deliberately excluded. Do not build, stub or scaffold any of these.
 
@@ -139,6 +161,10 @@ python api.py
 
 | # | Date | Change | Confirmed by |
 |---|------|--------|--------------|
+| 11 | 2026-11-27 | Phase 8 local release gates, held-out fixtures, measurements, fresh installed VSIX validation, private run-summary export and default-off execution. Correct Phase 7 redaction identity and callback classification. | Owner requested safe Phase 8 implementation and prerequisite fixes in chat |
+| 10 | 2026-11-27 | Complete Phase 7 with separately pinned and qualified Vitest toolchain/profile, static discovery, structured reports and paired attribution. Unsupported configurations fail closed; P8 untouched. | Owner requested safe completion of remaining Vitest requirements in chat |
+| 9 | 2026-11-27 | Controlled Node literal templates and paired baseline/current retries with conservative attribution; Vitest qualification remains open. | Owner requested safe Phase 7 implementation in chat |
+| 8 | 2026-11-27 | Complete P6 dependency preparation with separately authorized pinned public-registry downloads, offline bounded archive extraction and immutable dependency reuse. No general npm/scripts/native builds; P7 untouched. | Owner requested completion of remaining Phase 6 dependency requirements in chat |
 | 7 | 2026-11-27 | Exact capture/plan/profile/policy authorization, separately confirmed empty-dependency preparation and isolated existing Node tests with structured historical results. External package preparation remains unsupported. | Owner requested safe Phase 6 implementation in chat |
 | 6 | 2026-11-27 | Internal isolated runner foundation and fixed adversarial qualification in a dedicated local VM. Authenticated capability inspection only; product execution stays disabled pending Phase 6 authorization. | Owner requested Phase 5 implementation in chat |
 | 5 | 2026-11-27 | Atomic test metadata capture, static Node profiles/catalog, bounded scenario plans and review selection. Product execution remains unavailable. | Owner requested Phase 4 implementation in chat |

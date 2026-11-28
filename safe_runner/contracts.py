@@ -28,10 +28,15 @@ class CapturedFile:
 class NodeCheck:
     path: str
     structured: bool = False
+    framework: str = 'node:test'
 
     def __post_init__(self):
         if type(self.structured) is not bool:
             raise ValueError('Invalid reporter mode')
+        if self.framework not in ('node:test','vitest'):
+            raise ValueError('Unknown execution adapter')
+        if self.framework=='vitest' and PurePosixPath(self.path).suffix not in ('.js','.mjs'):
+            raise ValueError('Vitest adapter supports native ESM JS files only')
         CapturedFile(self.path, b'', sha256(b'').hexdigest())
         if PurePosixPath(self.path).suffix not in ('.js', '.mjs', '.cjs'):
             raise ValueError('Only native Node test files are supported')

@@ -278,7 +278,7 @@ class _Run:
             self.add_evidence(rows[0]["id"], "source_range", "syntax_only")
             return rows[0], [], None
         if not rows:
-            self.warnings.append("No indexed JS/TS module matches that repository-relative path")
+            self.warnings.append("No indexed module matches that repository-relative path")
             return None, [], "not_found"
         self.warnings.append("Module path is ambiguous; use its full repository-relative path")
         return None, [self.definition(row) for row in rows[:limit]], "ambiguous"

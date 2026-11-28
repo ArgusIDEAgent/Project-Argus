@@ -36,7 +36,7 @@ class TestCatalog:
         catalog_id = digest(json.dumps([ADAPTER_VERSION, snapshot.repository_id, snapshot.metadata_policy, input_identity], sort_keys=True))
         inspected = {}
         candidates = sorted((v for v in source_map.values() if test_filename(v.path)
-                             or b'node:test' in v.data), key=lambda v: v.path)
+                             or b'node:test' in v.data or b'vitest' in v.data), key=lambda v: v.path)
         omitted_files = max(0, len(candidates) - MAX_TEST_FILES)
         for source in candidates[:MAX_TEST_FILES]:
             key = (source.path, source.digest, ADAPTER_VERSION)
@@ -69,7 +69,8 @@ class TestCatalog:
                 runtime = hint.data.decode('utf-8').strip()[:200] if hint else None
             local_sources = [path for path in inspected if max((r for r in roots if r == '.' or path.startswith(r + '/')), key=lambda r: (r != '.', len(r))) == package_root]
             node = any('node:test' in inspected[path][1] for path in local_sources)
-            framework = 'node:test' if node else 'unsupported' if any(name in deps for name in ('vitest', 'jest', 'mocha', '@playwright/test')) else 'unknown'
+            vitest=any('vitest' in inspected[path][1] for path in local_sources)
+            framework = 'unsupported' if node and vitest else 'node:test' if node else 'vitest' if vitest and deps.get('vitest')=='5.1.2' else 'unsupported' if any(name in deps for name in ('vitest', 'jest', 'mocha', '@playwright/test')) else 'unknown'
             lockfiles = [metadata[prefix + name] for name in ('package-lock.json', 'npm-shrinkwrap.json', 'pnpm-lock.yaml', 'yarn.lock', 'bun.lock') if prefix + name in metadata]
             configs = [v for path, v in source_map.items() if str(PurePosixPath(path).parent) == package_root
                        and ('.config.' in PurePosixPath(path).name or PurePosixPath(path).name.startswith('test.config.'))]
@@ -80,14 +81,14 @@ class TestCatalog:
                                             [(v.path, v.digest) for v in configs], framework], sort_keys=True))
             if configs: issues.append('Executable configuration files were inventoried but not evaluated; hooks and services are unknown.')
             if package_root != '.': issues.append('Nested package detected; monorepo execution orchestration is unsupported.')
-            if framework != 'node:test': issues.append('No qualified Node test framework declaration found for this profile.')
+            if framework not in ('node:test','vitest'): issues.append('No supported single-framework Node/Vitest profile found.')
             issues += ['Execution requires a separately qualified offline sandbox and explicit authorization.',
                        'Package scripts and lifecycle hooks are untrusted metadata and are never executed.']
             profiles.append(TestProfile(profile_id=profile_id, package_root=package_root, framework=framework,
                 runtime_requirement=runtime, dependency_identity=digest(json.dumps([(v.path, v.digest) for v in lockfiles])) if lockfiles else None,
                 dependency_state='unknown' if snapshot.metadata_policy != POLICY or any(str(PurePosixPath(v.path).parent) == package_root for v in excluded_metadata) else 'lockfile_captured' if lockfiles else 'no_lockfile',
                 manifests=[source_ref(v) for v in relevant], configuration=config_refs,
-                command=['node', '--test'] if framework == 'node:test' and package_root == '.' else None,
+                command=(['node', '--test'] if framework=='node:test' else ['vitest','run']) if framework in ('node:test','vitest') and package_root=='.' else None,
                 limitations=issues))
         tests = []
         omitted = 0
@@ -103,7 +104,7 @@ class TestCatalog:
                 if len(tests) >= MAX_TESTS:
                     omitted += 1; continue
                 tests.append(DiscoveredTest(test_id=item['key'], name=item['name'], source=item['source'],
-                    framework='node:test' if 'node:test' in imports and item['enabled'] else 'unknown',
+                    framework=('node:test' if 'node:test' in imports else 'vitest' if 'vitest' in imports else 'unknown') if item['enabled'] else 'unknown',
                     profile_id=profile.profile_id, assertions=item['assertions'], imports=imports,
                     enabled=item['enabled'], limitations=item['limitations']))
         if omitted_files:

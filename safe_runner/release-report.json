@@ -1,0 +1,918 @@
+{
+  "schema_version": "change-analysis-release-v1",
+  "created_utc": "2026-11-27T17:46:24.668202+00:00",
+  "qualified_date_local": "2026-11-27",
+  "decision": "qualified_local_opt_in",
+  "phase8_complete_in_documented_scope": true,
+  "execution_default": "off; exact CODEMIND_CHANGE_EXECUTION=1 enables plan-specific review/launch only",
+  "scope": "macOS ARM64/APFS, dedicated Colima VZ no host shares, pinned Node 24.22.3 and Vitest 5.1.2/Vite 8.4.0, supported bounded root-package JS profiles",
+  "prerequisite_fixes": [
+    "Unredacted failure identity prevents redaction-collapsed comparison",
+    "Non-assertion callback errors are test_error and not attributed regressions"
+  ],
+  "implemented": [
+    "Immediate status scheduling before registration",
+    "Native destination private summary export",
+    "Retention and shutdown private-reference cleanup",
+    "Independent default-off execution",
+    "Explicit unsupported-host rejection before Docker"
+  ],
+  "gates": {
+    "citations": {
+      "passed": true,
+      "evidence": "Full capture/evidence/explanation/planner suites; native APFS source navigation and real VS Code invalid/stale/unauthorized navigation regressions"
+    },
+    "claim_boundaries": {
+      "passed": true,
+      "evidence": "Conservative assertion attribution, temporary checks, unstable retries and six held-out programs; unsupported UI explicitly could_not_verify"
+    },
+    "exact_authorization": {
+      "passed": true,
+      "evidence": "Ownership/trust/digest/expiry/source-selection race tests plus real HTTP preparation/run and paired Node/Vitest workflows"
+    },
+    "denied_access": {
+      "passed": true,
+      "evidence": "13 fixtures on each image and 19 Vitest adapter/lifecycle fixtures; no host reads/writes/shares, network, symlink escape or writable reusable dependencies"
+    },
+    "zero_tests": {
+      "passed": true,
+      "evidence": "Structured Node/Vitest parser and live skipped/zero cases"
+    },
+    "cancellation": {
+      "passed": true,
+      "grace_seconds": 5,
+      "node_elapsed_seconds": 0.94,
+      "evidence": "Persistent descendant termination, verified container absence; actual Vitest cancellation asserts cleanup before 2s trigger + 5s grace"
+    },
+    "model_disabled": {
+      "passed": true,
+      "evidence": "Real APFS capture/API all explanation modes/plan, execution reports, disabled-route success tests and installed VSIX fixture workflow"
+    },
+    "recovery": {
+      "passed": true,
+      "evidence": "Disk/memory/process exhaustion, abrupt engine exit orphan reconciliation, injected cleanup failure with explicit cleanup_failed, stale/expired launch rejection"
+    },
+    "existing_workflows": {
+      "passed": true,
+      "evidence": "Full Python indexing/chat suite, extension reconnect tests, real VS Code hybrid/presentation/navigation/rollback integration"
+    },
+    "privacy_retention_export": {
+      "passed": true,
+      "evidence": "Expiry removes jobs/plans/temporary literals/receipts/runs; export omits raw console/failures/source; ownership and native destination guards"
+    },
+    "fresh_install": {
+      "passed": true,
+      "evidence": "Actual VSIX installed in new temporary profile/extensions; real installed commands/status/explanation/plan/chat; fixture API; native APFS/API qualified separately"
+    },
+    "independent_disable": {
+      "passed": true,
+      "evidence": "Default/unset/0 deny review+launch before broker probing; successful deterministic explanation/plan/poll and chat opening preserved"
+    }
+  },
+  "regressions": {
+    "python": {
+      "passed": 770,
+      "skipped": 1,
+      "subtests_passed": 802,
+      "elapsed_seconds": 341.94,
+      "warnings": [
+        "httpx/Starlette deprecation",
+        "Local Qdrant payload indexes have no effect"
+      ],
+      "skip": "Mounted disposable APFS fixture requires explicit manual setup; native API capture passed separately"
+    },
+    "post_review_python": {
+      "passed": 38,
+      "elapsed_seconds": 34.48,
+      "scope": "Release gates, change API and authorized execution after final expiry cleanup/idempotency corrections"
+    },
+    "extension": {
+      "passed": 57,
+      "scope": "Full npm test suite including native export destination/race guards"
+    },
+    "vscode_integration": {
+      "passed": true,
+      "scope": "Real local VS Code; source navigation, validated previews, three depths, model routing/opt-in and rollback against fixtures"
+    }
+  },
+  "native_capture": {
+    "passed": true,
+    "command": ".venv/bin/python -m change_analysis.qualify_phase3 --fixture --test-plan",
+    "capture_id": "0c4c4c5c70f4438aa4dd3106ed62173b",
+    "state": "completed",
+    "modes": [
+      {
+        "mode": "simple",
+        "sections": 4,
+        "sources": 14
+      },
+      {
+        "mode": "detailed",
+        "sections": 8,
+        "sources": 14
+      },
+      {
+        "mode": "flow",
+        "sections": 6,
+        "sources": 14
+      }
+    ],
+    "source_navigation": "Captured bytes preserved after stale marking",
+    "model": "disabled_deterministic",
+    "plan": {
+      "profiles": 1,
+      "tests": 1,
+      "scenarios": 6,
+      "checks": 1,
+      "execution_available": false
+    }
+  },
+  "isolation": {
+    "node": {
+      "passed": true,
+      "created": 1795799755.050425,
+      "identity": {
+        "runtime": {
+          "ID": "bfa2c4c7-0942-4616-8d60-a448ce784aba",
+          "ServerVersion": "29.5.2",
+          "KernelVersion": "6.8.0-117-generic",
+          "Architecture": "aarch64",
+          "CgroupVersion": "2",
+          "DefaultRuntime": "runc",
+          "RuncCommit": {
+            "ID": "v1.3.5-0-g488fc13e"
+          },
+          "ContainerdCommit": {
+            "ID": "193637f7ee8ae5f5aa5248f49e7baa3e6164966e"
+          },
+          "image_id": "sha256:873f586f3794f52281bd039bf02c048a0be08fde619338f9941bad1eb6b34530",
+          "image": "docker.io/library/node@sha256:873f586f3794f52281bd039bf02c048a0be08fde619338f9941bad1eb6b34530",
+          "docker_cli_sha256": "cd9e0b149e447af504421ac7117044d8e17d695d66846a5c4df1312c417c22a3"
+        },
+        "policy_digest": "e86424f400b1f86ac4425a3157dd2b804a53fb03f9c18c69080199428d987271"
+      },
+      "record_sha256": "873e79abb92d7366f59269fabd1d9686818a54f8ac1eff916ec1aafa3e772d3e",
+      "fixtures": [
+        {
+          "fixture": "controls",
+          "passed": true,
+          "state": "completed",
+          "cleanup_complete": true,
+          "elapsed_seconds": 1.967
+        },
+        {
+          "fixture": "host_and_symlink",
+          "passed": true,
+          "state": "completed",
+          "cleanup_complete": true,
+          "elapsed_seconds": 1.309
+        },
+        {
+          "fixture": "network",
+          "passed": true,
+          "state": "completed",
+          "cleanup_complete": true,
+          "elapsed_seconds": 0.671
+        },
+        {
+          "fixture": "disk",
+          "passed": true,
+          "state": "completed",
+          "cleanup_complete": true,
+          "elapsed_seconds": 1.128
+        },
+        {
+          "fixture": "processes",
+          "passed": true,
+          "state": "completed",
+          "cleanup_complete": true,
+          "elapsed_seconds": 0.932
+        },
+        {
+          "fixture": "memory",
+          "passed": true,
+          "state": "memory_limited",
+          "cleanup_complete": true,
+          "elapsed_seconds": 1.913
+        },
+        {
+          "fixture": "cpu",
+          "passed": true,
+          "state": "completed",
+          "cleanup_complete": true,
+          "elapsed_seconds": 4.264
+        },
+        {
+          "fixture": "timeout",
+          "passed": true,
+          "state": "timed_out",
+          "cleanup_complete": true,
+          "elapsed_seconds": 13.038
+        },
+        {
+          "fixture": "output",
+          "passed": true,
+          "state": "output_limited",
+          "cleanup_complete": true,
+          "elapsed_seconds": 4.136
+        },
+        {
+          "fixture": "malicious_output",
+          "passed": true,
+          "state": "completed",
+          "cleanup_complete": true,
+          "elapsed_seconds": 0.607
+        },
+        {
+          "fixture": "cancellation_descendants",
+          "passed": true,
+          "state": "cancelled",
+          "cleanup_complete": true,
+          "elapsed_seconds": 0.94
+        },
+        {
+          "fixture": "orphan_recovery",
+          "passed": true,
+          "reconciled": 1
+        },
+        {
+          "fixture": "cleanup_failure_recovery",
+          "passed": true,
+          "reconciled": 1
+        }
+      ]
+    },
+    "vitest_boundary": {
+      "passed": true,
+      "created": 1795799971.348499,
+      "identity": {
+        "runtime": {
+          "ID": "bfa2c4c7-0942-4616-8d60-a448ce784aba",
+          "ServerVersion": "29.5.2",
+          "KernelVersion": "6.8.0-117-generic",
+          "Architecture": "aarch64",
+          "CgroupVersion": "2",
+          "DefaultRuntime": "runc",
+          "RuncCommit": {
+            "ID": "v1.3.5-0-g488fc13e"
+          },
+          "ContainerdCommit": {
+            "ID": "193637f7ee8ae5f5aa5248f49e7baa3e6164966e"
+          },
+          "image_id": "sha256:ae7a89ff2c36770f7851eb0bd0a657c590644510273eecd940daa79ade3a3f58",
+          "image": "sha256:ae7a89ff2c36770f7851eb0bd0a657c590644510273eecd940daa79ade3a3f58",
+          "docker_cli_sha256": "cd9e0b149e447af504421ac7117044d8e17d695d66846a5c4df1312c417c22a3"
+        },
+        "policy_digest": "f9a91d399b37ced66bbddc8b82601de736f159abf4b3aa7d8df15ec6cb236db9"
+      },
+      "record_sha256": "8a7a31e8da591049fa7cf327266fd55f4903d27800706442b4cabb90026101ec",
+      "fixtures": [
+        {
+          "fixture": "controls",
+          "passed": true,
+          "state": "completed",
+          "cleanup_complete": true,
+          "elapsed_seconds": 1.237
+        },
+        {
+          "fixture": "host_and_symlink",
+          "passed": true,
+          "state": "completed",
+          "cleanup_complete": true,
+          "elapsed_seconds": 1.429
+        },
+        {
+          "fixture": "network",
+          "passed": true,
+          "state": "completed",
+          "cleanup_complete": true,
+          "elapsed_seconds": 0.636
+        },
+        {
+          "fixture": "disk",
+          "passed": true,
+          "state": "completed",
+          "cleanup_complete": true,
+          "elapsed_seconds": 0.808
+        },
+        {
+          "fixture": "processes",
+          "passed": true,
+          "state": "completed",
+          "cleanup_complete": true,
+          "elapsed_seconds": 0.743
+        },
+        {
+          "fixture": "memory",
+          "passed": true,
+          "state": "memory_limited",
+          "cleanup_complete": true,
+          "elapsed_seconds": 0.83
+        },
+        {
+          "fixture": "cpu",
+          "passed": true,
+          "state": "completed",
+          "cleanup_complete": true,
+          "elapsed_seconds": 1.993
+        },
+        {
+          "fixture": "timeout",
+          "passed": true,
+          "state": "timed_out",
+          "cleanup_complete": true,
+          "elapsed_seconds": 12.718
+        },
+        {
+          "fixture": "output",
+          "passed": true,
+          "state": "output_limited",
+          "cleanup_complete": true,
+          "elapsed_seconds": 4.242
+        },
+        {
+          "fixture": "malicious_output",
+          "passed": true,
+          "state": "completed",
+          "cleanup_complete": true,
+          "elapsed_seconds": 0.652
+        },
+        {
+          "fixture": "cancellation_descendants",
+          "passed": true,
+          "state": "cancelled",
+          "cleanup_complete": true,
+          "elapsed_seconds": 0.917
+        },
+        {
+          "fixture": "orphan_recovery",
+          "passed": true,
+          "reconciled": 1
+        },
+        {
+          "fixture": "cleanup_failure_recovery",
+          "passed": true,
+          "reconciled": 1
+        }
+      ]
+    },
+    "vitest": {
+      "passed": true,
+      "created": 1795800086.3037188,
+      "identity": {
+        "runtime": {
+          "ID": "bfa2c4c7-0942-4616-8d60-a448ce784aba",
+          "ServerVersion": "29.5.2",
+          "KernelVersion": "6.8.0-117-generic",
+          "Architecture": "aarch64",
+          "CgroupVersion": "2",
+          "DefaultRuntime": "runc",
+          "RuncCommit": {
+            "ID": "v1.3.5-0-g488fc13e"
+          },
+          "ContainerdCommit": {
+            "ID": "193637f7ee8ae5f5aa5248f49e7baa3e6164966e"
+          },
+          "image_id": "sha256:ae7a89ff2c36770f7851eb0bd0a657c590644510273eecd940daa79ade3a3f58",
+          "image": "sha256:ae7a89ff2c36770f7851eb0bd0a657c590644510273eecd940daa79ade3a3f58",
+          "docker_cli_sha256": "cd9e0b149e447af504421ac7117044d8e17d695d66846a5c4df1312c417c22a3"
+        },
+        "policy_digest": "f9a91d399b37ced66bbddc8b82601de736f159abf4b3aa7d8df15ec6cb236db9"
+      },
+      "record_sha256": "b8900be24a25fb7f758acf0cb59b3031436b608e92d4d081321f9caebe2d4879",
+      "fixtures": [
+        {
+          "fixture": "passed",
+          "outcome": "passed",
+          "cleanup_complete": true
+        },
+        {
+          "fixture": "assertion",
+          "outcome": "assertion_failed",
+          "cleanup_complete": true
+        },
+        {
+          "fixture": "zero",
+          "outcome": "zero_tests",
+          "cleanup_complete": true
+        },
+        {
+          "fixture": "skipped",
+          "outcome": "zero_tests",
+          "cleanup_complete": true
+        },
+        {
+          "fixture": "setup",
+          "outcome": "setup_failed",
+          "cleanup_complete": true
+        },
+        {
+          "fixture": "test_timeout",
+          "outcome": "timed_out",
+          "cleanup_complete": true
+        },
+        {
+          "fixture": "controls",
+          "outcome": "passed",
+          "cleanup_complete": true
+        },
+        {
+          "fixture": "host_and_symlink",
+          "outcome": "passed",
+          "cleanup_complete": true
+        },
+        {
+          "fixture": "network",
+          "outcome": "passed",
+          "cleanup_complete": true
+        },
+        {
+          "fixture": "disk",
+          "outcome": "passed",
+          "cleanup_complete": true
+        },
+        {
+          "fixture": "processes",
+          "outcome": "passed",
+          "cleanup_complete": true
+        },
+        {
+          "fixture": "memory",
+          "outcome": "memory_limited",
+          "cleanup_complete": true
+        },
+        {
+          "fixture": "cpu",
+          "outcome": "passed",
+          "cleanup_complete": true
+        },
+        {
+          "fixture": "output",
+          "outcome": "output_limited",
+          "cleanup_complete": true
+        },
+        {
+          "fixture": "malicious_output",
+          "outcome": "passed",
+          "cleanup_complete": true
+        },
+        {
+          "fixture": "cancellation_descendants",
+          "outcome": "cancelled",
+          "cleanup_complete": true
+        },
+        {
+          "fixture": "product_prepare",
+          "state": "completed",
+          "outcomes": [
+            "passed"
+          ],
+          "comparison": null
+        },
+        {
+          "fixture": "product_run",
+          "state": "completed",
+          "outcomes": [
+            "assertion_failed"
+          ],
+          "comparison": null
+        },
+        {
+          "fixture": "product_compare",
+          "state": "completed",
+          "outcomes": [
+            "passed",
+            "assertion_failed",
+            "passed",
+            "assertion_failed"
+          ],
+          "comparison": {
+            "classification": "introduced",
+            "unstable": false,
+            "reason": "Repeated identical check passed on baseline and assertion-failed on captured current source under comparable environments. This does not establish coverage or intended behavior beyond that check."
+          }
+        }
+      ]
+    }
+  },
+  "phase6": {
+    "schema_version": "p6-qualification-v1",
+    "created": 1795800258.798749,
+    "identity": {
+      "runtime": {
+        "ID": "bfa2c4c7-0942-4616-8d60-a448ce784aba",
+        "ServerVersion": "29.5.2",
+        "KernelVersion": "6.8.0-117-generic",
+        "Architecture": "aarch64",
+        "CgroupVersion": "2",
+        "DefaultRuntime": "runc",
+        "RuncCommit": {
+          "ID": "v1.3.5-0-g488fc13e"
+        },
+        "ContainerdCommit": {
+          "ID": "193637f7ee8ae5f5aa5248f49e7baa3e6164966e"
+        },
+        "image_id": "sha256:873f586f3794f52281bd039bf02c048a0be08fde619338f9941bad1eb6b34530",
+        "image": "docker.io/library/node@sha256:873f586f3794f52281bd039bf02c048a0be08fde619338f9941bad1eb6b34530",
+        "docker_cli_sha256": "cd9e0b149e447af504421ac7117044d8e17d695d66846a5c4df1312c417c22a3"
+      },
+      "policy_digest": "e86424f400b1f86ac4425a3157dd2b804a53fb03f9c18c69080199428d987271"
+    },
+    "passed": true,
+    "fixtures": [
+      {
+        "fixture": "passed",
+        "outcome": "passed",
+        "executed": 1,
+        "cleanup_complete": true
+      },
+      {
+        "fixture": "zero",
+        "outcome": "zero_tests",
+        "executed": 0,
+        "cleanup_complete": true
+      },
+      {
+        "fixture": "assertion",
+        "outcome": "assertion_failed",
+        "executed": 1,
+        "cleanup_complete": true
+      },
+      {
+        "fixture": "setup",
+        "outcome": "setup_failed",
+        "executed": 0,
+        "cleanup_complete": true
+      },
+      {
+        "fixture": "skipped",
+        "outcome": "zero_tests",
+        "executed": 0,
+        "cleanup_complete": true
+      },
+      {
+        "fixture": "timeout",
+        "outcome": "timed_out",
+        "executed": 0,
+        "cleanup_complete": true
+      },
+      {
+        "fixture": "safe_archive",
+        "exit_code": 0,
+        "cleanup_complete": true
+      },
+      {
+        "fixture": "traversal",
+        "exit_code": 120,
+        "cleanup_complete": true
+      },
+      {
+        "fixture": "symlink",
+        "exit_code": 120,
+        "cleanup_complete": true
+      },
+      {
+        "fixture": "hardlink",
+        "exit_code": 120,
+        "cleanup_complete": true
+      },
+      {
+        "fixture": "install_script",
+        "exit_code": 120,
+        "cleanup_complete": true
+      },
+      {
+        "fixture": "native",
+        "exit_code": 120,
+        "cleanup_complete": true
+      },
+      {
+        "fixture": "fresh_dependency_copy_each_run",
+        "passed": true
+      },
+      {
+        "fixture": "http_prepare",
+        "outcome": "passed",
+        "executed": 1,
+        "historical_capture": true
+      },
+      {
+        "fixture": "http_run",
+        "outcome": "assertion_failed",
+        "executed": 2,
+        "historical_capture": true
+      },
+      {
+        "fixture": "save_blocks_new_authorization",
+        "status": 409
+      }
+    ],
+    "capture_qualification": "synthetic atomic marker; native APFS separately qualified",
+    "dependency_scope": "exact flat integrity-pinned public registry archives"
+  },
+  "phase7": {
+    "schema_version": "p7-node-qualification-v1",
+    "passed": true,
+    "identity": {
+      "runtime": {
+        "ID": "bfa2c4c7-0942-4616-8d60-a448ce784aba",
+        "ServerVersion": "29.5.2",
+        "KernelVersion": "6.8.0-117-generic",
+        "Architecture": "aarch64",
+        "CgroupVersion": "2",
+        "DefaultRuntime": "runc",
+        "RuncCommit": {
+          "ID": "v1.3.5-0-g488fc13e"
+        },
+        "ContainerdCommit": {
+          "ID": "193637f7ee8ae5f5aa5248f49e7baa3e6164966e"
+        },
+        "image_id": "sha256:873f586f3794f52281bd039bf02c048a0be08fde619338f9941bad1eb6b34530",
+        "image": "docker.io/library/node@sha256:873f586f3794f52281bd039bf02c048a0be08fde619338f9941bad1eb6b34530",
+        "docker_cli_sha256": "cd9e0b149e447af504421ac7117044d8e17d695d66846a5c4df1312c417c22a3"
+      },
+      "policy_digest": "e86424f400b1f86ac4425a3157dd2b804a53fb03f9c18c69080199428d987271"
+    },
+    "fixtures": [
+      {
+        "fixture": "introduced",
+        "passed": true,
+        "observations": 4,
+        "classification": {
+          "classification": "introduced",
+          "unstable": false,
+          "reason": "Repeated identical check passed on baseline and assertion-failed on captured current source under comparable environments. This does not establish coverage or intended behavior beyond that check."
+        },
+        "source_unchanged": true
+      },
+      {
+        "fixture": "pre_existing",
+        "passed": true,
+        "observations": 4,
+        "classification": {
+          "classification": "pre_existing",
+          "unstable": false,
+          "reason": "The same assertion failure was observed repeatedly on both versions."
+        },
+        "source_unchanged": true
+      },
+      {
+        "fixture": "template",
+        "passed": true,
+        "observations": 2,
+        "classification": null,
+        "source_unchanged": true
+      },
+      {
+        "fixture": "incompatible",
+        "passed": true,
+        "observations": 0,
+        "classification": {
+          "classification": "inconclusive",
+          "unstable": false,
+          "reason": "Baseline check/configuration/dependency compatibility was not established."
+        },
+        "source_unchanged": true
+      }
+    ],
+    "capture_qualification": "Synthetic atomic fixture; native APFS qualified separately",
+    "vitest_qualified": true,
+    "limitation": "No automated native editor/admin-prompt E2E; controller gates tested separately"
+  },
+  "held_out": {
+    "schema_version": "held-out-v1",
+    "passed": true,
+    "fixtures": [
+      {
+        "fixture": "broken_api_argument",
+        "passed": true,
+        "classification": "introduced",
+        "outcomes": [
+          "passed",
+          "assertion_failed",
+          "passed",
+          "assertion_failed"
+        ],
+        "coverage_claim": false
+      },
+      {
+        "fixture": "missing_authorization",
+        "passed": true,
+        "classification": "introduced",
+        "outcomes": [
+          "passed",
+          "assertion_failed",
+          "passed",
+          "assertion_failed"
+        ],
+        "coverage_claim": false
+      },
+      {
+        "fixture": "null_crash",
+        "passed": true,
+        "classification": "inconclusive",
+        "outcomes": [
+          "passed",
+          "test_error",
+          "passed",
+          "test_error"
+        ],
+        "coverage_claim": false
+      },
+      {
+        "fixture": "wrong_error_response",
+        "passed": true,
+        "classification": "introduced",
+        "outcomes": [
+          "passed",
+          "assertion_failed",
+          "passed",
+          "assertion_failed"
+        ],
+        "coverage_claim": false
+      },
+      {
+        "fixture": "retry_removed",
+        "passed": true,
+        "classification": "introduced",
+        "outcomes": [
+          "passed",
+          "assertion_failed",
+          "passed",
+          "assertion_failed"
+        ],
+        "coverage_claim": false
+      },
+      {
+        "fixture": "passing_tests_uncovered_flow",
+        "passed": true,
+        "classification": "no_failure_observed",
+        "outcomes": [
+          "passed",
+          "passed",
+          "passed",
+          "passed"
+        ],
+        "coverage_claim": false
+      },
+      {
+        "fixture": "UI_action_disconnected",
+        "status": "unsupported_not_executed",
+        "classification": "could_not_verify",
+        "reason": "Browser/UI runtime adapter absent; event-string adjacency is not a proven workflow"
+      }
+    ],
+    "scope": "Fresh independent Node programs, no developer source; UI/browser case explicitly unsupported"
+  },
+  "benchmark": {
+    "schema_version": "release-benchmark-v1",
+    "hardware": {
+      "os": "macOS-27.0-arm64-arm-64bit-Mach-O",
+      "machine": "arm64",
+      "logical_cpus": 10
+    },
+    "workload": {
+      "source_files": 5,
+      "metadata_files": 2,
+      "captured_bytes": 722,
+      "python_imports": "warm",
+      "node_compiler": "new child per analysis",
+      "model": "disabled; no embedding/LLM calls"
+    },
+    "structural_cold_ms": 586.8225829981384,
+    "structural_warm": {
+      "samples": 20,
+      "median_ms": 533.3747705008136,
+      "p95_ms": 575.3616669971962,
+      "max_ms": 608.9062500032014
+    },
+    "explanation": {
+      "samples": 20,
+      "median_ms": 0.048520498239668086,
+      "p95_ms": 0.0563749999855645,
+      "max_ms": 0.0750419931137003
+    },
+    "plan_cold_ms": 1.148959003330674,
+    "plan_cached": {
+      "samples": 20,
+      "median_ms": 0.25277100212406367,
+      "p95_ms": 0.28791600198019296,
+      "max_ms": 0.2921659979620017
+    },
+    "process_peak_rss_bytes": 58015744,
+    "child_compiler_peak_rss_bytes": 123650048,
+    "memory_scope": "Process high-water marks include imports; not incremental operation peaks or guest VM memory",
+    "disk_scope": "Disposable capture has ordinary copies; no reusable source/dependency writes; image preparation excluded",
+    "targets": {
+      "structural_warm_p95_under_5s": true,
+      "explanation_p95_under_500ms": true,
+      "cached_plan_p95_under_3s": true
+    },
+    "runtime": [
+      {
+        "adapter": "node",
+        "first_materialization_ms": 589.0,
+        "subsequent": {
+          "samples": 2,
+          "median_ms": 458.5,
+          "p95_ms": 475.0,
+          "max_ms": 475.0
+        },
+        "limits": {
+          "version": "isolation-v1",
+          "memory": 268435456,
+          "cpus_nano": 500000000,
+          "pids": 48,
+          "workspace_bytes": 67108864,
+          "output_disk_bytes": 8388608,
+          "tmp_bytes": 16777216,
+          "file_bytes": 8388608,
+          "output_bytes": 65536,
+          "seconds": 12,
+          "cancellation_grace_seconds": 5,
+          "input_files": 128,
+          "input_bytes": 4194304
+        }
+      },
+      {
+        "adapter": "vitest",
+        "first_materialization_ms": 1045.0,
+        "subsequent": {
+          "samples": 2,
+          "median_ms": 983.0,
+          "p95_ms": 1046.0,
+          "max_ms": 1046.0
+        },
+        "limits": {
+          "version": "isolation-v1",
+          "memory": 268435456,
+          "cpus_nano": 500000000,
+          "pids": 48,
+          "workspace_bytes": 67108864,
+          "output_disk_bytes": 8388608,
+          "tmp_bytes": 16777216,
+          "file_bytes": 8388608,
+          "output_bytes": 65536,
+          "seconds": 12,
+          "cancellation_grace_seconds": 5,
+          "input_files": 128,
+          "input_bytes": 4194304
+        }
+      }
+    ],
+    "cold_registry_download_ms": 596.5092909973464,
+    "cold_scope": "Empty in-memory archive cache; fixed is-number 7.0.0; DNS/HTTPS included. VM boot, image pulls/build and interactive APFS password time not benchmarked."
+  },
+  "disk": {
+    "capture_bytes": 722,
+    "images": [
+      {
+        "adapter": "node",
+        "size_bytes": 80957255
+      },
+      {
+        "adapter": "vitest",
+        "size_bytes": 96370548
+      }
+    ],
+    "enforced_tmpfs_bytes": {
+      "work": 67108864,
+      "tmp": 16777216,
+      "out": 8388608
+    },
+    "scope": "Image content sizes, not host sparse VM allocated bytes; tmpfs exhaustion fixtures passed; actual peak guest disk use not sampled"
+  },
+  "hardware_extra": {
+    "cpu": "Apple M4",
+    "host_memory_bytes": 17179869184
+  },
+  "package": {
+    "file": "codemind-extension-0.4.1.vsix",
+    "version": "0.4.1",
+    "sha256": "5b9dfc8e4b934c956dd19895ec02c14fdc6312debba26c9bfaf2bbcb51e83649",
+    "bytes": 47223,
+    "fresh_install_verified": true,
+    "normal_user_profile_modified": false,
+    "warnings": [
+      "Existing manifest has no repository field",
+      "No project LICENSE file; local package only, no Marketplace publication"
+    ]
+  },
+  "cleanup": {
+    "labeled_containers_remaining": 0,
+    "private_apfs_mounts_remaining": 0,
+    "active_runner_journal": false
+  },
+  "limitations": [
+    "Stages are qualified separately; no continuous automated editor/admin-prompt/real-repository execution E2E",
+    "Unsupported UI execution case was not run; remains could_not_verify",
+    "Only recorded pinned macOS ARM64 runtime is qualified; attestations expire in 24 hours or on identity change",
+    "Tiny 5-source/2-metadata-file 722-byte benchmark is not large-repository/LLM performance; runtime subsequent timings have only two samples",
+    "No GUI paint/VM cold boot/image build/interactive password/guest peak RSS measurement",
+    "No arbitrary tests from selected developer repositories executed",
+    "Source fixtures and test-run observations do not prove application correctness or complete coverage",
+    "No Marketplace publication, license grant or broad platform certification"
+  ],
+  "documentation": "safe_runner/PHASE8.md",
+  "privacy_handoff": "Captured bytes temporarily pass through owner-private 0700 directory/0600 file; consumed/cancelled/expired cleanup and startup orphan recovery; no secure-erasure claim"
+}

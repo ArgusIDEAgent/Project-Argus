@@ -11,7 +11,8 @@ import sqlite3
 from time import monotonic
 
 from knowledge_base.metadata import trace
-from knowledge_base.parser import FUNCTION_KINDS, LANGUAGES
+from knowledge_base.parser import FUNCTION_KINDS
+from knowledge_base.scanner import SOURCE_EXTENSIONS
 from query_system.contracts import (
     ContractError, EngineError, EngineResult, Evidence, OperationRequest, RuleFinding,
     SnapshotContext, StaleIndexError, validate_engine_result,
@@ -132,8 +133,8 @@ class _Analysis:
         return self.helper.read(sql, args)
 
     def scoped(self, path):
-        if path is not None and Path(path).suffix not in LANGUAGES:
-            raise _Outcome("unsupported", "Rule graph/signature capabilities are only indexed for JS/TS")
+        if path is not None and Path(path).suffix.lower() not in SOURCE_EXTENSIONS:
+            raise _Outcome("unsupported", "Rule graph and signature capabilities require indexed Python or JS/TS source")
 
     def merge(self, evidence):
         for identifier, previous in evidence.items():

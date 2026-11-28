@@ -247,15 +247,15 @@ class UnderstandingTests(unittest.TestCase):
         self.assertEqual(result.status, "unresolved")
         self.assertIsNone(result.entities[0].symbol_id)
 
-    def test_python_static_capability_does_not_reject_compound_discovery(self):
-        result = self.normalize("Find the code in legacy.py and show its callers")
+    def test_unsupported_file_callers_do_not_reject_compound_discovery(self):
+        result = self.normalize("Find the code in legacy.rb and show its callers")
         self.assertEqual(result.intents, ["FEATURE_DISCOVERY", "DIRECT_CALLERS"])
         self.assertEqual(result.requirements[0].support, "supported")
         self.assertEqual(result.requirements[1].support, "unsupported")
         self.assertEqual(result.status, "partial")
         python = self.normalize("Who calls validate_token in legacy.py?")
-        self.assertEqual(python.entities[0].resolution, "unsupported")
-        self.assertIsNone(python.entities[0].symbol_id)
+        self.assertEqual(python.entities[0].resolution, "resolved")
+        self.assertTrue(python.entities[0].symbol_id)
 
     def test_workflow_and_behavior_requirements_are_limitation_aware(self):
         workflow = self.normalize("Explain the login workflow")

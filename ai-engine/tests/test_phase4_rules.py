@@ -44,6 +44,7 @@ class RuleEngineTests(unittest.TestCase):
             "classes.ts": 'import {Service} from "./auth";\nexport class Child extends Service {}\nexport interface Runner {}\nexport class Worker implements Runner {}\n',
             "tests/auth.test.ts": 'import {validateToken} from "../auth";\nexport function checkToken() { return validateToken("ok"); }\n',
             "tests/login.test.ts": 'import {login} from "../login";\nexport function checkLogin() { return login("ok"); }\n',
+            "legacy.rb": 'def validate_token(token)\n  !!token\nend\n',
             "legacy.py": 'def validate_token(token):\n    return bool(token)\n',
         }
         for path, source in self.files.items():
@@ -208,15 +209,15 @@ class RuleEngineTests(unittest.TestCase):
         ambiguous, _ = self.run_rule("dependency_summary", reference="validateToken", path_target="sharedName")
         self.assertEqual(ambiguous.status, "ambiguous")
         self.assertEqual(len(self.category(ambiguous, "candidate")), 2)
-        unsupported, _ = self.run_rule("dependency_summary", module_path="auth.ts", path_target="legacy.py")
+        unsupported, _ = self.run_rule("dependency_summary", module_path="auth.ts", path_target="legacy.rb")
         self.assertEqual(unsupported.status, "partial")
         self.assertTrue(self.category(unsupported, "reverse_dependency"))
         self.assertTrue(any("requested path omitted" in warning for warning in unsupported.warnings))
 
     def test_unsupported_language_and_nonfunction_symbol_are_explicit(self):
-        result, _ = self.run_rule("function_contract", reference="validate_token", file_path="legacy.py")
+        result, _ = self.run_rule("function_contract", reference="validate_token", file_path="legacy.rb")
         self.assertEqual(result.status, "unsupported")
-        module, _ = self.run_rule("module_overview", module_path="legacy.py")
+        module, _ = self.run_rule("module_overview", module_path="legacy.rb")
         self.assertEqual(module.status, "unsupported")
         nonfunction, _ = self.run_rule("function_contract", reference="Service")
         self.assertEqual(nonfunction.status, "unsupported")

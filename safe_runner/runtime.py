@@ -3,6 +3,7 @@ import json
 import os
 from pathlib import Path
 import stat
+import platform
 import subprocess
 import sys
 
@@ -59,11 +60,12 @@ class Runtime:
         return json.loads(self.call(kind, 'inspect', identity).stdout)[0]
 
     def fingerprint(self, image):
-        if sys.platform != 'darwin':
+        if sys.platform != 'darwin' or platform.machine()!='arm64':
             raise RunnerError('Only the qualified macOS Colima VZ configuration is supported')
         info = json.loads(self.call('info', '--format', '{{json .}}').stdout)
         required = ('MemoryLimit', 'SwapLimit', 'CpuCfsQuota', 'PidsLimit')
         if (info.get('OSType') != 'linux' or info.get('Name') != 'colima-codemind-runner'
+                or info.get('Architecture') not in ('aarch64','arm64')
                 or info.get('CgroupVersion') != '2' or info.get('DefaultRuntime') != 'runc' or not all(info.get(k) for k in required)
                 or 'name=seccomp,profile=builtin' not in info.get('SecurityOptions', [])):
             raise RunnerError('Required Linux cgroup/seccomp controls unavailable')
@@ -82,7 +84,10 @@ class Runtime:
         except (OSError, subprocess.SubprocessError) as error:
             raise RunnerError('Running VM mount boundary could not be checked') from error
         node = self.inspect('image', image)
-        if image.removeprefix('docker.io/library/') not in [r.removeprefix('docker.io/library/') for r in node.get('RepoDigests', [])] or node.get('Os') != 'linux' or node.get('Architecture') != 'arm64':
+        from .vitest import image_lock
+        official = image.removeprefix('docker.io/library/') in [r.removeprefix('docker.io/library/') for r in node.get('RepoDigests', [])]
+        pinned_toolchain = image.startswith('sha256:') and image==image_lock()['image']==node['Id'] and node['Config'].get('Labels',{}).get('org.codemind.vitest')=='5.1.2'
+        if not (official or pinned_toolchain) or node.get('Os') != 'linux' or node.get('Architecture') != 'arm64':
             raise RunnerError('Pinned Linux ARM64 runner image missing or mismatched')
         if node['Config'].get('Volumes'):
             raise RunnerError('Runner image declares unexpected persistent volumes')

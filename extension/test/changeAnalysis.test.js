@@ -45,13 +45,26 @@ test('terminal shell quoting keeps command substitution literal', () => {
   assert.equal(shellQuote("a'b$(x)`z`"), "'a'\\''b$(x)`z`'");
 });
 
+test('Analyze Change acknowledges before a slow backend registration', async()=>{
+  let release;
+  const manager={registerRepository:()=>new Promise(resolve=>{release=resolve;}),changeAction:async()=>{}};
+  const controller=new ChangeAnalysisController(manager,()=>({id:'repo',rootPath:'/tmp/release-fixture'}));
+  const began=performance.now();const pending=controller.start();
+  try{
+    assert.match(panel.webview.html,/Starting change analysis/);
+    assert.ok(performance.now()-began<300,'Command-side acknowledgement target');
+    // Closing/switching epoch prevents registration from starting any capture.
+    controller.stop();release({id:'repo',rootPath:'/tmp/release-fixture'});await pending;
+  }finally{controller.dispose();handlers.pop();}
+});
+
 test('execution requires trust and an accepted native dialog; changed selection cannot submit', async () => {
   const controller = new ChangeAnalysisController({}, () => undefined);
   controller.job = {id:'job',state:'completed'}; controller.repo = {id:'repo',rootPath:'/tmp'};
   controller.plan = {plan_id:'plan',capture_id:'capture',selected_check_ids:['check'],stale_for_workspace:false};
   const review = {capture_id:'capture',plan_id:'plan',notice:'all hooks run',commands:[],limits:{},identity:{}};
-  let reviews = 0, submissions = 0;
-  controller.server = { executionReview: async () => { reviews++; return review; },
+  let reviews = 0, submissions = 0; const reviewedKinds=[];
+  controller.server = { executionReview: async (_job,_repo,kind) => { reviews++; reviewedKinds.push(kind); return review; },
     submitRun: async () => { submissions++; return {id:'run',state:'completed'}; },
     capturedRun: async () => ({id:'run',state:'completed'}),
     changeAction: async () => {} };
@@ -73,8 +86,40 @@ test('execution requires trust and an accepted native dialog; changed selection 
       };
       await controller.message({type:'execute-run'});
       assert.equal(submissions,1);
+      await controller.message({type:'compare-run'});
+      assert.equal(reviewedKinds.at(-1),'compare');
+      assert.equal(submissions,2);
+      const count=reviews; controller.changed=true;
+      await controller.message({type:'compare-run'});
+      assert.equal(reviews,count);
     } finally { vscode.window.showWarningMessage = original; }
   } finally { vscode.workspace.isTrusted = true; controller.dispose(); handlers.pop(); }
+});
+
+test('summary export uses the native destination and rejects a changed capture', async()=>{
+  const writes=[],requests=[];
+  const previousDialog=vscode.window.showSaveDialog,previousFs=vscode.workspace.fs;
+  const controller=new ChangeAnalysisController({},()=>undefined);
+  controller.job={id:'owned-job'};controller.repo={id:'owned-repo',rootPath:'/tmp/export-fixture'};controller.run={id:'owned-run'};
+  controller.server={changeAction:async()=>{},exportRun:async(...args)=>{requests.push(args);return {schema_version:'test-run-export-v1'};}};
+  vscode.workspace.fs={writeFile:async(uri,bytes)=>writes.push([uri,bytes.toString()])};
+  const destination={scheme:'file',path:'/native/chosen.json'};
+  try{
+    vscode.window.showSaveDialog=async()=>undefined;
+    await controller.message({type:'export-run',path:'/untrusted/webview/path'});
+    assert.equal(writes.length,0);
+    vscode.window.showSaveDialog=async()=>destination;
+    await controller.message({type:'export-run',path:'/untrusted/webview/path'});
+    assert.deepEqual(requests.at(-1),['owned-job','owned-repo','owned-run']);
+    assert.equal(writes[0][0],destination);
+    assert.equal(JSON.parse(writes[0][1]).schema_version,'test-run-export-v1');
+    vscode.window.showSaveDialog=async()=>{controller.epoch++;return destination;};
+    await controller.message({type:'export-run'});
+    assert.equal(writes.length,1);
+  }finally{
+    controller.run=undefined;controller.dispose();handlers.pop();
+    vscode.window.showSaveDialog=previousDialog;vscode.workspace.fs=previousFs;
+  }
 });
 
 test('controller completes, changes mode without another capture and navigates captured source after save', async () => {

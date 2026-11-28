@@ -111,12 +111,13 @@ print('persistent-cache-hit')
         legacy = self.root.parent/'old-data'; legacy.mkdir()
         marker = legacy/'vectors.sqlite3'; marker.write_bytes(b'old data stays untouched')
         self.publish(); old = self.store.active()['id']; saved = self.database().read_bytes()
-        self.file.write_text('export function broken( {\n')
-        with self.assertRaises(RuntimeError): self.publish()
+        self.file.write_text('export function validateToken() { return false; }\n')
+        with (patch.object(indexer, 'embed_texts', side_effect=RuntimeError('embedding unavailable')),
+              self.assertRaisesRegex(RuntimeError, 'embedding unavailable')):
+            self.publish()
         self.assertEqual(self.store.active()['id'], old)
         self.assertEqual(self.database().read_bytes(), saved)
         self.assertEqual(marker.read_bytes(), b'old data stays untouched')
-        self.file.write_text('export function validateToken() { return true; }\n')
         self.publish()
         self.assertTrue(self.store.view()['fresh'])
 

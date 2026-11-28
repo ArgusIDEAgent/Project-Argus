@@ -82,6 +82,7 @@ def plan_query(query):
         ('imports',rf'\b(?:imports of|dependencies of|what does)\s+{qualifier}[`\'\"]?({PATH}|{IDENTIFIER})(?:[`\'\"]?\s+import\b)?'),
         ('dependents',rf'\b(?:dependents of|(?:depends?|depend) on)\s+{qualifier}[`\'\"]?({PATH}|{IDENTIFIER})'),
     )
+    operand_start = None
     for intent,pattern in patterns:
         match = _impact_match(pattern,normalized) if intent=='impact' else re.search(pattern,normalized,re.I)
         if not match:
@@ -93,6 +94,7 @@ def plan_query(query):
         if intent=='impact' and not re.search(r'\b(?:impact|breaks?|affect(?:ed|s)?|happens|changes\s+if|if\s+(?:I|we|you)\s+(?:change|modify))\b',normalized,re.I):
             continue
         plan.intent,plan.reference = intent,match.group(1)
+        operand_start = match.start(1)
         break
     file_match = re.search(PATH,normalized,re.I)
     if file_match:
@@ -101,7 +103,7 @@ def plan_query(query):
             original = plan.file
             plan.file = plan.file[2:]
             if plan.reference==original: plan.reference=plan.file
-        if plan.intent=='impact':
+        if plan.intent == 'impact' and file_match.start() <= operand_start < file_match.end():
             plan.intent,plan.reference = 'dependents',plan.file
     module_match = re.search(r'\bmodule\s+[`\'\"]?([\w./-]+)',normalized,re.I)
     if module_match:
@@ -161,7 +163,7 @@ def fuse_rankings(rankings, *, limit=MAX_CANDIDATES):
 
 
 class HybridRetriever:
-    def __init__(self,root,repo_id,data_dir,*,exact_search,keyword_search,semantic_search,indexed_ready=True):
+    def __init__(self,root,repo_id,data_dir,*,exact_search,keyword_search,semantic_search,indexed_ready=True,graph_partial=False):
         self.root = Path(root).resolve(strict=True)
         self.repo_id = repo_id
         self.database = Path(data_dir)/repo_id/'metadata.db'
@@ -170,6 +172,7 @@ class HybridRetriever:
         self.semantic_search = semantic_search
         self.warnings = []
         self.indexed_ready = indexed_ready
+        self.graph_partial = graph_partial
 
     def _read(self,sql,args=()):
         if not self.database.is_file():
@@ -187,7 +190,7 @@ class HybridRetriever:
             'resolution':'syntax_only','confidence':1.,'revision':'latest','callers':[],'tests':[],
             'definitionKey':row.get('definitionKey') or row['id']}
 
-    def _lookup(self,reference,filters,file=''):
+    def _lookup(self,reference,filters,file='', *, structural=False):
         def restrictions(columns):
             clauses,parameters = [],[]
             for key,column in columns.items():
@@ -204,10 +207,12 @@ class HybridRetriever:
         # not hide an explicitly filtered definition later in repository order.
         scope,args = restrictions({'files':'s.relative_path','languages':'f.language','symbolTypes':'s.kind',
             'modules':"substr(f.relative_path,1,length(f.relative_path)-length(coalesce(f.extension,'')))"})
+        require_graph = """AND EXISTS (SELECT 1 FROM graph_nodes n
+            WHERE n.repository_id=s.repository_id AND n.symbol_id=s.id)""" if structural and self.graph_partial else ""
         rows = self._read(f'''SELECT s.*,f.language FROM symbols s JOIN files f
             ON f.repository_id=s.repository_id AND f.relative_path=s.relative_path
             WHERE s.repository_id=? AND (s.name=? OR s.qualified_name=? OR s.id=?)
-            {scope} ORDER BY s.relative_path,s.start_line LIMIT 100''',(self.repo_id,reference,reference,reference,*args))
+            {scope} {require_graph} ORDER BY s.relative_path,s.start_line LIMIT 100''',(self.repo_id,reference,reference,reference,*args))
         results = []
         for row in rows:
             try:
@@ -217,12 +222,18 @@ class HybridRetriever:
                 if self._matches(result,filters): results.append(result)
             except (ValueError,OSError):
                 self.warnings.append('Some exact definitions changed. Refresh the repository index.')
-        # Python has syntax-aware chunks, but no invented resolved graph symbols.
+        if require_graph:
+            return results
+        # Retain chunk-based lookup for older or syntax-incomplete Python data.
         scope,args = restrictions({'files':'x.path','languages':'x.language','symbolTypes':'x.symbol_kind','modules':'x.module'})
         contexts = self._read(f'''SELECT x.*,c.symbol_id FROM chunk_context x JOIN code_chunks c ON c.id=x.id
             JOIN index_snapshots s ON s.id=c.snapshot_id WHERE x.repo_id=? AND s.state='ready'
             AND c.symbol_id IS NULL AND x.language='python' AND x.symbol_kind IN ('function','method','class')
-            AND (x.symbol_name=? OR x.qualified_name=?) {scope} ORDER BY x.path,c.start_line LIMIT 100''',
+            AND (x.symbol_name=? OR x.qualified_name=?)
+            AND NOT EXISTS (SELECT 1 FROM symbols d JOIN symbol_sources p ON p.symbol_id=d.id
+                WHERE d.repository_id=x.repo_id AND d.relative_path=x.path
+                  AND d.qualified_name=x.qualified_name AND p.source_hash=c.source_hash)
+            {scope} ORDER BY x.path,c.start_line LIMIT 100''',
             (self.repo_id,reference,reference,*args))
         grouped = {}
         for row in contexts:
@@ -314,10 +325,11 @@ class HybridRetriever:
                 relation = 'IMPORTS' if plan.intent=='imports' else 'DEPENDS_ON' if plan.intent=='dependents' else 'CALLS'
                 reverse = plan.intent in ('callers','impact','dependents')
                 current_column,other_column = ('target_id','source_id') if reverse else ('source_id','target_id')
-                queue,visited = deque([(node[0],0,[])]),{node[0]}
+                labels = [definitions[0]['name']] if relation == 'CALLS' else []
+                queue,visited = deque([(node[0],0,[],labels)]),{node[0]}
                 examined = 0
                 while queue and len(results)<limit and examined<MAX_CANDIDATES:
-                    current,depth,chain = queue.popleft()
+                    current,depth,chain,labels = queue.popleft()
                     unknown = db.execute('''SELECT id,expression AS target,reason,resolution,
                         evidence_file AS file,evidence_line AS line FROM graph_unresolved
                         WHERE repository_id=? AND source_id=? LIMIT 10''',(self.repo_id,current)).fetchall()
@@ -355,12 +367,15 @@ class HybridRetriever:
                                 if plan.intent in ('impact','dependents') else f"Verified static {relation} relationship ({plan.intent}); distance {depth+1}") if edge['resolution']=='resolved'
                                 else 'Inferred external import specifier; not proof that the package is installed or executed',
                             'confidence':1.,'revision':'latest','callers':[],'tests':[]}
+                        path = [*labels, edge['other_name']]
+                        if relation == 'CALLS':
+                            result['graphPath'] = list(reversed(path)) if reverse else path
                         if edge['other_symbol']:
                             target = self._lookup(edge['other_symbol'],{})
                             result['graphContext'] = target[:1]
                         if self._matches(result,filters): results.append(result)
                         if plan.intent in ('impact','dependents') and depth+1<MAX_GRAPH_DEPTH:
-                            queue.append((other,depth+1,chain+[edge['id']]))
+                            queue.append((other,depth+1,chain+[edge['id']],path))
                         if len(results)>=limit: break
                 if queue or examined>=MAX_CANDIDATES or any(r.get('graphDistance')==MAX_GRAPH_DEPTH for r in results):
                     self.warnings.append('Graph traversal reached its depth/work/result bound; results may be incomplete.')
@@ -454,7 +469,8 @@ class HybridRetriever:
         if retrieval in ('auto','hybrid'):
             try:
                 structural = plan.intent in ('callers','callees','impact','imports','dependents')
-                definitions = self._lookup(plan.reference,{} if structural else filters,plan.file) if plan.reference and not plan.module else []
+                definitions = (self._lookup(plan.reference, {} if structural else filters, plan.file, structural=structural)
+                               if plan.reference and not plan.module else [])
             except sqlite3.Error:
                 definitions = []
                 self.warnings.append('Exact symbol metadata is unavailable. Refresh the repository index.')

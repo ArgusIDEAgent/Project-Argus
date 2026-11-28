@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "image": "sha256:ae7a89ff2c36770f7851eb0bd0a657c590644510273eecd940daa79ade3a3f58",
+  "base": "docker.io/library/node@sha256:873f586f3794f52281bd039bf02c048a0be08fde619338f9941bad1eb6b34530",
+  "vitest": "5.1.2",
+  "vite": "8.4.0",
+  "npm": "11.19.1",
+  "platform": "linux/arm64",
+  "package_lock_sha256": "efd6e661f2477679c4546b6bb7a1f26287f86be44521b3339d5649b7e4d1b068"
+}

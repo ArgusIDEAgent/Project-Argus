@@ -9,6 +9,8 @@ import json
 from pathlib import Path
 import sys
 import tempfile
+import os
+from unittest.mock import patch
 import time
 from types import SimpleNamespace
 
@@ -25,7 +27,7 @@ from safe_runner.contracts import CapturedFile, NodeCheck
 from safe_runner.reports import classify
 
 
-def run():
+def run(with_dependencies=False):
     broker = Broker()
     capability = broker.capability()
     if not capability['isolation_qualified']:
@@ -56,6 +58,41 @@ def run():
         (root / 'initial.js').write_text('export const initial=1;')
         git(root, 'add', '.'); git(root, 'commit', '-qm', 'initial')
         capture, analysis = prepare(root)
+        if with_dependencies:
+            from knowledge_base.test_dependency_preparation import manifest, PIN, archive
+            from safe_runner.dependencies import download
+            import threading
+            import tarfile
+            raw_test = b"const test=require('node:test'),assert=require('node:assert/strict');test('package copy',()=>assert.equal(require('fixture-pkg'),42));"
+            adversarial = [
+                ('traversal', archive([('package/../../escape',b'bad',None)])),
+                ('symlink', archive([('package/link',b'',tarfile.SYMTYPE)])),
+                ('hardlink', archive([('package/link',b'',tarfile.LNKTYPE)])),
+                ('install_script', archive(manifest_extra={'scripts':{'install':'touch /work/SHOULD_NOT_RUN'}})),
+                ('native', archive([('package/binding.node',b'bad',None)])),
+            ]
+            for name, dep in [('safe_archive',archive()), *adversarial]:
+                result = broker._run_check([CapturedFile('case.cjs',raw_test,sha256(raw_test).hexdigest())],NodeCheck('case.cjs',True),dependencies=(dep,))
+                assert result.cleanup_complete
+                assert (classify(result)['outcome']=='passed') == (name=='safe_archive'), (name,result)
+                observations.append({'fixture':name,'exit_code':result.exit_code,'cleanup_complete':True})
+                print(json.dumps(observations[-1]),flush=True)
+            archives=download([PIN],threading.Event())
+            for iteration in range(2):
+                source = b"const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs');test('immutable reusable archive',()=>{assert.equal(require('is-number')(42),true);fs.chmodSync('node_modules/is-number/index.js',0o600);fs.writeFileSync('node_modules/is-number/index.js','corrupted disposable copy');});"
+                result=broker._run_check([CapturedFile('case.cjs',source,sha256(source).hexdigest())],NodeCheck('case.cjs',True),dependencies=archives)
+                assert classify(result)['outcome']=='passed' and result.cleanup_complete, result
+            observations.append({'fixture':'fresh_dependency_copy_each_run','passed':True})
+            package, lock = manifest(); package.update(type='module',engines={'node':'>=22'})
+            (root/'package.json').write_text(json.dumps(package)); (root/'package-lock.json').write_text(json.dumps(lock))
+            with (root/'value.test.js').open('a') as file:
+                file.write("\nimport isNumber from 'is-number'; test('third-party dependency',()=>{assert.equal(isNumber(42),true)});\n")
+            from knowledge_base.test_change_evidence import synthetic_atomic
+            from change_analysis.evidence import build_change_evidence
+            from change_analysis.impact import analyze_impact
+            from change_analysis.service import ChangeAnalysis
+            capture=synthetic_atomic(root); evidence=build_change_evidence(capture)
+            analysis=ChangeAnalysis(capture.id,evidence,analyze_impact(evidence,capture))
         original = {p.relative_to(root).as_posix(): sha256(p.read_bytes()).hexdigest() for p in root.iterdir() if p.is_file()}
         rid = repository_id(root)
         def auth(x_fixture_session: str = Header(default='')):
@@ -67,7 +104,7 @@ def run():
         try:
             job = manager.jobs[manager.start(Start(repo_id=rid, idempotency_key='p6-http'))['id']]
             job.update(state='completed', snapshot=capture, analysis=analysis)
-            with TestClient(app) as client:
+            with patch.dict(os.environ,{'CODEMIND_CHANGE_EXECUTION':'1','CODEMIND_LOCAL_MODEL':''}),TestClient(app) as client:
                 prefix = '/v1/change-analyses/' + job['id']
                 assert client.post(prefix + '/execution-review', json={'repo_id': rid, 'kind': 'prepare'}).status_code == 401
                 client.headers['x-fixture-session'] = 'synthetic-fixture-only'
@@ -108,10 +145,10 @@ def run():
     report = {'schema_version': 'p6-qualification-v1', 'created': time.time(), 'identity': broker.identity(),
               'passed': True, 'fixtures': observations,
               'capture_qualification': 'synthetic atomic marker; native APFS separately qualified',
-              'dependency_scope': 'empty third-party dependency set only'}
+              'dependency_scope': 'exact flat integrity-pinned public registry archives' if with_dependencies else 'empty third-party dependency set only'}
     print(json.dumps(report, indent=2), flush=True)
     return report
 
 
 if __name__ == '__main__':
-    run()
+    run('--dependencies' in sys.argv)

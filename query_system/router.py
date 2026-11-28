@@ -4,7 +4,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from knowledge_base.parser import LANGUAGES
+from knowledge_base.scanner import SOURCE_EXTENSIONS
 from query_system.contracts import EntityCandidate, NormalizedQuery, OperationRequest, QueryEntity, SnapshotContext
 from query_system.execution_contracts import (
     ExecutionLimits, ExecutionPlan, OperationBudget, PlannedOperation, PlannedTarget, RequirementDecision,
@@ -110,8 +110,8 @@ def build_plan(query: NormalizedQuery, context: SnapshotContext, limits=None, se
                 decision.blocked_status = "not_found" if blocked.resolution == "not_found" else "unsupported" if blocked.resolution == "unsupported" else "ambiguous"
                 decision.reason = blocked.reason or "Choose a canonical target; discovery scores are not target selection"
                 continue
-            if any(entity.file_path and Path(entity.file_path).suffix not in LANGUAGES for _, entity in entities):
-                decision.blocked_status, decision.reason = "unsupported", "Graph/static rule capabilities are JS/TS only"
+            if any(entity.file_path and Path(entity.file_path).suffix.lower() not in SOURCE_EXTENSIONS for _, entity in entities):
+                decision.blocked_status, decision.reason = "unsupported", "Graph and static rule capabilities require indexed Python or JS/TS source"
                 continue
         engine, name = ROUTING_POLICY[intent]
         requests = []

@@ -1,4 +1,4 @@
-"""Phase 2: Tree-sitter syntax inventory for the Phase 1 file inventory.
+"""Python AST and JS/TS Tree-sitter syntax inventory for saved source.
 
 Definitions are symbols; syntactic uses are references with no resolved target.
 Run: python -m knowledge_base.parser --repo /absolute/path/to/repository
@@ -7,14 +7,17 @@ Run: python -m knowledge_base.parser --repo /absolute/path/to/repository
 from __future__ import annotations
 
 import argparse
+import ast
 from collections import defaultdict
 from contextlib import closing
 from dataclasses import dataclass, field
 import hashlib
+from io import BytesIO
 import json
 import os
 from pathlib import Path
 import sqlite3
+import tokenize
 from knowledge_base.database import connect
 from typing import Any
 
@@ -22,6 +25,7 @@ from tree_sitter import Language, Node, Parser
 import tree_sitter_javascript
 import tree_sitter_typescript
 
+from knowledge_base.python_syntax import PythonSyntax
 from knowledge_base.scanner import SOURCE_EXTENSIONS, scan_repository
 
 
@@ -153,6 +157,21 @@ def _export_context(node: Node) -> tuple[bool, bool]:
 def parse_source(source: bytes, *, suffix: str, repository_id: str,
                  relative_path: str) -> ParsedFile:
     """Extract syntax, with 1-based Unicode columns and half-open end positions."""
+    if suffix == ".py":
+        try:
+            encoding, _ = tokenize.detect_encoding(BytesIO(source).readline)
+            if encoding not in {"utf-8", "utf-8-sig", "ascii"} or b"\r" in source.replace(b"\r\n", b""):
+                return ParsedFile(status="partial", diagnostics=[{"kind": "unsupported_source_encoding",
+                    "detail": "Python graph evidence requires UTF-8 source with LF or CRLF line endings."}])
+            tree = ast.parse(source)
+        except SyntaxError as error:
+            return ParsedFile(status="partial", diagnostics=[{"kind": "syntax_error",
+                "detail": error.msg, "start_line": error.lineno, "start_column": error.offset}])
+        result = ParsedFile()
+        visitor = PythonSyntax(source, repository_id, relative_path, result)
+        visitor.visit(tree)
+        visitor.finish()
+        return result
     if suffix not in LANGUAGES:
         raise ValueError(f"Unsupported source extension: {suffix}")
     tree = Parser(LANGUAGES[suffix]).parse(source)
@@ -324,9 +343,10 @@ def parse_repository(repo_root: str | Path, *, data_dir: str | Path | None = Non
         _ensure_schema(db)
         with db:
             snapshot_id = begin_snapshot(db, repo_id, 'syntax', observed_at=inventory['scanned_at'], revision=inventory['git_revision'])
+        extensions = ",".join("?" for _ in SOURCE_EXTENSIONS)
         files = db.execute("SELECT relative_path, content_sha256 FROM files WHERE repository_id=? "
-                           "AND status='included' AND extension IN (?,?,?,?,?,?,?,?) "
-                           "ORDER BY relative_path", (repo_id, *LANGUAGES)).fetchall()
+                           f"AND status='included' AND extension IN ({extensions}) "
+                           "ORDER BY relative_path", (repo_id, *SOURCE_EXTENSIONS)).fetchall()
         for relative_path, expected_hash in files:
             if incremental and db.execute('''SELECT 1 FROM files f WHERE f.repository_id=?
                 AND f.relative_path=? AND f.parse_status='parsed' AND f.content_sha256=?
@@ -393,7 +413,10 @@ def parse_repository(repo_root: str | Path, *, data_dir: str | Path | None = Non
                 db.execute("UPDATE files SET parse_status=? WHERE repository_id=? AND relative_path=?",
                            (parsed.status, repo_id, relative_path))
                 publish_syntax(db, repo_id, relative_path, snapshot_id, expected_hash)
-            counts[parsed.status] += 1
+            # Python has historically allowed lexical/semantic indexing of
+            # incomplete files. Exclude their graph evidence and report coverage.
+            status = "python_partial" if suffix == ".py" and parsed.status == "partial" else parsed.status
+            counts[status] = counts.get(status, 0) + 1
             counts["symbols"] += len(parsed.symbols)
             counts["references"] += len(parsed.references)
             counts["comments"] += len(parsed.comments)

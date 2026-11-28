@@ -123,10 +123,13 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       selection: new vscode.Range(Math.max(0, source.startLine - 1), 0, Math.max(0, source.endLine - 1), 0) });
   }
 
-  function indexedLabel(rootPath: string, result: { fileCount: number; commitHash: string; dirtyFingerprint: string } | null): string {
-    if (!result) return `${path.basename(rootPath)} - scan complete`;
+  function indexedLabel(rootPath: string, result: Job['result']): string {
+    const name = path.basename(rootPath);
+    if (!result) return `${name} - scan complete - saved files only`;
     const revision = result.commitHash === 'unborn' ? 'unborn' : result.commitHash.slice(0, 7);
-    return `${path.basename(rootPath)} - ${result.fileCount} files - ${revision}${result.dirtyFingerprint === 'clean' ? '' : ' (dirty)'}`;
+    const dirty = result.dirtyFingerprint === 'clean' ? '' : ' (dirty)';
+    const coverage = result.graph?.warning || (result.semantic?.state === 'degraded' ? 'lexical search' : 'semantic search');
+    return `${name} - ${result.fileCount} files - ${revision}${dirty} - ${coverage} - saved files only`;
   }
 
   function stopWatching(): void {
@@ -203,7 +206,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       if (selectedRepository === selected && job.result) lastGitState = `${job.result.commitHash}:${job.result.branch}`;
       if (selectedRepository === selected && panel) {
         await panel.webview.postMessage({ type: 'repository',
-          text: indexedLabel(selected.rootPath, job.result) + (job.result?.semantic?.state === 'degraded' ? ' - lexical search' : ' - semantic search') + ' - saved files only' });
+          text: indexedLabel(selected.rootPath, job.result) });
         await updateDocsStatus(selected, job.result?.docs);
       }
       refreshFailures = 0;
@@ -276,12 +279,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         }
         reconnectFailures = 0;
         if (state.synchronization) {
-          const fresh = state.synchronization.fresh;
-          const status = `${fresh}:${state.synchronization.state}`;
-          if (panel && ((!fresh && lastSynchronizationStatus !== status) || (fresh && lastSynchronizationStatus?.startsWith('false:')))) {
-            void panel.webview.postMessage({ type: 'repository', text: fresh
-              ? `${path.basename(repository.rootPath)} - knowledge synchronized - saved files only`
-              : `${path.basename(repository.rootPath)} - index ${state.synchronization.state === 'failed' ? 'failed' : 'stale/updating'} - saved files only` });
+          const { fresh, state: syncState, graphWarning } = state.synchronization;
+          const status = `${fresh}:${syncState}:${graphWarning ?? ''}`;
+          if (panel && status !== lastSynchronizationStatus && (!fresh || graphWarning || lastSynchronizationStatus)) {
+            const label = fresh ? graphWarning || 'knowledge synchronized' : `index ${syncState === 'failed' ? 'failed' : 'stale/updating'}`;
+            void panel.webview.postMessage({ type: 'repository',
+              text: `${path.basename(repository.rootPath)} - ${label} - saved files only` });
           }
           lastSynchronizationStatus = status;
         }
@@ -324,8 +327,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       const job = await waitForJob(jobId, () => panel === currentPanel && version === selectionVersion);
       if (!job) return;
       if (job.state === 'failed') throw new Error(job.error || 'Repository scan failed.');
-      await currentPanel.webview.postMessage({ type: 'repository', text: indexedLabel(repository.rootPath, job.result) +
-        (job.result?.semantic?.state === 'degraded' ? ' - lexical search' : ' - semantic search') + ' - saved files only' });
+      await currentPanel.webview.postMessage({ type: 'repository', text: indexedLabel(repository.rootPath, job.result) });
       watchRepository(repository, job.result?.commitHash || 'unborn', job.result?.branch || 'HEAD');
       await updateDocsStatus(repository, job.result?.docs);
       scheduleRefresh();
@@ -918,7 +920,7 @@ export function chatHtml(): string {
         for (const [index, result] of message.results.entries()) {
           const item = document.createElement('div');
           item.className = 'code-result'; item.id = result.key;
-          const title = document.createElement('strong'); title.textContent = '[' + (index + 1) + '] ' + (result.classification ? result.classification + ': ' : '') + result.name;
+          const title = document.createElement('strong'); title.textContent = '[' + (result.citationId ?? index + 1) + '] ' + (result.classification ? result.classification + ': ' : '') + result.name;
           const location = document.createElement('div'); location.textContent = result.path ? result.path + ':' + result.startLine + ' - ' + result.endLine : result.docSectionId ? 'Documentation' : 'Commit';
           const reason = document.createElement('div'); reason.textContent = result.reason;
           if (typeof result.confidence === 'number') reason.textContent += ' Match score: ' + result.confidence.toFixed(2);
@@ -937,7 +939,9 @@ export function chatHtml(): string {
             control.disabled = !result.path;
             control.addEventListener('click', () => vscode.postMessage({ type: 'resultAction', key: result.key, action })); actions.append(control);
           }
-          item.append(title, location, reason, context, actions); messages.append(item);
+          item.append(title, location, reason);
+          if (!result.citationId || result.docSectionId) item.append(context);
+          item.append(actions); messages.append(item);
         }
         if (message.debugFooter) messages.insertAdjacentHTML('beforeend', message.debugFooter);
         messages.scrollTop = messages.scrollHeight;

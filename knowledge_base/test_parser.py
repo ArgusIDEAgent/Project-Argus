@@ -92,7 +92,7 @@ export {create as maker};
         self.assertEqual(broken.status, "partial")
         self.assertTrue(broken.diagnostics)
         with self.assertRaisesRegex(ValueError, "Unsupported"):
-            self.parse("x", ".py")
+            self.parse("x", ".rb")
 
     def test_dynamic_import_namespace_and_default_export(self):
         parsed = self.parse("""import * as api from 'pkg';

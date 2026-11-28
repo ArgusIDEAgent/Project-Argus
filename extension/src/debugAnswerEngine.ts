@@ -44,7 +44,7 @@ export function debugAnswerEngineFooter(
 }
 
 // The legacy /ask envelope reports the methods used for its returned evidence and
-// whether a local model successfully wrote the answer. It is not Phase 8 Graph RAG.
+// whether a local model selected the evidence.
 export function debugLegacyAnswerEngineFooter(reply: SearchResult): string {
   const names: Record<string, string> = {
     exact: 'Exact Source Lookup', literal: 'File Lookup', keyword: 'Keyword Search',
@@ -55,7 +55,10 @@ export function debugLegacyAnswerEngineFooter(reply: SearchResult): string {
     .filter(method => methods.has(method)).map(method => names[method]);
   if (reply.answerMode === 'static') labels.push('Static Response');
   else if (reply.answerMode === 'local-llm') labels.push('Local LLM');
-  else if (reply.answerMode === 'evidence' && reply.results.length) labels.push('Evidence Summary');
+  else if (reply.answerMode === 'evidence' && reply.results.length) {
+    labels.push('Evidence Summary');
+    if (reply.evidenceSelection === 'local-llm') labels.push('Local LLM ranking');
+  }
   return '<footer class="debug-answer-engine" aria-label="Developer answer engine attribution">Answer by: '
     + (labels.length ? labels.join(' + ') : 'Unknown') + '</footer>';
 }

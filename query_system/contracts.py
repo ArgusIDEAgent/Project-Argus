@@ -207,6 +207,7 @@ class SnapshotContext(ContractModel):
     snapshot_id: GenerationId
     ready_stage_ids: frozenset[StageSnapshotId]
     indexed_files: frozenset[str] = frozenset()
+    graph_warning: str | None = None
 
     @classmethod
     def from_pinned_view(cls, view: dict, repository_id: str) -> SnapshotContext:
@@ -229,7 +230,8 @@ class SnapshotContext(ContractModel):
             raise StaleIndexError("Pinned generation has no ready index snapshots")
         return cls(repository_id=repository_id, snapshot_id=manifest["id"],
                    ready_stage_ids=ready,
-                   indexed_files=frozenset(manifest["sources"]["files"]))
+                   indexed_files=frozenset(manifest["sources"]["files"]),
+                   graph_warning=view.get("graphWarning"))
 
     def validate_request(self, request: QueryRequest) -> None:
         if request.repository_id != self.repository_id:

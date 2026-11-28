@@ -35,6 +35,7 @@ function safeFile(file, inventory) {
 const included = (file) => safeFile(file, allowed);
 const events = [];
 const diagnostics = [];
+const dependencies = [];
 let omittedEvents = 0;
 
 const tsconfig = path.join(root, "tsconfig.json");
@@ -231,7 +232,19 @@ for (const file of [...allowed].sort()) {
   }
   for (const diagnostic of source.parseDiagnostics || []) {
     diagnostics.push({kind: "syntax_error", file: relative(file),
+      line: diagnostic.start === undefined ? null : source.getLineAndCharacterOfPosition(diagnostic.start).line + 1,
       detail: ts.flattenDiagnosticMessageText(diagnostic.messageText, " ")});
+  }
+  if (input.collectDependencies) {
+    // The graph uses these only to exclude affected files. Recovered ASTs
+    // from malformed files never supply published relationships.
+    const references = ts.preProcessFile(source.text, true, true);
+    const local = new Set(references.importedFiles.map(({fileName}) => moduleTarget(fileName, source)?.file));
+    for (const {fileName} of references.referencedFiles) {
+      const target = path.resolve(path.dirname(file), fileName);
+      if (included(target)) local.add(relative(target));
+    }
+    for (const target of local) if (target) dependencies.push([relative(file), target]);
   }
   visit(source, source);
   const moduleSymbol = checker.getSymbolAtLocation(source);
@@ -246,7 +259,7 @@ for (const file of [...allowed].sort()) {
 }
 
 const output = JSON.stringify({typescriptVersion: ts.version, events, diagnostics,
-  omittedEvents});
+  omittedEvents, ...(input.collectDependencies ? {dependencies} : {})});
 if (captured && Buffer.byteLength(output, "utf8") > 16000000) {
   process.stderr.write("Captured semantic output exceeded its byte budget\n");
   process.exitCode = 2;

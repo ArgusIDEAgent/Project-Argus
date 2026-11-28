@@ -11,7 +11,7 @@ import unicodedata
 
 from knowledge_base.identity import relative_path
 from knowledge_base.metadata import trace
-from knowledge_base.parser import LANGUAGES
+from knowledge_base.scanner import SOURCE_EXTENSIONS
 from knowledge_base.retrieval import IDENTIFIER, PATH, STOP_WORDS, plan_query
 from query_system.contracts import (
     ContractError, ConversationalReply, EditorSelection, EngineError, EntityCandidate, Evidence, IntentRequirement, NormalizedQuery,
@@ -515,8 +515,8 @@ class _Understanding:
             entity.reason = "Path is not a normalized repository-relative scope"
             return
         if entity.kind == "module":
-            if Path(name).suffix and Path(name).suffix not in LANGUAGES:
-                entity.resolution, entity.reason = "unsupported", "Resolved graph modules are JS/TS only"
+            if Path(name).suffix and Path(name).suffix.lower() not in SOURCE_EXTENSIONS:
+                entity.resolution, entity.reason = "unsupported", "Resolved graph modules require indexed Python or JS/TS source"
                 return
             node, candidates, status = self.reader.module(name, self.engine.max_candidates + 1)
             nodes = [node] if node else [self.reader.node(candidate.target_node_id) for candidate in candidates]
@@ -541,8 +541,8 @@ class _Understanding:
 
     def symbol(self, entity, selected=None):
         scope = entity.file_path or self.active_file
-        if scope and Path(scope).suffix not in LANGUAGES:
-            entity.resolution, entity.reason = "unsupported", "Canonical symbol analysis is JS/TS only; use semantic discovery for other languages"
+        if scope and Path(scope).suffix.lower() not in SOURCE_EXTENSIONS:
+            entity.resolution, entity.reason = "unsupported", "Canonical symbol analysis requires indexed Python or JS/TS source"
             return
         scopes = [scope]
         # An ambiguous textual file is not silently converted into an arbitrary scope.
@@ -580,8 +580,8 @@ class _Understanding:
         if selection and self.active_file:
             entity = QueryEntity(kind="selection", name="editor selection", file_path=self.active_file,
                                  selection=selection, origin="selection")
-            if Path(self.active_file).suffix not in LANGUAGES:
-                entity.resolution, entity.reason = "unsupported", "Selection-to-symbol resolution is JS/TS only"
+            if Path(self.active_file).suffix.lower() not in SOURCE_EXTENSIONS:
+                entity.resolution, entity.reason = "unsupported", "Selection-to-symbol resolution requires indexed Python or JS/TS source"
                 return entity
             file = QueryEntity(kind="file", name=self.active_file)
             self.file(file)
@@ -695,9 +695,9 @@ class _Understanding:
                 requirement.support = "partial"
                 requirement.required_capabilities.append("semantic.hybrid_search")
                 requirement.limitations.append("Natural-language functionality is a discovery description, not a resolved canonical symbol")
-            elif any(target.resolution == "unsupported" or target.file_path and Path(target.file_path).suffix not in LANGUAGES for target in targets):
+            elif any(target.resolution == "unsupported" or target.file_path and Path(target.file_path).suffix.lower() not in SOURCE_EXTENSIONS for target in targets):
                 requirement.support = "partial" if intent in ("FUNCTION_EXPLANATION", "WORKFLOW_EXPLANATION", "BEHAVIOR_INVESTIGATION") else "unsupported"
-                requirement.limitations.append("JS/TS graph/static analysis is unavailable for this language; semantic code discovery remains separate")
+                requirement.limitations.append("Graph analysis is unavailable for this language; semantic code discovery remains separate")
             elif not targets or any(target.resolution in ("ambiguous", "not_found", "unresolved_text") for target in targets):
                 requirement.support = "unresolved"
                 requirement.limitations.append("Resolve the textual target or choose an ambiguity candidate before future execution")

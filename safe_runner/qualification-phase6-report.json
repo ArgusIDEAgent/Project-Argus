@@ -1,6 +1,6 @@
 {
   "schema_version": "p6-qualification-v1",
-  "qualified_on": "2026-11-27",
+  "created": 1795798552.6727161,
   "identity": {
     "runtime": {
       "ID": "bfa2c4c7-0942-4616-8d60-a448ce784aba",
@@ -19,11 +19,9 @@
       "image": "docker.io/library/node@sha256:873f586f3794f52281bd039bf02c048a0be08fde619338f9941bad1eb6b34530",
       "docker_cli_sha256": "cd9e0b149e447af504421ac7117044d8e17d695d66846a5c4df1312c417c22a3"
     },
-    "policy_digest": "5d5f29323901e88023bf278a3bad87b2ffd7090c77922048599357278719be66"
+    "policy_digest": "6ff6fef7c3c94bfce0f6e05d9407a2e63be7be3005019d7475108ced864d9fce"
   },
   "passed": true,
-  "capture_qualification": "Synthetic atomic marker in disposable fixture; native APFS separately qualified",
-  "dependency_scope": "Empty third-party dependency set with captured npm lockfile only",
   "fixtures": [
     {
       "fixture": "passed",
@@ -62,18 +60,58 @@
       "cleanup_complete": true
     },
     {
+      "fixture": "safe_archive",
+      "exit_code": 0,
+      "cleanup_complete": true
+    },
+    {
+      "fixture": "traversal",
+      "exit_code": 120,
+      "cleanup_complete": true
+    },
+    {
+      "fixture": "symlink",
+      "exit_code": 120,
+      "cleanup_complete": true
+    },
+    {
+      "fixture": "hardlink",
+      "exit_code": 120,
+      "cleanup_complete": true
+    },
+    {
+      "fixture": "install_script",
+      "exit_code": 120,
+      "cleanup_complete": true
+    },
+    {
+      "fixture": "native",
+      "exit_code": 120,
+      "cleanup_complete": true
+    },
+    {
+      "fixture": "fresh_dependency_copy_each_run",
+      "passed": true
+    },
+    {
       "fixture": "http_prepare",
       "outcome": "passed",
       "executed": 1,
-      "cleanup_complete": true
+      "historical_capture": true
     },
     {
       "fixture": "http_run",
       "outcome": "assertion_failed",
-      "executed": 1,
-      "cleanup_complete": true
+      "executed": 2,
+      "historical_capture": true
+    },
+    {
+      "fixture": "save_blocks_new_authorization",
+      "status": 409
     }
   ],
-  "save_blocks_new_authorization": 409,
+  "capture_qualification": "synthetic atomic marker; native APFS separately qualified",
+  "dependency_scope": "exact flat integrity-pinned public registry archives",
+  "qualified_on": "2026-11-27",
   "no_developer_repository_plan_executed": true
 }

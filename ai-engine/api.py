@@ -54,6 +54,7 @@ from config import (
 from indexer import index_directory
 from lexical_search import search_exact_code
 from answers import answer_question
+from answer_evidence import attach_answer_context
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from knowledge_base.graph import KnowledgeGraph, build_graph
@@ -61,7 +62,7 @@ from knowledge_base.metadata import SCHEMA_VERSION, trace, validate_vector
 from knowledge_base.identity import relative_path as normalized_relative_path
 from knowledge_base.semantic import keyword_search, matches_filters
 from knowledge_base.retrieval import HybridRetriever, plan_query
-from knowledge_base.synchronization import SnapshotStore, SyncManager
+from knowledge_base.synchronization import SnapshotStore, SyncManager, graph_coverage_warning
 from query_system.query_understanding import classify_conversational_intent
 from documentation import DocumentationError, DocumentationService
 
@@ -250,12 +251,16 @@ def _run_index_job(job_id: str, repo_id: str, root_path: str, full_reindex: bool
                     index_directory=index_directory,build_graph=build_graph,full=full_reindex,
                     on_progress=lambda msg:logger.info('[job %s] %s',job_id[:8],msg))
             chunk_count = result['chunk_count']
+            graph = result['graph']
+            graph_warning = graph_coverage_warning(graph)
             job["result"] = {
                 "fileCount": result["files_indexed"] + result["files_skipped"],
                 **_git_state(root_path),
                 "semantic": {"state": "ready", "error": None, "chunkCount": chunk_count},
                 "docs": dict(_EMPTY_DOCS_STATUS),
-                "graph": {"state":"ready","statistics":result['graph']['graph'],"snapshotId":result['graph']['graph_snapshot_id']},
+                "graph": {"state":"partial" if graph_warning else "ready", "statistics":graph['graph'],
+                          "snapshotId":graph['graph_snapshot_id'], "coverage":graph.get('coverage', {}),
+                          "warning":graph_warning},
                 "metadata": {"schemaVersion": SCHEMA_VERSION, "snapshotId": result.get('snapshot_id'),
                              "activeSnapshotId":result['activeSnapshotId'],"savedFilesOnly":True},
                 "incremental": {k:result.get(k) for k in ('files_indexed','files_skipped','files_pruned','chunks_embedded','chunks_reused','unchanged')},
@@ -462,7 +467,7 @@ def live_state(repo_id: str):
                          'cacheBytes': (store.path/'cache.db').stat().st_size if (store.path/'cache.db').is_file() else 0}
     if _SYNC_MANAGER and not view['manifest']:
         view.update(fresh=False,error='Waiting for the first consistent knowledge snapshot.')
-    result['synchronization'] = {k:view[k] for k in ('snapshotId','fresh','state','error','savedFilesOnly')}
+    result['synchronization'] = {k:view[k] for k in ('snapshotId','fresh','state','error','savedFilesOnly','graphWarning')}
     if _SYNC_MANAGER: result['synchronization'].update(_SYNC_MANAGER.status(repo_id))
     return result
 
@@ -590,13 +595,21 @@ def _graph_file_pinned(file_path,repoId,view):
 
 # ── Semantic code search ─────────────────────────────────────
 
-def _enrich_graph(req, results, data_dir=None):
+def _enrich_graph(req, results, data_dir=None, *, for_answer=False):
     database = os.path.join(data_dir or DEFAULT_DATA_DIR, req.repoId, "metadata.db")
     if not os.path.isfile(database):
         return results
     try:
         with closing(KnowledgeGraph(database, req.repoId)._connection()) as db:
+            filters = req.filters.model_dump() if for_answer else {}
             for item in results:
+                if for_answer:
+                    try:
+                        attach_answer_context(db, database, req.repoId, item, filters)
+                    except (OSError, ValueError, sqlite3.Error):
+                        # Search results remain useful when an expansion is stale.
+                        pass
+                    continue
                 nodes = db.execute("""SELECT n.id, n.label FROM graph_nodes n
                     JOIN symbols s ON n.symbol_id=s.id WHERE n.repository_id=?
                     AND n.relative_path=? AND s.start_line<=? AND s.end_line>=?""",
@@ -619,13 +632,17 @@ def _enrich_graph(req, results, data_dir=None):
 @app.post("/retrieve")
 @app.post("/search/code")
 def search_code(req: SearchRequest):
+    return _search_code(req)
+
+
+def _search_code(req: SearchRequest, *, for_answer=False):
     entry = _REGISTERED_REPOS.get(req.repoId)
     if not entry: raise HTTPException(status_code=404, detail='Repository is not registered.')
     with SnapshotStore(entry['rootPath'],req.repoId,DEFAULT_DATA_DIR).pin_view() as view:
-        return _retrieve_pinned(req,view)
+        return _retrieve_pinned(req, view, for_answer=for_answer)
 
 
-def _retrieve_pinned(req,view):
+def _retrieve_pinned(req, view, *, for_answer=False):
     entry = _REGISTERED_REPOS.get(req.repoId)
     if not entry:
         raise HTTPException(status_code=404, detail="Repository is not registered.")
@@ -638,11 +655,14 @@ def _retrieve_pinned(req,view):
             request = req.model_copy(update={'query':query,'filters':SearchFilters(**filters),'limit':limit})
             return fn(request,data_dir=data_dir,collection=collection) if view['managed'] else fn(request)
         return call
-    retriever = HybridRetriever(entry['rootPath'],req.repoId,data_dir,indexed_ready=view['fresh'],
+    retriever = HybridRetriever(entry['rootPath'],req.repoId,data_dir,indexed_ready=view['fresh'],graph_partial=bool(view.get('graphWarning')),
         exact_search=lambda query,filters,limit: search_exact_code(entry['rootPath'],req.repoId,query,limit,filters=filters),
         keyword_search=channel(_keyword_search),semantic_search=channel(_semantic_search))
     result = retriever.retrieve(req.query,filters=req.filters.model_dump(),limit=req.limit,retrieval=req.retrieval)
-    if view['fresh']: result['results'] = _enrich_graph(req,result['results'],data_dir)
+    if view['fresh'] and (not for_answer or result['mode'] != 'graph'):
+        result['results'] = _enrich_graph(req, result['results'], data_dir, for_answer=for_answer)
+    if for_answer:
+        result['_answerLimit'] = req.limit
     if view['manifest'] and not SnapshotStore(entry['rootPath'],req.repoId,DEFAULT_DATA_DIR).matches(view['snapshotId']):
         result['results'] = [r for r in result['results'] if r.get('sourceOrigin')=='current_disk']
         result['uncertainty'] = []
@@ -650,8 +670,9 @@ def _retrieve_pinned(req,view):
         view.update(fresh=False,error='Saved files changed during retrieval; indexed evidence was discarded.')
     result['knowledgeSnapshotId'] = view['snapshotId']
     result['knowledgeSourceHash'] = view['manifest']['sources']['digest'] if view['manifest'] else None
-    result['synchronization'] = {k:view[k] for k in ('fresh','state','error','savedFilesOnly')}
-    if view['error']: result['warning'] = ' '.join(filter(None,(view['error'],result.get('warning'))))
+    result['synchronization'] = {k:view[k] for k in ('fresh','state','error','savedFilesOnly','graphWarning')}
+    notice = view['error'] or view.get('graphWarning')
+    if notice: result['warning'] = ' '.join(filter(None,(notice,result.get('warning'))))
     return result
 
 
@@ -811,7 +832,7 @@ def ask(req: SearchRequest):
     if static is not None:
         return {'mode':'static','results':[],'citations':[],'warning':None,'status':'success',
                 'answer':static.text,'answerMode':'static','staticCategory':static.category}
-    retrieval = search_code(req)
+    retrieval = _search_code(req, for_answer=True)
     root = _REGISTERED_REPOS[req.repoId]['rootPath']
     result = answer_question(root,req.query,retrieval)
     if retrieval.get('knowledgeSourceHash'):
@@ -824,6 +845,7 @@ def ask(req: SearchRequest):
             answer='Saved repository files changed during this answer. Synchronization is updating the index; ask again after it completes.',
             warning='Answer discarded because its knowledge snapshot is stale.')
         result['synchronization']['fresh'] = False
+        result.pop('evidenceSelection', None)
     return result
 
 

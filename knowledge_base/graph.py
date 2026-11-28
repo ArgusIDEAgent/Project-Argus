@@ -1,7 +1,7 @@
-"""Phase 3: persistent, evidence-bearing semantic graph for JS/TS repositories.
+"""Persistent, evidence-bearing graph for Python and JS/TS repositories.
 
-Tree-sitter supplies definitions and occurrence spans; the TypeScript checker
-supplies cross-file binding. Unmapped occurrences remain explicitly unresolved.
+Python uses AST bindings and JS/TS uses the TypeScript checker.
+Unmapped occurrences remain explicitly unresolved.
 """
 
 from __future__ import annotations
@@ -20,6 +20,8 @@ import subprocess
 from typing import Any
 
 from knowledge_base.parser import LANGUAGES, parse_repository
+from knowledge_base.python_graph import PythonBindings
+from knowledge_base.scanner import SOURCE_EXTENSIONS
 
 
 from knowledge_base.identity import entity_id
@@ -75,17 +77,62 @@ def _schema(db: sqlite3.Connection) -> None:
         db.execute("ALTER TABLE graph_unresolved ADD COLUMN resolution TEXT NOT NULL DEFAULT 'unresolved'")
 
 
-def _semantic_pass(root: Path, files: list[str], configs: list[str]) -> dict[str, Any]:
+def _semantic_pass(root: Path, files: list[str], configs: list[str],
+                   *, collect_dependencies: bool = False) -> dict[str, Any]:
     bridge = Path(__file__).with_name("semantic_resolver.cjs")
     process = subprocess.run(
         ["node", str(bridge)], input=json.dumps({"root": str(root), "files": files,
-                                                   "configs": configs}), text=True,
+                                                   "configs": configs, "collectDependencies": collect_dependencies}), text=True,
         capture_output=True, timeout=180, check=False,
         env={**os.environ, "NODE_OPTIONS": ""},
     )
     if process.returncode:
         raise RuntimeError("TypeScript semantic pass failed: " + process.stderr[-3000:])
     return json.loads(process.stdout)
+
+
+def _javascript_coverage(root, files, configs, syntax_issues):
+    """Derive a current graph from syntax-clean files and their safe dependencies."""
+    observed = _semantic_pass(root, files, configs, collect_dependencies=True)
+    for diagnostic in observed["diagnostics"]:
+        if diagnostic["kind"] == "missing_source":
+            raise RuntimeError("Source disappeared during graph analysis")
+        if diagnostic["kind"] == "syntax_error":
+            file = diagnostic["file"]
+            issue = syntax_issues.setdefault(file, {"path": file, "line": None, "message": None})
+            if issue["message"] is None:
+                issue.update(line=diagnostic["line"] or issue["line"], message=diagnostic["detail"])
+    if not syntax_issues:
+        return observed, set()
+
+    dependents = defaultdict(set)
+    for importer, imported in observed["dependencies"]:
+        dependents[imported].add(importer)
+    for event in observed["events"]:
+        # Cross-file bindings can reveal dependencies without an ordinary
+        # import, including references to declarations in ambient source.
+        target = (event.get("target") or {}).get("file")
+        if target and target != event["file"]:
+            dependents[target].add(event["file"])
+    excluded = set(syntax_issues)
+    pending = deque(excluded)
+    while pending:
+        for importer in dependents[pending.popleft()] - excluded:
+            excluded.add(importer)
+            pending.append(importer)
+
+    clean_files = [file for file in files if file not in excluded]
+    if not clean_files:
+        return {**observed, "events": []}, excluded
+    clean = _semantic_pass(root, clean_files, configs)
+    if any(row["kind"] in {"missing_source", "syntax_error"} for row in clean["diagnostics"]):
+        raise RuntimeError("Clean graph inputs changed during syntax recovery")
+    # Rechecking without malformed inputs keeps parser recovery out of the
+    # published graph. Removing a file must not make a new binding appear.
+    original = {json.dumps(event, sort_keys=True) for event in observed["events"]
+                if event["file"] not in excluded}
+    events = [event for event in clean["events"] if json.dumps(event, sort_keys=True) in original]
+    return {**observed, "events": events}, excluded
 
 
 def _symbol_target(symbols_by_file: dict[str, list[sqlite3.Row]],
@@ -131,8 +178,19 @@ def build_graph(repo_root: str | Path, *, data_dir: str | Path | None = None,
                                "content_sha256 FROM files WHERE repository_id=? ORDER BY relative_path",
                                (repo_id,)).fetchall()
         included = [row for row in file_rows if row["status"] == "included"]
-        source_files = [row["relative_path"] for row in included
-                        if row["extension"] in LANGUAGES and row["parse_status"] == "parsed"]
+        if inventory["parsing"]["error"]:
+            raise RuntimeError("Unable to read and parse the current graph inputs")
+        source_files = [row["relative_path"] for row in included if row["extension"] in LANGUAGES]
+        partial_files = {row["relative_path"] for row in included
+                         if row["extension"] in LANGUAGES and row["parse_status"] == "partial"}
+        syntax_issues = {file: {"path": file, "line": None, "message": None} for file in sorted(partial_files)}
+        if syntax_issues:
+            for row in db.execute("""SELECT relative_path, min(start_line) AS line FROM parse_diagnostics
+                WHERE repository_id=? AND kind='syntax_error' GROUP BY relative_path""", (repo_id,)):
+                if row["relative_path"] in syntax_issues:
+                    syntax_issues[row["relative_path"]]["line"] = row["line"]
+        python_files = {row["relative_path"] for row in included
+                        if row["extension"] == ".py" and row["parse_status"] == "parsed"}
         configs = [row["relative_path"] for row in included
                    if Path(row["relative_path"]).name.startswith("tsconfig")
                    and row["extension"] == ".json"]
@@ -141,7 +199,7 @@ def build_graph(repo_root: str | Path, *, data_dir: str | Path | None = None,
         for symbol in symbols:
             symbols_by_file[symbol["relative_path"]].append(symbol)
 
-        semantic = _semantic_pass(root, source_files, configs)
+        semantic, excluded = _javascript_coverage(root, source_files, configs, syntax_issues)
         # Refuse to publish relationships if the disk changed after scanning.
         for row in included:
             if row["content_sha256"]:
@@ -201,7 +259,8 @@ def build_graph(repo_root: str | Path, *, data_dir: str | Path | None = None,
                                     metadata={"sha256": row["content_sha256"],
                                               "kind": row["kind"], "parse_status": row["parse_status"]})
             edge(directory_nodes[parent], file_nodes[file], "CONTAINS", "resolved", "inventory", file)
-            if row["extension"] in LANGUAGES and row["parse_status"] == "parsed":
+            if (file not in excluded and row["extension"] in SOURCE_EXTENSIONS
+                    and row["parse_status"] == "parsed"):
                 module_nodes[file] = node("Module", file, file)
                 edge(file_nodes[file], module_nodes[file], "DEFINES", "resolved", "inventory", file)
 
@@ -226,8 +285,34 @@ def build_graph(repo_root: str | Path, *, data_dir: str | Path | None = None,
                      symbol["relative_path"], symbol["start_line"], symbol["start_column"],
                      symbol["start_byte"], symbol["end_byte"])
 
-        references = db.execute("SELECT relative_path, kind, start_byte, start_line, start_column, scope_symbol_id "
+        references = db.execute("SELECT relative_path, kind, expression, metadata_json, start_byte, end_byte, "
+                                "start_line, start_column, scope_symbol_id "
                                 "FROM syntax_references WHERE repository_id=?", (repo_id,)).fetchall()
+        python_bindings = PythonBindings(python_files, [symbol for symbol in symbols if symbol["relative_path"] in python_files])
+        for ref in references:
+            file = ref["relative_path"]
+            if file not in python_files:
+                continue
+            module = module_nodes[file]
+            source = symbol_nodes.get(ref["scope_symbol_id"], module)
+            position = (file, ref["start_line"], ref["start_column"], ref["start_byte"], ref["end_byte"])
+            metadata = json.loads(ref["metadata_json"])
+            if ref["kind"] == "import":
+                target = module_nodes.get(python_bindings.import_target(file, metadata))
+                if target:
+                    edge(module, target, "IMPORTS", "resolved", "python_import", *position)
+                    edge(module, target, "DEPENDS_ON", "resolved", "derived_import", *position)
+                relation = "IMPORTS"
+            else:
+                binding = metadata.get("binding")
+                target = symbol_nodes.get(python_bindings.call_target(file, binding)) if binding else None
+                if target:
+                    edge(source, target, "CALLS", "resolved", "python_call", *position)
+                relation = "CALLS"
+            if not target:
+                unresolved_ref(source, relation, ref["expression"], "python_binding_not_uniquely_indexed",
+                               file, ref["start_byte"], ref["end_byte"], ref["start_line"])
+
         ref_lookup = {(r["relative_path"], r["kind"], r["start_byte"]): r for r in references}
 
         for event in semantic["events"]:
@@ -337,7 +422,14 @@ def build_graph(repo_root: str | Path, *, data_dir: str | Path | None = None,
                  json.dumps(stats), json.dumps(semantic["diagnostics"])))
             db.execute("UPDATE repositories SET schema_version=? WHERE id=?",
                        (GRAPH_SCHEMA_VERSION, repo_id))
-    return {**inventory, "graph": stats, "semantic_diagnostics": semantic["diagnostics"],
+    coverage = {language: {status: sum(row["parse_status"] == status and
+                    SOURCE_EXTENSIONS.get(row["extension"]) == language for row in included)
+                for status in ("parsed", "partial", "error")}
+                for language in sorted(set(SOURCE_EXTENSIONS.values()))}
+    issues = [{**issue, "message": issue["message"] or "Syntax could not be parsed."}
+              for _, issue in sorted(syntax_issues.items())]
+    return {**inventory, "graph": stats, "coverage": coverage, "syntax_issues": issues,
+            "excluded_graph_files": len(excluded), "semantic_diagnostics": semantic["diagnostics"],
             "typescript_version": semantic["typescriptVersion"], "graph_snapshot_id": snapshot_id}
 
 

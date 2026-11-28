@@ -22,24 +22,28 @@ export type HybridReply = { schema_version: 'hybrid-v1'; status: string; present
     claim_operation_ids?: Record<string, string[]> }[] };
 
 type HelloResponse = { reply: string };
-export type ExecutionReview = { authorization: string; review_digest: string; kind: 'prepare' | 'run';
+export type ExecutionReview = { authorization: string; review_digest: string; kind: 'prepare' | 'run' | 'compare';
+  adapter?: string; toolchain?: Record<string,unknown> | null;
   capture_id: string; plan_id: string; selected: number; discovered: number;
   commands: string[][]; limits: Record<string, unknown>; dependency_identity: string; notice: string;
-  identity: Record<string, unknown>; preparation: Record<string, unknown> };
+  identity: Record<string, unknown>; preparation: Record<string, unknown>; comparison: unknown; paired_commands: unknown;
+  temporary_source: {source:string;source_hash:string;path:string} | null; execution_plan_id:string };
 export type CapturedRun = { id: string; state: string; kind: string; capture_id: string; plan_id: string;
   historical_capture: boolean; stale_for_workspace: boolean; selected: number; discovered: number;
-  executed: number; results: { path: string; outcome: string; console: string; executed: number;
+  executed: number; comparison_result?: {classification:string;unstable:boolean;reason:string}; results: { path: string; version?:string; attempt?:number; outcome: string; console: string; executed: number;
     cleanup_complete: boolean }[]; error: string | null; attribution: string };
 export type Repository = { id: string; rootPath: string; defaultBranch: string };
 export type Job = { id: string; state: 'queued' | 'running' | 'completed' | 'failed'; error: string | null;
   result: { fileCount: number; commitHash: string; branch: string; dirtyFingerprint: string;
     semantic?: { state: string; error: string | null; chunkCount: number };
+    graph?: { warning?: string | null };
     docs?: DocsStatus } | null };
 export type CodeResult = { entityId: string; path: string; name: string; startLine: number; endLine: number;
   reason: string; classification?: string; confidence?: number; revision: string; sourceHash: string;
   callers: { name: string }[]; tests: { name: string }[]; docSectionId?: string; docKind?: string;
-  retrievalMethods?: string[] };
-export type SearchResult = { results: CodeResult[]; mode: string; warning: string | null; queryHash?: string; answer?: string; answerMode?: string };
+  retrievalMethods?: string[]; citationId?: number };
+export type SearchResult = { results: CodeResult[]; mode: string; warning: string | null; queryHash?: string;
+  answer?: string; answerMode?: string; evidenceSelection?: string };
 export type DocsStatus = { sectionCount: number; currentCount: number; staleCount: number; affectedCount: number; generatedCount: number };
 export type DocEvidence = { entityId: string; type: string; path: string; name: string; kind: string;
   relation: string; startLine: number; endLine: number; sourceHash: string | null };
@@ -110,8 +114,11 @@ export class ServerManager implements vscode.Disposable {
     return result.reply;
   }
 
-  async executionReview(id: string, repo_id: string, kind: 'prepare' | 'run'): Promise<ExecutionReview> {
+  async executionReview(id: string, repo_id: string, kind: 'prepare' | 'run' | 'compare'): Promise<ExecutionReview> {
     return this.request('POST', `/v1/change-analyses/${encodeURIComponent(id)}/execution-review`, { repo_id, kind });
+  }
+  async temporaryCheck(id: string, repo_id: string, input?: {module_path:string;export_name:string;arguments:unknown[];expected:unknown}): Promise<unknown> {
+    return this.request('POST', `/v1/change-analyses/${encodeURIComponent(id)}/temporary-test${input ? '' : '/remove'}`, {repo_id,...input});
   }
   async submitRun(id: string, repo_id: string, review: ExecutionReview): Promise<CapturedRun> {
     return this.request('POST', `/v1/change-analyses/${encodeURIComponent(id)}/runs`, {
@@ -120,6 +127,9 @@ export class ServerManager implements vscode.Disposable {
   async capturedRun(id: string, repo_id: string, run_id: string, cancel = false): Promise<CapturedRun> {
     return this.request(cancel ? 'POST' : 'GET', `/v1/change-analyses/${encodeURIComponent(id)}/runs/${encodeURIComponent(run_id)}${cancel ? '/cancel' : '?repo_id=' + encodeURIComponent(repo_id)}`,
       cancel ? { repo_id } : undefined);
+  }
+  async exportRun(id:string,repo_id:string,run_id:string):Promise<unknown> {
+    return this.request('GET',`/v1/change-analyses/${encodeURIComponent(id)}/runs/${encodeURIComponent(run_id)}/export?repo_id=${encodeURIComponent(repo_id)}`);
   }
 
   async conversationIntent(message: string): Promise<{ handled: boolean; category: string | null; reply: string | null }> {
@@ -152,7 +162,8 @@ export class ServerManager implements vscode.Disposable {
   async liveState(id: string): Promise<{ commitHash: string; branch: string;
     storage?: { directory: string; mode: string; snapshotReadOnly: boolean; legacyDataPreserved: boolean;
       snapshotId: string | null; cacheBytes: number };
-    synchronization?: { fresh: boolean; state: string; error: string | null; savedFilesOnly: boolean } }> {
+    synchronization?: { fresh: boolean; state: string; error: string | null; savedFilesOnly: boolean;
+      graphWarning?: string | null } }> {
     return this.request('GET', `/repos/${encodeURIComponent(id)}/live-state`);
   }
 

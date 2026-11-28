@@ -1,0 +1,9 @@
+{
+  "name": "codemind-vitest-toolchain",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "vitest": "5.1.2",
+    "vite": "8.4.0"
+  }
+}

@@ -1,8 +1,8 @@
 """Session-only exact-review execution. No command or host path comes from clients.
 
-Initial preparation supports an explicitly empty third-party dependency set only.
-Package installs, external fetching, lifecycle scripts and shared writable caches
-remain unavailable. An empty dependency set is still separately authorized.
+Preparation ingests exact public-registry integrity-pinned archives after separate
+authorization; extraction runs only in the offline sandbox. No package scripts,
+native build hooks, credentials or shared writable dependency cache are supported.
 """
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict
@@ -19,6 +19,9 @@ from fastapi import HTTPException
 from .broker import Broker
 from .contracts import CapturedFile, NodeCheck, RunnerError
 from .reports import classify
+from .dependencies import VERSION, locked_packages, download
+from .comparison import environment, attribution
+from .templates import preview
 
 PREPARE_SOURCE = b"require('node:test')('pinned Node runtime',()=>{require('node:assert/strict').equal(process.versions.node.split('.')[0],'24')});"
 
@@ -38,6 +41,26 @@ class Executions:
         self.closed = False
         self.pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix='isolated-tests')
 
+    def temporary_preview(self, job_id, repo_id, module_path, export_name, arguments, expected):
+        with self.changes.lock:
+            job = self.changes.owned(job_id, repo_id)
+            if job['state'] != 'completed':
+                raise HTTPException(409, 'Analyze captured source first')
+            if job.get('plan') and any(p.framework=='vitest' for p in job['plan'].profiles):
+                raise HTTPException(422, 'Literal temporary templates are native Node only; existing Vitest checks can run/compare')
+        self.changes._freshness(job)
+        if job['stale_for_workspace']:
+            raise HTTPException(409, 'Capture is stale')
+        try:
+            result = preview(job['snapshot'], job['analysis'], module_path, export_name, arguments, expected)
+        except (ValueError, TypeError, RecursionError) as error:
+            raise HTTPException(422, str(error)) from error
+        with self.changes.lock:
+            self.changes.owned(job_id, repo_id)
+            self.invalidate(job_id)
+            job['temporary_check'] = result
+        return result
+
     def close(self):
         with self.lock:
             self.closed = True
@@ -45,6 +68,7 @@ class Executions:
             self.receipts.clear()
             for run in self.runs.values():
                 run['cancel'].set()
+            self.runs.clear()
             self.pool.shutdown(wait=False, cancel_futures=True)
 
     def invalidate(self, job_id):
@@ -81,6 +105,7 @@ class Executions:
                 raise HTTPException(409, 'Capture changed; analyze and review again')
             plan = job['plan'].model_copy(deep=True)
             snapshot = job['snapshot']
+            temporary = job.get('temporary_check')
         selected = sorted(plan.selected_check_ids)
         if not selected or len(selected) > 8:
             raise HTTPException(422, 'Select between one and eight supported checks')
@@ -89,8 +114,12 @@ class Executions:
             raise HTTPException(422, 'Unknown or unsupported check selection')
         profiles = {p.profile_id: p for p in plan.profiles}
         tests = {t.test_id: t for t in plan.tests}
-        if any(profiles[c.profile_id].package_root != '.' or profiles[c.profile_id].framework != 'node:test' for c in checks):
-            raise HTTPException(422, 'Only root-package native Node tests are supported')
+        frameworks={profiles[c.profile_id].framework for c in checks}
+        if len(frameworks)!=1 or not frameworks<= {'node:test','vitest'} or any(profiles[c.profile_id].package_root!='.' or tests[c.test_id].framework!=profiles[c.profile_id].framework for c in checks):
+            raise HTTPException(422, 'Select a single root-package supported Node or Vitest profile')
+        framework=next(iter(frameworks))
+        if framework=='vitest' and temporary:
+            raise HTTPException(422, 'Vitest temporary templates are unsupported')
         for check in checks:
             profile = profiles[check.profile_id]
             if profile.dependency_state == 'unknown':
@@ -100,6 +129,8 @@ class Executions:
                 if not re.fullmatch(r'>=\s*\d+', requirement) or int(re.search(r'\d+', requirement)[0]) > 24:
                     raise HTTPException(422, 'Captured Node requirement is unsupported by the pinned Node 24 adapter')
         files = [CapturedFile(v.path, v.data, v.digest) for v in (*snapshot.after, *snapshot.after_metadata) if v.data is not None]
+        if temporary:
+            files.append(CapturedFile(temporary['path'], temporary['source'].encode(), temporary['source_hash']))
         if len(files) > 128 or sum(len(f.data) for f in files) > 4194304:
             raise HTTPException(422, 'Capture exceeds isolated input limits: 128 files / 4 MiB')
         manifest = next((f for f in files if f.path == 'package.json'), None)
@@ -109,54 +140,73 @@ class Executions:
             package = json.loads(manifest.data)
             if not isinstance(package, dict):
                 raise ValueError('Invalid package manifest')
-            for field in ('dependencies', 'devDependencies', 'optionalDependencies', 'peerDependencies', 'workspaces', 'imports'):
-                if package.get(field):
-                    raise ValueError('Third-party dependencies, workspaces and package import maps require a separately qualified preparation adapter')
             lock = next((f for f in files if f.path == 'package-lock.json'), None)
             if lock is None:
-                raise ValueError('A captured npm package-lock.json is required, including for an empty dependency set')
-            locked = json.loads(lock.data)
-            if not isinstance(locked, dict) or locked.get('lockfileVersion') not in (2, 3) or not isinstance(locked.get('packages'), dict):
-                raise ValueError('Supported preparation requires npm lockfile version 2 or 3 with a packages map')
-            if set(locked['packages']) - {''} or locked.get('dependencies'):
-                raise ValueError('Lockfile contains third-party packages; package installation is unsupported')
-            root_package = locked['packages'].get('', {})
-            if not isinstance(root_package, dict) or any(root_package.get(field) for field in ('dependencies', 'devDependencies', 'optionalDependencies', 'peerDependencies')):
-                raise ValueError('Lockfile dependency declarations differ from the empty dependency set')
+                raise ValueError('Captured package-lock.json is required')
+            if framework=='vitest':
+                from .vitest import project
+                toolchain=project(package,json.loads(lock.data),snapshot)
+                packages=[]
+            else:
+                packages = locked_packages(package, json.loads(lock.data))
+                toolchain=None
             engine = package.get('engines', {}).get('node')
             # Initial runtime matcher is deliberately narrow and explicit.
-            if engine is not None and (not isinstance(engine, str) or not re.fullmatch(r'>=\s*(\d+)', engine) or int(re.search(r'\d+', engine)[0]) > 24):
+            if engine is not None and engine not in ('24','v24','24.22.3','v24.22.3') and (not isinstance(engine, str) or not re.fullmatch(r'>=\s*(\d+)', engine) or int(re.search(r'\d+', engine)[0]) > 24):
                 raise ValueError('Supported Node requirement is >=N with N <=24; pinned runtime is Node 24')
+        except OSError as error:
+            raise HTTPException(503, 'Pinned runner toolchain metadata is unavailable; prepare and qualify the installation') from error
         except (ValueError, TypeError, AttributeError) as error:
             raise HTTPException(422, str(error)) from error
         paths = sorted({tests[c.test_id].source.path for c in checks})
+        if temporary:
+            paths.append(temporary['path'])
+        comparison = environment(snapshot, paths)
+        if temporary:
+            comparison['differences'].append('Temporary expectation is user-supplied, not baseline regression evidence')
+            comparison['comparable'] = False
+        if kind == 'compare' and (len(paths) != 1 or temporary):
+            raise HTTPException(422, 'Paired retries support one unchanged existing test file; remove temporary checks and select one file')
         if len(paths) > 4:
             raise HTTPException(422, 'At most four captured test files may run per authorization')
         for check in checks:
-            if check.argv != ['node', '--test', '--', tests[check.test_id].source.path]:
+            if check.argv != [*(['node','--test'] if framework=='node:test' else ['vitest','run']), '--', tests[check.test_id].source.path]:
                 raise HTTPException(422, 'Command differs from the supported adapter')
-        broker = self.broker_factory()
+            if framework=='vitest' and (not re.fullmatch(r'[a-zA-Z0-9_./-]+',tests[check.test_id].source.path) or not tests[check.test_id].source.path.endswith(('.js','.mjs'))):
+                raise HTTPException(422, 'Vitest supports only literal paths without glob/control characters')
+        try:
+            broker = self.broker_factory(adapter='vitest') if framework=='vitest' else self.broker_factory()
+        except (OSError,ValueError,RunnerError) as error:
+            raise HTTPException(503,'Runner installation unavailable: '+str(error)[:200]) from error
         capability = broker.capability(during_owned_launch=during_owned_launch)
         if not capability['isolation_qualified']:
             raise HTTPException(503, capability['reason'])
         identity = capability['identity']
         descriptor = {'schema_version': 'test-run-review-v1', 'kind': kind, 'repository_id': repo_id,
+            'adapter':framework,'toolchain':toolchain,
             'capture_id': snapshot.id, 'capture_digest': snapshot.digest, 'plan_id': plan.plan_id,
             'plan_digest': digest(plan.model_dump()), 'selected_check_ids': selected,
+            'execution_plan_id': digest({'plan':plan.model_dump(),'temporary':temporary}),
             'profile_ids': sorted({c.profile_id for c in checks}),
-            'dependency_identity': digest({'packages': [], 'manifests': [(f.path, f.digest) for f in files if f.path.endswith('.json')]}),
-            'commands': [['node', '--test', '--test-reporter=<owned structured reporter>', '--', p] for p in paths],
+            'dependency_identity': digest({'packages': packages, 'toolchain':toolchain,'installer': VERSION, 'manifests': [(f.path, f.digest) for f in files if f.path.endswith('.json')]}),
+            'commands': [(['node', '--test', '--test-reporter=<owned structured reporter>', '--', p] if framework=='node:test' else ['node','/opt/vitest/node_modules/vitest/vitest.mjs','run','--config','/out/codemind-vitest.config.mjs','--configLoader','native']) for p in paths],
             'preparation': {'argv': ['node', '--test', '--test-reporter=<owned structured reporter>', '--', 'prepare.cjs'],
-                'adapter_source_hash': sha256(PREPARE_SOURCE).hexdigest(), 'packages': [], 'lifecycle_scripts': False, 'network': 'none'},
-            'temporary_test_hashes': [], 'identity': identity, 'limits': asdict(broker.policy),
+                'adapter_source_hash': sha256(PREPARE_SOURCE).hexdigest(), 'packages': packages, 'installer': VERSION,'toolchain':toolchain,
+                'vitest_configuration': {'config':'broker-owned','environment':'node','pool':'forks','maxWorkers':1,'fileParallelism':False,'plugins':[],'browser':False,'coverage':False,'envDir':False} if framework=='vitest' else None,
+                'lifecycle_scripts': False, 'network': 'Broker GET-only HTTPS public registry.npmjs.org; SHA-512 required; sandbox offline',
+                'download_limits': {'packages': 8, 'per_archive_bytes': 262144, 'total_bytes': 1048576, 'seconds': 15}},
+            'temporary_test_hashes': [temporary['source_hash']] if temporary else [],
+            'temporary_source': temporary, 'comparison': comparison,
+            'paired_commands': [{'version': side, 'attempt': attempt, 'path': path} for attempt in (1,2) for side in ('before','after') for path in paths],
+            'identity': identity, 'limits': asdict(broker.policy),
             'materialization_digest': digest([(f.path, f.digest) for f in files]),
             'selected': len(selected), 'discovered': len(plan.tests), 'test_files': paths,
-            'notice': 'All tests and hooks in each selected file may execute. No network, package installation or lifecycle scripts. Results describe this capture; change attribution is unverified.'}
+            'notice': 'Preparation may download only the listed integrity-pinned public npm tarballs. Archives are unpacked in the offline sandbox; no lifecycle scripts or native builds. Run executes all tests/hooks in selected captured files with fresh dependency copies and no network. Results are historical, not proven regressions.'}
         descriptor['review_digest'] = digest(descriptor)
         return job, plan, files, broker, descriptor
 
     def review(self, job_id, repo_id, kind):
-        if kind not in ('prepare', 'run'):
+        if kind not in ('prepare', 'run', 'compare'):
             raise HTTPException(422, 'Unknown execution action')
         _, _, _, _, descriptor = self._context(job_id, repo_id, kind)
         with self.lock:
@@ -166,7 +216,7 @@ class Executions:
             self.tickets = {k: v for k, v in self.tickets.items() if now - v['created'] < 60}
             if len(self.tickets) >= 8:
                 raise HTTPException(429, 'Review capacity reached; wait for expiry')
-            if kind == 'run':
+            if kind in ('run','compare'):
                 receipt = self.receipts.get(job_id)
                 if receipt is None or now - receipt['created'] > 600 or receipt['binding'] != self._binding(descriptor):
                     raise HTTPException(409, 'Authorize and complete isolated preparation for this exact selection first')
@@ -217,32 +267,61 @@ class Executions:
                 context = self._context(run['job'], run['repo'], ticket['kind'], during_owned_launch)
                 if context[-1] != ticket['descriptor']:
                     raise RunnerError('Source, selection, policy or runtime changed; review again')
-                if ticket['kind'] == 'run':
+                if ticket['kind'] in ('run','compare'):
                     with self.lock:
                         receipt = self.receipts.get(run['job'])
                         if not receipt or time.monotonic() - receipt['created'] > 600 or receipt['binding'] != self._binding(ticket['descriptor']):
                             raise RunnerError('Preparation expired or changed')
                 return context
             _, plan, files, broker, descriptor = validate()
+            framework=descriptor['adapter']
+            def observe(result,path):
+                if framework=='vitest':
+                    from .vitest_reports import classify as vitest_classify
+                    return vitest_classify(result,path)
+                return classify(result)
             with self.lock:
                 run['state'] = 'running'
             if ticket['kind'] == 'prepare':
+                archives = download(descriptor['preparation']['packages'], run['cancel'])
+                if sum(len(f.data) for f in files) + sum(len(a.data) for a in archives) > broker.policy.input_bytes:
+                    raise RunnerError('Combined capture and dependencies exceed the materialization byte limit')
+                validate()
                 # Only trusted adapter bytes execute in preparation. Captured
                 # package scripts and configuration are never evaluated.
                 raw = PREPARE_SOURCE
                 result = broker._run_check([CapturedFile('prepare.cjs', raw, sha256(raw).hexdigest())],
-                    NodeCheck('prepare.cjs', True), run['cancel'], lambda: validate(True))
+                    NodeCheck('prepare.cjs', True), run['cancel'], lambda: validate(True),
+                    **({'dependencies': archives} if archives else {}))
                 observation = classify(result)
                 run['results'].append({'path': 'adapter preparation', **observation})
                 if observation['outcome'] == 'passed':
                     validate()
                     with self.lock:
-                        self.receipts[run['job']] = {'created': time.monotonic(), 'binding': self._binding(descriptor)}
+                        self.receipts[run['job']] = {'created': time.monotonic(), 'binding': self._binding(descriptor), 'archives': archives}
+            elif ticket['kind'] == 'compare':
+                # Never replace current checks with changed baseline test bytes.
+                # Incompatible environments produce no paired execution/claim.
+                if descriptor['comparison']['comparable']:
+                    before_files = [CapturedFile(v.path,v.data,v.digest) for v in (*run_snapshot(self.changes,run).before,*run_snapshot(self.changes,run).before_metadata) if v.data is not None]
+                    with self.lock:
+                        archives = self.receipts[run['job']]['archives']
+                    for operation in descriptor['paired_commands']:
+                        validate()
+                        materialization = before_files if operation['version']=='before' else files
+                        result = broker._run_check(materialization,NodeCheck(operation['path'],True,framework),run['cancel'],lambda:validate(True),**({'dependencies':archives} if archives else {}))
+                        run['results'].append({**operation, **observe(result,operation['path'])})
+                        if not result.cleanup_complete or run['cancel'].is_set():
+                            break
+                run['comparison_result'] = attribution(run['results'],descriptor['comparison']['comparable'])
             else:
                 for path in descriptor['test_files']:
                     validate()
-                    result = broker._run_check(files, NodeCheck(path, True), run['cancel'], lambda: validate(True))
-                    run['results'].append({'path': path, **classify(result)})
+                    with self.lock:
+                        archives = self.receipts[run['job']]['archives']
+                    result = broker._run_check(files, NodeCheck(path, True,framework), run['cancel'], lambda: validate(True),
+                        **({'dependencies': archives} if archives else {}))
+                    run['results'].append({'path': path, **observe(result,path)})
                     if not result.cleanup_complete or run['cancel'].is_set():
                         break
             with self.lock:
@@ -269,9 +348,27 @@ class Executions:
     def view(self, run):
         descriptor = run['ticket']['descriptor']
         return {'id': run['id'], 'state': run['state'], 'kind': run['ticket']['kind'],
+            'execution_plan_id': descriptor['execution_plan_id'], 'temporary_checks': len(descriptor['temporary_test_hashes']),
             'capture_id': descriptor['capture_id'], 'plan_id': descriptor['plan_id'],
             'review_digest': descriptor['review_digest'], 'historical_capture': True,
             'stale_for_workspace': run['stale_for_workspace'], 'selected': descriptor['selected'],
             'discovered': descriptor['discovered'], 'executed': sum(r['executed'] for r in run['results']),
             'results': list(run['results']), 'error': run['error'],
-            'attribution': 'Not compared with baseline; observed failures are not proven regressions.'}
+            'comparison': descriptor['comparison'], 'comparison_result': run.get('comparison_result'),
+            'attribution': run.get('comparison_result', {}).get('reason','Not compared with baseline; observed failures are not proven regressions. Temporary-check failures do not establish a defect.')}
+
+    def export(self,job_id,repo_id,run_id):
+        """Allowlisted summary only: no console, source, expected literals or errors."""
+        from .artifacts import sanitize
+        run=self.view(self.owned(job_id,repo_id,run_id))
+        return {'schema_version':'test-run-export-v1',
+            **{k:run[k] for k in ('id','state','kind','capture_id','plan_id','execution_plan_id','review_digest','historical_capture','stale_for_workspace','selected','discovered','executed')},
+            'results':[{**{k:r.get(k) for k in ('version','attempt','outcome','executed','passed','failed','skipped','todo','cancelled','cleanup_complete','termination','exit_code','elapsed_seconds')},
+                        'path':sanitize(r.get('path','').encode())} for r in run['results']],
+            'comparison_classification':(run.get('comparison_result') or {}).get('classification','inconclusive'),
+            'privacy':'Console, failure messages, temporary source, literals, tokens, package URLs and local roots are omitted. Relative source paths and opaque capture/plan identities remain private project metadata.'}
+
+
+def run_snapshot(changes, run):
+    with changes.lock:
+        return changes.owned(run['job'],run['repo'])['snapshot']

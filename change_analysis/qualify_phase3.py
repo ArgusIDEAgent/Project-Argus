@@ -17,18 +17,33 @@ def main():
     import argparse
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--test-plan', action='store_true')
+    parser.add_argument('--fixture', action='store_true',help='Use a disposable small Git repository for native release qualification')
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
+    fixture=None
+    if args.fixture:
+        fixture=Path(tempfile.mkdtemp(prefix='cm-native-release-')).resolve()
+        for values in (['init','-q'],['config','user.name','CodeMind qualification'],['config','user.email','fixture@example.invalid']):
+            subprocess.run(['git',*values],cwd=fixture,check=True)
+        (fixture/'a.js').write_text('export function value(){return 1;}\n')
+        (fixture/'value.test.js').write_text("import test from 'node:test';import assert from 'node:assert/strict';import {value} from './a.js';test('value',()=>assert.equal(value(),1));\n")
+        (fixture/'package.json').write_text('{"type":"module","engines":{"node":">=22"}}')
+        (fixture/'package-lock.json').write_text('{"lockfileVersion":3,"packages":{"":{}}}')
+        subprocess.run(['git','add','.'],cwd=fixture,check=True)
+        subprocess.run(['git','commit','-qm','qualification baseline'],cwd=fixture,check=True)
+        (fixture/'a.js').write_text('export function value(){return 2;}\n')
     sys.path.insert(0, str(root / 'ai-engine'))
     import api
     from fastapi.testclient import TestClient
     from knowledge_base.identity import repository_id
-    rid = repository_id(root)
-    api._REGISTERED_REPOS[rid] = {'rootPath': str(root)}
+    selected=fixture or root
+    rid = repository_id(selected)
+    api._REGISTERED_REPOS[rid] = {'rootPath': str(selected)}
     api._SESSION_TOKEN = secrets.token_hex(32)
     headers = {'x-codemind-session': api._SESSION_TOKEN}
     client = TestClient(api.app, base_url='http://127.0.0.1')
     launch = None
+    job=None
     try:
         reply = client.post('/v1/change-analyses', json={'repo_id': rid, 'idempotency_key': secrets.token_hex(16)}, headers=headers)
         reply.raise_for_status()
@@ -83,6 +98,9 @@ def main():
         api._CHANGE_JOBS.close()
         if launch:
             launch.unlink(missing_ok=True)
+        if fixture and job and job.get('state')=='completed':
+            import shutil
+            shutil.rmtree(fixture)
         client.close()
 
 

@@ -133,7 +133,7 @@ class Phase6Tests(unittest.TestCase):
         self.assertEqual(result['results'],[])
         py=self.search('who calls memoize_result?')
         self.assertEqual(py['status'],'not_found')
-        self.assertIn('unavailable',py['warning'])
+        self.assertIn('No verified static relationships',py['warning'])
 
     def test_deleted_stale_and_failed_snapshots_are_rejected(self):
         (self.root/'auth.ts').write_text('export const removed = true;\n')
@@ -146,10 +146,10 @@ class Phase6Tests(unittest.TestCase):
             with db: db.execute("UPDATE index_snapshots SET state='failed' WHERE stage='semantic'")
         self.assertEqual(self.search('Where are expensive computed results cached?',retrieval='hybrid',filters={'languages':['python']})['results'],[])
 
-    def test_python_exact_chunks_keep_null_canonical_symbol_id(self):
+    def test_python_exact_lookup_uses_canonical_ast_definition(self):
         result=self.search('memoize_result')
         self.assertEqual(result['results'][0]['path'],'cache.py')
-        self.assertIsNone(result['results'][0]['symbol_id'])
+        self.assertEqual(result['results'][0]['symbol_id'], result['results'][0]['entityId'])
         self.assertEqual(result['results'][0]['resolution'],'syntax_only')
 
     def test_cross_language_names_are_ambiguous_and_language_filter_resolves(self):

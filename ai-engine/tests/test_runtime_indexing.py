@@ -96,19 +96,81 @@ class RuntimeIndexingTests(unittest.TestCase):
             indexer.index_directory(str(self.root), data_dir=str(self.root / "unsafe"))
         self.assertFalse((self.root / "unsafe").exists())
 
-    def test_partial_parser_does_not_replace_valid_generation_and_retry_recovers(self):
-        self.publish(); old = self.store.active(); old_db = self.store.data_for(old) / self.repo / "metadata.db"
-        saved = old_db.read_bytes()
-        self.file.write_text("export function login( {\n")
-        with self.assertRaisesRegex(RuntimeError, "pars"):
+    def test_partial_ts_graph_keeps_unaffected_callers_and_impact_until_repair(self):
+        from fastapi.testclient import TestClient
+
+        (self.root / "routes.ts").write_text(
+            'import { login } from "./auth";\nexport function requireSession() { return login(); }\n')
+        (self.root / "entry.ts").write_text(
+            'import { requireSession } from "./routes";\nexport function entry() { return requireSession(); }\n')
+        broken = self.root / "unfinished.ts"
+        valid = 'import { login } from "./auth";\nexport function unfinished() { return login(); }\n'
+        broken.write_text(valid)
+        (self.root / "bridge.ts").write_text('export { unfinished } from "./unfinished";\n')
+        (self.root / "consumer.ts").write_text(
+            'import { unfinished } from "./bridge";\nimport { login } from "./auth";\n'
+            'export function consumer() { return unfinished() && login(); }\n')
+        self.publish()
+        before = self.store.active()
+        before_db = self.store.data_for(before) / self.repo / "metadata.db"
+        saved = before_db.read_bytes()
+
+        with (patch.dict("os.environ", {"CODEMIND_AUTO_SYNC": "0", "CODEMIND_ENABLE_HYBRID": "1"}),
+              patch("answers.urlopen", side_effect=AssertionError("Verified calls should be deterministic")),
+              TestClient(api.app, base_url="http://127.0.0.1") as http):
+            headers = {"x-codemind-session": api._SESSION_TOKEN}
+
+            def ask(question):
+                reply = http.post("/ask", headers=headers, json={"repoId": self.repo, "query": question})
+                self.assertEqual(reply.status_code, 200, reply.text)
+                return reply.json()
+
+            question = "What happens if I modify login?"
+            complete = {result["name"] for result in ask(question)["results"]}
+            self.assertEqual(complete, {"requireSession", "entry", "unfinished", "consumer"})
+
+            broken.write_text(valid + 'export const missing = ;\n')
+            self.assertFalse(self.store.view()["fresh"])
+            with patch("api._JOBS", {}):
+                queued = http.post(f"/repos/{self.repo}/refresh", headers=headers).json()
+                job = http.get(f"/jobs/{queued['jobId']}", headers=headers).json()
+                self.assertEqual(job["state"], "completed")
+                self.assertEqual(job["result"]["graph"]["state"], "partial")
+            partial = self.store.active()
+            self.assertNotEqual(partial["id"], before["id"])
+            self.assertEqual(before_db.read_bytes(), saved)
+            self.assertEqual(partial["result"]["graph"]["excluded_graph_files"], 3)
+            synchronization = http.get(f"/repos/{self.repo}/live-state", headers=headers).json()["synchronization"]
+            self.assertTrue(synchronization["fresh"])
+            self.assertEqual(synchronization["state"], "partial")
+            self.assertIn("unfinished.ts:3", synchronization["graphWarning"])
+            with patch("knowledge_base.graph._semantic_pass", side_effect=AssertionError("Unchanged partial graph")):
+                self.assertTrue(self.publish()["unchanged"])
+
+            callers = ask("Who calls login?")
+            self.assertEqual([(row["path"], row["startLine"]) for row in callers["citations"]], [("routes.ts", 2)])
+            impact = ask(question)
+            self.assertIn("entry → requireSession → login", impact["answer"])
+            self.assertEqual([(row["path"], row["startLine"]) for row in impact["citations"]],
+                             [("routes.ts", 2), ("entry.ts", 2)])
+            self.assertIn("unfinished.ts:3", impact["warning"])
+            affected = ask("Who calls unfinished in unfinished.ts?")
+            self.assertEqual(affected["citations"], [])
+            self.assertIn("unfinished.ts:3", affected["warning"])
+
+            hybrid = http.post("/v1/hybrid/query", headers=headers, json={
+                "query": {"repository_id": self.repo, "question": "Who calls login?", "depth": "standard"},
+                "allow_generation": False,
+            }).json()
+            self.assertEqual(hybrid["status"], "partial")
+            self.assertTrue(hybrid["presentation"]["sources"])
+            self.assertTrue(any("unfinished.ts:3" in item for item in hybrid["presentation"]["limitations"]))
+
+            broken.write_text(valid)
             self.publish()
-        self.assertEqual(self.store.active()["id"], old["id"])
-        self.assertEqual(old_db.read_bytes(), saved)
-        self.assertEqual(self.store.view()["state"], "failed")
-        self.assertEqual(len(list((self.store.path / "generations").iterdir())), 1)
-        self.file.write_text('export function login() { return false; }\n')
-        self.assertFalse(self.publish()["unchanged"])
-        self.assertTrue(self.store.view()["fresh"])
+            self.assertEqual({row["name"] for row in ask(question)["results"]}, complete)
+            self.assertIsNone(ask(question)["synchronization"]["graphWarning"])
+            self.assertEqual(self.store.view()["state"], "ready")
 
     def test_parser_exception_and_vector_failure_keep_last_valid_snapshot(self):
         self.publish(); old = self.store.active()
@@ -169,6 +231,89 @@ class RuntimeIndexingTests(unittest.TestCase):
                 trace(self.store.data_for(old) / self.repo / "metadata.db", self.repo, citation["entityId"])
             self.file.unlink(); self.publish()
             self.assertEqual(api.ask(request)["citations"], [])
+
+    def test_python_callers_and_impact_through_default_chat_after_refresh(self):
+        from fastapi.testclient import TestClient
+
+        (self.root / "tokens.py").write_text("def verify_token(token):\n    return bool(token)\n")
+        routes = self.root / "routes.py"
+        routes.write_text("from tokens import verify_token as verify\n\ndef require_session(token):\n    return verify(token)\n")
+        (self.root / "entry.py").write_text("import routes as routes_api\n\ndef entry(token):\n    return routes_api.require_session(token)\n")
+        (self.root / "unrelated.py").write_text("def verify_other(token):\n    return bool(token)\n")
+        # Incomplete Python files still allow indexing and lexical/semantic search.
+        (self.root / "unfinished.py").write_text("def unfinished(\n")
+        result = self.publish()
+        self.assertEqual(result["graph"]["coverage"]["python"], {"parsed": 4, "partial": 1, "error": 0})
+        with (patch.dict("os.environ", {"CODEMIND_AUTO_SYNC": "0", "CODEMIND_LOCAL_MODEL": "local"}),
+              patch("answers.urlopen", side_effect=AssertionError("Verified calls should be deterministic")),
+              TestClient(api.app, base_url="http://127.0.0.1") as http):
+            headers = {"x-codemind-session": api._SESSION_TOKEN}
+
+            def ask(question):
+                response = http.post("/ask", headers=headers, json={"repoId": self.repo, "query": question})
+                self.assertEqual(response.status_code, 200, response.text)
+                return response.json()
+
+            callers = ask("Who calls verify_token?")
+            self.assertEqual(callers["answerMode"], "evidence")
+            self.assertEqual([(c["path"], c["startLine"]) for c in callers["citations"]], [("routes.py", 4)])
+            self.assertIn("require_session → verify_token", callers["answer"])
+            impact = ask("What happens if I modify verify_token?")
+            self.assertIn("entry → require_session → verify_token", impact["answer"])
+            self.assertEqual([(c["path"], c["startLine"]) for c in impact["citations"]],
+                             [("routes.py", 4), ("entry.py", 4)])
+            self.assertEqual(ask("What happens if I modify verify_token in tokens.py?")["citations"],
+                             impact["citations"])
+            # The unchanged entry file's path stops contributing when an
+            # intermediate call is removed from the active generation.
+            routes.write_text("def require_session(token):\n    return False\n")
+            self.publish()
+            self.assertEqual(ask("What happens if I modify verify_token?")["citations"], [])
+
+    def test_jwt_answers_cite_complete_definitions_and_verified_call_sites(self):
+        from fastapi.testclient import TestClient
+
+        self.file.unlink()
+        fixture = Path(__file__).parents[1] / "sample_code" / "auth_service.py"
+        source = self.root / fixture.name
+        source.write_bytes(fixture.read_bytes())
+        (self.root / "routes.py").write_text(
+            "from auth_service import verify_token\n\ndef require_session(token):\n    return verify_token(token)\n")
+        (self.root / "archive.py").write_text("def archive_old_entries():\n    return 20\n")
+        self.publish()
+        db = self.store.view()["data_dir"] / self.repo / "metadata.db"
+
+        with (patch.dict("os.environ", {"CODEMIND_AUTO_SYNC": "0", "CODEMIND_LOCAL_MODEL": "local"}),
+              TestClient(api.app, base_url="http://127.0.0.1") as http):
+            headers = {"x-codemind-session": api._SESSION_TOKEN}
+
+            def ask(question):
+                reply = http.post("/ask", headers=headers, json={"repoId": self.repo, "query": question})
+                self.assertEqual(reply.status_code, 200, reply.text)
+                return reply.json()
+
+            with patch("answers.urlopen", side_effect=AssertionError("Location answers are deterministic")):
+                location = ask("Where is JWT authentication implemented?")
+            self.assertIn("require_session → verify_token (routes.py:4)", location["answer"])
+            self.assertNotIn("archive.py", location["answer"])
+            self.assertEqual({item["path"] for item in location["citations"]}, {"auth_service.py", "routes.py"})
+
+            from test_semantic_answers import model_reply
+            with patch("answers.urlopen", return_value=model_reply({"sources": ["source-1"]})):
+                detail = ask("Explain verify_token")
+            self.assertEqual(detail["evidenceSelection"], "local-llm")
+            self.assertIn("algorithms=[\"HS256\"]", detail["answer"])
+            self.assertIn('except jwt.ExpiredSignatureError:', detail["answer"])
+            self.assertIn('raise ValueError("Invalid authentication token")', detail["answer"])
+            self.assertEqual([(row["path"], row["startLine"], row["endLine"]) for row in detail["citations"]],
+                             [("auth_service.py", 21, 28), ("routes.py", 4, 4)])
+            for result in (location, detail):
+                self.assertEqual([row["citationId"] for row in result["results"]],
+                                 [row["id"] for row in result["citations"]])
+                for citation in result["citations"]:
+                    proof = trace(db, self.repo, citation["entityId"])
+                    for key in ("path", "startLine", "endLine", "sourceHash"):
+                        self.assertEqual(proof[key], citation[key])
 
     def test_preexisting_partial_publication_is_not_fresh_or_a_noop_and_reuses_vectors(self):
         self.publish()

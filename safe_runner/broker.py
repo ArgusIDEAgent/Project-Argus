@@ -14,6 +14,7 @@ from .artifacts import sanitize
 from .contracts import CapturedFile, NodeCheck, Policy, RunResult, RunnerError
 from .policy import create_args, verify_container, policy_digest, LABEL
 from .runtime import Runtime
+from .dependencies import Archive
 
 _LOCK = threading.Lock()
 
@@ -23,11 +24,21 @@ class _Cancelled(Exception):
 
 
 class Broker:
-    def __init__(self, runtime=None):
+    def __init__(self, runtime=None, adapter='node'):
         self.runtime = runtime or Runtime()
         lock = json.loads(Path(__file__).with_name('image-lock.json').read_text())
         self.image = lock['image']
+        if adapter not in ('node','vitest'):
+            raise ValueError('Unknown runner adapter')
+        self.adapter=adapter
+        if adapter=='vitest':
+            from .vitest import image_lock
+            self.image=image_lock()['image']
         self.policy = Policy()
+
+    @property
+    def attestation(self):
+        return self.runtime.state_dir / ('qualification-vitest.json' if self.adapter=='vitest' else 'qualification.json')
 
     def identity(self):
         return {'runtime': self.runtime.fingerprint(self.image),
@@ -35,14 +46,14 @@ class Broker:
 
     def capability(self, during_owned_launch=False):
         result = {'isolation_qualified': False, 'execution_available': False,
-                  'reason': 'Execution requires capture-specific review, separate preparation and run authorization; dependency-free Node adapter only.'}
+                  'reason': 'Execution requires capture-specific review and separate preparation/run authorization; pinned registry archive adapter.'}
         try:
             journal = self.runtime.state_dir / 'active.json'
             if journal.exists():
                 if not during_owned_launch or journal.is_symlink() or json.loads(journal.read_text()).get('pid') != os.getpid():
                     raise RunnerError('Runner cleanup is required before qualification can be used')
             identity = self.identity()
-            attestation = self.runtime.state_dir / 'qualification.json'
+            attestation = self.attestation
             if attestation.is_symlink() or not attestation.exists() or attestation.stat().st_size > 200000:
                 raise RunnerError('Run isolation qualification for this runtime and policy first')
             report = json.loads(attestation.read_text())
@@ -91,7 +102,7 @@ class Broker:
         journal.unlink()
         return {'reconciled': 1}
 
-    def _run_check(self, files, check, cancel=None, before_launch=None):
+    def _run_check(self, files, check, cancel=None, before_launch=None, dependencies=()):
         """Internal adapter operation, used only by fixed qualification fixtures in P5."""
         if not _LOCK.acquire(blocking=False):
             raise RunnerError('A runner operation is already active')
@@ -116,10 +127,16 @@ class Broker:
                 raise RunnerError('Another runner process is active') from error
             if type(check) is not NodeCheck or any(type(f) is not CapturedFile for f in files):
                 raise ValueError('Broker accepts captured files and adapter-owned Node checks only')
+            if check.framework=='vitest' and self.adapter!='vitest':
+                raise RunnerError('Vitest requires its separately qualified toolchain image')
             paths = [file.path for file in files]
+            if type(dependencies) is not tuple or len(dependencies) > 8 or any(type(d) is not Archive for d in dependencies):
+                raise ValueError('Only immutable validated dependency archives are accepted')
+            if sum(len(d.data) for d in dependencies) > 1048576:
+                raise ValueError('Dependency archive budget exceeded')
             if len(paths) != len(set(paths)) or check.path not in paths:
                 raise ValueError('Check must belong to a duplicate-free captured input')
-            if len(files) > self.policy.input_files or sum(len(f.data) for f in files) > self.policy.input_bytes:
+            if len(files) > self.policy.input_files or sum(len(f.data) for f in files) + sum(len(d.data) for d in dependencies) > self.policy.input_bytes:
                 raise ValueError('Captured materialization exceeds input budgets')
             if cancel and cancel.is_set():
                 raise _Cancelled()
@@ -136,7 +153,9 @@ class Broker:
             if before_launch is not None:
                 before_launch()
             payload = json.dumps({'files': [{'path': f.path, 'content': base64.b64encode(f.data).decode(), 'digest': f.digest} for f in files],
-                                  'check': check.path, 'structured': check.structured}).encode()
+                                  'check': check.path, 'structured': check.structured,
+                                  'framework': check.framework,
+                                  'packages': [d.payload() for d in dependencies]}).encode()
             proc = subprocess.Popen(self.runtime.command('container', 'start', '--attach', '--interactive', name),
                                     env=self.runtime.env, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             def send():
@@ -208,7 +227,7 @@ class Broker:
             state = 'cleanup_failed'
             if failure is not None:
                 cleanup_error = str(failure)[:200] + '; cleanup: ' + cleanup_error
-            attestation = self.runtime.state_dir / 'qualification.json'
+            attestation = self.attestation
             if attestation.exists() and not attestation.is_symlink():
                 attestation.unlink()
         elif failure is not None:

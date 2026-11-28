@@ -23,7 +23,7 @@ class SourceRef(ContractModel):
 class TestProfile(ContractModel):
     profile_id: SourceHash
     package_root: str
-    framework: Literal['node:test', 'unsupported', 'unknown']
+    framework: Literal['node:test', 'vitest', 'unsupported', 'unknown']
     runtime_requirement: str | None
     dependency_identity: SourceHash | None
     dependency_state: Literal['lockfile_captured', 'no_lockfile', 'unknown']
@@ -46,7 +46,7 @@ class DiscoveredTest(ContractModel):
     test_id: SourceHash
     name: str
     source: SourceRef
-    framework: Literal['node:test', 'unsupported', 'unknown']
+    framework: Literal['node:test', 'vitest', 'unsupported', 'unknown']
     profile_id: SourceHash
     assertions: list[Assertion]
     imports: list[str]

@@ -1,0 +1,247 @@
+{
+  "schema_version": "vitest-v1",
+  "qualified_on": "2026-11-27",
+  "passed": true,
+  "identity": {
+    "runtime": {
+      "ID": "bfa2c4c7-0942-4616-8d60-a448ce784aba",
+      "ServerVersion": "29.5.2",
+      "KernelVersion": "6.8.0-117-generic",
+      "Architecture": "aarch64",
+      "CgroupVersion": "2",
+      "DefaultRuntime": "runc",
+      "RuncCommit": {
+        "ID": "v1.3.5-0-g488fc13e"
+      },
+      "ContainerdCommit": {
+        "ID": "193637f7ee8ae5f5aa5248f49e7baa3e6164966e"
+      },
+      "image_id": "sha256:ae7a89ff2c36770f7851eb0bd0a657c590644510273eecd940daa79ade3a3f58",
+      "image": "sha256:ae7a89ff2c36770f7851eb0bd0a657c590644510273eecd940daa79ade3a3f58",
+      "docker_cli_sha256": "cd9e0b149e447af504421ac7117044d8e17d695d66846a5c4df1312c417c22a3"
+    },
+    "policy_digest": "3c30916ec30e61efcb93b7e4e045c20470ae851ad4cf6757cbb2a02d37c59b36"
+  },
+  "toolchain": {
+    "schema_version": 1,
+    "image": "sha256:ae7a89ff2c36770f7851eb0bd0a657c590644510273eecd940daa79ade3a3f58",
+    "base": "docker.io/library/node@sha256:873f586f3794f52281bd039bf02c048a0be08fde619338f9941bad1eb6b34530",
+    "vitest": "5.1.2",
+    "vite": "8.4.0",
+    "npm": "11.19.1",
+    "platform": "linux/arm64",
+    "package_lock_sha256": "efd6e661f2477679c4546b6bb7a1f26287f86be44521b3339d5649b7e4d1b068"
+  },
+  "fixtures": [
+    {
+      "fixture": "passed",
+      "outcome": "passed",
+      "cleanup_complete": true
+    },
+    {
+      "fixture": "assertion",
+      "outcome": "assertion_failed",
+      "cleanup_complete": true
+    },
+    {
+      "fixture": "zero",
+      "outcome": "zero_tests",
+      "cleanup_complete": true
+    },
+    {
+      "fixture": "skipped",
+      "outcome": "zero_tests",
+      "cleanup_complete": true
+    },
+    {
+      "fixture": "setup",
+      "outcome": "setup_failed",
+      "cleanup_complete": true
+    },
+    {
+      "fixture": "test_timeout",
+      "outcome": "timed_out",
+      "cleanup_complete": true
+    },
+    {
+      "fixture": "controls",
+      "outcome": "passed",
+      "cleanup_complete": true
+    },
+    {
+      "fixture": "host_and_symlink",
+      "outcome": "passed",
+      "cleanup_complete": true
+    },
+    {
+      "fixture": "network",
+      "outcome": "passed",
+      "cleanup_complete": true
+    },
+    {
+      "fixture": "disk",
+      "outcome": "passed",
+      "cleanup_complete": true
+    },
+    {
+      "fixture": "processes",
+      "outcome": "passed",
+      "cleanup_complete": true
+    },
+    {
+      "fixture": "memory",
+      "outcome": "memory_limited",
+      "cleanup_complete": true
+    },
+    {
+      "fixture": "cpu",
+      "outcome": "passed",
+      "cleanup_complete": true
+    },
+    {
+      "fixture": "output",
+      "outcome": "output_limited",
+      "cleanup_complete": true
+    },
+    {
+      "fixture": "malicious_output",
+      "outcome": "passed",
+      "cleanup_complete": true
+    },
+    {
+      "fixture": "cancellation_descendants",
+      "outcome": "cancelled",
+      "cleanup_complete": true
+    },
+    {
+      "fixture": "product_prepare",
+      "state": "completed",
+      "outcomes": [
+        "passed"
+      ],
+      "comparison": null
+    },
+    {
+      "fixture": "product_run",
+      "state": "completed",
+      "outcomes": [
+        "assertion_failed"
+      ],
+      "comparison": null
+    },
+    {
+      "fixture": "product_compare",
+      "state": "completed",
+      "outcomes": [
+        "passed",
+        "assertion_failed",
+        "passed",
+        "assertion_failed"
+      ],
+      "comparison": {
+        "classification": "introduced",
+        "unstable": false,
+        "reason": "Repeated identical check passed on baseline and assertion-failed on captured current source under comparable environments. This does not establish coverage or intended behavior beyond that check."
+      }
+    }
+  ],
+  "boundary_fixtures": [
+    {
+      "fixture": "controls",
+      "passed": true,
+      "state": "completed",
+      "exit_code": 0,
+      "cleanup_complete": true,
+      "elapsed_seconds": 1.157
+    },
+    {
+      "fixture": "host_and_symlink",
+      "passed": true,
+      "state": "completed",
+      "exit_code": 0,
+      "cleanup_complete": true,
+      "elapsed_seconds": 1.4
+    },
+    {
+      "fixture": "network",
+      "passed": true,
+      "state": "completed",
+      "exit_code": 0,
+      "cleanup_complete": true,
+      "elapsed_seconds": 3.044
+    },
+    {
+      "fixture": "disk",
+      "passed": true,
+      "state": "completed",
+      "exit_code": 0,
+      "cleanup_complete": true,
+      "elapsed_seconds": 1.174
+    },
+    {
+      "fixture": "processes",
+      "passed": true,
+      "state": "completed",
+      "exit_code": 0,
+      "cleanup_complete": true,
+      "elapsed_seconds": 0.956
+    },
+    {
+      "fixture": "memory",
+      "passed": true,
+      "state": "memory_limited",
+      "exit_code": 0,
+      "cleanup_complete": true,
+      "elapsed_seconds": 1.034
+    },
+    {
+      "fixture": "cpu",
+      "passed": true,
+      "state": "completed",
+      "exit_code": 0,
+      "cleanup_complete": true,
+      "elapsed_seconds": 2.148
+    },
+    {
+      "fixture": "timeout",
+      "passed": true,
+      "state": "timed_out",
+      "exit_code": 137,
+      "cleanup_complete": true,
+      "elapsed_seconds": 12.741
+    },
+    {
+      "fixture": "output",
+      "passed": true,
+      "state": "output_limited",
+      "exit_code": 137,
+      "cleanup_complete": true,
+      "elapsed_seconds": 4.353
+    },
+    {
+      "fixture": "malicious_output",
+      "passed": true,
+      "state": "completed",
+      "exit_code": 0,
+      "cleanup_complete": true,
+      "elapsed_seconds": 0.79
+    },
+    {
+      "fixture": "cancellation_descendants",
+      "passed": true,
+      "state": "cancelled",
+      "exit_code": 137,
+      "cleanup_complete": true,
+      "elapsed_seconds": 0.916
+    },
+    {
+      "fixture": "orphan_recovery",
+      "passed": true
+    },
+    {
+      "fixture": "cleanup_failure_recovery",
+      "passed": true
+    }
+  ],
+  "capture_qualification": "Synthetic atomic fixture; native APFS separately qualified"
+}

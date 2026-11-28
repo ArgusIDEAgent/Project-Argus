@@ -103,7 +103,7 @@ class SemanticEngineTests(unittest.TestCase):
         self.assertTrue(all(f.retrieval_score is None for f in result.findings))
         self.assertTrue(all(f.retrieval_methods == ["keyword"] for f in result.findings))
 
-    def test_filters_and_python_null_symbol_identity(self):
+    def test_filters_and_python_canonical_symbol_identity(self):
         for filters in ({"files": ["payments.py"]}, {"modules": ["payments"]},
                         {"languages": ["PYTHON"]}, {"symbolTypes": ["FUNCTION"]}):
             with self.subTest(filters=filters):
@@ -113,7 +113,13 @@ class SemanticEngineTests(unittest.TestCase):
                     self.assertEqual({e.file_path for e in evidence.values()}, {"payments.py"})
                 if "languages" in filters:
                     self.assertTrue(all(e.file_path.endswith(".py") for e in evidence.values()))
-                    self.assertTrue(all(e.symbol_id is None for e in evidence.values()))
+                    database = self.store.data_for(self.store.active()) / self.repo / "metadata.db"
+                    from knowledge_base.metadata import trace
+                    python_symbols = [item for item in evidence.values() if item.symbol_id]
+                    self.assertTrue(python_symbols)
+                    for item in python_symbols:
+                        definition = trace(database, self.repo, item.symbol_id)
+                        self.assertEqual(definition["path"], item.file_path)
 
     def test_invalid_and_unsupported_filters_are_explicit(self):
         for filters in ({"symbolIds": ["unknown"]}, {"directories": ["src"]},

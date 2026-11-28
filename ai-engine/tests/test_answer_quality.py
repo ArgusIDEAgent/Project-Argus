@@ -28,17 +28,21 @@ def test_large_source_leaves_room_for_later_evidence_and_marks_gaps():
         assert 'return result;' in excerpts[0]
         assert 'result = 42' in excerpts[1]
         assert sum(len(text) for text in excerpts) < 14500
-        for question, limit in [('Explain the workflow', 700), ('Where is result?', 350)]:
-            with patch.dict(os.environ, {'CODEMIND_LOCAL_MODEL': 'test-local'}), patch('answers.urlopen', return_value=model_reply('Explanation.')) as model:
-                reply = answer_question(root, question, {'results': items})
-            assert model.call_count == 1
-            body = json.loads(model.call_args.args[0].data)
-            assert body['options']['num_ctx'] == 8192
-            assert body['options']['num_predict'] == limit
-            assert len(reply['citations']) == 2
+        with patch.dict(os.environ, {'CODEMIND_LOCAL_MODEL': 'test-local'}), patch(
+            'answers.urlopen', return_value=model_reply({'sources': ['source-1', 'source-2']})
+        ) as model:
+            reply = answer_question(root, 'Explain the workflow', {'results': items})
+        assert model.call_count == 1
+        body = json.loads(model.call_args.args[0].data)
+        assert body['options']['num_ctx'] == 8192
+        assert body['options']['num_predict'] == 96
+        assert len(reply['citations']) == 2
+        with patch('answers.urlopen', side_effect=AssertionError('Locations use verified source directly')):
+            reply = answer_question(root, 'Where is result?', {'results': items})
+        assert [source['path'] for source in reply['citations']] == ['entry.ts', 'output.ts']
 
 
-def test_exact_definition_chunks_supply_the_verified_continuous_function():
+def test_independent_chunks_do_not_claim_an_unverified_middle():
     with tempfile.TemporaryDirectory() as folder:
         root = Path(folder)
         path = root / 'flow.py'
@@ -49,9 +53,9 @@ def test_exact_definition_chunks_supply_the_verified_continuous_function():
         verified, evidence = evidence_for(root, [{**base, 'startLine': 1, 'endLine': 10},
                                                  {**base, 'startLine': 91, 'endLine': 100}])
         assert len(verified) == 2
-        assert len(evidence) == 1
-        assert 'line_50' in evidence[0]
-        assert 'line_100' in evidence[0]
+        assert len(evidence) == 2
+        assert all('line_50' not in excerpt for excerpt in evidence)
+        assert 'line_100' in evidence[1]
 
 
 def test_workflow_expansion_is_bounded_and_location_queries_skip_it():

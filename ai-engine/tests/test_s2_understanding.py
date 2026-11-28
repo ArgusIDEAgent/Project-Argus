@@ -108,8 +108,10 @@ class StabilizationIntegrationTests(unittest.TestCase):
 
     def test_labeled_evaluation_and_canonical_proofs_match_one_pinned_generation(self):
         with self.owner.session() as executor:
-            result = evaluate(executor, QueryUnderstandingEngine, json.loads(DATASET.read_text()))
-            self.assertEqual(result["metrics"]["questions"], 41)
+            dataset = json.loads(DATASET.read_text())
+            result = evaluate(executor, QueryUnderstandingEngine, dataset)
+            self.assertGreaterEqual(len(dataset), 41)
+            self.assertEqual(result["metrics"]["questions"], len(dataset))
             for metric, value in result["metrics"].items():
                 if metric != "questions":
                     self.assertEqual(value, 0 if metric == "incorrect_ambiguity_rate" else 1, metric)

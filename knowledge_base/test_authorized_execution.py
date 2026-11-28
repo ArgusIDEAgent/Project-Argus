@@ -60,7 +60,7 @@ def execution(repo):
 
 def wait(manager, value):
     run = manager.execution.runs[value['id']]
-    for _ in range(200):
+    for _ in range(1500):
         if run['state'] not in ('queued', 'running'):
             return manager.execution.view(run)
         time.sleep(.01)

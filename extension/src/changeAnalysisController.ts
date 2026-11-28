@@ -75,6 +75,14 @@ export class ChangeAnalysisController implements vscode.Disposable {
     this.busy = true;
     const epoch = ++this.epoch;
     try {
+      if (!this.panel) {
+        this.panel = vscode.window.createWebviewPanel('codemind.changeAnalysis', 'CodeMind: Analyze Change', vscode.ViewColumn.Beside,
+          { enableScripts: true, localResourceRoots: [] });
+        this.panel.onDidDispose(() => { this.panel = undefined; this.stop(); });
+        this.panel.webview.onDidReceiveMessage(message => { void this.message(message).catch(error => this.status(String(error))); });
+      }
+      this.panel.reveal();
+      this.status('Starting change analysis. Saved files only; connecting to the engine…');
       if (this.job && this.repo) { try { await this.server.changeAction(this.job.id, this.repo.id, 'cancel'); } catch { /* expired jobs do not prevent a new capture */ } }
       if (this.timer) clearTimeout(this.timer);
       this.stopWatch(); this.actions.clear(); this.changed = false; this.mode = 'simple'; this.plan = undefined; this.presentation = undefined; this.checkActions.clear();
@@ -88,13 +96,6 @@ export class ChangeAnalysisController implements vscode.Disposable {
       const repository = await this.server.registerRepository(root);
       if (epoch !== this.epoch) return;
       this.repo = repository;
-      if (!this.panel) {
-        this.panel = vscode.window.createWebviewPanel('codemind.changeAnalysis', 'CodeMind: Analyze Change', vscode.ViewColumn.Beside,
-          { enableScripts: true, localResourceRoots: [] });
-        this.panel.onDidDispose(() => { this.panel = undefined; this.stop(); });
-        this.panel.webview.onDidReceiveMessage(message => { void this.message(message).catch(error => this.status(String(error))); });
-      }
-      this.panel.reveal();
       this.job = await this.server.startChange(this.repo.id, randomBytes(20).toString('hex'));
       if (epoch !== this.epoch) { await this.server.changeAction(this.job.id, this.repo.id, 'cancel'); return; }
       this.watcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(root, '**/*'));
@@ -154,8 +155,8 @@ export class ChangeAnalysisController implements vscode.Disposable {
       this.plan.stale_for_workspace ||= this.changed || this.presentation.stale_for_workspace;
       body += renderTestPlan(this.plan, this.actions, this.checkActions);
       const disabled = this.changed || this.plan.stale_for_workspace || !this.plan.selected_check_ids.length || this.executionBusy || !vscode.workspace.isTrusted;
-      body += `<section><h2>Isolated execution</h2><p>Prepare the empty dependency environment first, then separately authorize selected Node test files. Every test and hook in each file may run.</p><button id="prepare-run" ${disabled ? 'disabled' : ''}>Review environment preparation</button><button id="execute-run" ${disabled ? 'disabled' : ''}>Review and run selected files</button>`;
-      if (this.run) body += `<p>${escapeChange(this.run.kind)}: ${escapeChange(this.run.state)} · ${this.run.selected} selected · ${this.run.discovered} statically discovered · ${this.run.executed} runtime tests executed. Historical capture${this.run.stale_for_workspace ? ' — stale for current workspace' : ''}.</p><p>${escapeChange(this.run.attribution)}</p>${this.run.error ? `<p>${escapeChange(this.run.error)}</p>` : ''}${this.run.results.map(result => `<h3>${escapeChange(result.path)}: ${escapeChange(result.outcome)}</h3><p>Cleanup: ${result.cleanup_complete ? 'complete' : 'FAILED'}</p><pre>${escapeChange(result.console)}</pre>`).join('')}<button id="cancel-run">Cancel execution</button>`;
+      body += `<section><h2>Isolated execution</h2><p>Review and prepare the pinned dependency environment first, then separately authorize selected Node test files. Every test and hook in each file may run.</p><button id="prepare-run" ${disabled ? 'disabled' : ''}>Review environment preparation</button><button id="execute-run" ${disabled ? 'disabled' : ''}>Review and run selected files</button><button id="compare-run" ${disabled ? 'disabled' : ''}>Review paired baseline/current retries</button><button id="template-run" ${disabled ? 'disabled' : ''}>Preview literal temporary check</button><button id="remove-template">Remove temporary check</button>`;
+      if (this.run) body += `<p>${escapeChange(this.run.kind)}: ${escapeChange(this.run.state)} · ${this.run.selected} selected · ${this.run.discovered} statically discovered · ${this.run.executed} runtime tests executed. Historical capture${this.run.stale_for_workspace ? ' — stale for current workspace' : ''}.</p><p>${escapeChange(this.run.attribution)}</p><pre>${escapeChange(JSON.stringify(this.run.comparison_result ?? null))}</pre>${this.run.error ? `<p>${escapeChange(this.run.error)}</p>` : ''}${this.run.results.map(result => `<h3>${escapeChange(result.path)} ${escapeChange(result.version ?? '')} attempt ${result.attempt ?? 1}: ${escapeChange(result.outcome)}</h3><p>Cleanup: ${result.cleanup_complete ? 'complete' : 'FAILED'}</p><pre>${escapeChange(result.console)}</pre>`).join('')}<button id="export-run">Export private summary</button><button id="cancel-run">Cancel execution</button>`;
       body += '</section>';
     }
     this.html(body);
@@ -175,8 +176,19 @@ export class ChangeAnalysisController implements vscode.Disposable {
   private async message(message: unknown): Promise<void> {
     if (!message || typeof message !== 'object') return;
     const input = message as { type?: string; value?: string };
-    if (input.type === 'prepare-run' || input.type === 'execute-run') {
-      await this.execute(input.type === 'prepare-run' ? 'prepare' : 'run');
+    if (input.type === 'prepare-run' || input.type === 'execute-run' || input.type === 'compare-run') {
+      await this.execute(input.type === 'prepare-run' ? 'prepare' : input.type === 'compare-run' ? 'compare' : 'run');
+    } else if (input.type === 'template-run') {
+      await this.temporaryPreview();
+    } else if (input.type === 'remove-template' && this.job && this.repo && !this.executionBusy) {
+      await this.server.temporaryCheck(this.job.id,this.repo.id); this.render();
+    } else if (input.type === 'export-run' && this.run && this.job && this.repo) {
+      const job=this.job,repo=this.repo,run=this.run,epoch=this.epoch;
+      const summary=await this.server.exportRun(job.id,repo.id,run.id);
+      if(this.epoch!==epoch || this.job!==job || this.run?.id!==run.id)return;
+      const destination=await vscode.window.showSaveDialog({filters:{JSON:['json']},saveLabel:'Export private run summary'});
+      if(destination && this.epoch===epoch && this.job===job && this.run?.id===run.id)
+        await vscode.workspace.fs.writeFile(destination,Buffer.from(JSON.stringify(summary,null,2)+'\n'));
     } else if (input.type === 'cancel-run' && this.run && this.job && this.repo) {
       const job = this.job, repo = this.repo, run = this.run, epoch = this.epoch;
       const result = await this.server.capturedRun(job.id, repo.id, run.id, true);
@@ -211,7 +223,24 @@ export class ChangeAnalysisController implements vscode.Disposable {
     }
   }
 
-  private async execute(kind: 'prepare' | 'run'): Promise<void> {
+  private async temporaryPreview(): Promise<void> {
+    if (!vscode.workspace.isTrusted || this.changed || !this.job || !this.repo || this.executionBusy) return;
+    const job=this.job,repo=this.repo,epoch=this.epoch;
+    const module_path=await vscode.window.showInputBox({prompt:'Captured ESM module path, for example src/value.js'});
+    if (!module_path) return;
+    const export_name=await vscode.window.showInputBox({prompt:'Named exported function to call'});
+    if (!export_name) return;
+    const literals=await vscode.window.showInputBox({prompt:'JSON object with arguments array and your expected result',value:'{"arguments":[],"expected":null}'});
+    if (!literals || literals.length>4000 || this.job!==job || this.epoch!==epoch || this.changed || !vscode.workspace.isTrusted) return;
+    const data=JSON.parse(literals) as {arguments:unknown[];expected:unknown};
+    const result=await this.server.temporaryCheck(job.id,repo.id,{module_path,export_name,arguments:data.arguments,expected:data.expected});
+    if (this.job===job && this.epoch===epoch && !this.changed) {
+      await vscode.window.showInformationMessage('Temporary check preview; review exact source again in preparation/run authorization.',{modal:true,detail:JSON.stringify(result,null,2)});
+      this.render();
+    }
+  }
+
+  private async execute(kind: 'prepare' | 'run' | 'compare'): Promise<void> {
     if (!vscode.workspace.isTrusted || this.changed || this.plan?.stale_for_workspace || !this.plan?.selected_check_ids.length || !this.job || !this.repo || this.executionBusy) return;
     const job = this.job, repo = this.repo, plan = this.plan, epoch = this.epoch;
     const current = () => this.epoch === epoch && this.job === job && this.repo === repo && this.plan === plan && !this.changed && vscode.workspace.isTrusted;
@@ -221,7 +250,7 @@ export class ChangeAnalysisController implements vscode.Disposable {
       if (!current() || review.capture_id !== plan.capture_id || review.plan_id !== plan.plan_id) return;
       const action = kind === 'prepare' ? 'Authorize isolated preparation' : 'Run these captured test files';
       const accepted = await vscode.window.showWarningMessage(kind === 'prepare' ? 'Prepare the isolated Node environment?' : 'Execute the reviewed captured tests?',
-        { modal: true, detail: `${review.notice}\nCapture: ${review.capture_id}\nPlan: ${review.plan_id}\nDependencies: ${review.dependency_identity}\nCommands: ${JSON.stringify(kind === 'prepare' ? review.preparation : review.commands)}\nRuntime: ${JSON.stringify(review.identity)}\nLimits: ${JSON.stringify(review.limits)}\nAuthorization expires in 60 seconds.` }, action);
+        { modal: true, detail: `${review.notice}\nAdapter: ${review.adapter ?? 'node:test'}\nToolchain: ${JSON.stringify(review.toolchain ?? null)}\nCapture: ${review.capture_id}\nPlan: ${review.plan_id}\nDependencies: ${review.dependency_identity}\nCommands: ${JSON.stringify(kind === 'prepare' ? review.preparation : kind === 'compare' ? review.paired_commands : review.commands)}\nComparison: ${JSON.stringify(review.comparison)}\nExecution plan: ${review.execution_plan_id}\nExact temporary source/hash: ${review.temporary_source?.source_hash ?? 'none'}\n${review.temporary_source?.source ?? ''}\nRuntime: ${JSON.stringify(review.identity)}\nLimits: ${JSON.stringify(review.limits)}\nAuthorization expires in 60 seconds.` }, action);
       if (accepted !== action || !current()) return;
       const run = await this.server.submitRun(job.id, repo.id, review);
       if (!current()) { await this.server.capturedRun(job.id, repo.id, run.id, true); return; }
@@ -247,7 +276,7 @@ export class ChangeAnalysisController implements vscode.Disposable {
   private html(body: string): void {
     if (!this.panel) return;
     const nonce = randomBytes(18).toString('hex');
-    body += `<script nonce="${nonce}">document.addEventListener('click',event=>{const b=event.target.closest('button');if(b&&!b.disabled&&['prepare-run','execute-run','cancel-run'].includes(b.id))api.postMessage({type:b.id});});</script>`;
+    body += `<script nonce="${nonce}">document.addEventListener('click',event=>{const b=event.target.closest('button');if(b&&!b.disabled&&['prepare-run','execute-run','compare-run','template-run','remove-template','cancel-run','export-run'].includes(b.id))api.postMessage({type:b.id});});</script>`;
     this.panel.webview.html = `<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'nonce-${nonce}'; style-src 'nonce-${nonce}'"><style nonce="${nonce}">body{font:var(--vscode-font-size) var(--vscode-font-family);color:var(--vscode-foreground);padding:18px}li{margin:8px 0}button{margin:4px}section{margin:20px 0}</style></head><body><h1>Analyze Change</h1><nav>${['simple','detailed','flow'].map(mode => `<button data-mode="${mode}">${mode}</button>`).join('')}<button id="plan">Review test plan</button><button id="cancel">Cancel</button></nav>${body}<script nonce="${nonce}">const api=acquireVsCodeApi();document.addEventListener('click',event=>{const b=event.target.closest('button');if(!b)return;if(b.dataset.source)api.postMessage({type:'source',value:b.dataset.source});if(b.dataset.mode)api.postMessage({type:'mode',value:b.dataset.mode});if(b.id==='cancel')api.postMessage({type:'cancel'});if(b.id==='plan')api.postMessage({type:'plan'});if(b.dataset.check)api.postMessage({type:'check',value:b.dataset.check});});</script></body></html>`;
   }
   private stop(): void {

@@ -32,6 +32,7 @@ class HybridRun:
     query_id: str | None = None
     bindings: dict[int, list[str]] = field(default_factory=dict)
     generations: list[tuple[list[int], GenerationResult]] = field(default_factory=list)
+    graph_warning: str | None = None
 
 
 def _project_support(original):
@@ -185,9 +186,9 @@ def compose_presentation(run, depth):
     view.status = ("success" if states and all(state in ("satisfied", "addressed") for state in states) else
         "partial" if view.items else "ambiguous" if "ambiguous" in states else "stale_index" if "stale" in states else
         "error" if "error" in states else "not_found" if states and all(state == "not_found" for state in states) else "unsupported")
-    if original.warnings:
-        view.limitations.extend(original.warnings)
-        if view.status == "success": view.status = "partial"
+    view.limitations.extend(original.warnings)
+    if view.status == "success" and (original.warnings or run.graph_warning):
+        view.status = "partial"
     model_states = [result.model_status for _, result in run.generations]
     fallback_states = [result.fallback_status for _, result in run.generations]
     view.model_status = "/".join(dict.fromkeys(model_states)) if model_states else None
@@ -213,6 +214,9 @@ async def run_hybrid(store, request: HybridQueryRequest, channels, answers, *, c
         with MultiEngineExecutor.pinned(store, channels, engine_factory=engine_factory) as executor, store.validation_scope(executor.view):
             executor.context.validate_request(request.query)
             run.response.snapshot_id = executor.context.snapshot_id
+            run.graph_warning = executor.context.graph_warning
+            if run.graph_warning:
+                run.response.limitations.append(run.graph_warning)
             before = perf_counter(); original = executor.understand(request.query, conversation)
             timing.understanding_ms = (perf_counter() - before) * 1000
             run.original = original

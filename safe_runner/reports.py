@@ -38,8 +38,12 @@ def classify(result):
         value.update(executed=max(0, counts['tests'] - counts['skipped'] - counts['todo']),
                      **{k: counts[k] for k in fields if k != 'tests'})
         value['failures'] = failures[:20]
+        value['omitted_failure_observations'] = max(0,len(failures)-20)
         if counts['failed']:
-            value['outcome'] = 'assertion_failed' if any(e.get('code') == 'ERR_ASSERTION' for e in failures) else 'setup_failed'
+            leaf=[e for e in failures if e.get('failureType')!='subtestsFailed']
+            if leaf and all(e.get('code')=='ERR_ASSERTION' for e in leaf):value['outcome']='assertion_failed'
+            elif any(e.get('code') in ('MODULE_NOT_FOUND','ERR_MODULE_NOT_FOUND','ERR_UNKNOWN_FILE_EXTENSION') for e in leaf):value['outcome']='setup_failed'
+            else:value['outcome']='test_error'
         elif value['executed'] == 0:
             value['outcome'] = 'zero_tests'
         elif counts['cancelled']:

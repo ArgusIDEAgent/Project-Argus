@@ -181,7 +181,7 @@ class ExecutionTests(unittest.TestCase):
         self.assertEqual(missing.status,"not_found")
         self.assertFalse(missing.operations)
         self.assertTrue(missing.clarifications)
-        unsupported=self.run_query("Who calls validate_token in legacy.py?")
+        unsupported=self.run_query("Who calls validate_token in legacy.rb?")
         self.assertEqual(unsupported.status,"unsupported")
         self.assertFalse(unsupported.operations)
 

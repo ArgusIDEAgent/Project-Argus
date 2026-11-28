@@ -7,18 +7,20 @@ import re
 
 from .contracts import Policy, RunnerError
 
-BOOTSTRAP = Path(__file__).with_name('bootstrap.cjs').read_text()
+BOOTSTRAP = "const installDependencies=(()=>{const module={exports:{}};\n" + Path(__file__).with_name('unpack.cjs').read_text() + "\nreturn module.exports;})();\n" + Path(__file__).with_name('bootstrap.cjs').read_text()
 LABEL = 'org.codemind.isolation'
 
 
 def policy_digest(policy, image):
     modules = {name: sha256(Path(__file__).with_name(name).read_bytes()).hexdigest()
-               for name in ('policy.py','runtime.py','broker.py','contracts.py','artifacts.py','fixtures.py','qualify.py','execution.py','reports.py')}
+               for name in ('policy.py','runtime.py','broker.py','contracts.py','artifacts.py','fixtures.py','qualify.py','execution.py','reports.py','dependencies.py','comparison.py','templates.py','vitest.py','vitest_reports.py','prepare_vitest.py','qualify_vitest.py')}
+    modules['vitest_toolchain']=sha256(Path(__file__).with_name('vitest-image-lock.json').read_bytes()).hexdigest()
     return sha256(json.dumps([asdict(policy), image, BOOTSTRAP, modules], sort_keys=True).encode()).hexdigest()
 
 
 def create_args(policy, image, name, owner):
-    if not re.fullmatch(r'docker.io/library/node@sha256:[a-f0-9]{64}', image):
+    from .vitest import image_lock
+    if not re.fullmatch(r'docker.io/library/node@sha256:[a-f0-9]{64}', image) and image!=image_lock()['image']:
         raise RunnerError('An explicitly pinned official Node image digest is required')
     if not re.fullmatch(r'cm-runner-[a-f0-9]{32}', name) or not re.fullmatch(r'[a-f0-9]{32}', owner):
         raise RunnerError('Invalid broker identity')

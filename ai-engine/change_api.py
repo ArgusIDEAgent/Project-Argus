@@ -13,7 +13,7 @@ import time
 import uuid
 
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, JsonValue
 
 from change_analysis.explanation import explain
 from change_analysis.capture import CaptureStore
@@ -58,6 +58,13 @@ class RunSubmit(Owned):
     authorization: str = Field(min_length=64, max_length=64)
     review_digest: str = Field(min_length=64, max_length=64)
     workspace_trusted: bool = Field(strict=True)
+
+
+class TemporaryPreview(Owned):
+    module_path: str = Field(min_length=1,max_length=300)
+    export_name: str = Field(min_length=1,max_length=80)
+    arguments: list[JsonValue] = Field(max_length=8)
+    expected: JsonValue
 
 
 @dataclass
@@ -135,6 +142,7 @@ class ChangeJobs:
                             job.pop('plan', None)
                             job.pop('snapshot', None)
                             job.pop('analysis', None)
+                            job.pop('temporary_check',None)
                         if job['state'] not in ACTIVE:
                             self._cleanup(job)
         threading.Thread(target=reap, daemon=True, name='change-retention').start()
@@ -187,10 +195,15 @@ class ChangeJobs:
                     self._cleanup(job)
                     # Keep cancelled request directories if a Terminal still owns
                     # capture/cleanup. Raw source is removed as soon as polled ready.
+                    if 'snapshot' in job:
+                        self.planner.clear()
                     job.pop('snapshot', None)
                     job.pop('analysis', None)
+                    job.pop('plan', None)
+                    job.pop('temporary_check', None)
                     if job['directory'] is None:
                         del self.jobs[key]
+                        continue
                 if job['repo_id'] == request.repo_id and job['key'] == request.idempotency_key:
                     return self.view(job)
             if len(self.jobs) >= 4:
@@ -231,6 +244,7 @@ class ChangeJobs:
             job.pop('snapshot', None)
             job.pop('analysis', None)
             job.pop('plan', None)
+            job.pop('temporary_check',None)
             self.planner.clear()
             raise HTTPException(410, 'Analysis expired; capture again')
         return job
@@ -417,13 +431,25 @@ def create_change_router(api):
 
     @router.post('/{job_id}/execution-review')
     def execution_review(job_id: str, request: RunReview):
-        if os.environ.get('CODEMIND_CHANGE_EXECUTION', '1') == '0':
+        if os.environ.get('CODEMIND_CHANGE_EXECUTION', '0') != '1':
             raise HTTPException(503, 'Change execution disabled')
         return manager.execution.review(job_id, request.repo_id, request.kind)
 
+    @router.post('/{job_id}/temporary-test')
+    def temporary_preview(job_id: str, request: TemporaryPreview):
+        return manager.execution.temporary_preview(job_id,request.repo_id,request.module_path,request.export_name,request.arguments,request.expected)
+
+    @router.post('/{job_id}/temporary-test/remove')
+    def remove_temporary(job_id: str, request: Owned):
+        with manager.lock:
+            job = manager.owned(job_id,request.repo_id)
+            manager.execution.invalidate(job_id)
+            job.pop('temporary_check',None)
+        return {'removed':True}
+
     @router.post('/{job_id}/runs')
     def launch(job_id: str, request: RunSubmit):
-        if os.environ.get('CODEMIND_CHANGE_EXECUTION', '1') == '0':
+        if os.environ.get('CODEMIND_CHANGE_EXECUTION', '0') != '1':
             raise HTTPException(503, 'Change execution disabled')
         return manager.execution.submit(job_id, request.repo_id, request.authorization,
                                         request.review_digest, request.workspace_trusted)
@@ -432,6 +458,10 @@ def create_change_router(api):
     def run_status(job_id: str, run_id: str, repo_id: str):
         run = manager.execution.owned(job_id, repo_id, run_id)
         return manager.execution.view(run)
+
+    @router.get('/{job_id}/runs/{run_id}/export')
+    def export_run(job_id:str,run_id:str,repo_id:str):
+        return manager.execution.export(job_id,repo_id,run_id)
 
     @router.post('/{job_id}/runs/{run_id}/cancel')
     def cancel_run(job_id: str, run_id: str, request: Owned):

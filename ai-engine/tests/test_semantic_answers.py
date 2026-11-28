@@ -22,6 +22,9 @@ from qdrant_client.models import Filter, FieldCondition, MatchValue
 
 
 def model_reply(content, **fields):
+    if isinstance(content, dict):
+        content = json.dumps(content)
+
     class Reply:
         def __enter__(self): return self
         def __exit__(self, *args): pass
@@ -127,49 +130,62 @@ class SemanticTests(unittest.TestCase):
     def test_grounded_answer_and_local_model_failure_fallback(self):
         retrieval = self.search('Where is authentication checked?')
         with patch('answers.urlopen', side_effect=OSError('offline')):
-            result = answer_question(str(self.root), 'Where is authentication checked?', retrieval)
+            result = answer_question(str(self.root), 'Explain where authentication is checked', retrieval)
         self.assertIn('auth.ts:', result['answer'])
         self.assertEqual(result['answerMode'], 'evidence')
-        self.assertIn('Local answer model', result['warning'])
+        self.assertIn('Local source ranking', result['warning'])
         self.file.write_text('changed')
         self.assertEqual(evidence_for(str(self.root), retrieval['results']), ([], []))
 
-    def test_local_model_receives_redacted_evidence_and_returns_answer(self):
+    def test_local_model_ranks_redacted_source_ids(self):
         self.file.write_text('const api_key = "abcdefghijk-secret";\n')
         item = {'path': 'auth.ts', 'startLine': 1, 'endLine': 1,
                 'sourceHash': hashlib.sha256(self.file.read_bytes()).hexdigest(), 'reason': 'Exact match'}
-        with patch('answers.urlopen', return_value=model_reply('Local explanation.')) as model:
+        with patch('answers.urlopen', return_value=model_reply({'sources': ['source-1']})) as model:
             result = answer_question(str(self.root), 'explain', {'results': [item], 'warning': None, 'mode': 'lexical'})
-        self.assertEqual(result['answerMode'], 'local-llm')
+        self.assertEqual(result['answerMode'], 'evidence')
+        self.assertEqual(result['evidenceSelection'], 'local-llm')
         sent = model.call_args.args[0]
         self.assertEqual(sent.full_url, 'http://127.0.0.1:11434/api/chat')
         self.assertNotIn('abcdefghijk-secret', sent.data.decode())
         self.assertIn('[REDACTED]', sent.data.decode())
-        self.assertNotIn('format', json.loads(sent.data))
-        self.assertEqual(result['answer'], 'Local explanation.\n\nSources:\n[1] auth.ts:1-1')
+        self.assertIn('format', json.loads(sent.data))
+        self.assertIn('const api_key = "[REDACTED]";', result['answer'])
         self.assertEqual(result['citations'][0]['sourceHash'], item['sourceHash'])
 
-    def test_backend_numbers_unique_sources_and_ignores_model_reference_numbers(self):
+    def test_sources_and_citations_follow_verified_selection_order(self):
         first = self.search('validateToken')['results'][0]
-        second = {**first, 'startLine': 2, 'endLine': 2}
+        second = {**first, 'startLine': 2, 'endLine': 2, 'name': 'login'}
         retrieval = {'results': [first, first.copy(), second], 'warning': None, 'mode': 'lexical'}
-        with patch('answers.urlopen', return_value=model_reply('Explanation [1] [1] [999] with `items[1]`.')):
+        with patch('answers.urlopen', return_value=model_reply({'sources': ['source-2', 'source-1']})):
             result = answer_question(str(self.root), 'explain', retrieval)
         self.assertEqual([item['id'] for item in result['citations']], [1, 2])
-        self.assertEqual(len(result['results']), 2)
-        self.assertNotIn('[999]', result['answer'])
-        explanation, sources = result['answer'].split('\n\nSources:\n')
-        self.assertIn('`items[1]`', explanation)
-        self.assertEqual(sources, '[1] auth.ts:1-1\n[2] auth.ts:2-2')
+        self.assertEqual([item['startLine'] for item in result['citations']], [2, 1])
+        self.assertEqual([item['citationId'] for item in result['results']], [1, 2])
+        self.assertIn('[1] login (auth.ts:2)', result['answer'])
+        self.assertIn('2 | export function login()', result['answer'])
 
-    def test_output_limit_keeps_readable_explanation_and_backend_sources(self):
+    def test_unsupported_claims_and_invalid_source_ids_never_render(self):
         retrieval = self.search('validateToken')
-        with patch('answers.urlopen', return_value=model_reply('A partial explanation.', done_reason='length')):
-            result = answer_question(str(self.root), 'explain', retrieval)
-        self.assertEqual(result['answerMode'], 'local-llm')
-        self.assertIn('Sources:\n[1] auth.ts:', result['answer'])
-        self.assertIn('output limit', result['warning'])
-        self.assertNotIn('unavailable', result['warning'])
+        for content, fields in (
+            ('The code accepts every token [999].', {}),
+            ({'sources': ['source-999']}, {}),
+            ({'sources': ['source-1', 'source-1']}, {}),
+            ({'sources': ['source-1'], 'answer': 'The code accepts every token [999].'}, {}),
+            ({'sources': ['source-1']}, {'done_reason': 'length'}),
+        ):
+            with self.subTest(content=content, fields=fields):
+                with patch('answers.urlopen', return_value=model_reply(content, **fields)):
+                    result = answer_question(str(self.root), 'explain', retrieval)
+                self.assertEqual(result['answerMode'], 'evidence')
+                self.assertNotIn('evidenceSelection', result)
+                self.assertIn('invalid response', result['warning'])
+                self.assertNotIn('[999]', result['answer'])
+                self.assertNotIn('accepts every token', result['answer'])
+                self.assertTrue(result['citations'])
+                self.assertEqual({row['path'] for row in result['citations']}, {'auth.ts'})
+                self.assertEqual([row['id'] for row in result['citations']],
+                                 [row['citationId'] for row in result['results']])
 
     def test_invalid_response_is_not_reported_as_offline(self):
         retrieval = self.search('validateToken')

@@ -126,9 +126,37 @@ After Analyze Change completes, click **Review test plan** or run **CodeMind: Re
 For the Phase 6 native Node adapter, select checks, use **Review environment
 preparation**, and accept the native confirmation. Then use **Review and run
 selected files** and accept a separate confirmation. Every test/hook in the
-selected files may run. The adapter requires an empty third-party dependency set,
-captured npm v2/v3 lockfile, a supported Node 24 runtime requirement and current
-isolation qualification. Package installation is unsupported. Closing/cancelling
+selected files may run. The adapter requires a captured npm v2/v3 lockfile,
+a supported Node 24 runtime requirement and current isolation qualification.
+Preparation supports small flat pure-JavaScript dependency trees with exact
+versions and SHA-512-pinned public npm archives. Its native dialog lists the
+packages and restricted registry download policy. Lifecycle scripts, native
+builds, semver ranges and private registries are unsupported. Closing/cancelling
 or saving cancels execution; results remain historical observations with counts,
 setup/assertion/zero-test outcomes and bounded plain-text output. See
 `safe_runner/PHASE6.md`. Reload VS Code and restart the engine after updating.
+
+Phase 7's Node path adds **Preview literal temporary check**, **Remove temporary
+check**, and **Review paired baseline/current retries**. A temporary check uses a
+captured ESM module/declaration and your literal JSON arguments/expected value;
+its exact source and hash appear before preparation/run confirmation. Changing
+it requires preparation again. It never writes into your repository and cannot
+establish a regression by itself. Paired comparison supports one unchanged existing
+Node file, two attempts per version, and matching captured environment metadata.
+Every attempt is preserved. Incompatible baselines yield inconclusive; different
+retry observations flag instability. Vitest 5.1.2/Vite 8.4.0 now use a separate qualified immutable toolchain image.
+Its profile requires the exact pinned lock graph, ESM JS and no repository configs,
+plugins, TypeScript/browser or extra application dependencies. Preparation/run
+confirmation shows the selected adapter and toolchain. See `safe_runner/PHASE7.md`
+and `safe_runner/VITEST.md` for the compatibility matrix.
+
+Phase 8 keeps execution **disabled by default**. Set `CODEMIND_CHANGE_EXECUTION=1`
+in the backend environment and restart it only when opting in to isolated review,
+preparation and execution. Chat, Analyze Change, deterministic explanations and
+plans work without that flag. **Export private summary** opens a native JSON Save
+dialog and omits logs, failure messages, literal check source/expectations and
+host roots; relative project paths and opaque identities remain private metadata.
+The export stays at the location you choose until deleted. See
+`safe_runner/PHASE8.md` for setup, retention, troubleshooting, rollback and the
+qualified local macOS ARM64 matrix. Reload VS Code after installing the updated
+VSIX. No developer-repository tests are executed as part of release qualification.

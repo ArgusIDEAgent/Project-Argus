@@ -1,0 +1,98 @@
+{
+  "schema_version": "p7-node-qualification-v1",
+  "passed": true,
+  "identity": {
+    "runtime": {
+      "ID": "bfa2c4c7-0942-4616-8d60-a448ce784aba",
+      "ServerVersion": "29.5.2",
+      "KernelVersion": "6.8.0-117-generic",
+      "Architecture": "aarch64",
+      "CgroupVersion": "2",
+      "DefaultRuntime": "runc",
+      "RuncCommit": {
+        "ID": "v1.3.5-0-g488fc13e"
+      },
+      "ContainerdCommit": {
+        "ID": "193637f7ee8ae5f5aa5248f49e7baa3e6164966e"
+      },
+      "image_id": "sha256:873f586f3794f52281bd039bf02c048a0be08fde619338f9941bad1eb6b34530",
+      "image": "docker.io/library/node@sha256:873f586f3794f52281bd039bf02c048a0be08fde619338f9941bad1eb6b34530",
+      "docker_cli_sha256": "cd9e0b149e447af504421ac7117044d8e17d695d66846a5c4df1312c417c22a3"
+    },
+    "policy_digest": "6ff6fef7c3c94bfce0f6e05d9407a2e63be7be3005019d7475108ced864d9fce"
+  },
+  "fixtures": [
+    {
+      "fixture": "introduced",
+      "passed": true,
+      "observations": 4,
+      "classification": {
+        "classification": "introduced",
+        "unstable": false,
+        "reason": "Repeated identical check passed on baseline and assertion-failed on captured current source under comparable environments. This does not establish coverage or intended behavior beyond that check."
+      },
+      "source_unchanged": true
+    },
+    {
+      "fixture": "pre_existing",
+      "passed": true,
+      "observations": 4,
+      "classification": {
+        "classification": "pre_existing",
+        "unstable": false,
+        "reason": "The same assertion failure was observed repeatedly on both versions."
+      },
+      "source_unchanged": true
+    },
+    {
+      "fixture": "template",
+      "passed": true,
+      "observations": 2,
+      "classification": null,
+      "source_unchanged": true
+    },
+    {
+      "fixture": "incompatible",
+      "passed": true,
+      "observations": 0,
+      "classification": {
+        "classification": "inconclusive",
+        "unstable": false,
+        "reason": "Baseline check/configuration/dependency compatibility was not established."
+      },
+      "source_unchanged": true
+    }
+  ],
+  "capture_qualification": "Synthetic atomic fixture; native APFS qualified separately",
+  "vitest_qualified": true,
+  "limitation": "No automated native editor/admin-prompt E2E; controller gates tested separately",
+  "qualified_on": "2026-11-27",
+  "vitest_identity": {
+    "runtime": {
+      "ID": "bfa2c4c7-0942-4616-8d60-a448ce784aba",
+      "ServerVersion": "29.5.2",
+      "KernelVersion": "6.8.0-117-generic",
+      "Architecture": "aarch64",
+      "CgroupVersion": "2",
+      "DefaultRuntime": "runc",
+      "RuncCommit": {
+        "ID": "v1.3.5-0-g488fc13e"
+      },
+      "ContainerdCommit": {
+        "ID": "193637f7ee8ae5f5aa5248f49e7baa3e6164966e"
+      },
+      "image_id": "sha256:ae7a89ff2c36770f7851eb0bd0a657c590644510273eecd940daa79ade3a3f58",
+      "image": "sha256:ae7a89ff2c36770f7851eb0bd0a657c590644510273eecd940daa79ade3a3f58",
+      "docker_cli_sha256": "cd9e0b149e447af504421ac7117044d8e17d695d66846a5c4df1312c417c22a3"
+    },
+    "policy_digest": "3c30916ec30e61efcb93b7e4e045c20470ae851ad4cf6757cbb2a02d37c59b36"
+  },
+  "vitest_fixtures": 19,
+  "vitest_boundary_fixtures": 13,
+  "tests": {
+    "python": 115,
+    "python_subtests": 57,
+    "extension": 55
+  },
+  "no_developer_repository_tests_executed": true
+}

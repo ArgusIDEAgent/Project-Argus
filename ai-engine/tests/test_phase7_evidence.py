@@ -229,7 +229,7 @@ class AggregationTests(unittest.TestCase):
 
     def test_ambiguity_missing_and_deferred_coverage_survive(self):
         for question, state in (("Who calls sharedName?", "ambiguous"), ("Who calls missingFunction?", "not_found"),
-                                ("Explain login", "deferred"), ("Who calls validate_token in legacy.py?", "unsupported")):
+                                ("Explain login", "deferred"), ("Who calls validate_token in legacy.rb?", "unsupported")):
             with self.subTest(question=question):
                 package = self.run_package(question)
                 self.assertEqual(package.requirements[0].state, state)

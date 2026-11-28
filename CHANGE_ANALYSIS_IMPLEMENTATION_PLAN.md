@@ -1,7 +1,7 @@
 # CodeMind: Change Analysis, Explanation and Safe Testing
 
 **Created:** 2026-11-25  
-**Status:** P1 qualified for administrator-assisted macOS/APFS capture; P2 complete within documented static JS/TS library scope; P3 deterministic workflow qualified; P4 static planning qualified; P5 isolation boundary implemented and locally qualified; P6 core qualified for empty-dependency Node tests, third-party package preparation remains open
+**Status:** P1 qualified for administrator-assisted macOS/APFS capture; P2 complete within documented static JS/TS library scope; P3 deterministic workflow qualified; P4 static planning qualified; P5 isolation boundary implemented and locally qualified; P6 complete within the bounded native Node / exact flat public-registry dependency adapter; P7 complete within qualified Node/Vitest compatibility matrix; P8 not started
 **Purpose:** Execution checklist for the owner-provided proposal and the repository-based architecture review.
 
 A task is complete only when its implementation and required verification are complete. The original planning review was source-only. Phase 1 implementation and verification are recorded below and in `change_analysis/PHASE1.md`. Preserve existing local changes.
@@ -371,7 +371,7 @@ Example result: “12 selected tests passed. Two suggested scenarios remain unve
 | P4 Test planner | Implemented within static Node planning scope | P2 | Reviewable test plan |
 | P5 Runner qualification | Locally qualified Colima VZ / Docker ARM64 boundary | P0; integration with P4 | Qualified isolation boundary |
 | P6 Existing-test execution | Not started | P4, P5 | Authorized Node execution |
-| P7 Controlled expansion | Not started | P6 | Vitest, templates, baseline comparison |
+| P7 Controlled expansion | Qualified within documented Node/Vitest scope | P6 | Vitest, templates, baseline comparison |
 | P8 Release qualification | Not started | P3, P6; P7 if shipped | Qualified packaged release |
 
 ```mermaid
@@ -552,8 +552,8 @@ Tasks:
 
 - [x] P6.1 Implement exact-plan authorization and pre-launch revalidation.
 - [x] P6.2 Gate execution on Workspace Trust and explicit user action.
-- [ ] P6.3 Implement separately authorized isolated dependency preparation. Empty-dependency Node environment preparation is implemented; installing third-party packages remains unimplemented/unsupported.
-- [x] P6.4 Pin dependency identities and disable lifecycle scripts initially (empty dependency set, npm v2/v3 lock capture, pinned Node runtime; no package-manager invocation).
+- [x] P6.3 Implement separately authorized isolated dependency preparation: restricted integrity-checked registry downloads, offline sandbox extraction, immutable session archives and fresh per-run copies. Unsupported package layouts remain explicit; see `safe_runner/DEPENDENCY_PREPARATION.md`.
+- [x] P6.4 Pin dependency identities and disable lifecycle scripts initially (npm v2/v3 lock capture, exact package versions/SHA-512, pinned Node image and registry-archive-v1 installer; npm and lifecycle hooks are not invoked).
 - [x] P6.5 Execute Node tests and parse structured reports.
 - [x] P6.6 Track selected/discovered/executed counts and zero-test results.
 - [x] P6.7 Classify setup/assertion/timeout/cancellation outcomes.
@@ -563,13 +563,13 @@ Tasks:
 
 Acceptance criteria:
 
-- [x] No run launches without authorization matching all relevant identities, within the supported empty-dependency Node adapter.
+- [x] No run launches without authorization matching all relevant identities, within the supported native Node / exact flat registry archive adapter.
 - [x] Source/profile/command changes require renewed review.
 - [x] Zero tests never passes; setup failure is distinct from assertion failure.
 - [x] Runs cannot mutate reusable dependency artifacts or developer source (fresh byte copies, no shared dependency artifacts).
 - [x] Historical results are not presented as new execution.
 
-**Evidence:** `safe_runner/PHASE6.md`, authorization/race/controller tests and the real VM/HTTP synthetic-capture qualifier. Phase 6 is not fully complete: third-party package preparation is unsupported. No user repository test plan was silently run.
+**Evidence:** `safe_runner/PHASE6.md`, `safe_runner/DEPENDENCY_PREPARATION.md`, authorization/race/controller/dependency-policy tests, 13 P5 isolation fixtures and 16 P6 live checks including authenticated fixture HTTP -> public registry -> offline installation -> separately authorized run. No user repository test plan was silently run. Phase 7 remains unstarted; unsupported dependency semantics do not fall back to host execution.
 
 ### P7 — Controlled expansion and attribution
 
@@ -577,24 +577,24 @@ Acceptance criteria:
 
 Tasks:
 
-- [ ] P7.1 Add separately qualified Vitest adapter and compatibility matrix.
-- [ ] P7.2 Add narrow temporary-test templates with expectation provenance.
-- [ ] P7.3 Show exact temporary source before authorization and hash into plan.
-- [ ] P7.4 Run comparable baseline/current checks in separate isolation.
-- [ ] P7.5 Record environment/dependency differences and block unjustified attribution.
-- [ ] P7.6 Distinguish introduced, pre-existing and inconclusive failures.
-- [ ] P7.7 Preserve retry history and flag unstable outcomes.
-- [ ] P7.8 Keep general generation and browser execution deferred.
+- [x] P7.1 Add separately qualified Vitest adapter and compatibility matrix (pinned Vitest 5.1.2/Vite 8.4.0, native ESM JS and broker-owned configuration; `safe_runner/VITEST.md`).
+- [x] P7.2 Add narrow temporary-test templates with expectation provenance (literal JSON call/equality, native ESM).
+- [x] P7.3 Show exact temporary source before authorization and hash into the derived execution plan.
+- [x] P7.4 Run comparable baseline/current Node checks in separate isolation.
+- [x] P7.5 Record environment/dependency differences and block unjustified attribution.
+- [x] P7.6 Distinguish introduced, pre-existing and inconclusive failures within the documented paired Node scope.
+- [x] P7.7 Preserve retry history and flag unstable outcomes (two explicit attempts per side).
+- [x] P7.8 Keep general generation and browser execution deferred.
 
 Acceptance criteria:
 
-- [ ] Regression claims require comparable baseline-pass/current-fail evidence.
-- [ ] Generated-test failure does not automatically become a defect claim.
-- [ ] Baseline incompatibility yields inconclusive/could-not-verify.
-- [ ] Temporary tests never enter developer source automatically.
-- [ ] Every new adapter passes isolation and classification gates.
+- [x] Regression claims require comparable baseline-pass/current-fail evidence.
+- [x] Generated-test failure does not automatically become a defect claim.
+- [x] Baseline incompatibility yields inconclusive/could-not-verify.
+- [x] Temporary tests never enter developer source automatically.
+- [x] Every new adapter passes isolation and classification gates within its documented compatibility scope.
 
-**Evidence:** Paired reports, template examples, Vitest matrix and flaky-test fixtures.
+**Evidence:** `safe_runner/PHASE7.md`, paired Node reports, temporary preview/hash fixtures and deterministic unstable retry cases. Vitest has a separate pinned toolchain image, 13 boundary fixtures, 19 adapter/lifecycle checks and an independent fail-closed attestation (`safe_runner/VITEST.md`). Phase 7 complete in this scope. Current release qualification is recorded under P8 below.
 
 ### P8 — Release qualification and packaging
 
@@ -602,26 +602,26 @@ Acceptance criteria:
 
 Tasks:
 
-- [ ] P8.1 Run correctness, security, lifecycle and held-out suites.
-- [ ] P8.2 Run existing chat/indexing/navigation regressions.
-- [ ] P8.3 Benchmark cold/warm latency, memory/disk and cancellation.
-- [ ] P8.4 Verify OS/runtime matrix and disable unsupported execution.
-- [ ] P8.5 Test crash, disk-full, stale authorization and orphan recovery.
-- [ ] P8.6 Verify retention, privacy documentation and sanitized export.
-- [ ] P8.7 Update scope, setup, limitations, troubleshooting and release notes.
-- [ ] P8.8 Package VSIX and exercise workflow from installation.
-- [ ] P8.9 Verify independent execution-disable flag preserves analysis/chat.
-- [ ] P8.10 Record gate results, limitations and release decision.
+- [x] P8.1 Run correctness, security, lifecycle and held-out suites.
+- [x] P8.2 Run existing chat/indexing/navigation regressions.
+- [x] P8.3 Benchmark cold/warm latency, memory/disk and cancellation.
+- [x] P8.4 Verify OS/runtime matrix and disable unsupported execution.
+- [x] P8.5 Test crash, disk-full, stale authorization and orphan recovery.
+- [x] P8.6 Verify retention, privacy documentation and sanitized export.
+- [x] P8.7 Update scope, setup, limitations, troubleshooting and release notes.
+- [x] P8.8 Package VSIX and exercise workflow from installation.
+- [x] P8.9 Verify independent execution-disable flag preserves analysis/chat.
+- [x] P8.10 Record gate results, limitations and release decision.
 
 Acceptance criteria:
 
-- [ ] Mandatory release gates pass with retained evidence.
-- [ ] No unresolved safety failure is waived into execution availability.
-- [ ] Documentation matches supported and unsupported behavior.
-- [ ] Fresh installation and model-disabled workflow succeed.
-- [ ] Release summary separates implemented, qualified and deferred capabilities.
+- [x] Mandatory release gates pass with retained evidence.
+- [x] No unresolved safety failure is waived into execution availability.
+- [x] Documentation matches supported and unsupported behavior.
+- [x] Fresh installation and model-disabled workflow succeed.
+- [x] Release summary separates implemented, qualified and deferred capabilities.
 
-**Evidence:** Release report, benchmarks, packaged-extension checks and support matrix.
+**Evidence:** `safe_runner/PHASE8.md` and `safe_runner/release-report.json`: full regression results, frozen-policy runtime gates, independent defect fixtures, real APFS/API capture, scoped benchmarks and fresh-profile installed-package checks. Phase 8 complete for the opt-in local macOS ARM64/Colima/pinned Node and Vitest matrix. Native editor/password, API capture and isolated execution are separately qualified stages; no continuous automated real-repository end-to-end claim. Other platforms and browser/UI execution remain unavailable. Execution defaults off.
 
 ## 17. Qualification fixture matrix
 
@@ -644,16 +644,21 @@ Include the original realistic defect cases: broken API argument after refactori
 
 ### Mandatory gates
 
-- [ ] No dangling, cross-repository or wrong-version citations in qualification fixtures.
-- [ ] No inferred behavior presented as verified.
-- [ ] No static association presented as runtime coverage.
-- [ ] No execution without matching snapshot/plan/command/profile/policy authorization.
-- [ ] All mandatory denied-access fixtures pass.
-- [ ] Zero-test runs are identified correctly.
-- [ ] Cancellation terminates process trees within documented grace period.
-- [ ] Capture, explanation, planning and reporting work without an LLM.
-- [ ] Interrupted jobs and cleanup failures are explicit; no silent orphan execution.
-- [ ] Existing chat, indexing and navigation pass relevant regressions.
+- [x] No dangling, cross-repository or wrong-version citations in qualification fixtures.
+- [x] No inferred behavior presented as verified.
+- [x] No static association presented as runtime coverage.
+- [x] No execution without matching snapshot/plan/command/profile/policy authorization.
+- [x] All mandatory denied-access fixtures pass.
+- [x] Zero-test runs are identified correctly.
+- [x] Cancellation terminates process trees within documented grace period.
+- [x] Capture, explanation, planning and reporting work without an LLM.
+- [x] Interrupted jobs and cleanup failures are explicit; no silent orphan execution.
+- [x] Existing chat, indexing and navigation pass relevant regressions.
+
+These checked gates apply to the retained local Phase 8 qualification fixtures and
+supported matrix, not arbitrary repositories. See the release report for evidence,
+the separately qualified stage boundaries, one manual unit-suite skip, measurement
+scope and explicitly deferred capabilities.
 
 ### Proposed targets, not claims about current performance
 

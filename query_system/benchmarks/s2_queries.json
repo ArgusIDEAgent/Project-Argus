@@ -38,6 +38,7 @@
   {"category":"previous_context","question":"Who calls this function?","previous":"login","rows":[["DIRECT_CALLERS",["login"]]],"operations":["graph.find_callers"],"clarify":false},
   {"category":"previous_context","question":"Who calls this function?","rows":[["DIRECT_CALLERS",["this/it"]]],"operations":[],"clarify":true},
   {"category":"unsupported_requests","question":"Contract of class Service","rows":[["FUNCTION_CONTRACT",["Service"]]],"operations":[],"clarify":false},
-  {"category":"unsupported_requests","question":"Who calls validate_token in legacy.py?","rows":[["DIRECT_CALLERS",["validate_token"]]],"operations":[],"clarify":false},
+  {"category":"direct_callers","question":"Who calls validate_token in legacy.py?","rows":[["DIRECT_CALLERS",["validate_token"]]],"operations":["graph.find_callers"],"clarify":false},
+  {"category":"unsupported_requests","question":"Who calls validate_token in legacy.rb?","rows":[["DIRECT_CALLERS",["validate_token"]]],"operations":[],"clarify":false},
   {"category":"unsupported_requests","question":"Compare login and entry and deploy server","rows":[["CODE_COMPARISON",["login","entry"]],["UNRESOLVED",[]]],"operations":[],"clarify":true}
 ]

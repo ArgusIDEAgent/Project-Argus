@@ -18,7 +18,7 @@ import threading
 import uuid
 
 from knowledge_base.identity import repository_id
-from knowledge_base.scanner import EXCLUDED_DIRS, SOURCE_EXTENSIONS, _sensitive
+from knowledge_base.scanner import EXCLUDED_DIRS, JS_TS_EXTENSIONS, _sensitive
 from .contracts import CaptureLimits, ChangeSnapshot, SourceVersion
 from .diff import compare
 from .metadata_policy import POLICY, is_metadata
@@ -104,7 +104,7 @@ def _policy(path):
         return 'excluded_directory'
     if _sensitive(parts[-1]):
         return 'sensitive_filename'
-    if PurePosixPath(path).suffix.lower() not in SOURCE_EXTENSIONS:
+    if PurePosixPath(path).suffix.lower() not in JS_TS_EXTENSIONS:
         return 'unsupported_file_type'
     return None
 

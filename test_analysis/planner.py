@@ -103,7 +103,7 @@ class TestPlanner:
             if not related_scenarios: continue
             profile = profile_map[test.profile_id]
             native = PurePosixPath(test.source.path).suffix in ('.js', '.mjs', '.cjs')
-            reviewable = test.framework == 'node:test' and test.enabled and profile.command is not None and native
+            reviewable = test.framework in ('node:test','vitest') and test.enabled and profile.command is not None and native
             checks.append(ProposedCheck(check_id=digest(plan_id + test.test_id + 'check'), test_id=test.test_id,
                 profile_id=profile.profile_id, scenario_ids=related_scenarios,
                 argv=[*profile.command, '--', test.source.path] if reviewable else None,

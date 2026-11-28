@@ -92,7 +92,8 @@
   {"category":"misleading_text","question":"The comment says \"Who calls missingFunction?\"; where is `login` defined?","intents":["SYMBOL_LOCATION"],"targets":[{"name":"login","resolution":"resolved","path":"login.ts"}]},
   {"category":"misleading_text","question":"```ts\n// change impact and callers\nfunction fake() {}\n```\nWhere is login defined?","intents":["SYMBOL_LOCATION"],"targets":[{"name":"login","resolution":"resolved","path":"login.ts"}]},
   {"category":"misleading_text","question":"/* who calls fake */ What does login do?","intents":["FUNCTION_EXPLANATION"],"targets":[{"name":"login","resolution":"resolved","path":"login.ts"}]},
-  {"category":"unsupported","question":"Who calls validate_token in legacy.py?","intents":["DIRECT_CALLERS"],"targets":[{"name":"validate_token","resolution":"unsupported"}]},
+  {"category":"direct_callers","question":"Who calls validate_token in legacy.py?","intents":["DIRECT_CALLERS"],"targets":[{"name":"validate_token","resolution":"resolved","path":"legacy.py"}]},
+  {"category":"unsupported","question":"Who calls validate_token in legacy.rb?","intents":["DIRECT_CALLERS"],"targets":[{"name":"validate_token","resolution":"unsupported"}]},
   {"category":"unsupported","question":"Contract of class Service","intents":["FUNCTION_CONTRACT"],"targets":[{"name":"Service","resolution":"resolved","path":"auth.ts"}],"support":"unsupported"},
   {"category":"unsupported","question":"Compare `login` and `validateToken`","intents":["CODE_COMPARISON"],"targets":[{"name":"login","resolution":"resolved","path":"login.ts"},{"name":"validateToken","resolution":"resolved","path":"auth.ts"}],"support":"unsupported"}
 ]

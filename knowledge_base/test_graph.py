@@ -106,6 +106,49 @@ export function a(fn: any) { return fn(); }
         with self.assertRaisesRegex(RuntimeError, "stale"):
             graph.symbol("a")
 
+    def test_python_uses_import_bindings_and_ignores_shadowed_or_dynamic_calls(self):
+        self.write("pkg/__init__.py", "")
+        self.write("pkg/auth.py", "def verify():\n    return True\n")
+        self.write("other.py", "def verify():\n    return False\n")
+        self.write("pkg/routes.py", """from .auth import verify as check
+from . import auth as backend
+
+async def allowed():
+    return ('café', check(), backend.verify())
+
+def shadowed(check):
+    return check()
+
+def rebound():
+    check = lambda: False
+    return check()
+
+def dynamic(receiver):
+    return receiver.verify()
+
+class Service:
+    def verify(self):
+        return True
+
+def explicit(service):
+    return Service.verify(service)
+""")
+        result, graph = self.build()
+        with self.assertRaisesRegex(ValueError, "found 3"):
+            graph.symbol("verify")
+        calls = graph.direct_callees(graph.symbol("allowed")["symbol_id"])
+        self.assertEqual([(edge["other_path"], edge["evidence_line"]) for edge in calls],
+                         [("pkg/auth.py", 5), ("pkg/auth.py", 5)])
+        for name in ("shadowed", "rebound", "dynamic"):
+            self.assertFalse(graph.direct_callees(graph.symbol(name)["symbol_id"]))
+        service = graph.symbol("Service.verify")
+        self.assertEqual([edge["other_label"] for edge in graph.direct_callers(service["symbol_id"])],
+                         ["explicit"])
+        self.assertEqual({edge["other_path"] for edge in graph.imports("pkg/routes.py")}, {"pkg/auth.py"})
+        self.assertTrue(any(row["expression"] == "receiver.verify" for row in
+                            graph.unresolved_references(symbol_id=graph.symbol("dynamic")["symbol_id"])))
+        self.assertEqual(result["coverage"]["python"]["parsed"], 4)
+
     def test_deletion_rebuild_removes_edges(self):
         self.write("a.ts", "export function a() { return 1; }\n")
         self.write("b.ts", "import {a} from './a'; export function b() { return a(); }\n")

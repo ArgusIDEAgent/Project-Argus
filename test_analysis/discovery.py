@@ -8,7 +8,7 @@ from tree_sitter import Parser
 from knowledge_base.parser import LANGUAGES, parse_source
 from .contracts import SourceRef, Assertion
 
-ADAPTER_VERSION = 'node-static-v2:' + ':'.join(version(name) for name in ('tree-sitter', 'tree-sitter-javascript', 'tree-sitter-typescript'))
+ADAPTER_VERSION = 'node-vitest-static-v3:' + ':'.join(version(name) for name in ('tree-sitter', 'tree-sitter-javascript', 'tree-sitter-typescript'))
 
 
 def digest(value):
@@ -34,6 +34,7 @@ def inspect(source):
     bindings, asserts, imports = {}, set(), []
     shadowed_require = False
     direct_asserts = set()
+    expects = set()
     for reference in syntax.references:
         if reference['kind'] != 'import':
             continue
@@ -45,6 +46,9 @@ def inspect(source):
         if local == 'require': shadowed_require = True
         if local and module == 'node:test':
             bindings[local] = imported or 'default'
+        if local and module == 'vitest':
+            if imported in ('test','it','describe','*'): bindings[local]=imported
+            elif imported=='expect': expects.add(local)
         if local and module in ('node:assert', 'node:assert/strict'):
             asserts.add(local)
             if imported not in (None, 'default', '*'):
@@ -81,13 +85,14 @@ def inspect(source):
             declarations.append(text(node.child_by_field_name('name')))
         elif node.type in ('formal_parameters', 'required_parameter', 'optional_parameter'):
             declarations.append(text(node))
-    for alias in list(bindings.keys() | asserts):
+    for alias in list(bindings.keys() | asserts | expects):
         # A conflicting local parameter or declaration invalidates file-wide
         # alias recognition. False negatives are safer than fake test metadata.
         count = sum(bool(re.search(r'\b' + re.escape(alias) + r'\b', name)) for name in declarations)
         commonjs = any(n.type == 'variable_declarator' and text(n.child_by_field_name('name')) == alias for n in nodes)
         if count > (1 if commonjs else 0):
             bindings.pop(alias, None); asserts.discard(alias)
+            expects.discard(alias)
             limitations.append('Shadowed Node binding excluded: ' + alias)
     if shadowed_require or any(re.search(r'\brequire\b', name) for name in declarations):
         bindings = {}; asserts = set()
@@ -123,6 +128,14 @@ def inspect(source):
             if not (callback.start_byte <= child.start_byte < child.end_byte <= callback.end_byte): continue
             if child.type != 'call_expression': continue
             expression = text(child.child_by_field_name('function'))
+            member=child.child_by_field_name('function')
+            if member and member.type=='member_expression':
+                obj=member.child_by_field_name('object'); prop=member.child_by_field_name('property')
+                if obj and obj.type=='call_expression' and text(obj.child_by_field_name('function')) in expects and text(prop) in ('toBe','toEqual','toStrictEqual','toThrow','toMatch'):
+                    snippet=text(child)
+                    if len(snippet.encode())<=500:
+                        assertion_items.append(Assertion(source=source_ref(source,child.start_point.row+1,child.end_point.row+1),expression=snippet))
+                    continue
             if expression.split('.')[0] not in asserts: continue
             if len(expression.split('.')) > 2 or (expression.split('.')[0] in direct_asserts and '.' in expression):
                 continue
