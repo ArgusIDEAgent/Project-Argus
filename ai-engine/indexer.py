@@ -411,14 +411,16 @@ def _index_directory(
                 graph_builder.remove_file_from_graph(kg, rel_path)
             continue
 
-        previous_points,next_offset = client.scroll(collection_name=collection,scroll_filter=Filter(must=[
-            FieldCondition(key='repo_id',match=MatchValue(value=repo_id)),
-            FieldCondition(key='file_path',match=MatchValue(value=rel_path))]),limit=1000,with_vectors=True)
-        while next_offset is not None:
-            page,next_offset = client.scroll(collection_name=collection,scroll_filter=Filter(must=[
+        previous_points = []
+        if not needs_full:
+            previous_points,next_offset = client.scroll(collection_name=collection,scroll_filter=Filter(must=[
                 FieldCondition(key='repo_id',match=MatchValue(value=repo_id)),
-                FieldCondition(key='file_path',match=MatchValue(value=rel_path))]),offset=next_offset,limit=1000,with_vectors=True)
-            previous_points.extend(page)
+                FieldCondition(key='file_path',match=MatchValue(value=rel_path))]),limit=1000,with_vectors=True)
+            while next_offset is not None:
+                page,next_offset = client.scroll(collection_name=collection,scroll_filter=Filter(must=[
+                    FieldCondition(key='repo_id',match=MatchValue(value=repo_id)),
+                    FieldCondition(key='file_path',match=MatchValue(value=rel_path))]),offset=next_offset,limit=1000,with_vectors=True)
+                previous_points.extend(page)
         previous_ids = {str(point.id) for point in previous_points}
         reusable = {(point.payload or {}).get('embedding_hash'):point.vector for point in previous_points
                     if point.vector is not None and not needs_full}

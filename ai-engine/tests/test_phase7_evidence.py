@@ -36,7 +36,7 @@ class AggregationTests(unittest.TestCase):
         return asyncio.run(executor.execute(executor.plan(query)))
 
     def test_real_three_engine_package_one_pin_and_no_llm(self):
-        with patch.object(self.owner.store, "pin_view", wraps=self.owner.store.pin_view) as pins, self.owner.session() as executor, patch("answers.answer_question", side_effect=AssertionError("LLM")), patch("answers.urlopen", side_effect=AssertionError("Ollama")):
+        with patch.object(self.owner.store, "pin_view", wraps=self.owner.store.pin_view) as pins, self.owner.session() as executor, patch("answers.answer_question", side_effect=AssertionError("LLM")), patch("answers._request_source_ranking", side_effect=AssertionError("Ollama")):
             query = self.owner.typed_requirements(executor, ["DIRECT_CALLERS", "FEATURE_DISCOVERY", "FUNCTION_CONTRACT"], [[0], [], [0]])
             report = asyncio.run(executor.execute(executor.plan(query)))
             aggregator = EvidenceAggregator.from_executor(executor)

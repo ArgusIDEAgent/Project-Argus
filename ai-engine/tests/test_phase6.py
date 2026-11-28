@@ -88,7 +88,7 @@ class Phase6Tests(unittest.TestCase):
     def test_ambiguous_answer_never_invokes_a_model(self):
         (self.root/'other.ts').write_text('export function validateToken(token: string) { return false; }\n')
         self.refresh()
-        with patch('answers.urlopen',side_effect=AssertionError('Ambiguity cannot be resolved by an LLM')):
+        with patch('answers._request_source_ranking',side_effect=AssertionError('Ambiguity cannot be resolved by an LLM')):
             result=answer_question(str(self.root),'explain validateToken',self.search('explain validateToken'))
         self.assertEqual(result['answerMode'],'evidence')
         self.assertIn('Several source definitions',result['answer'])
@@ -187,7 +187,7 @@ class Phase6Tests(unittest.TestCase):
 
     def test_http_retrieve_is_authenticated_and_does_not_call_answer_model(self):
         from fastapi.testclient import TestClient
-        with patch.dict(os.environ,{'CODEMIND_AUTO_SYNC':'0'}), TestClient(api.app,base_url='http://127.0.0.1') as client, patch('answers.urlopen',side_effect=AssertionError('Retrieval must not call an LLM')):
+        with patch.dict(os.environ,{'CODEMIND_AUTO_SYNC':'0'}), TestClient(api.app,base_url='http://127.0.0.1') as client, patch('answers._request_source_ranking',side_effect=AssertionError('Retrieval must not call an LLM')):
             body={'repoId':self.repo,'query':'validateToken'}
             self.assertEqual(client.post('/retrieve',json=body).status_code,401)
             result=client.post('/retrieve',json=body,headers={'X-CodeMind-Session':api._SESSION_TOKEN})

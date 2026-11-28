@@ -254,7 +254,7 @@ class RuleEngineTests(unittest.TestCase):
         with RuleBasedAnalysisEngine.pinned(self.store) as engine:
             before = hashlib.sha256(engine.database.read_bytes()).hexdigest()
             operation = self.operation(engine, "module_overview", module_path="auth.ts")
-            with patch("answers.urlopen", side_effect=AssertionError("LLM")), \
+            with patch("answers._request_source_ranking", side_effect=AssertionError("LLM")), \
                  patch("config.embed_texts", side_effect=AssertionError("Embedding")), \
                  patch("indexer.index_directory", side_effect=AssertionError("Indexing")), \
                  patch("query_system.semantic_engine.SemanticSearchEngine.execute", side_effect=AssertionError("Semantic discovery")):

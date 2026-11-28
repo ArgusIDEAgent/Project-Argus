@@ -209,7 +209,7 @@ test('repository comparison starts a new chat only for a different path', () => 
   assert.equal(isDifferentRepository('/repo/one', '/repo/two'), true);
 });
 
-test('chat answer footer appears once after the answer and source cards', () => {
+test('chat replaces verified preview with final source cards and one answer footer', () => {
   const Module = require('node:module');
   const native = Module._load;
   let html;
@@ -221,7 +221,11 @@ test('chat answer footer appears once after the answer and source cards', () => 
   const nodes = new Map(); let receive;
   function element() { return { children: [], listeners: {}, focus() {},
     addEventListener(name, callback) { this.listeners[name] = callback; },
-    append(...values) { this.children.push(...values); },
+    append(...values) {
+      for (const value of values) { value.parent = this; this.children.push(value); }
+    },
+    remove() { this.parent.children.splice(this.parent.children.indexOf(this), 1); },
+    setAttribute() {},
     insertAdjacentHTML(_, value) { this.children.push({ html: value }); },
     querySelectorAll() { return []; } }; }
   const document = { getElementById(id) { if (!nodes.has(id)) nodes.set(id, element()); return nodes.get(id); },
@@ -229,10 +233,25 @@ test('chat answer footer appears once after the answer and source cards', () => 
   vm.runInNewContext(script, { acquireVsCodeApi: () => ({ postMessage() {} }), document,
     window: { addEventListener(_, callback) { receive = callback; } }, clearTimeout() {}, setTimeout() {} });
   const footer = '<footer class="debug-answer-engine">Answer by: Semantic Search + Local LLM</footer>';
-  receive({ data: { type: 'results', answer: 'Explanation.\n\nSources:\n[1] auth.ts:1-2', results: [{
+  const answer = { type: 'results', answer: 'Explanation.\n\nSources:\n[1] auth.ts:1-2', results: [{
     key: 'source', path: 'auth.ts', startLine: 1, endLine: 2, name: 'validateToken',
     reason: 'Verified evidence', callers: [], tests: [], canIgnore: false,
-  }], warning: null, debugFooter: footer } });
+  }], warning: null, debugFooter: footer };
+  const button = nodes.get('send-button');
+  button.disabled = true;
+  receive({ data: { ...answer, preview: true } });
+  const preview = nodes.get('messages').children[0];
+  assert.equal(preview.className, 'answer-preview');
+  assert.equal(preview.children[1].className, 'code-result');
+  assert.match(preview.children[2].textContent, /Ranking verified sources/);
+  assert.equal(button.disabled, true);
+  receive({ data: { type: 'requestDone' } });
+  assert.equal(nodes.get('messages').children.length, 0);
+  assert.equal(button.disabled, false);
+  button.disabled = true;
+  receive({ data: { ...answer, preview: true } });
+  receive({ data: answer });
+  assert.equal(button.disabled, false);
   const children = nodes.get('messages').children;
   assert.equal(children.length, 3);
   assert.equal(children[1].className, 'code-result');

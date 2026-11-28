@@ -1,6 +1,5 @@
 """Bounded source preparation and adaptive explanation budgets."""
 import hashlib
-import json
 import os
 from pathlib import Path
 import tempfile
@@ -29,15 +28,15 @@ def test_large_source_leaves_room_for_later_evidence_and_marks_gaps():
         assert 'result = 42' in excerpts[1]
         assert sum(len(text) for text in excerpts) < 14500
         with patch.dict(os.environ, {'CODEMIND_LOCAL_MODEL': 'test-local'}), patch(
-            'answers.urlopen', return_value=model_reply({'sources': ['source-1', 'source-2']})
+            'answers._request_source_ranking', return_value=model_reply({'sources': ['source-1', 'source-2']})
         ) as model:
             reply = answer_question(root, 'Explain the workflow', {'results': items})
         assert model.call_count == 1
-        body = json.loads(model.call_args.args[0].data)
+        body = model.call_args.args[0]
         assert body['options']['num_ctx'] == 8192
         assert body['options']['num_predict'] == 96
         assert len(reply['citations']) == 2
-        with patch('answers.urlopen', side_effect=AssertionError('Locations use verified source directly')):
+        with patch('answers._request_source_ranking', side_effect=AssertionError('Locations use verified source directly')):
             reply = answer_question(root, 'Where is result?', {'results': items})
         assert [source['path'] for source in reply['citations']] == ['entry.ts', 'output.ts']
 

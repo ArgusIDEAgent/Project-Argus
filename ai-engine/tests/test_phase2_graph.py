@@ -246,7 +246,7 @@ class GraphEngineTests(unittest.TestCase):
         with GraphQueryEngine.pinned(self.store) as engine:
             before = hashlib.sha256(engine.database.read_bytes()).hexdigest()
             operation = self.operation(engine, "find_callers", reference="validateToken")
-            with patch("answers.urlopen", side_effect=AssertionError("Graph queries cannot call LLMs")), \
+            with patch("answers._request_source_ranking", side_effect=AssertionError("Graph queries cannot call LLMs")), \
                  patch("indexer.embed_texts", side_effect=AssertionError("Graph queries cannot embed")):
                 first = asyncio.run(engine.execute(operation, engine.context))
                 second = asyncio.run(engine.execute(operation, engine.context))

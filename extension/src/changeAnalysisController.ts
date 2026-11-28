@@ -17,6 +17,8 @@ export class ChangeAnalysisController implements vscode.Disposable {
   private timer?: NodeJS.Timeout;
   private watcher?: vscode.FileSystemWatcher;
   private gitTimer?: NodeJS.Timeout;
+  private leaseTimer?: NodeJS.Timeout;
+  private retiring = Promise.resolve();
   private disposables: vscode.Disposable[] = [];
   private actions = new Map<string, string>();
   private sourceText = new Map<string, string>();
@@ -55,6 +57,8 @@ export class ChangeAnalysisController implements vscode.Disposable {
     this.watcher?.dispose(); this.watcher = undefined;
     if (this.gitTimer) clearInterval(this.gitTimer);
     this.gitTimer = undefined;
+    if (this.leaseTimer) clearInterval(this.leaseTimer);
+    this.leaseTimer = undefined;
   }
 
   private async stale(): Promise<void> {
@@ -83,7 +87,12 @@ export class ChangeAnalysisController implements vscode.Disposable {
       }
       this.panel.reveal();
       this.status('Starting change analysis. Saved files only; connecting to the engine…');
-      if (this.job && this.repo) { try { await this.server.changeAction(this.job.id, this.repo.id, 'cancel'); } catch { /* expired jobs do not prevent a new capture */ } }
+      const previousRepo = this.repo;
+      const previousJob = this.job;
+      this.repo = undefined;
+      this.job = undefined;
+      if (previousRepo) await this.releaseCapture(previousRepo, previousJob, this.run);
+      if (epoch !== this.epoch) return;
       if (this.timer) clearTimeout(this.timer);
       this.stopWatch(); this.actions.clear(); this.changed = false; this.mode = 'simple'; this.plan = undefined; this.presentation = undefined; this.checkActions.clear();
       if (this.runTimer) clearTimeout(this.runTimer);
@@ -93,11 +102,28 @@ export class ChangeAnalysisController implements vscode.Disposable {
       let root = selected?.rootPath ?? (vscode.workspace.workspaceFolders?.length === 1 ? vscode.workspace.workspaceFolders[0].uri.fsPath : undefined);
       if (!root) root = (await vscode.window.showOpenDialog({ canSelectFolders: true, canSelectFiles: false, canSelectMany: false, openLabel: 'Analyze saved changes' }))?.[0]?.fsPath;
       if (!root || epoch !== this.epoch) return;
-      const repository = await this.server.registerRepository(root);
-      if (epoch !== this.epoch) return;
+      const repository = await this.server.acquireRepository(root, false);
+      if (epoch !== this.epoch) {
+        await this.releaseCapture(repository);
+        return;
+      }
+      let job: ChangeJob;
+      try {
+        job = await this.server.startChange(repository.id, randomBytes(20).toString('hex'));
+      } catch (error) {
+        await this.releaseCapture(repository);
+        throw error;
+      }
+      if (epoch !== this.epoch) {
+        await this.releaseCapture(repository, job);
+        return;
+      }
       this.repo = repository;
-      this.job = await this.server.startChange(this.repo.id, randomBytes(20).toString('hex'));
-      if (epoch !== this.epoch) { await this.server.changeAction(this.job.id, this.repo.id, 'cancel'); return; }
+      this.job = job;
+      const { id, leaseId } = repository;
+      if (leaseId) {
+        this.leaseTimer = setInterval(() => { void this.server.liveState(id, false, leaseId).catch(() => {}); }, 15_000);
+      }
       this.watcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(root, '**/*'));
       for (const event of [this.watcher.onDidChange, this.watcher.onDidCreate, this.watcher.onDidDelete])
         event(uri => { if (this.contains(uri.fsPath)) void this.stale(); });
@@ -279,11 +305,29 @@ export class ChangeAnalysisController implements vscode.Disposable {
     body += `<script nonce="${nonce}">document.addEventListener('click',event=>{const b=event.target.closest('button');if(b&&!b.disabled&&['prepare-run','execute-run','compare-run','template-run','remove-template','cancel-run','export-run'].includes(b.id))api.postMessage({type:b.id});});</script>`;
     this.panel.webview.html = `<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'nonce-${nonce}'; style-src 'nonce-${nonce}'"><style nonce="${nonce}">body{font:var(--vscode-font-size) var(--vscode-font-family);color:var(--vscode-foreground);padding:18px}li{margin:8px 0}button{margin:4px}section{margin:20px 0}</style></head><body><h1>Analyze Change</h1><nav>${['simple','detailed','flow'].map(mode => `<button data-mode="${mode}">${mode}</button>`).join('')}<button id="plan">Review test plan</button><button id="cancel">Cancel</button></nav>${body}<script nonce="${nonce}">const api=acquireVsCodeApi();document.addEventListener('click',event=>{const b=event.target.closest('button');if(!b)return;if(b.dataset.source)api.postMessage({type:'source',value:b.dataset.source});if(b.dataset.mode)api.postMessage({type:'mode',value:b.dataset.mode});if(b.id==='cancel')api.postMessage({type:'cancel'});if(b.id==='plan')api.postMessage({type:'plan'});if(b.dataset.check)api.postMessage({type:'check',value:b.dataset.check});});</script></body></html>`;
   }
+  private async releaseCapture(repo: Repository, job?: ChangeJob, run?: CapturedRun): Promise<void> {
+    if (job) {
+      if (run) await this.server.capturedRun(job.id, repo.id, run.id, true).catch(() => {});
+      await this.server.changeAction(job.id, repo.id, 'cancel').catch(() => {});
+    }
+    if (repo.leaseId) await this.server.releaseRepository(repo);
+  }
+
   private stop(): void {
     if (this.runTimer) clearTimeout(this.runTimer);
-    if (this.run && this.job && this.repo) void this.server.capturedRun(this.job.id, this.repo.id, this.run.id, true).catch(() => {});
-    ++this.epoch; if (this.timer) clearTimeout(this.timer); this.stopWatch(); this.actions.clear(); this.checkActions.clear();
-    if (this.repo && this.job) void this.server.changeAction(this.job.id, this.repo.id, 'cancel').catch(() => {});
+    ++this.epoch;
+    if (this.timer) clearTimeout(this.timer);
+    this.stopWatch();
+    this.actions.clear();
+    this.checkActions.clear();
+    const repo = this.repo;
+    const job = this.job;
+    const run = this.run;
+    this.repo = undefined;
+    this.job = undefined;
+    this.run = undefined;
+    if (repo) this.retiring = this.releaseCapture(repo, job, run);
   }
+  async close(): Promise<void> { this.stop(); await this.retiring; }
   dispose(): void { this.stop(); this.panel?.dispose(); for (const d of this.disposables) d.dispose(); this.sourceText.clear(); }
 }

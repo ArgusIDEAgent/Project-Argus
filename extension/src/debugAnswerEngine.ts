@@ -59,8 +59,15 @@ export function debugLegacyAnswerEngineFooter(reply: SearchResult): string {
     labels.push('Evidence Summary');
     if (reply.evidenceSelection === 'local-llm') labels.push('Local LLM ranking');
   }
+  const timing = reply.answerTiming;
+  const total = timing?.totalMs;
+  const first = timing?.firstUsefulMs;
+  const elapsed = typeof total === 'number' && Number.isFinite(total)
+    ? ' · ' + (typeof first === 'number' && Number.isFinite(first)
+      ? 'First useful result: ' + first.toFixed(1) + ' ms · ' : '') + 'Total: ' + total.toFixed(1) + ' ms'
+    : '';
   return '<footer class="debug-answer-engine" aria-label="Developer answer engine attribution">Answer by: '
-    + (labels.length ? labels.join(' + ') : 'Unknown') + '</footer>';
+    + (labels.length ? labels.join(' + ') : 'Unknown') + elapsed + '</footer>';
 }
 
 export function debugStaticAnswerEngineFooter(): string {

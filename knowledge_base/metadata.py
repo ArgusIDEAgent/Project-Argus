@@ -252,69 +252,72 @@ def trace(database, repo_id, identifier):
         raise ValueError("Metadata index is missing; refresh the repository")
     with closing(connect(f"{Path(database).resolve().as_uri()}?mode=ro", uri=True)) as db:
         db.row_factory = sqlite3.Row
-        row = db.execute("SELECT * FROM code_chunks WHERE repository_id=? AND id=?", (repo_id, identifier)).fetchone()
-        kind = 'chunk'
-        if not row:
-            row = db.execute("SELECT p.*,s.start_line,s.end_line,s.start_byte,s.end_byte FROM symbol_sources p JOIN symbols s ON s.id=p.symbol_id WHERE p.repository_id=? AND p.symbol_id=?", (repo_id, identifier)).fetchone()
-            kind = 'symbol'
-        if not row:
-            row = db.execute("SELECT * FROM relationships WHERE repository_id=? AND id=?", (repo_id, identifier)).fetchone()
-            kind = 'relationship'
-        if not row:
-            row = db.execute("SELECT p.*,s.start_line,s.end_line,s.start_byte,s.end_byte FROM graph_node_sources p LEFT JOIN symbols s ON s.id=p.symbol_id WHERE p.repository_id=? AND p.node_id=?", (repo_id, identifier)).fetchone()
-            kind = 'node'
-        if not row:
-            raise ValueError("Entity has no unified metadata; refresh the repository")
-        info = dict(row)
-        if kind == 'chunk' and db.execute("SELECT 1 FROM sqlite_master WHERE name='chunk_context'").fetchone():
-            context = db.execute('SELECT * FROM chunk_context WHERE id=?',(identifier,)).fetchone()
-            if context:
-                if hashlib.sha256(context['source'].encode()).hexdigest() != info['content_hash']:
-                    raise ValueError('Chunk context differs from its indexed source')
-                info.update({key:context[key] for key in ('language','module','symbol_kind','symbol_name',
-                    'qualified_name','signature','comments','chunk_kind','parent_symbol_key','embedding_model')})
-        snapshot = db.execute("SELECT * FROM index_snapshots WHERE id=? AND repository_id=?", (info['snapshot_id'], repo_id)).fetchone()
-        if not snapshot or snapshot['state'] != 'ready':
-            raise ValueError("Index snapshot is not ready")
-        info.update(entityId=identifier, kind=kind, sourceOrigin=snapshot['source_origin'],
-                    schemaVersion=snapshot['schema_version'], snapshotId=info['snapshot_id'],
-                    fileId=info.get('file_id'),symbolId=info.get('symbol_id'))
-        if not info.get('file_id'):
-            info['structural'] = True
-            return info
-        file = db.execute("SELECT * FROM files WHERE id=? AND repository_id=?", (info['file_id'], repo_id)).fetchone()
-        root = Path(db.execute("SELECT root_path FROM repositories WHERE id=?", (repo_id,)).fetchone()[0]).resolve()
-        path = root / relative_path(file['relative_path'])
-        try:
-            if path.resolve(strict=True) != path or not path.is_file():
-                raise ValueError("Indexed path no longer identifies a saved source file")
-            source = path.read_bytes()
-        except OSError as error:
-            raise ValueError("Indexed file is unavailable") from error
-        if not info.get('source_hash') or hashlib.sha256(source).hexdigest() != info['source_hash']:
-            raise ValueError("Indexed source changed; refresh the repository")
-        start, end = info.get('start_line'), info.get('end_line')
-        if start is None:
-            start, end = 1, max(1, len(source.splitlines()))
-        if end is None:
-            end = start
-        if not 1 <= start <= end <= max(1, len(source.splitlines())):
-            raise ValueError("Indexed source location is invalid")
-        if info.get('start_byte') is not None and not 0 <= info['start_byte'] <= info['end_byte'] <= len(source):
-            raise ValueError("Indexed byte location is invalid")
-        if info.get('start_byte') is not None:
-            byte_start, byte_end = info['start_byte'], info['end_byte']
-            actual_start = source[:byte_start].count(b'\n') + 1
-            actual_end = source[:byte_end].count(b'\n') + 1
-            if start != actual_start or (info.get('end_line') is not None and end != actual_end):
-                raise ValueError('Indexed lines disagree with byte location')
-            if kind == 'relationship':
-                # End offsets are exclusive; relationships store no end line.
-                end = source[:max(byte_start, byte_end-1)].count(b'\n') + 1
-        info.update(path=file['relative_path'], fileId=file['id'], symbolId=info.get('symbol_id'),
-                    snapshotId=info['snapshot_id'], sourceHash=info['source_hash'], startLine=start, endLine=end)
-        return info
+        return _trace(db, repo_id, identifier)
 
+
+def _trace(db, repo_id, identifier):
+    row = db.execute("SELECT * FROM code_chunks WHERE repository_id=? AND id=?", (repo_id, identifier)).fetchone()
+    kind = 'chunk'
+    if not row:
+        row = db.execute("SELECT p.*,s.start_line,s.end_line,s.start_byte,s.end_byte FROM symbol_sources p JOIN symbols s ON s.id=p.symbol_id WHERE p.repository_id=? AND p.symbol_id=?", (repo_id, identifier)).fetchone()
+        kind = 'symbol'
+    if not row:
+        row = db.execute("SELECT * FROM relationships WHERE repository_id=? AND id=?", (repo_id, identifier)).fetchone()
+        kind = 'relationship'
+    if not row:
+        row = db.execute("SELECT p.*,s.start_line,s.end_line,s.start_byte,s.end_byte FROM graph_node_sources p LEFT JOIN symbols s ON s.id=p.symbol_id WHERE p.repository_id=? AND p.node_id=?", (repo_id, identifier)).fetchone()
+        kind = 'node'
+    if not row:
+        raise ValueError("Entity has no unified metadata; refresh the repository")
+    info = dict(row)
+    if kind == 'chunk' and db.execute("SELECT 1 FROM sqlite_master WHERE name='chunk_context'").fetchone():
+        context = db.execute('SELECT * FROM chunk_context WHERE id=?',(identifier,)).fetchone()
+        if context:
+            if hashlib.sha256(context['source'].encode()).hexdigest() != info['content_hash']:
+                raise ValueError('Chunk context differs from its indexed source')
+            info.update({key:context[key] for key in ('language','module','symbol_kind','symbol_name',
+                'qualified_name','signature','comments','chunk_kind','parent_symbol_key','embedding_model')})
+    snapshot = db.execute("SELECT * FROM index_snapshots WHERE id=? AND repository_id=?", (info['snapshot_id'], repo_id)).fetchone()
+    if not snapshot or snapshot['state'] != 'ready':
+        raise ValueError("Index snapshot is not ready")
+    info.update(entityId=identifier, kind=kind, sourceOrigin=snapshot['source_origin'],
+                schemaVersion=snapshot['schema_version'], snapshotId=info['snapshot_id'],
+                fileId=info.get('file_id'),symbolId=info.get('symbol_id'))
+    if not info.get('file_id'):
+        info['structural'] = True
+        return info
+    file = db.execute("SELECT * FROM files WHERE id=? AND repository_id=?", (info['file_id'], repo_id)).fetchone()
+    root = Path(db.execute("SELECT root_path FROM repositories WHERE id=?", (repo_id,)).fetchone()[0]).resolve()
+    path = root / relative_path(file['relative_path'])
+    try:
+        if path.resolve(strict=True) != path or not path.is_file():
+            raise ValueError("Indexed path no longer identifies a saved source file")
+        source = path.read_bytes()
+    except OSError as error:
+        raise ValueError("Indexed file is unavailable") from error
+    if not info.get('source_hash') or hashlib.sha256(source).hexdigest() != info['source_hash']:
+        raise ValueError("Indexed source changed; refresh the repository")
+    start, end = info.get('start_line'), info.get('end_line')
+    if start is None:
+        start, end = 1, max(1, len(source.splitlines()))
+    if end is None:
+        end = start
+    if not 1 <= start <= end <= max(1, len(source.splitlines())):
+        raise ValueError("Indexed source location is invalid")
+    if info.get('start_byte') is not None and not 0 <= info['start_byte'] <= info['end_byte'] <= len(source):
+        raise ValueError("Indexed byte location is invalid")
+    if info.get('start_byte') is not None:
+        byte_start, byte_end = info['start_byte'], info['end_byte']
+        actual_start = source[:byte_start].count(b'\n') + 1
+        actual_end = source[:byte_end].count(b'\n') + 1
+        if start != actual_start or (info.get('end_line') is not None and end != actual_end):
+            raise ValueError('Indexed lines disagree with byte location')
+        if kind == 'relationship':
+            # End offsets are exclusive; relationships store no end line.
+            end = source[:max(byte_start, byte_end-1)].count(b'\n') + 1
+    info.update(path=file['relative_path'], fileId=file['id'], symbolId=info.get('symbol_id'),
+                snapshotId=info['snapshot_id'], sourceHash=info['source_hash'], startLine=start, endLine=end)
+    return info
 
 def audit(database):
     with closing(connect(f"{Path(database).resolve().as_uri()}?mode=ro", uri=True)) as db:
@@ -436,12 +439,13 @@ class SemanticIndex:
                     [context_row(chunk,self.repo_id,path,embedding_model) for chunk in contexts])
 
 
-def validate_vector(database, repo_id, point, collection):
+def validate_vector(database, repo_id, point, collection, *, connection=None):
     """All semantic entry points share the same payload/SQLite/source checks."""
     if len(repo_id) != 24 or any(c not in '0123456789abcdef' for c in repo_id):
         raise ValueError('Invalid canonical repository identity')
     payload = point.payload or {}
-    info = trace(database,repo_id,str(point.id))
+    info = (trace(database, repo_id, str(point.id)) if connection is None
+            else _trace(connection, repo_id, str(point.id)))
     if (info['kind'] != 'chunk' or payload.get('repo_id') != repo_id
         or info['path'] != payload.get('file_path') or info['sourceHash'] != payload.get('file_hash')
         or info['snapshotId'] != payload.get('snapshot_id') or info['fileId'] != payload.get('file_id')

@@ -17,7 +17,7 @@ import indexer
 from knowledge_base.cache import RepositoryCache
 from knowledge_base.graph import build_graph
 from knowledge_base.storage import RepositoryStorage
-from knowledge_base.synchronization import SnapshotStore, observe_sources
+from knowledge_base.synchronization import SnapshotStore, SyncManager, observe_sources
 from knowledge_base.vector_store import RepositoryVectors
 
 
@@ -120,6 +120,51 @@ print('persistent-cache-hit')
         self.assertEqual(marker.read_bytes(), b'old data stays untouched')
         self.publish()
         self.assertTrue(self.store.view()['fresh'])
+
+    def test_advisory_poll_never_hashes_sources_and_pending_events_survive_older_jobs(self):
+        self.publish()
+        stable = self.store.active()['id']
+        manager = SyncManager(None, lambda _: None, debounce=3600, audit_interval=3600)
+        self.addCleanup(manager.close)
+        manager.add(self.repo, self.root)
+        with patch.object(api, '_SYNC_MANAGER', manager):
+            with patch('knowledge_base.synchronization.observe_sources',
+                       side_effect=AssertionError('Status polling must not scan saved files')):
+                status = api.live_state(self.repo, verify=False)['synchronization']
+                self.assertTrue(status['fresh'])
+                self.assertFalse(status['verified'])
+                self.assertEqual(status['snapshotId'], stable)
+                manager.changed(self.repo)
+                consumed = manager.revision(self.repo)
+                manager.changed(self.repo)
+                manager.completed(self.repo, consumed)
+                pending = api.live_state(self.repo, verify=False)['synchronization']
+                self.assertEqual(pending['state'], 'pending')
+                self.assertFalse(pending['fresh'])
+            self.file.write_text(self.file.read_text().replace('> 0', '> 3'))
+            verified = api.live_state(self.repo)['synchronization']
+            self.assertTrue(verified['verified'])
+            self.assertFalse(verified['fresh'])
+            self.assertEqual(self.search()['results'], [])
+
+    def test_each_local_publication_builds_one_accelerator_and_prunes_vectors(self):
+        import faiss
+        from qdrant_client.models import Filter, FieldCondition, MatchValue
+        removed = self.root/'removed.py'
+        removed.write_text('def retired(): return True\n')
+        with patch('knowledge_base.vector_store.faiss.write_index', wraps=faiss.write_index) as build:
+            before = self.publish()
+            self.assertEqual(build.call_count, 1)
+            self.file.write_text(self.file.read_text().replace('> 0', '> 2'))
+            removed.unlink()
+            after = self.publish()
+            self.assertEqual(build.call_count, 2)
+        self.assertEqual(after['chunks_embedded'], 1)
+        self.assertEqual(after['files_pruned'], 1)
+        self.assertEqual(after['chunk_count'], before['chunk_count'] - 1)
+        active = self.store.active()['collection']
+        removed_filter = Filter(must=[FieldCondition(key='file_path', match=MatchValue(value=removed.name))])
+        self.assertEqual(self.client.count(active, count_filter=removed_filter).count, 0)
 
     def test_storage_events_do_not_change_source_digest(self):
         before = observe_sources(self.root)

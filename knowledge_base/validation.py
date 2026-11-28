@@ -154,7 +154,7 @@ def run_case(language,extra_files=0,structural_only=False):
                 stack.enter_context(patch.object(api,'DEFAULT_DATA_DIR',str(data)))
                 stack.enter_context(patch.object(api,'_SYNC_MANAGER',None))
                 stack.enter_context(patch.dict(os.environ,{'CODEMIND_LOCAL_MODEL':'','CODEMIND_AUTO_SYNC':'0'}))
-                stack.enter_context(patch('answers.urlopen',side_effect=AssertionError('Quality gate must not call an answer model')))
+                stack.enter_context(patch('answers._request_source_ranking',side_effect=AssertionError('Quality gate must not call an answer model')))
                 api._REGISTERED_REPOS[repo_id] = {'rootPath':str(root)}
                 stack.callback(api._REGISTERED_REPOS.pop,repo_id)
                 def publish():

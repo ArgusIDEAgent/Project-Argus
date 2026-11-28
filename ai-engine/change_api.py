@@ -234,9 +234,10 @@ class ChangeJobs:
 
     def owned(self, job_id, repo_id):
         job = self.jobs.get(job_id)
-        if job is None or job['repo_id'] != repo_id or repo_id not in self.registry:
+        entry = self.registry.get(repo_id)
+        if job is None or job['repo_id'] != repo_id or entry is None:
             raise HTTPException(404, 'Analysis not found in this repository session')
-        if str(Path(self.registry[repo_id]['rootPath']).resolve()) != job['root']:
+        if str(Path(entry['rootPath']).resolve()) != job['root']:
             raise HTTPException(409, 'Repository registration changed')
         if time.monotonic() - job['created'] > 900:
             self._cancel(job)

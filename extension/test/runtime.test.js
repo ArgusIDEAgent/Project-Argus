@@ -185,6 +185,55 @@ test('backend transport reports malformed JSON primitives errors disconnects and
   }
 });
 
+test('ask delivers split preview bytes before completion and supports older JSON engines', async () => {
+  const event = (type, answer) => JSON.stringify({ type, result: { answer, results: [{}] } }) + '\n';
+  let finish;
+  const listener = http.createServer((request, response) => {
+    let input = '';
+    request.on('data', chunk => { input += chunk; });
+    request.on('end', () => {
+      assert.equal(request.headers.accept, 'application/x-ndjson');
+      const { query } = JSON.parse(input);
+      if (query === 'older engine') {
+        response.writeHead(200, { 'content-type': 'application/json' });
+        response.end(JSON.stringify({ answer: 'Older engine answer', results: [] }));
+        return;
+      }
+      response.writeHead(200, { 'content-type': 'application/x-ndjson' });
+      if (query === 'incomplete') {
+        response.end(event('evidence', 'Unfinished'));
+        return;
+      }
+      const bytes = Buffer.from(event('evidence', 'Verified café'));
+      const breakAt = bytes.indexOf(0xc3) + 1;
+      response.write(bytes.subarray(0, breakAt));
+      setImmediate(() => response.write(bytes.subarray(breakAt)));
+      finish = () => response.end(event('answer', 'Ranked evidence'));
+    });
+  });
+  await new Promise(resolve => listener.listen(0, '127.0.0.1', resolve));
+  const oldPort = process.env.CODEMIND_PORT, oldToken = process.env.CODEMIND_SESSION_TOKEN;
+  process.env.CODEMIND_PORT = String(listener.address().port); process.env.CODEMIND_SESSION_TOKEN = 'fake-runtime-token';
+  const server = new ServerManager({ appendLine() {} });
+  try {
+    let publish;
+    let completed = false;
+    const first = new Promise(resolve => { publish = resolve; });
+    const answer = server.ask('a'.repeat(24), 'rank', publish).then(result => { completed = true; return result; });
+    assert.equal((await Promise.race([first, answer])).answer, 'Verified café');
+    assert.equal(completed, false);
+    finish();
+    assert.equal((await answer).answer, 'Ranked evidence');
+    await assert.rejects(server.ask('a'.repeat(24), 'incomplete', () => {}), /closed the answer stream early/);
+    assert.equal((await server.ask('a'.repeat(24), 'older engine', () => assert.fail('unexpected preview'))).answer,
+      'Older engine answer');
+  } finally {
+    server.dispose(); listener.closeAllConnections(); await new Promise(resolve => listener.close(resolve));
+    if (oldPort === undefined) delete process.env.CODEMIND_PORT; else process.env.CODEMIND_PORT = oldPort;
+    if (oldToken === undefined) delete process.env.CODEMIND_SESSION_TOKEN; else process.env.CODEMIND_SESSION_TOKEN = oldToken;
+  }
+});
+
 test('Electron runner refuses a missing local runtime before any download request', async () => {
   let calls = 0; const diagnostics = [];
   const context = { require(name) {
@@ -240,6 +289,56 @@ test('selected repository reconnects with the new token after backend registry l
       if (value === undefined) delete process.env[key]; else process.env[key] = value;
     }
     fs.rmSync(temporary, { recursive: true, force: true });
+  }
+});
+
+test('repository owners renew independently and deactivation releases the remainder', async () => {
+  const leases = new Set();
+  let heartbeat;
+  const listener = http.createServer((request, reply) => {
+    const url = new URL(request.url, 'http://127.0.0.1');
+    let input = '';
+    request.on('data', chunk => { input += chunk; });
+    request.on('end', () => {
+      reply.setHeader('content-type', 'application/json');
+      if (url.pathname === '/repos/register') {
+        const { rootPath, leaseId, watch } = JSON.parse(input);
+        assert.match(leaseId, /^[a-f0-9]{32}$/);
+        leases.add(leaseId);
+        reply.end(JSON.stringify({ repository: { id: 'shared', rootPath, leaseId, watch } }));
+      } else if (url.pathname.endsWith('/release')) {
+        const { leaseId } = JSON.parse(input);
+        reply.end(JSON.stringify({ released: leases.delete(leaseId) }));
+      } else {
+        heartbeat = url.searchParams.get('leaseId');
+        assert.equal(url.searchParams.get('verify'), 'false');
+        reply.end(JSON.stringify({ branch: 'main' }));
+      }
+    });
+  });
+  await new Promise(resolve => listener.listen(0, '127.0.0.1', resolve));
+  const oldPort = process.env.CODEMIND_PORT, oldToken = process.env.CODEMIND_SESSION_TOKEN;
+  process.env.CODEMIND_PORT = String(listener.address().port);
+  process.env.CODEMIND_SESSION_TOKEN = 'test-session';
+  const manager = new ServerManager({ appendLine() {} });
+  try {
+    const chat = await manager.acquireRepository('/shared');
+    const change = await manager.acquireRepository('/shared', false);
+    assert.notEqual(chat.leaseId, change.leaseId);
+    assert.equal(chat.watch, true);
+    assert.equal(change.watch, false);
+    await manager.selectedRepositoryState(chat, () => true);
+    assert.equal(heartbeat, chat.leaseId);
+    await manager.releaseRepository(chat);
+    assert.deepEqual([...leases], [change.leaseId]);
+    await manager.close();
+    assert.equal(leases.size, 0);
+  } finally {
+    await manager.close();
+    listener.closeAllConnections();
+    await new Promise(resolve => listener.close(resolve));
+    if (oldPort === undefined) delete process.env.CODEMIND_PORT; else process.env.CODEMIND_PORT = oldPort;
+    if (oldToken === undefined) delete process.env.CODEMIND_SESSION_TOKEN; else process.env.CODEMIND_SESSION_TOKEN = oldToken;
   }
 });
 

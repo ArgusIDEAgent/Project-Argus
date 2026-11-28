@@ -121,6 +121,64 @@ def _entry(path: str, kind: str, status: str, reason: str, *, language: str | No
     return path, kind, status, reason, Path(path).suffix.lower(), language, size, digest, parse_status
 
 
+def _directory_exclusion(current, name, path, git_ignored, exclusions):
+    if name in EXCLUDED_DIRS or name.endswith('.egg-info'):
+        return 'excluded_directory'
+    if (current / name).is_symlink():
+        return 'symlink_directory'
+    if path in git_ignored:
+        return git_ignored[path]
+    if any(fnmatch.fnmatchcase(path, pattern) or fnmatch.fnmatchcase(name, pattern) for pattern in exclusions):
+        return 'custom_exclusion'
+    return None
+
+
+def _walk_inventory(root, git_repo, exclusions, onerror):
+    if not git_repo:
+        for current, dirs, files in os.walk(root, topdown=True, followlinks=False, onerror=onerror):
+            yield Path(current), dirs, files, {}
+        return
+
+    # Batch Git ignore checks across siblings before walking their children.
+    # Never descend into ignored directories, including tracked files matched
+    # by an ignore rule (the existing --no-index policy).
+    from itertools import batched
+    pending = [root]
+    visited = {}
+    while pending:
+        level = []
+        for current in pending:
+            try:
+                if current.resolve(strict=True) != current:
+                    raise OSError(0, 'Directory changed during repository inventory', str(current))
+                with os.scandir(current) as listing:
+                    dirs, files = [], []
+                    for entry in listing:
+                        try:
+                            is_directory = entry.is_dir()
+                        except OSError:
+                            is_directory = False
+                        (dirs if is_directory else files).append(entry.name)
+            except OSError as error:
+                onerror(error)
+                continue
+            level.append((current, current.relative_to(root), sorted(dirs), sorted(files)))
+        paths = ((relative / name).as_posix() for _, relative, dirs, files in level for name in (*dirs, *files))
+        ignored = {}
+        for batch in batched(paths, 4096):
+            ignored.update(_ignored_by_git(root, batch))
+        pending = []
+        for current, relative, dirs, files in level:
+            matches = {path: ignored[path] for name in (*dirs, *files)
+                       if (path := (relative / name).as_posix()) in ignored}
+            visited[relative.parts] = current, dirs, files, matches
+            pending.extend(current / name for name in dirs
+                           if not _directory_exclusion(current, name, (relative / name).as_posix(), matches, exclusions))
+    # Match the established depth-first inventory order and digest on disk.
+    for key in sorted(visited):
+        yield visited[key]
+
+
 def _inventory(root: Path, git_repo: bool, exclusions: tuple[str, ...],
                max_bytes: int) -> list[tuple]:
     entries: list[tuple] = []
@@ -128,28 +186,16 @@ def _inventory(root: Path, git_repo: bool, exclusions: tuple[str, ...],
         rel = Path(error.filename).relative_to(root).as_posix() if error.filename else "."
         entries.append(_entry(rel, "directory", "error", type(error).__name__))
 
-    for current, dirnames, filenames in os.walk(root, topdown=True, followlinks=False, onerror=walk_error):
-        current_path = Path(current)
+    for current_path, dirnames, filenames, git_ignored in _walk_inventory(root, git_repo, exclusions, walk_error):
         dirnames.sort()
         filenames.sort()
         rel_dir = current_path.relative_to(root)
-        names = dirnames + filenames
-        paths = [(rel_dir / name).as_posix() for name in names]
-        git_ignored = _ignored_by_git(root, paths) if git_repo else {}
 
         kept_dirs = []
         for name in dirnames:
             path = (rel_dir / name).as_posix()
-            if name in EXCLUDED_DIRS or name.endswith(".egg-info"):
-                reason = "excluded_directory"
-            elif (current_path / name).is_symlink():
-                reason = "symlink_directory"
-            elif path in git_ignored:
-                reason = git_ignored[path]
-            elif any(fnmatch.fnmatchcase(path, pattern) or fnmatch.fnmatchcase(name, pattern)
-                     for pattern in exclusions):
-                reason = "custom_exclusion"
-            else:
+            reason = _directory_exclusion(current_path, name, path, git_ignored, exclusions)
+            if reason is None:
                 kept_dirs.append(name)
                 continue
             entries.append(_entry(path, "directory", "ignored", reason))
@@ -185,7 +231,8 @@ def _inventory(root: Path, git_repo: bool, exclusions: tuple[str, ...],
                     size = file_stat.st_size
                     data = source.read(max_bytes + 1) if size <= max_bytes else b""
                     after_stat = os.fstat(source.fileno())
-                if (file_stat.st_size, file_stat.st_mtime_ns) != (after_stat.st_size, after_stat.st_mtime_ns):
+                if ((file_stat.st_size, file_stat.st_mtime_ns, file_stat.st_ctime_ns)
+                        != (after_stat.st_size, after_stat.st_mtime_ns, after_stat.st_ctime_ns)):
                     entries.append(_entry(path, kind, "error", "changed_during_scan", language=language))
                     continue
                 if size > max_bytes:

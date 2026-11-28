@@ -14,6 +14,7 @@ Security model:
   - The server binds 127.0.0.1 only.
 """
 
+import asyncio
 import hashlib
 import hmac
 import json
@@ -27,14 +28,15 @@ import subprocess
 import threading
 import time
 import uuid
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager, closing
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
-from fastapi import BackgroundTasks, Depends, FastAPI, Header, HTTPException, Request
+from fastapi import BackgroundTasks, Depends, FastAPI, Header, HTTPException, Path as FastAPIPath, Query, Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field, field_validator
 from qdrant_client.models import Filter, FieldCondition, MatchValue, MatchAny
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -53,7 +55,7 @@ from config import (
 )
 from indexer import index_directory
 from lexical_search import search_exact_code
-from answers import answer_question
+from answers import ANSWER_RANKING_BUDGET_SECONDS, answer_question, finish_answer, prepare_answer, render_answer
 from answer_evidence import attach_answer_context
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -101,13 +103,22 @@ async def lifespan(_app: FastAPI):
     global _SESSION_TOKEN, _SYNC_MANAGER
     _CHANGE_JOBS.open()
     _SESSION_TOKEN = _issue_session_token()
+    lease_stop = threading.Event()
+    lease_worker = threading.Thread(target=_reap_repository_leases, args=(lease_stop,),
+                                    name="codemind-repository-leases", daemon=True)
     try:
         _load_registry()
         if os.environ.get('CODEMIND_AUTO_SYNC','1')!='0':
-            _SYNC_MANAGER = SyncManager(DEFAULT_DATA_DIR,lambda rid:_enqueue_job(rid,False,None))
-            for rid,entry in list(_REGISTERED_REPOS.items()): _SYNC_MANAGER.add(rid,entry['rootPath'])
+            _SYNC_MANAGER = SyncManager(DEFAULT_DATA_DIR, _request_auto_refresh)
+            with _REPOS_LOCK:
+                for rid, entry in _REGISTERED_REPOS.items():
+                    _update_repository_watch(rid, entry)
+        lease_worker.start()
         yield
     finally:
+        lease_stop.set()
+        if lease_worker.ident is not None:
+            await asyncio.to_thread(lease_worker.join)
         _CHANGE_JOBS.close()
         _SESSION_TOKEN = ""
         try:
@@ -132,6 +143,8 @@ _REGISTERED_REPOS: dict[str, dict] = {}
 _REPOS_LOCK = threading.Lock()
 _REGISTRY_FILE = None  # Historical registries are preserved but never read/written.
 _MAX_REPOS = 64
+_REPOSITORY_LEASE_SECONDS = 120
+_LEASE_ID_PATTERN = r"^[a-f0-9]{32}$"
 _FORBIDDEN_COMPONENTS = {".ssh", ".aws", ".gnupg", ".kube", ".docker"}
 
 
@@ -140,13 +153,16 @@ class JobState(str, Enum):
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
+    CANCELLED = "cancelled"
 
 
 # Running / completed jobs (jobId → job record).
 _JOBS: dict[str, dict[str, Any]] = {}
 
 _JOBS_LOCK = threading.Lock()
-_INDEX_RUN_LOCK = threading.Lock()      # one heavy indexing run at a time (local, single user)
+_INDEX_WORKERS = 2
+_INDEX_POOL = ThreadPoolExecutor(max_workers=_INDEX_WORKERS, thread_name_prefix="codemind-index")
+_INDEX_DISPATCHED: set[str] = set()
 _MAX_JOBS = 50
 
 _EMPTY_DOCS_STATUS = {"sectionCount": 0, "currentCount": 0, "staleCount": 0, "affectedCount": 0, "generatedCount": 0}
@@ -184,6 +200,68 @@ def _load_registry() -> None:
     pass  # Historical registries remain untouched; open folders register each session.
 
 
+def _repository_entry(repo_id: str) -> dict:
+    entry = _REGISTERED_REPOS.get(repo_id)
+    if entry is None:
+        raise HTTPException(404, "Repository is not registered.")
+    return entry
+
+
+def _wants_watch(entry: dict) -> bool:
+    return entry.get("legacy", "leases" not in entry) or any(watch for _, watch in entry.get("leases", {}).values())
+
+
+def _update_repository_watch(repo_id: str, entry: dict) -> None:
+    if _SYNC_MANAGER:
+        if _wants_watch(entry):
+            _SYNC_MANAGER.add(repo_id, entry["rootPath"], owner=entry.setdefault("incarnation", object()))
+        else:
+            _SYNC_MANAGER.remove(repo_id)
+            _cancel_queued_jobs(repo_id, automatic_only=True)
+
+
+def _cancel_queued_jobs(repo_id, *, automatic_only=False):
+    with _JOBS_LOCK:
+        for job in _JOBS.values():
+            if (job["repoId"] == repo_id and job["state"] == JobState.QUEUED
+                    and (not automatic_only or job.get("automatic"))):
+                job.update(state=JobState.CANCELLED, completedAt=time.time(), error="Repository closed before indexing started.")
+        _trim_jobs()
+
+
+def _drop_repository(repo_id: str) -> None:
+    """Retire ownership and pending work under the registry lock."""
+    _REGISTERED_REPOS.pop(repo_id)
+    if _SYNC_MANAGER:
+        _SYNC_MANAGER.remove(repo_id)
+    _cancel_queued_jobs(repo_id)
+
+
+def _expire_repository_leases(now: float) -> None:
+    with _REPOS_LOCK:
+        for repo_id, entry in list(_REGISTERED_REPOS.items()):
+            leases = entry.get("leases")
+            if not leases:
+                continue
+            remaining = {key: lease for key, lease in leases.items() if lease[0] > now}
+            if len(remaining) == len(leases):
+                continue
+            entry["leases"] = remaining
+            if not remaining and not entry.get("legacy"):
+                _drop_repository(repo_id)
+            else:
+                _update_repository_watch(repo_id, entry)
+    _dispatch_index_jobs()
+
+
+def _reap_repository_leases(stop: threading.Event) -> None:
+    while not stop.wait(5):
+        try:
+            _expire_repository_leases(time.monotonic())
+        except Exception:
+            logger.exception("Repository lease cleanup failed")
+
+
 # ─────────────────────────────────────────────────────────────
 # Git helpers
 # ─────────────────────────────────────────────────────────────
@@ -216,64 +294,148 @@ def _git_state(root: str) -> dict:
 # Job management
 # ─────────────────────────────────────────────────────────────
 
-def _enqueue_job(repo_id: str, full: bool, background_tasks: BackgroundTasks | None) -> dict:
-    entry = _REGISTERED_REPOS.get(repo_id)
-    if not entry:
-        raise HTTPException(status_code=404, detail=f"Repo '{repo_id}' not registered")
-    with _JOBS_LOCK:
-        for job in _JOBS.values():
-            if job["repoId"] == repo_id and job["state"] in (JobState.QUEUED, JobState.RUNNING):
-                return {"jobId": job["id"], "state": job["state"].value}      # coalesce duplicates
-        job_id = uuid.uuid4().hex
-        _JOBS[job_id] = {"id": job_id, "repoId": repo_id, "state": JobState.QUEUED,
-                         "error": None, "result": None, "createdAt": time.time()}
-        finished = sorted((j for j in _JOBS.values() if j["state"] in (JobState.COMPLETED, JobState.FAILED)),
-                          key=lambda j: j["createdAt"])
-        for old in finished[:max(0, len(_JOBS) - _MAX_JOBS)]:
-            _JOBS.pop(old["id"], None)
+def _trim_jobs():
+    terminal = (JobState.COMPLETED, JobState.FAILED, JobState.CANCELLED)
+    finished = sorted((j for j in _JOBS.values() if j["state"] in terminal), key=lambda j: j["createdAt"])
+    for old in finished[:max(0, len(_JOBS) - _MAX_JOBS)]:
+        _JOBS.pop(old["id"], None)
+
+
+def _request_auto_refresh(repo_id, owner, watch_handle):
+    _enqueue_job(repo_id, False, None, owner=owner, watch_handle=watch_handle)
+
+
+def _get_repository_lease(entry, lease_id):
+    lease = entry.get("leases", {}).get(lease_id)
+    if lease is None or lease[0] <= time.monotonic():
+        raise HTTPException(404, "Repository lease expired.")
+    return lease
+
+
+def _enqueue_job(repo_id: str, full: bool, background_tasks: BackgroundTasks | None, *,
+                 owner=None, watch_handle=None, lease_id=None, after_running=False) -> dict:
+    with _REPOS_LOCK:
+        entry = _REGISTERED_REPOS.get(repo_id)
+        if owner is not None and (entry is None or entry.get("incarnation") is not owner or not _wants_watch(entry)
+                                  or not _SYNC_MANAGER or not _SYNC_MANAGER.is_current(repo_id, watch_handle)):
+            return {}  # A detached watcher cannot enqueue work for a reopened repository.
+        if entry is None:
+            raise HTTPException(404, f"Repo '{repo_id}' not registered")
+        if lease_id:
+            _get_repository_lease(entry, lease_id)
+        identity = entry.setdefault("incarnation", object())
+        with _JOBS_LOCK:
+            active = [job for job in _JOBS.values() if job["repoId"] == repo_id
+                      and job.get("incarnation") is identity and job["state"] in (JobState.QUEUED, JobState.RUNNING)]
+            queued = next((j for j in active if j["state"] == JobState.QUEUED), None)
+            running = next((j for j in active if j["state"] == JobState.RUNNING), None)
+            if running and (running["full"] if full else not after_running):
+                return {"jobId": running["id"], "state": "running"}
+            if queued:
+                queued["full"] |= full
+                queued["automatic"] &= owner is not None
+                return {"jobId": queued["id"], "state": "queued"}
+            job_id = uuid.uuid4().hex
+            _JOBS[job_id] = {"id": job_id, "repoId": repo_id, "rootPath": entry["rootPath"], "incarnation": identity,
+                             "state": JobState.QUEUED, "full": full, "ready": background_tasks is None,
+                             "automatic": owner is not None,
+                             "error": None, "result": None, "createdAt": time.time()}
+            _trim_jobs()
     if background_tasks is not None:
-        background_tasks.add_task(_run_index_job, job_id, repo_id, entry["rootPath"], full)
+        background_tasks.add_task(_admit_index_job, job_id)
     else:
-        threading.Thread(target=_run_index_job,args=(job_id,repo_id,entry['rootPath'],full),daemon=True).start()
+        _dispatch_index_jobs()
     return {"jobId": job_id, "state": "queued"}
 
 
+def _admit_index_job(job_id):
+    with _JOBS_LOCK:
+        job = _JOBS.get(job_id)
+        if job and job["state"] == JobState.QUEUED:
+            job["ready"] = True
+    admitted = _dispatch_index_jobs()
+    # Preserve the existing ASGI background-task completion behavior when a
+    # worker is free. A queued successor proceeds when its predecessor finishes.
+    if job_id in admitted:
+        admitted[job_id].result()
+
+
+def _dispatch_index_jobs():
+    admitted = {}
+    with _JOBS_LOCK:
+        slots = _INDEX_WORKERS - len(_INDEX_DISPATCHED)
+        if slots <= 0:
+            return admitted
+        busy = {j["repoId"] for j in _JOBS.values() if j["state"] == JobState.RUNNING or j["id"] in _INDEX_DISPATCHED}
+        for job in _JOBS.values():
+            if job["state"] != JobState.QUEUED or not job.get("ready") or job["repoId"] in busy:
+                continue
+            identifier = job["id"]
+            busy.add(job["repoId"])
+            _INDEX_DISPATCHED.add(identifier)
+            admitted[identifier] = _INDEX_POOL.submit(_run_index_job, identifier, job["repoId"], job["rootPath"])
+            if len(admitted) == slots:
+                break
+    return admitted
+
+
 def _run_index_job(job_id: str, repo_id: str, root_path: str, full_reindex: bool = False) -> None:
-    with _INDEX_RUN_LOCK:
-        job = _JOBS[job_id]
-        job["state"], job["startedAt"] = JobState.RUNNING, time.time()
-        store = None
-        try:
-            store = SnapshotStore(root_path,repo_id,DEFAULT_DATA_DIR)
-            from knowledge_base.storage import RepositoryStorage
-            with RepositoryStorage(root_path, DEFAULT_DATA_DIR).scope():
-                result = store.publish(client=get_qdrant_client(),collection=COLLECTION_NAME,
-                    index_directory=index_directory,build_graph=build_graph,full=full_reindex,
-                    on_progress=lambda msg:logger.info('[job %s] %s',job_id[:8],msg))
-            chunk_count = result['chunk_count']
-            graph = result['graph']
-            graph_warning = graph_coverage_warning(graph)
-            job["result"] = {
-                "fileCount": result["files_indexed"] + result["files_skipped"],
-                **_git_state(root_path),
-                "semantic": {"state": "ready", "error": None, "chunkCount": chunk_count},
-                "docs": dict(_EMPTY_DOCS_STATUS),
-                "graph": {"state":"partial" if graph_warning else "ready", "statistics":graph['graph'],
-                          "snapshotId":graph['graph_snapshot_id'], "coverage":graph.get('coverage', {}),
-                          "warning":graph_warning},
-                "metadata": {"schemaVersion": SCHEMA_VERSION, "snapshotId": result.get('snapshot_id'),
-                             "activeSnapshotId":result['activeSnapshotId'],"savedFilesOnly":True},
-                "incremental": {k:result.get(k) for k in ('files_indexed','files_skipped','files_pruned','chunks_embedded','chunks_reused','unchanged')},
-            }
-            job["state"] = JobState.COMPLETED
-        except Exception as exc:
-            logger.exception("Indexing job %s failed", job_id[:8])
-            job["error"], job["state"] = "Indexing failed unexpectedly; see the engine log.", JobState.FAILED
-            if store:
-                try: store.failed(exc)
-                except Exception: logger.exception('Unable to record synchronization failure')
-        finally:
-            job["completedAt"] = time.time()
+    synchronization = _SYNC_MANAGER
+    with _REPOS_LOCK, _JOBS_LOCK:
+        job = _JOBS.get(job_id)
+        if not job or job["state"] != JobState.QUEUED:
+            proceed = False
+        else:
+            entry = _REGISTERED_REPOS.get(repo_id)
+            proceed = entry is not None and entry.get("incarnation") is job.get("incarnation")
+            if proceed:
+                job.update(state=JobState.RUNNING, startedAt=time.time())
+                full_reindex = job.get("full", full_reindex)
+                revision = synchronization.revision(repo_id) if synchronization else None
+            else:
+                job.update(state=JobState.CANCELLED, completedAt=time.time(), error="Repository closed before indexing started.")
+    if not proceed:
+        with _JOBS_LOCK:
+            _INDEX_DISPATCHED.discard(job_id)
+        _dispatch_index_jobs()
+        return
+
+    store = None
+    result = None
+    error = None
+    try:
+        store = SnapshotStore(root_path,repo_id,DEFAULT_DATA_DIR)
+        from knowledge_base.storage import RepositoryStorage
+        with RepositoryStorage(root_path, DEFAULT_DATA_DIR).scope():
+            published = store.publish(client=get_qdrant_client(),collection=COLLECTION_NAME,
+                index_directory=index_directory,build_graph=build_graph,full=full_reindex,
+                on_progress=lambda msg:logger.info('[job %s] %s',job_id[:8],msg))
+        graph = published['graph']
+        graph_warning = graph_coverage_warning(graph)
+        result = {
+            "fileCount": published["files_indexed"] + published["files_skipped"],
+            **_git_state(root_path),
+            "semantic": {"state":"ready", "error":None, "chunkCount":published['chunk_count']},
+            "docs": dict(_EMPTY_DOCS_STATUS),
+            "graph": {"state":"partial" if graph_warning else "ready", "statistics":graph["graph"],
+                      "snapshotId":graph["graph_snapshot_id"], "coverage":graph.get("coverage",{}), "warning":graph_warning},
+            "metadata": {"schemaVersion":SCHEMA_VERSION, "snapshotId":published.get("snapshot_id"),
+                         "activeSnapshotId":published["activeSnapshotId"], "savedFilesOnly":True},
+            "incremental": {k:published.get(k) for k in ('files_indexed','files_skipped','files_pruned','chunks_embedded','chunks_reused','unchanged')},
+        }
+    except Exception as exc:
+        logger.exception("Indexing job %s failed", job_id[:8])
+        error = "Indexing failed unexpectedly; see the engine log."
+        if store:
+            try: store.failed(exc)
+            except Exception: logger.exception('Unable to record synchronization failure')
+    finally:
+        with _JOBS_LOCK:
+            job.update(state=JobState.FAILED if error else JobState.COMPLETED, completedAt=time.time(), result=result, error=error)
+            _INDEX_DISPATCHED.discard(job_id)
+        if synchronization and not error:
+            synchronization.completed(repo_id, revision)
+        _dispatch_index_jobs()
 
 
 # ─────────────────────────────────────────────────────────────
@@ -316,8 +478,14 @@ class ChatIntentRequest(BaseModel):
             raise ValueError('Message is empty')
         return value
 
+class RepositoryLeaseRequest(BaseModel):
+    leaseId: str = Field(pattern=_LEASE_ID_PATTERN)
+
+
 class RegisterRequest(BaseModel):
     rootPath: str = Field(min_length=1, max_length=4096)
+    leaseId: str | None = Field(default=None, pattern=_LEASE_ID_PATTERN)
+    watch: bool = True
     config: dict = Field(default_factory=dict)     # accepted for compatibility, intentionally ignored
 
 class SearchFilters(BaseModel):
@@ -389,8 +557,14 @@ def register_repo(req: RegisterRequest):
         if repo_id not in _REGISTERED_REPOS and len(_REGISTERED_REPOS) >= _MAX_REPOS:
             raise HTTPException(status_code=429, detail="Too many registered repositories.")
         previous = _REGISTERED_REPOS.get(repo_id)
-        entry = dict(previous) if previous else {"createdAt": _utc_now_iso()}
-        entry["rootPath"] = abs_root               # NOT realpath: the extension compares paths by prefix
+        entry = dict(previous) if previous else {}
+        entry.setdefault("createdAt", _utc_now_iso())
+        entry.setdefault("incarnation", object())
+        entry["rootPath"] = abs_root
+        entry["legacy"] = req.leaseId is None or bool(previous and previous.get("legacy", "leases" not in previous))
+        entry["leases"] = dict(entry.get("leases", {}))
+        if req.leaseId:
+            entry["leases"][req.leaseId] = (time.monotonic() + _REPOSITORY_LEASE_SECONDS, req.watch)
         _REGISTERED_REPOS[repo_id] = entry
         try:
             _save_registry()
@@ -398,26 +572,47 @@ def register_repo(req: RegisterRequest):
             if previous is None: _REGISTERED_REPOS.pop(repo_id, None)
             else: _REGISTERED_REPOS[repo_id] = previous
             raise
-    if _SYNC_MANAGER: _SYNC_MANAGER.add(repo_id,abs_root)
-    return {"repository": {"id": repo_id, "rootPath": abs_root, "defaultBranch": "main",
-                           "createdAt": entry["createdAt"], "config": {}}}
+        _update_repository_watch(repo_id, entry)
+    repository = {"id": repo_id, "rootPath": abs_root, "defaultBranch": "main", "createdAt": entry["createdAt"], "config": {}}
+    if req.leaseId:
+        repository.update(leaseId=req.leaseId, watch=req.watch)
+    return {"repository": repository}
+
+
+@app.post("/repos/{repo_id}/release")
+def release_repository(repo_id: Annotated[str, FastAPIPath(pattern=r"^[a-f0-9]{24}$")], req: RepositoryLeaseRequest):
+    with _REPOS_LOCK:
+        entry = _REGISTERED_REPOS.get(repo_id)
+        if not entry or entry.get("leases", {}).pop(req.leaseId, None) is None:
+            return {"released": False}
+        if entry["leases"] or entry.get("legacy"):
+            _update_repository_watch(repo_id, entry)
+        else:
+            _drop_repository(repo_id)
+    _dispatch_index_jobs()
+    return {"released": True}
 
 
 @app.post("/repos/{repo_id}/index")
-def index_repo(repo_id: str, background_tasks: BackgroundTasks, full: bool = False):
-    return _enqueue_job(repo_id, full, background_tasks)   # incremental unless ?full=true (fingerprint forces full when needed)
+def index_repo(repo_id: str, background_tasks: BackgroundTasks, full: bool = False,
+               leaseId: Annotated[str | None, Query(pattern=_LEASE_ID_PATTERN)] = None):
+    return _enqueue_job(repo_id, full, background_tasks, lease_id=leaseId)
 
 
 @app.post("/repos/{repo_id}/refresh")
-def refresh_repo(repo_id: str, background_tasks: BackgroundTasks):
-    return _enqueue_job(repo_id, False, background_tasks)
+def refresh_repo(repo_id: str, background_tasks: BackgroundTasks,
+                 leaseId: Annotated[str | None, Query(pattern=_LEASE_ID_PATTERN)] = None):
+    # An editor fallback watcher can observe a save after the running job's
+    # final observation. Keep one successor when that save arrives mid-job.
+    return _enqueue_job(repo_id, False, background_tasks, lease_id=leaseId, after_running=leaseId is not None)
 
 
 @app.get("/jobs/{job_id}")
 def get_job(job_id: str):
     """Return the current state of an indexing job."""
     with _JOBS_LOCK:
-        job = _JOBS.get(job_id)
+        record = _JOBS.get(job_id)
+        job = dict(record) if record else None
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
     result = job.get("result") or {
@@ -428,27 +623,31 @@ def get_job(job_id: str):
     if os.environ.get("CODEMIND_ENABLE_DOCS") == "1" and job["state"] == JobState.COMPLETED:
         try:
             result = {**result, "docs": _documentation(job["repoId"]).list()["status"]}
-        except (DocumentationError, ValueError, OSError):
+        except (DocumentationError, HTTPException, ValueError, OSError):
             pass
     return {
         "id": job["id"],
         "state": job["state"].value if isinstance(job["state"], JobState) else job["state"],
         "error": job.get("error"),
+        "mode": "full" if job.get("full") else "incremental",
         "result": result,
     }
 
 
 @app.get("/repos/{repo_id}/live-state")
-def live_state(repo_id: str):
-    """Return the latest known state for a repo (git HEAD + most recent job).
-
-    Never runs `git status` here — this endpoint is polled every 3 s.
-    """
-    entry = _REGISTERED_REPOS.get(repo_id)
-    if not entry:
-        raise HTTPException(status_code=404, detail=f"Repo '{repo_id}' not registered")
+def live_state(repo_id: str, verify: bool = True,
+               leaseId: Annotated[str | None, Query(pattern=_LEASE_ID_PATTERN)] = None):
+    """Return repository status, optionally verifying the saved files on disk."""
+    with _REPOS_LOCK:
+        entry = _REGISTERED_REPOS.get(repo_id)
+        if not entry:
+            raise HTTPException(404, f"Repo '{repo_id}' not registered")
+        if leaseId:
+            _, watch = _get_repository_lease(entry, leaseId)
+            entry["leases"][leaseId] = (time.monotonic() + _REPOSITORY_LEASE_SECONDS, watch)
+        incarnation = entry.get("incarnation")
     with _JOBS_LOCK:
-        repo_jobs = [j for j in list(_JOBS.values()) if j.get("repoId") == repo_id]
+        repo_jobs = [dict(j) for j in _JOBS.values() if j.get("repoId") == repo_id and j.get("incarnation") is incarnation]
     latest_job = max(repo_jobs, key=lambda j: j.get("createdAt", 0)) if repo_jobs else None
 
     result: dict[str, Any] = {**_git_head(entry["rootPath"]), "indexState": None, "jobId": None}
@@ -460,15 +659,20 @@ def live_state(repo_id: str):
         )
         result["jobId"] = latest_job["id"]
     store = SnapshotStore(entry['rootPath'],repo_id,DEFAULT_DATA_DIR)
-    view = store.view()
+    view = store.view() if verify else store.status_view()
     result['storage'] = {'directory': str(store.path), 'mode': 'repository-local' if store.storage.local else 'explicit-offline',
-                         'snapshotReadOnly': bool(store.storage.local and view['manifest']), 'legacyDataPreserved': True,
+                         'snapshotReadOnly': bool(store.storage.local and view['snapshotId']), 'legacyDataPreserved': True,
                          'snapshotId': view['snapshotId'],
                          'cacheBytes': (store.path/'cache.db').stat().st_size if (store.path/'cache.db').is_file() else 0}
-    if _SYNC_MANAGER and not view['manifest']:
+    if _SYNC_MANAGER and not view['snapshotId'] and view['state'] != 'failed':
         view.update(fresh=False,error='Waiting for the first consistent knowledge snapshot.')
-    result['synchronization'] = {k:view[k] for k in ('snapshotId','fresh','state','error','savedFilesOnly','graphWarning')}
-    if _SYNC_MANAGER: result['synchronization'].update(_SYNC_MANAGER.status(repo_id))
+    status = {k:view[k] for k in ('snapshotId','fresh','state','error','savedFilesOnly','graphWarning')}
+    status['verified'] = verify
+    if _SYNC_MANAGER:
+        status.update(_SYNC_MANAGER.status(repo_id))
+    if not verify and status.get('invalidated') and status['state'] not in ('building', 'failed'):
+        status.update(fresh=False, state='pending', error=None)
+    result['synchronization'] = status
     return result
 
 
@@ -558,16 +762,12 @@ def analysis_reuse_feedback():
 
 @app.get("/graph/file/{file_path:path}")
 def graph_file(file_path: str, repoId: str = ""):
-    if repoId not in _REGISTERED_REPOS:
-        raise HTTPException(404, 'Repository is not registered.')
-    with SnapshotStore(_REGISTERED_REPOS[repoId]['rootPath'],repoId,DEFAULT_DATA_DIR).pin_view() as view:
+    with SnapshotStore(_repository_entry(repoId)['rootPath'],repoId,DEFAULT_DATA_DIR).pin_view() as view:
         return _graph_file_pinned(file_path,repoId,view)
 
 
 def _graph_file_pinned(file_path,repoId,view):
-    if repoId not in _REGISTERED_REPOS:
-        raise HTTPException(404, "Repository is not registered.")
-    store = SnapshotStore(_REGISTERED_REPOS[repoId]['rootPath'],repoId,DEFAULT_DATA_DIR)
+    store = SnapshotStore(_repository_entry(repoId)['rootPath'],repoId,DEFAULT_DATA_DIR)
     if _SYNC_MANAGER and not view['manifest']:
         view.update(fresh=False,error='Waiting for the first consistent knowledge snapshot.')
     if not view['fresh']:
@@ -663,7 +863,7 @@ def _retrieve_pinned(req, view, *, for_answer=False):
         result['results'] = _enrich_graph(req, result['results'], data_dir, for_answer=for_answer)
     if for_answer:
         result['_answerLimit'] = req.limit
-    if view['manifest'] and not SnapshotStore(entry['rootPath'],req.repoId,DEFAULT_DATA_DIR).matches(view['snapshotId']):
+    if not for_answer and view['manifest'] and not SnapshotStore(entry['rootPath'],req.repoId,DEFAULT_DATA_DIR).matches(view['snapshotId']):
         result['results'] = [r for r in result['results'] if r.get('sourceOrigin')=='current_disk']
         result['uncertainty'] = []
         result['status'] = 'found' if result['results'] else 'not_found'
@@ -681,8 +881,8 @@ def _semantic_search(req, *, data_dir=None, collection=None):
     from knowledge_base.storage import storage_base
     from knowledge_base.database import connect
     from knowledge_base.source_ranking import preferred_role, rank_sources, source_role
-    data_dir,collection = data_dir or str(storage_base(_REGISTERED_REPOS[req.repoId]['rootPath'], DEFAULT_DATA_DIR)),collection or COLLECTION_NAME
-    entry = _REGISTERED_REPOS[req.repoId]
+    data_dir,collection = data_dir or str(storage_base(_repository_entry(req.repoId)['rootPath'], DEFAULT_DATA_DIR)),collection or COLLECTION_NAME
+    entry = _repository_entry(req.repoId)
     conversational = bool(re.match(r"^(?:where|what|how|why|which|explain|describe|tell|who)\b", req.query, re.I))
     try:
         client = get_qdrant_client()
@@ -714,14 +914,18 @@ def _semantic_search(req, *, data_dir=None, collection=None):
                 cache_put(cache, 'query-embedding-v1', vector_key, vector)
             # Select the requested source role before the ANN candidate cap so
             # benchmark copies cannot crowd implementation out of the pool.
-            database = Path(data_dir) / req.repoId / 'metadata.db'
-            with closing(connect(database.resolve().as_uri()+'?mode=ro', uri=True)) as db:
-                paths = [row[0] for row in db.execute('SELECT DISTINCT f.relative_path FROM code_chunks c JOIN files f ON f.id=c.file_id AND f.repository_id=c.repository_id WHERE c.repository_id=?', (req.repoId,))]
             preferred = preferred_role(req.query)
-            preferred_paths = [path for path in paths if source_role(path) == preferred]
-            preferred_scope = Filter(must=[*conditions, FieldCondition(key='file_path',match=MatchAny(any=preferred_paths))])
-            points = client.query_points(collection_name=collection, query=vector,
-                query_filter=preferred_scope, score_threshold=0.5, limit=req.limit * 3).points if preferred_paths else []
+            if getattr(client, 'backend', None) == 'faiss':
+                points = client.query_points(collection_name=collection, query=vector, query_filter=scope,
+                    role=preferred, score_threshold=0.5, limit=req.limit * 3).points
+            else:
+                database = Path(data_dir) / req.repoId / 'metadata.db'
+                with closing(connect(database.resolve().as_uri()+'?mode=ro', uri=True)) as db:
+                    paths = [row[0] for row in db.execute('SELECT DISTINCT f.relative_path FROM code_chunks c JOIN files f ON f.id=c.file_id AND f.repository_id=c.repository_id WHERE c.repository_id=?', (req.repoId,))]
+                preferred_paths = [path for path in paths if source_role(path) == preferred]
+                preferred_scope = Filter(must=[*conditions, FieldCondition(key='file_path',match=MatchAny(any=preferred_paths))])
+                points = client.query_points(collection_name=collection, query=vector,
+                    query_filter=preferred_scope, score_threshold=0.5, limit=req.limit * 3).points if preferred_paths else []
             if len(points) < req.limit:
                 fallback = client.query_points(collection_name=collection, query=vector,
                     query_filter=scope, score_threshold=0.5, limit=req.limit * 3).points
@@ -797,7 +1001,7 @@ def _semantic_search(req, *, data_dir=None, collection=None):
 
 def _keyword_search(req, *, data_dir=None, collection=None):
     from knowledge_base.storage import storage_base
-    base = data_dir or storage_base(_REGISTERED_REPOS[req.repoId]['rootPath'], DEFAULT_DATA_DIR)
+    base = data_dir or storage_base(_repository_entry(req.repoId)['rootPath'], DEFAULT_DATA_DIR)
     database = os.path.join(base,req.repoId,'metadata.db')
     results,stale = [],False
     try:
@@ -826,15 +1030,7 @@ def _keyword_search(req, *, data_dir=None, collection=None):
     return {'mode':'keyword','results':results,'warning':warning}
 
 
-@app.post("/ask")
-def ask(req: SearchRequest):
-    static = classify_conversational_intent(req.query)
-    if static is not None:
-        return {'mode':'static','results':[],'citations':[],'warning':None,'status':'success',
-                'answer':static.text,'answerMode':'static','staticCategory':static.category}
-    retrieval = _search_code(req, for_answer=True)
-    root = _REGISTERED_REPOS[req.repoId]['rootPath']
-    result = answer_question(root,req.query,retrieval)
+def _validate_answer_snapshot(root, retrieval, result):
     if retrieval.get('knowledgeSourceHash'):
         from knowledge_base.synchronization import observe_sources
         try: current = observe_sources(root)['digest']==retrieval['knowledgeSourceHash']
@@ -844,9 +1040,64 @@ def ask(req: SearchRequest):
         result.update(results=[],citations=[],status='not_found',answerMode='evidence',
             answer='Saved repository files changed during this answer. Synchronization is updating the index; ask again after it completes.',
             warning='Answer discarded because its knowledge snapshot is stale.')
-        result['synchronization']['fresh'] = False
+        result['synchronization'] = {**result['synchronization'], 'fresh': False}
         result.pop('evidenceSelection', None)
     return result
+
+
+_ANSWER_STREAM_MEDIA_TYPE = "application/x-ndjson"
+
+
+def _answer_elapsed(started):
+    return round((time.monotonic() - started) * 1000, 1)
+
+
+def _timed_answer(result, started, first_useful_ms=None):
+    total_ms = _answer_elapsed(started)
+    if first_useful_ms is None and (result["results"] or result["answerMode"] == "static"):
+        first_useful_ms = total_ms
+    return {**result, "answerTiming": {"firstUsefulMs": first_useful_ms, "totalMs": total_ms}}
+
+
+def _answer_event(kind, result):
+    return json.dumps({"type": kind, "result": result}, separators=(",", ":")) + "\n"
+
+
+def _stream_answer(root, req, retrieval, started):
+    deadline = started + ANSWER_RANKING_BUDGET_SECONDS
+    prepared = prepare_answer(root, req.query, retrieval)
+    evidence = _validate_answer_snapshot(root, retrieval, render_answer(prepared))
+    first_useful_ms = None
+    if prepared.model and evidence["results"]:
+        if time.monotonic() < deadline:
+            first_useful_ms = _answer_elapsed(started)
+            yield _answer_event("evidence", evidence)
+        final = _validate_answer_snapshot(root, retrieval, finish_answer(prepared, deadline))
+    else:
+        final = evidence
+    yield _answer_event("answer", _timed_answer(final, started, first_useful_ms))
+
+
+@app.post("/ask")
+def ask(req: SearchRequest, accept: Annotated[str, Header()] = ""):
+    started = time.monotonic()
+    stream = any(media.strip() == _ANSWER_STREAM_MEDIA_TYPE
+                 for media in accept.split(","))
+    static = classify_conversational_intent(req.query)
+    if static is not None:
+        result = _timed_answer({
+            "mode": "static", "results": [], "citations": [], "warning": None, "status": "success",
+            "answer": static.text, "answerMode": "static", "staticCategory": static.category,
+        }, started)
+        if stream:
+            return StreamingResponse(iter([_answer_event("answer", result)]), media_type=_ANSWER_STREAM_MEDIA_TYPE)
+        return result
+    root = _repository_entry(req.repoId)["rootPath"]
+    retrieval = _search_code(req, for_answer=True)
+    if stream:
+        return StreamingResponse(_stream_answer(root, req, retrieval, started), media_type=_ANSWER_STREAM_MEDIA_TYPE)
+    result = answer_question(root, req.query, retrieval, deadline=started + ANSWER_RANKING_BUDGET_SECONDS)
+    return _timed_answer(_validate_answer_snapshot(root, retrieval, result), started)
 
 
 from hybrid_api import create_hybrid_router

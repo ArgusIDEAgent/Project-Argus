@@ -34,7 +34,7 @@ def run_fixture(repeats=3):
             guards.enter_context(patch.object(api, "embed_texts", side_effect=lambda texts: [[1.] + [0.] * 383 for _ in texts]))
             guards.enter_context(patch.object(api, "DEFAULT_DATA_DIR", str(owner.data)))
             guards.enter_context(patch("answers.answer_question", side_effect=AssertionError("LLM forbidden")))
-            guards.enter_context(patch("answers.urlopen", side_effect=AssertionError("Ollama forbidden")))
+            guards.enter_context(patch("answers._request_source_ranking", side_effect=AssertionError("Ollama forbidden")))
             pins = guards.enter_context(patch.object(owner.store, "pin_view", wraps=owner.store.pin_view))
             with MultiEngineExecutor.pinned(owner.store, existing_api_channels(api, config.EMBEDDING_MODEL_NAME)) as executor:
                 aggregator = EvidenceAggregator.from_executor(executor)

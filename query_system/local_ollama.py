@@ -28,8 +28,7 @@ class LocalOllama:
     """Inject the already loaded answers module; no endpoint/provider argument."""
     def __init__(self, answers):
         self.answers = answers
-        # Same stdlib HTTP transport as answers.urlopen, with the mandatory new
-        # redirect/proxy restrictions. No global opener or production mutation.
+        # Use a private stdlib opener that refuses proxies and redirects.
         self.opener = build_opener(ProxyHandler({}), _NoRedirect())
 
     def generate(self, context, budget, deadline):

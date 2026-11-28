@@ -106,6 +106,25 @@ class FaissTests(unittest.TestCase):
         self.assertEqual(self.client.query_points('code',[0.,1.,0.]).points[0].id,'b')
         self.assertTrue(list(self.path.glob('*.faiss')))
 
+    def test_sparse_filters_recover_exact_hits_beyond_the_candidate_window(self):
+        self.client.upsert('code', [
+            PointStruct(id=f'near-{i}', vector=[1., 0., 0.], payload={'file_path':f'tests/near_{i}.py'})
+            for i in range(60)
+        ] + [
+            PointStruct(id='best', vector=[0.8, 0.6, 0.], payload={'file_path':'src/best.py'}),
+            PointStruct(id='next', vector=[0.6, 0.8, 0.], payload={'file_path':'src/next.py'}),
+            PointStruct(id='excluded', vector=[0.9, 0.3, 0.], payload={'file_path':'src/blocked.py'}),
+        ])
+        scope = Filter(must_not=[FieldCondition(key='file_path', match=MatchValue(value='src/blocked.py'))],
+                       must=[Filter(should=[
+                           FieldCondition(key='file_path', match=MatchValue(value=path))
+                           for path in ('src/best.py', 'src/next.py', 'src/blocked.py')
+                       ])])
+        result = self.client.query_points('code', [1., 0., 0.], scope, limit=2, role='implementation')
+        self.assertEqual([point.id for point in result.points], ['best', 'next'])
+        result = self.client.query_points('code', [1., 0., 0.], scope, limit=2, score_threshold=0.7)
+        self.assertEqual([point.id for point in result.points], ['best'])
+
     def test_delete_and_corrupted_cache_recovery(self):
         self.client.delete('code',['a'])
         self.assertEqual(self.client.count('code').count,1)

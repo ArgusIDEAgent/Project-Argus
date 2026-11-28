@@ -28,7 +28,7 @@ def main():
     def generated(_self, context, *_args):
         counts["model"] += 1
         return valid_answer(context)
-    def legacy(_root, _question, retrieval):
+    def legacy(_root, _question, retrieval, *, deadline):
         counts["legacy"] += 1
         return {**retrieval, "answer": "Legacy fixture answer", "answerMode": "evidence"}
     @api.app.middleware("http")

@@ -390,7 +390,7 @@ class HybridApiTests(unittest.TestCase):
             self.assertEqual(self.query().status_code, 503)
             legacy = self.http.post("/retrieve", json={"repoId": self.owner.repo, "query": "login"}, headers=self.headers)
             self.assertEqual(legacy.status_code, 200)
-            with patch("api.answer_question", side_effect=lambda root, question, retrieval: {**retrieval, "answer": "legacy", "answerMode": "evidence"}):
+            with patch("api.answer_question", side_effect=lambda root, question, retrieval, **kwargs: {**retrieval, "answer": "legacy", "answerMode": "evidence"}):
                 reply = self.http.post("/ask", json={"repoId": self.owner.repo, "query": "login"}, headers=self.headers)
                 self.assertEqual(reply.json()["answer"], "legacy")
 

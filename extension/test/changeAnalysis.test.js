@@ -47,7 +47,7 @@ test('terminal shell quoting keeps command substitution literal', () => {
 
 test('Analyze Change acknowledges before a slow backend registration', async()=>{
   let release;
-  const manager={registerRepository:()=>new Promise(resolve=>{release=resolve;}),changeAction:async()=>{}};
+  const manager={acquireRepository:()=>new Promise(resolve=>{release=resolve;}),changeAction:async()=>{}};
   const controller=new ChangeAnalysisController(manager,()=>({id:'repo',rootPath:'/tmp/release-fixture'}));
   const began=performance.now();const pending=controller.start();
   try{
@@ -132,7 +132,7 @@ test('controller completes, changes mode without another capture and navigates c
     selected_check_ids: [], search_scope:['deleted.ts'],no_matching_test:[],omitted_tests:0,omitted_scenarios:0,limitations:[],sources:{} };
   let planRequests = 0;
   const manager = {
-    async registerRepository(rootPath) { return { id: 'repo', rootPath }; },
+    async acquireRepository(rootPath) { return { id: 'repo', rootPath }; },
     async startChange() { captures++; return job; },
     async changeStatus() { return { ...job, state: 'completed' }; },
     async changeExplanation(id, repo, mode) { modes.push(mode); return { ...presentation, mode }; },

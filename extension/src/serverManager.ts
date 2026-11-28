@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto';
 import * as fs from 'node:fs';
 import * as http from 'node:http';
 import * as os from 'node:os';
@@ -32,8 +33,8 @@ export type CapturedRun = { id: string; state: string; kind: string; capture_id:
   historical_capture: boolean; stale_for_workspace: boolean; selected: number; discovered: number;
   executed: number; comparison_result?: {classification:string;unstable:boolean;reason:string}; results: { path: string; version?:string; attempt?:number; outcome: string; console: string; executed: number;
     cleanup_complete: boolean }[]; error: string | null; attribution: string };
-export type Repository = { id: string; rootPath: string; defaultBranch: string };
-export type Job = { id: string; state: 'queued' | 'running' | 'completed' | 'failed'; error: string | null;
+export type Repository = { id: string; rootPath: string; defaultBranch: string; leaseId?: string; watch?: boolean };
+export type Job = { id: string; state: 'queued' | 'running' | 'completed' | 'failed' | 'cancelled'; error: string | null;
   result: { fileCount: number; commitHash: string; branch: string; dirtyFingerprint: string;
     semantic?: { state: string; error: string | null; chunkCount: number };
     graph?: { warning?: string | null };
@@ -43,7 +44,8 @@ export type CodeResult = { entityId: string; path: string; name: string; startLi
   callers: { name: string }[]; tests: { name: string }[]; docSectionId?: string; docKind?: string;
   retrievalMethods?: string[]; citationId?: number };
 export type SearchResult = { results: CodeResult[]; mode: string; warning: string | null; queryHash?: string;
-  answer?: string; answerMode?: string; evidenceSelection?: string };
+  answer?: string; answerMode?: string; evidenceSelection?: string;
+  answerTiming?: { firstUsefulMs: number | null; totalMs: number } };
 export type DocsStatus = { sectionCount: number; currentCount: number; staleCount: number; affectedCount: number; generatedCount: number };
 export type DocEvidence = { entityId: string; type: string; path: string; name: string; kind: string;
   relation: string; startLine: number; endLine: number; sourceHash: string | null };
@@ -57,12 +59,47 @@ export type DocsSyncResult = { repoId: string; snapshotId: string; outcome: 'suc
   status: DocsStatus; overview: DocSection | null };
 
 const MAX_RESPONSE_BYTES = 10 * 1024 * 1024;
+const ANSWER_STREAM_MEDIA_TYPE = 'application/x-ndjson';
+
+async function readAnswerStream<T>(response: http.IncomingMessage, publish: (result: T) => void): Promise<T> {
+  response.setEncoding('utf8');
+  let pending = '';
+  let received = 0;
+  let previewed = false;
+  let answer: T | undefined;
+  for await (const chunk of response as AsyncIterable<string>) {
+    received += Buffer.byteLength(chunk);
+    if (received > MAX_RESPONSE_BYTES) throw new Error('Local server response was too large.');
+    const lines = (pending + chunk).split('\n');
+    pending = lines.pop()!;
+    for (const line of lines) {
+      const event = JSON.parse(line) as { type?: string; result?: T & { answer?: unknown; results?: unknown } } | null;
+      const result = event?.result;
+      if (answer || !result || typeof result.answer !== 'string' || !Array.isArray(result.results)) {
+        throw new Error('Local server returned an invalid answer event.');
+      }
+      if (event?.type === 'evidence' && !previewed && result.results.length) {
+        previewed = true;
+        publish(result);
+      } else if (event?.type === 'answer') {
+        answer = result;
+      } else {
+        throw new Error('Local server returned an unexpected answer event.');
+      }
+    }
+  }
+  if (!answer || pending) throw new Error('Local server closed the answer stream early.');
+  return answer;
+}
 
 export class ServerResponseError extends Error {
   constructor(readonly status: number, message: string) { super(message); }
 }
 
 export class ServerManager implements vscode.Disposable {
+  private readonly leases = new Map<string, Repository>();
+  private readonly releases = new Set<Promise<void>>();
+  private closing?: Promise<void>;
   private port: number | undefined;
   private disposed = false;
 
@@ -136,13 +173,43 @@ export class ServerManager implements vscode.Disposable {
     return this.request('POST', '/v1/chat/intent', { message });
   }
 
-  async registerRepository(rootPath: string): Promise<Repository> {
-    const result = await this.request<{ repository: Repository }>('POST', '/repos/register', { rootPath });
+  async registerRepository(rootPath: string, leaseId?: string, watch = true): Promise<Repository> {
+    const payload = leaseId ? { rootPath, leaseId, watch } : { rootPath };
+    const result = await this.request<{ repository: Repository }>('POST', '/repos/register', payload);
     return result.repository;
   }
 
-  async indexRepository(id: string, full = false): Promise<string> {
-    const result = await this.request<{ jobId: string }>('POST', `/repos/${encodeURIComponent(id)}/index${full ? '?full=true' : ''}`);
+  async acquireRepository(rootPath: string, watch = true): Promise<Repository> {
+    if (this.closing) throw new Error('CodeMind is shutting down.');
+    const leaseId = randomBytes(16).toString('hex');
+    const repository = await this.registerRepository(rootPath, leaseId, watch);
+    if (repository.leaseId === leaseId) {
+      if (this.closing) {
+        await this.releaseRepository(repository);
+        throw new Error('CodeMind is shutting down.');
+      }
+      this.leases.set(leaseId, repository);
+    }
+    return repository;
+  }
+
+  releaseRepository(repository: Repository): Promise<void> {
+    const leaseId = repository.leaseId;
+    if (!leaseId) return Promise.resolve();
+    this.leases.delete(leaseId);
+    const release = this.request('POST', `/repos/${encodeURIComponent(repository.id)}/release`, { leaseId }, 2000)
+      .then(() => {}, error => { this.output.appendLine(`Repository release pending expiry: ${String(error)}`); });
+    this.releases.add(release);
+    void release.then(() => this.releases.delete(release));
+    return release;
+  }
+
+  async indexRepository(id: string, full = false, leaseId?: string): Promise<string> {
+    const options = new URLSearchParams();
+    if (full) options.set('full', 'true');
+    if (leaseId) options.set('leaseId', leaseId);
+    const result = await this.request<{ jobId: string }>('POST',
+      `/repos/${encodeURIComponent(id)}/index${options.size ? '?' + options.toString() : ''}`);
     return result.jobId;
   }
 
@@ -150,8 +217,9 @@ export class ServerManager implements vscode.Disposable {
     await this.request('POST', `/repos/${encodeURIComponent(id)}/cache/clear`);
   }
 
-  async refreshRepository(id: string): Promise<string> {
-    const result = await this.request<{ jobId: string }>('POST', `/repos/${encodeURIComponent(id)}/refresh`);
+  async refreshRepository(id: string, leaseId?: string): Promise<string> {
+    const result = await this.request<{ jobId: string }>('POST',
+      `/repos/${encodeURIComponent(id)}/refresh${leaseId ? '?leaseId=' + encodeURIComponent(leaseId) : ''}`);
     return result.jobId;
   }
 
@@ -159,28 +227,37 @@ export class ServerManager implements vscode.Disposable {
     return this.request<Job>('GET', `/jobs/${encodeURIComponent(id)}`);
   }
 
-  async liveState(id: string): Promise<{ commitHash: string; branch: string;
+  async liveState(id: string, verify = true, leaseId?: string): Promise<{ commitHash: string; branch: string;
     storage?: { directory: string; mode: string; snapshotReadOnly: boolean; legacyDataPreserved: boolean;
       snapshotId: string | null; cacheBytes: number };
     synchronization?: { fresh: boolean; state: string; error: string | null; savedFilesOnly: boolean;
-      graphWarning?: string | null } }> {
-    return this.request('GET', `/repos/${encodeURIComponent(id)}/live-state`);
+      graphWarning?: string | null; watching?: boolean; verified?: boolean } }> {
+    const options = new URLSearchParams();
+    if (!verify) options.set('verify', 'false');
+    if (leaseId) options.set('leaseId', leaseId);
+    return this.request('GET', `/repos/${encodeURIComponent(id)}/live-state${options.size ? '?' + options.toString() : ''}`);
   }
 
-  async selectedRepositoryState(repository: Pick<Repository, 'id' | 'rootPath'>,
+  async selectedRepositoryState(repository: Pick<Repository, 'id' | 'rootPath' | 'leaseId' | 'watch'>,
     isCurrent: () => boolean): Promise<Awaited<ReturnType<ServerManager['liveState']>> | undefined> {
-    if (!isCurrent() || !vscode.workspace.isTrusted) return undefined;
-    try { return await this.liveState(repository.id); }
+    const current = () => !this.closing && isCurrent() && vscode.workspace.isTrusted;
+    if (!current()) return undefined;
+    try { return await this.liveState(repository.id, false, repository.leaseId); }
     catch (error) {
       if (!(error instanceof ServerResponseError) || error.status !== 404 ||
-          error.message !== `Repo '${repository.id}' not registered`) throw error;
-      if (!isCurrent() || !vscode.workspace.isTrusted) return undefined;
-      const registered = await this.registerRepository(repository.rootPath);
-      if (!isCurrent() || !vscode.workspace.isTrusted) return undefined;
-      if (registered.id !== repository.id || registered.rootPath !== repository.rootPath) {
+          (error.message !== `Repo '${repository.id}' not registered` &&
+           (!repository.leaseId || error.message !== 'Repository lease expired.'))) throw error;
+      if (!current()) return undefined;
+      const registered = await this.registerRepository(repository.rootPath, repository.leaseId, repository.watch);
+      if (!current()) {
+        await this.releaseRepository(registered);
+        return undefined;
+      }
+      if (registered.id !== repository.id || registered.rootPath !== repository.rootPath || registered.leaseId !== repository.leaseId) {
+        await this.releaseRepository(registered);
         throw new Error('Reconnected repository identity changed. Select the repository again.');
       }
-      return this.liveState(repository.id);
+      return this.liveState(repository.id, false, repository.leaseId);
     }
   }
 
@@ -188,8 +265,8 @@ export class ServerManager implements vscode.Disposable {
     return this.request('POST', '/search/code', { repoId, query, limit: 5 });
   }
 
-  async ask(repoId: string, query: string): Promise<SearchResult> {
-    return this.request('POST', '/ask', { repoId, query, limit: 5 });
+  async ask(repoId: string, query: string, onEvidence?: (result: SearchResult) => void): Promise<SearchResult> {
+    return this.request('POST', '/ask', { repoId, query, limit: 5 }, undefined, false, onEvidence);
   }
 
   async hybridQuery(query: HybridQueryInput, allowGeneration: boolean, previousAnswerToken?: string): Promise<HybridReply> {
@@ -239,7 +316,7 @@ export class ServerManager implements vscode.Disposable {
   }
 
   private async request<T>(method: 'GET' | 'POST', requestPath: string, payload?: unknown,
-    timeoutMs = 90000, allowNull = false): Promise<T> {
+    timeoutMs = 90000, allowNull = false, onEvidence?: (result: T) => void): Promise<T> {
     await this.start();
     if (!this.port) throw new Error('Local server is unavailable.');
     const token = this.readToken();
@@ -254,10 +331,20 @@ export class ServerManager implements vscode.Disposable {
         method,
         headers: {
           'content-type': 'application/json',
+          ...(onEvidence ? { accept: ANSWER_STREAM_MEDIA_TYPE } : {}),
           ...(body === undefined ? {} : { 'content-length': Buffer.byteLength(body) }),
           'x-codemind-session': token,
         },
       }, (response) => {
+        const mediaType = response.headers['content-type']?.split(';')[0];
+        if (onEvidence && mediaType === ANSWER_STREAM_MEDIA_TYPE
+            && response.statusCode && response.statusCode >= 200 && response.statusCode < 300) {
+          void readAnswerStream(response, onEvidence).then(resolve, error => {
+            request.destroy();
+            reject(error);
+          });
+          return;
+        }
         const chunks: Buffer[] = [];
         let received = 0;
         response.on('data', (chunk: Buffer) => {
@@ -293,8 +380,16 @@ export class ServerManager implements vscode.Disposable {
     });
   }
 
-  dispose(): void {
-    this.disposed = true;
-    this.port = undefined;
+  close(): Promise<void> {
+    if (!this.closing) {
+      for (const repository of this.leases.values()) void this.releaseRepository(repository);
+      this.closing = Promise.all(this.releases).then(() => {
+        this.disposed = true;
+        this.port = undefined;
+      });
+    }
+    return this.closing;
   }
+
+  dispose(): void { void this.close(); }
 }

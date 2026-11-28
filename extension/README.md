@@ -88,22 +88,20 @@ The minimum declared VS Code version is 1.93. Chat remains available in Restrict
 
 ## Development
 
-Start the Python AI engine first:
+Follow the project-root Quick Start to create `.venv`, install the Python and
+Node dependencies and build the VSIX. From the checkout root, start the local
+engine with `.venv/bin/python start_codemind.py`, then open a trusted repository
+in VS Code and run **CodeMind: Open Chat**.
 
-```sh
-cd ai-engine && python api.py
-```
+To develop without installing the VSIX, compile with
+`npm --prefix extension run compile` and run an Extension Development Host
+with `code --extensionDevelopmentPath="$PWD/extension"` from the checkout root.
+**CodeMind: Check Connection** verifies engine connectivity. The **CodeMind**
+output channel shows engine connection and errors.
 
-Then, from `extension/`, run `npm install && npm run compile`. Open the project root in VS Code, press F5, then run **CodeMind: Open Chat** in the Extension Development Host. The normal VS Code window needs an installed VSIX; F5 installs nothing into your normal profile. **CodeMind: Check Connection** sends a Hello request without opening the panel. The **CodeMind** output channel shows engine connection and errors.
-
-To use CodeMind in any normal VS Code window, run this from `extension/` and then reload VS Code:
-
-```sh
-npm run package:vsix
-code --install-extension ../codemind-extension-0.4.1.vsix --force
-```
-
-Run `npm run test:integration` to launch an Extension Development Host and verify that the extension starts and receives the Hello reply. If VS Code is not at the default macOS path, set `CODEMIND_TEST_VSCODE` to an existing executable; the test runner does not download one.
+Run `npm --prefix extension run test:integration` to launch an editor test
+profile. Set `CODEMIND_TEST_VSCODE` if the installed executable is outside the
+default macOS location.
 
 After selecting and indexing a repository, chat messages search its code. **CodeMind: Search Code** exposes search directly. Saving refreshes the repository index. The older **Check for Reusable Code** command currently reports that reuse analysis is unavailable; the retained `codemind.checkReuseOnSave` setting is deprecated and has no effect. Results can open source or insert a reference. Server requests stay on loopback; the engine writes its session token to `~/.codemind/data/session_token`, and the extension sends it as the `x-codemind-session` header.
 

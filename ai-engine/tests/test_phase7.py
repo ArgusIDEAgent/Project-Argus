@@ -1,7 +1,6 @@
 """Phase 7: immutable publication, incremental work and saved-file watching."""
 from contextlib import redirect_stdout
 import io
-import json
 import os
 from pathlib import Path
 import subprocess
@@ -264,12 +263,8 @@ class Phase7Tests(unittest.TestCase):
     def test_unselected_source_change_during_answer_discards_citations(self):
         def reply(*args,**options):
             (self.root/'new.py').write_text('def unrelated():\n    return True\n')
-            class Reply:
-                def __enter__(self): return self
-                def __exit__(self,*args): pass
-                def read(self,*args): return json.dumps({'message':{'content':'Token validation checks the length.'}}).encode()
-            return Reply()
-        with patch.dict(os.environ,{'CODEMIND_LOCAL_MODEL':'test'}),patch('answers.urlopen',side_effect=reply):
+            return {'message': {'content': 'Token validation checks the length.'}}
+        with patch.dict(os.environ,{'CODEMIND_LOCAL_MODEL':'test'}),patch('answers._request_source_ranking',side_effect=reply):
             result = api.ask(api.SearchRequest(repoId=self.repo,query='explain validateToken'))
         self.assertEqual(result['citations'],[])
         self.assertIn('stale',result['warning'])

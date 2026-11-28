@@ -116,7 +116,7 @@ class RuntimeIndexingTests(unittest.TestCase):
         saved = before_db.read_bytes()
 
         with (patch.dict("os.environ", {"CODEMIND_AUTO_SYNC": "0", "CODEMIND_ENABLE_HYBRID": "1"}),
-              patch("answers.urlopen", side_effect=AssertionError("Verified calls should be deterministic")),
+              patch("answers._request_source_ranking", side_effect=AssertionError("Verified calls should be deterministic")),
               TestClient(api.app, base_url="http://127.0.0.1") as http):
             headers = {"x-codemind-session": api._SESSION_TOKEN}
 
@@ -245,7 +245,7 @@ class RuntimeIndexingTests(unittest.TestCase):
         result = self.publish()
         self.assertEqual(result["graph"]["coverage"]["python"], {"parsed": 4, "partial": 1, "error": 0})
         with (patch.dict("os.environ", {"CODEMIND_AUTO_SYNC": "0", "CODEMIND_LOCAL_MODEL": "local"}),
-              patch("answers.urlopen", side_effect=AssertionError("Verified calls should be deterministic")),
+              patch("answers._request_source_ranking", side_effect=AssertionError("Verified calls should be deterministic")),
               TestClient(api.app, base_url="http://127.0.0.1") as http):
             headers = {"x-codemind-session": api._SESSION_TOKEN}
 
@@ -292,21 +292,22 @@ class RuntimeIndexingTests(unittest.TestCase):
                 self.assertEqual(reply.status_code, 200, reply.text)
                 return reply.json()
 
-            with patch("answers.urlopen", side_effect=AssertionError("Location answers are deterministic")):
+            with patch("answers._request_source_ranking", side_effect=AssertionError("Location answers are deterministic")):
                 location = ask("Where is JWT authentication implemented?")
             self.assertIn("require_session → verify_token (routes.py:4)", location["answer"])
             self.assertNotIn("archive.py", location["answer"])
             self.assertEqual({item["path"] for item in location["citations"]}, {"auth_service.py", "routes.py"})
 
             from test_semantic_answers import model_reply
-            with patch("answers.urlopen", return_value=model_reply({"sources": ["source-1"]})):
+            with patch("answers._request_source_ranking", return_value=model_reply({"sources": ["source-1"]})):
                 detail = ask("Explain verify_token")
             self.assertEqual(detail["evidenceSelection"], "local-llm")
             self.assertIn("algorithms=[\"HS256\"]", detail["answer"])
             self.assertIn('except jwt.ExpiredSignatureError:', detail["answer"])
             self.assertIn('raise ValueError("Invalid authentication token")', detail["answer"])
-            self.assertEqual([(row["path"], row["startLine"], row["endLine"]) for row in detail["citations"]],
-                             [("auth_service.py", 21, 28), ("routes.py", 4, 4)])
+            self.assertEqual({(row["path"], row["startLine"], row["endLine"]) for row in detail["citations"]},
+                             {("auth_service.py", 21, 28), ("auth_service.py", 8, 12), ("routes.py", 4, 4)})
+            self.assertNotIn("generate_token → _secret", detail["answer"])
             for result in (location, detail):
                 self.assertEqual([row["citationId"] for row in result["results"]],
                                  [row["id"] for row in result["citations"]])

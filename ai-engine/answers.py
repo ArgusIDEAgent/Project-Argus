@@ -1,12 +1,14 @@
 """Render verified repository evidence. Ollama may rank source IDs."""
+import asyncio
 import hashlib
 import json
 import os
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from urllib.error import HTTPError
-from urllib.request import Request, urlopen
+from time import monotonic
+
+import httpx
 
 from config import sanitize_text
 from indexer import _redact_secrets
@@ -17,8 +19,20 @@ from knowledge_base.source_ranking import preferred_role, source_role
 MAX_SOURCES = 8
 MAX_EXCERPT = 1800
 MAX_EXCERPT_LINES = 32
-_LOCATION = re.compile(r"^\s*(?:where\b|locate\b|show (?:me )?the location\b)", re.I)
-_EXPLANATION = re.compile(r"\b(?:how|why|explain|describe|workflow|flow|detail)\b", re.I)
+ANSWER_RANKING_BUDGET_SECONDS = 12
+_EXPLANATION = re.compile(
+    r"\b(?:how|why|explain|describe|walk me through|detail|workflow|flow|what (?:does|happens))\b", re.I,
+)
+_LOCATION = re.compile(
+    r"^\s*(?:(?:please|can you|could you|would you|show me|tell me|explain)\s+)*"
+    r"(?:where\b|(?:which|what) (?:file|module|directory|folder|path|function|class|method|symbol)\b|"
+    r"find\b(?!\s+out\b)|locate\b|(?:show (?:me )?|list )(?:the )?(?:locations?|files?|definitions?)\b)", re.I,
+)
+_FOLLOW_UP_EXPLANATION = re.compile(
+    r"(?:[?.]\s+|\band\s+)(?:please\s+)?(?:how|why|explain|describe|walk me through)\b", re.I,
+)
+_GRAPH_INTROS = {"callers": "Verified static callers", "callees": "Verified static calls",
+                 "impact": "Potentially affected callers"}
 _ANSWER_STOP_WORDS = STOP_WORDS | {
     "actually", "answer", "called", "defined", "does", "find", "handles", "happens",
     "identify", "locate", "mean", "please", "really", "show", "source", "works",
@@ -124,7 +138,27 @@ def _location(source):
     return f"{sanitize_text(item['path'])}:{start}" + (f"-{end}" if start != end else "")
 
 
-def _rank_sources(model, query, sources, maximum):
+def _explanation_only(text):
+    """Preserve the opt-in hybrid generator's model-citation validation."""
+    parts = re.split(r"(```[\s\S]*?```|`[^`\n]+`)", text)
+    for index in range(0, len(parts), 2):
+        parts[index] = re.sub(r"(?<![\w])\[\s*\d+(?:\s*[,;]\s*\d+)*\s*\]", "", parts[index])
+    return "".join(parts).strip()
+
+
+async def _request_source_ranking(body):
+    async with httpx.AsyncClient(trust_env=False, timeout=None) as client:
+        async with client.stream("POST", "http://127.0.0.1:11434/api/chat", json=body) as reply:
+            reply.raise_for_status()
+            data = bytearray()
+            async for chunk in reply.aiter_bytes():
+                if len(data) + len(chunk) > 65536:
+                    raise ValueError("Source selection response too large")
+                data.extend(chunk)
+    return json.loads(data)
+
+
+async def _rank_sources(model, query, sources, maximum):
     by_id = {f"source-{index}": source for index, source in enumerate(sources, 1)}
     schema = {
         "type": "object", "additionalProperties": False, "required": ["sources"],
@@ -138,12 +172,12 @@ def _rank_sources(model, query, sources, maximum):
             {"id": key, "path": _location(source), "code": source.excerpt()}
             for key, source in by_id.items()]}, ensure_ascii=False)},
     ]
-    request = Request("http://127.0.0.1:11434/api/chat", data=json.dumps({
+    payload = await _request_source_ranking({
         "model": model, "messages": messages, "stream": False, "think": False, "format": schema,
         "options": {"temperature": 0, "num_predict": 96, "num_ctx": 8192},
-    }).encode(), headers={"Content-Type": "application/json"})
-    with urlopen(request, timeout=65) as reply:
-        payload = json.loads(reply.read(65536))
+    })
+    if not isinstance(payload, dict) or not isinstance(payload.get("message"), dict):
+        raise ValueError("Invalid source selection response")
     if payload.get("done_reason") == "length":
         raise ValueError("Truncated source selection")
     selection = json.loads(payload["message"]["content"])
@@ -170,52 +204,100 @@ def _render(sources, heading, *, excerpt, show_graph):
     return heading + ":\n" + ("\n\n" if excerpt else "\n").join(sections)
 
 
-def answer_question(root, query, retrieval):
+@dataclass
+class PreparedAnswer:
+    root: str
+    query: str
+    retrieval: dict
+    sources: list[Source]
+    candidate_only: bool
+    limit: int
+    structural_heading: str | None
+    ambiguous: bool
+    detailed: bool
+    model: str
+
+
+def prepare_answer(root, query, retrieval):
     sources, candidate_only = _pick_candidates(root, query, retrieval)
+    structural_heading = None
+    if (retrieval.get("mode") == "graph" and sources
+            and all(source.item.get("graphPath") for source in sources)):
+        structural_heading = _GRAPH_INTROS.get(retrieval.get("intent"))
+    ambiguous = retrieval.get("status") == "ambiguous"
+    detailed = (not structural_heading and not ambiguous and bool(_EXPLANATION.search(query))
+                and (not _LOCATION.match(query) or bool(_FOLLOW_UP_EXPLANATION.search(query))))
+    model = os.environ.get("CODEMIND_LOCAL_MODEL", "llama3:latest") if sources and detailed else ""
+    return PreparedAnswer(root, query, retrieval, sources, candidate_only,
+                          min(MAX_SOURCES, retrieval.get("_answerLimit", 5)),
+                          structural_heading, ambiguous, detailed, model)
+
+
+async def _rank_before_deadline(prepared, deadline):
+    remaining = deadline - monotonic()
+    try:
+        if remaining <= 0:
+            raise TimeoutError
+        async with asyncio.timeout(remaining):
+            ranked = await _rank_sources(prepared.model, prepared.query, prepared.sources, prepared.limit)
+        if monotonic() >= deadline:
+            raise TimeoutError
+        return ranked, None
+    except httpx.HTTPStatusError as error:
+        warning = f"Local source ranking returned HTTP {error.response.status_code}."
+    except TimeoutError:
+        warning = "Local source ranking timed out."
+    except (OSError, httpx.RequestError):
+        warning = "Local source ranking is unavailable."
+    except (ValueError, KeyError, TypeError):
+        warning = "Local source ranking returned an invalid response."
+    return None, f"{warning} The answer uses verified source order."
+
+
+def finish_answer(prepared, deadline):
+    if not prepared.model:
+        return render_answer(prepared)
+    ranked, warning = asyncio.run(_rank_before_deadline(prepared, deadline))
+    return render_answer(prepared, ranked, warning)
+
+
+def answer_question(root, query, retrieval, *, deadline=None):
+    if deadline is None:
+        deadline = monotonic() + ANSWER_RANKING_BUDGET_SECONDS
+    return finish_answer(prepare_answer(root, query, retrieval), deadline)
+
+
+def render_answer(prepared, ranked=None, selection_warning=None):
+    retrieval = prepared.retrieval
     response = {**retrieval, "results": [], "citations": [], "answerMode": "evidence"}
-    limit = min(MAX_SOURCES, response.pop("_answerLimit", 5))
+    response.pop("_answerLimit", None)
+    sources, limit = prepared.sources, prepared.limit
     if not sources:
         response.update(status="not_found",
             answer="I couldn't find current repository evidence for this question. Try a function or filename, or refresh the repository index.")
         return response
 
-    graph_intros = {"callers": "Verified static callers", "callees": "Verified static calls",
-                    "impact": "Potentially affected callers"}
-    intent = retrieval.get("intent")
-    structural = retrieval.get("mode") == "graph" and intent in graph_intros and all(
-        source.item.get("graphPath") for source in sources)
-    ambiguous = retrieval.get("status") == "ambiguous"
-    detailed = bool(_EXPLANATION.search(query)) and not _LOCATION.search(query) and not structural and not ambiguous
     selected = sources[:limit]
-    required_declaration = next((source for source in selected
-        if "exact" in source.item.get("retrievalMethods", [])), None)
-    model = os.environ.get("CODEMIND_LOCAL_MODEL", "llama3:latest")
-    selection_warning = None
-    if model and detailed:
-        try:
-            ranked = _rank_sources(model, query, sources, limit)
-            if required_declaration and required_declaration not in ranked:
-                ranked.insert(0, required_declaration)
-            if not candidate_only:
-                ranked.extend(source for source in sources if source not in ranked)
-            selected = ranked[:limit]
-            response["evidenceSelection"] = "local-llm"
-        except HTTPError as error:
-            selection_warning = f"Local source ranking returned HTTP {error.code}. The answer uses verified source order."
-        except TimeoutError:
-            selection_warning = "Local source ranking timed out. The answer uses verified source order."
-        except OSError:
-            selection_warning = "Local source ranking is unavailable. The answer uses verified source order."
-        except (ValueError, KeyError, TypeError):
-            selection_warning = "Local source ranking returned an invalid response. The answer uses verified source order."
+    if ranked is not None:
+        required = next((source for source in selected if "exact" in source.item.get("retrievalMethods", [])), None)
+        if required and required not in ranked:
+            ranked.insert(0, required)
+        if not prepared.candidate_only:
+            ranked.extend(source for source in sources if source not in ranked)
+        selected = ranked[:limit]
+        response["evidenceSelection"] = "local-llm"
     if selection_warning:
         response["warning"] = " ".join(filter(None, (response.get("warning"), selection_warning)))
 
+    structural, ambiguous = prepared.structural_heading, prepared.ambiguous
+    candidate_only, detailed = prepared.candidate_only, prepared.detailed
     # Call-site proof is tied to a selected declaration. A semantic hit or an
     # import line by itself cannot establish that one function calls another.
     items = [source.item for source in selected]
     if not structural and not ambiguous and not candidate_only and limit > 1:
-        calls = [(source.item, call) for source in selected for call in source.item.get("_answerCalls", [])]
+        call_owners = [source for source in selected
+                       if retrieval.get("mode") != "exact" or "exact" in source.item.get("retrievalMethods", [])]
+        calls = [(source.item, call) for source in call_owners for call in source.item.get("_answerCalls", [])]
         # A cross-file call answers a different question than another excerpt
         # from the same implementation file. Keep its declaration cited too.
         calls.sort(key=lambda pair: pair[0]["path"] == pair[1]["path"])
@@ -229,7 +311,7 @@ def answer_question(root, query, retrieval):
                 break
             if owner in items and call not in items:
                 items.append(call)
-    verified = _sources(root, items)
+    verified = _sources(prepared.root, items)
     if len(verified) != len(items):
         response.update(status="not_found", evidenceSelection=None,
             answer="Saved source changed before the answer could be verified. Refresh the index and ask again.",
@@ -237,7 +319,7 @@ def answer_question(root, query, retrieval):
         return response
 
     heading = ("Several source definitions match. Use a qualified name or file path to narrow the question"
-               if ambiguous else graph_intros[intent] if structural else
+               if ambiguous else structural if structural else
                "Possibly related source. The indexed evidence does not establish an exact match" if candidate_only else
                "Verified source excerpts" if detailed else "Verified source locations")
     response["answer"] = _render(verified, heading, excerpt=detailed or candidate_only, show_graph=not ambiguous)

@@ -1,7 +1,12 @@
 """Negative API surface and process-local job/session lifecycle, no live models."""
+from concurrent.futures import ThreadPoolExecutor
+import hashlib
+import json
 from pathlib import Path
 import os
 import tempfile
+import threading
+import time
 import unittest
 from unittest.mock import Mock, patch
 
@@ -84,6 +89,103 @@ class RuntimeApiTests(unittest.TestCase):
             model.assert_called_once()
             self.assertEqual(search.call_args.args[0].query, question)
 
+    def test_location_stream_bypasses_model_and_reports_one_timing(self):
+        source = self.root / "auth.py"
+        source.write_text("def login(): return True\n")
+        retrieval = {"mode": "exact", "results": [{
+            "path": source.name, "name": "login", "startLine": 1, "endLine": 1,
+            "sourceHash": hashlib.sha256(source.read_bytes()).hexdigest(),
+        }]}
+        with patch.object(api, "_search_code", return_value=retrieval), \
+                patch("answers._request_source_ranking", side_effect=AssertionError("location called model")) as model:
+            for question in ("Where is login?", "Can you explain where login is defined?",
+                             "Which file defines the login workflow?", "Which function handles the login flow?",
+                             "Please find the code for login",
+                             "Show me the location of the rule that describes how login works"):
+                with self.subTest(question=question):
+                    reply = self.http.post("/ask", json={"repoId": self.repo, "query": question},
+                                           headers={**self.headers, "accept": "application/x-ndjson"})
+                    self.assertEqual(reply.status_code, 200)
+                    self.assertEqual(reply.headers["content-type"], "application/x-ndjson")
+                    event, = map(json.loads, reply.text.splitlines())
+                    self.assertEqual(event["type"], "answer")
+                    answer = event["result"]
+                    self.assertIn("login (auth.py:1)", answer["answer"])
+                    self.assertEqual(answer["answerTiming"]["firstUsefulMs"], answer["answerTiming"]["totalMs"])
+            model.assert_not_called()
+
+    def test_explicit_and_mixed_explanations_request_ranking(self):
+        source = self.root / "auth.py"
+        source.write_text("def login(): return True\n")
+        retrieval = {"mode": "exact", "results": [{
+            "path": source.name, "name": "login", "startLine": 1, "endLine": 1,
+            "sourceHash": hashlib.sha256(source.read_bytes()).hexdigest(),
+        }]}
+        headers = {**self.headers, "accept": "application/x-ndjson"}
+        with patch.dict(os.environ, {"CODEMIND_LOCAL_MODEL": "test-local"}), \
+                patch.object(api, "_search_code", return_value=retrieval), \
+                patch("answers._request_source_ranking", return_value={
+                    "message": {"content": '{"sources":["source-1"]}'},
+                }) as model:
+            for query in ("Find out why login succeeds", "What does login do?", "login workflow",
+                          "Where is login defined and how does it work?"):
+                with self.subTest(query=query):
+                    reply = self.http.post("/ask", json={"repoId": self.repo, "query": query}, headers=headers)
+                    preview, final = map(json.loads, reply.text.splitlines())
+                    self.assertEqual(preview["type"], "evidence")
+                    self.assertEqual(final["type"], "answer")
+                    self.assertEqual(final["result"]["evidenceSelection"], "local-llm")
+                    self.assertEqual(preview["result"]["citations"], final["result"]["citations"])
+            self.assertEqual(model.await_count, 4)
+
+    def test_explanation_publishes_verified_evidence_before_ranking_and_rechecks_it(self):
+        source = self.root / "auth.py"
+        source.write_text("def login(): return True\n")
+        retrieval = {"mode": "exact", "results": [{
+            "path": source.name, "name": "login", "startLine": 1, "endLine": 1,
+            "sourceHash": hashlib.sha256(source.read_bytes()).hexdigest(),
+        }]}
+        request = api.SearchRequest(repoId=self.repo, query="Explain how login works")
+
+        def edit_during_ranking(_payload):
+            source.write_text("def login(): return False\n")
+            return {"message": {"content": '{"sources":["source-1"]}'}}
+
+        with patch.dict(os.environ, {"CODEMIND_LOCAL_MODEL": "test-local"}), \
+                patch("answers._request_source_ranking", side_effect=edit_during_ranking) as model:
+            events = api._stream_answer(str(self.root), request, retrieval, api.time.monotonic())
+            evidence = json.loads(next(events))
+            self.assertEqual(evidence["type"], "evidence")
+            self.assertEqual(evidence["result"]["results"][0]["path"], "auth.py")
+            self.assertIn("return True", evidence["result"]["answer"])
+            model.assert_not_called()
+
+            answer, = map(json.loads, events)
+            self.assertEqual(answer["type"], "answer")
+            final = answer["result"]
+            self.assertEqual(final["results"], [])
+            self.assertEqual(final["citations"], [])
+            self.assertIn("changed", final["warning"])
+            self.assertLessEqual(final["answerTiming"]["firstUsefulMs"], final["answerTiming"]["totalMs"])
+            model.assert_awaited_once()
+
+    def test_explanation_skips_model_when_retrieval_used_the_ranking_budget(self):
+        source = self.root / "auth.py"
+        source.write_text("def login(): return True\n")
+        retrieval = {"mode": "exact", "results": [{
+            "path": source.name, "name": "login", "startLine": 1, "endLine": 1,
+            "sourceHash": hashlib.sha256(source.read_bytes()).hexdigest(),
+        }]}
+        request = api.SearchRequest(repoId=self.repo, query="Explain how login works")
+        started = api.time.monotonic() - api.ANSWER_RANKING_BUDGET_SECONDS
+        with patch.dict(os.environ, {"CODEMIND_LOCAL_MODEL": "test-local"}), \
+                patch("answers._request_source_ranking") as model:
+            event, = map(json.loads, api._stream_answer(str(self.root), request, retrieval, started))
+            model.assert_not_called()
+        self.assertEqual(event["type"], "answer")
+        self.assertIn("timed out", event["result"]["warning"])
+        self.assertTrue(event["result"]["citations"])
+
     def test_hybrid_invalid_depth_budgets_unknown_options_and_extra_fields(self):
         valid = {"query": {"repository_id": self.repo, "question": "Who calls login?"}}
         for change in (
@@ -135,6 +237,80 @@ class RuntimeApiTests(unittest.TestCase):
         self.assertEqual(reply.json(), {"error": "Internal engine error."})
         self.assertNotIn(self.repo, api._REGISTERED_REPOS)
 
+    def test_leases_release_watch_only_after_last_index_owner_and_keep_disk_storage(self):
+        from knowledge_base.storage import RepositoryStorage
+        from knowledge_base.synchronization import SyncManager
+        api._REGISTERED_REPOS.clear()
+        manager = SyncManager(str(self.data), lambda *_: None, audit_interval=3600)
+        self.addCleanup(manager.close)
+        index_owners = ("a"*32, "b"*32)
+        change_owner = "c"*32
+        with patch.object(api, "_SYNC_MANAGER", manager):
+            for owner in (*index_owners, change_owner):
+                reply = self.http.post("/repos/register", headers=self.headers, json={
+                    "rootPath": str(self.root), "leaseId": owner, "watch": owner != change_owner})
+                self.assertEqual(reply.status_code, 200)
+                self.assertEqual(reply.json()["repository"]["leaseId"], owner)
+            self.assertTrue(manager.status(self.repo)["watching"])
+            handle, _ = manager.revision(self.repo)
+            incarnation = api._REGISTERED_REPOS[self.repo]["incarnation"]
+            storage = RepositoryStorage(self.root, str(self.data))
+            sentinel = storage.path / "retained"
+            sentinel.write_text("snapshot contents")
+            for owner in index_owners:
+                reply = self.http.post(f"/repos/{self.repo}/release", headers=self.headers, json={"leaseId": owner})
+                self.assertEqual(reply.json(), {"released": True})
+                self.assertEqual(manager.status(self.repo)["watching"], owner == index_owners[0])
+            self.assertIn(self.repo, api._REGISTERED_REPOS)
+            released = self.http.get(f"/repos/{self.repo}/live-state", params={"leaseId": index_owners[1]}, headers=self.headers)
+            self.assertEqual(released.status_code, 404)
+            self.assertEqual(self.http.post(f"/repos/{self.repo}/index", params={"leaseId": index_owners[1]},
+                                            headers=self.headers).status_code, 404)
+            reply = self.http.post(f"/repos/{self.repo}/release", headers=self.headers, json={"leaseId": change_owner})
+            self.assertEqual(reply.json(), {"released": True})
+            self.assertNotIn(self.repo, api._REGISTERED_REPOS)
+            self.assertIsNone(manager.revision(self.repo))
+            self.assertEqual(sentinel.read_text(), "snapshot contents")
+
+            self.http.post("/repos/register", headers=self.headers, json={"rootPath": str(self.root), "leaseId": "d"*32})
+            self.assertTrue(manager.status(self.repo)["watching"])
+            manager.changed(self.repo, handle)
+            self.assertFalse(manager.status(self.repo)["invalidated"])
+            api._request_auto_refresh(self.repo, incarnation, handle)
+            self.assertEqual(api._JOBS, {})
+            self.assertEqual(sentinel.read_text(), "snapshot contents")
+
+    def test_sequential_editor_roots_do_not_exhaust_active_repository_capacity(self):
+        api._REGISTERED_REPOS.clear()
+        for index in range(api._MAX_REPOS + 5):
+            root = self.root / f"repo-{index}"
+            root.mkdir()
+            owner = f"{index:032x}"
+            result = self.http.post("/repos/register", headers=self.headers, json={"rootPath": str(root), "leaseId": owner})
+            self.assertEqual(result.status_code, 200, result.text)
+            repo = result.json()["repository"]["id"]
+            reply = self.http.post(f"/repos/{repo}/release", headers=self.headers, json={"leaseId": owner})
+            self.assertEqual(reply.json(), {"released": True})
+            self.assertEqual(api._REGISTERED_REPOS, {})
+        unknown = self.http.post(f"/repos/{repo}/release", headers=self.headers, json={"leaseId": owner})
+        self.assertEqual(unknown.json(), {"released": False})
+        self.assertEqual(self.http.post(f"/repos/{repo}/release", json={"leaseId": owner}).status_code, 401)
+
+    def test_lease_renewal_and_expiry_reclaim_unclosed_selections(self):
+        api._REGISTERED_REPOS.clear()
+        first, second = "a"*32, "b"*32
+        with patch("api.time.monotonic", return_value=100):
+            for owner in (first, second):
+                self.http.post("/repos/register", headers=self.headers, json={"rootPath": str(self.root), "leaseId": owner})
+        with patch("api.time.monotonic", return_value=150):
+            heartbeat = self.http.get(f"/repos/{self.repo}/live-state", headers=self.headers,
+                                      params={"leaseId": second, "verify": "false"})
+            self.assertEqual(heartbeat.status_code, 200)
+        api._expire_repository_leases(100 + api._REPOSITORY_LEASE_SECONDS)
+        self.assertEqual(set(api._REGISTERED_REPOS[self.repo]["leases"]), {second})
+        api._expire_repository_leases(150 + api._REPOSITORY_LEASE_SECONDS)
+        self.assertNotIn(self.repo, api._REGISTERED_REPOS)
+
     def test_shutdown_revokes_session_and_restart_rotates_generated_token(self):
         with patch.dict(os.environ, {"CODEMIND_SESSION_TOKEN": ""}):
             with TestClient(api.app, base_url="http://127.0.0.1") as http:
@@ -160,6 +336,77 @@ class RuntimeApiTests(unittest.TestCase):
             api._run_index_job(first["jobId"], self.repo, str(self.root))
         self.assertEqual(api.get_job(first["jobId"])["state"], "completed")
         self.assertEqual(api.get_job(first["jobId"])["result"]["fileCount"], 1)
+
+    def test_running_incremental_keeps_full_successor_and_another_repository_progresses(self):
+        other_root = self.root / "other"
+        other_root.mkdir()
+        other = api.register_repo(api.RegisterRequest(rootPath=str(other_root)))["repository"]["id"]
+        lease = "d"*32
+        api.register_repo(api.RegisterRequest(rootPath=str(self.root), leaseId=lease))
+        started, finish = threading.Event(), threading.Event()
+        calls = []
+
+        def store_factory(root, *_):
+            store = Mock()
+
+            def publish(**options):
+                full = options["full"]
+                calls.append((str(root), full))
+                if str(root) == str(self.root) and not full:
+                    started.set()
+                    if not finish.wait(10):
+                        raise TimeoutError("fixture was not released")
+                return {"files_indexed": 1, "files_skipped": 0, "chunk_count": 1,
+                        "graph": {"graph": {}, "graph_snapshot_id": "stage"}, "activeSnapshotId": "a"*32}
+            store.publish.side_effect = publish
+            return store
+
+        def submit(repo, *, full=False):
+            response = self.http.post(f"/repos/{repo}/index", params={"full": full}, headers=self.headers)
+            self.assertEqual(response.status_code, 200)
+            return response.json()["jobId"]
+
+        with (patch.object(api, "SnapshotStore", side_effect=store_factory), patch.object(api, "get_qdrant_client"),
+              ThreadPoolExecutor(max_workers=1) as requests):
+            incremental = requests.submit(submit, self.repo)
+            try:
+                self.assertTrue(started.wait(5))
+                pending = self.http.post(f"/repos/{self.repo}/refresh", params={"leaseId": lease}, headers=self.headers)
+                self.assertEqual(pending.status_code, 200)
+                queued_refresh = pending.json()["jobId"]
+                self.assertEqual(api.get_job(queued_refresh)["state"], "queued")
+                rebuild = submit(self.repo, full=True)
+                self.assertEqual(rebuild, queued_refresh)
+                self.assertEqual(submit(self.repo, full=True), rebuild)
+                self.assertEqual(api.get_job(rebuild)["state"], "queued")
+                self.assertEqual(api.get_job(rebuild)["mode"], "full")
+                unrelated = submit(other)
+                self.assertEqual(api.get_job(unrelated)["state"], "completed")
+                self.assertFalse(incremental.done())
+            finally:
+                finish.set()
+            first = incremental.result(timeout=10)
+            self.assertNotEqual(first, rebuild)
+            end = time.monotonic() + 10
+            while api.get_job(rebuild)["state"] in ("queued", "running") and time.monotonic() < end:
+                time.sleep(0.02)
+            self.assertEqual(api.get_job(rebuild)["state"], "completed")
+        self.assertEqual([full for root, full in calls if root == str(self.root)], [False, True])
+
+    def test_queued_upgrade_and_last_release_cancels_only_queued_work(self):
+        api._REGISTERED_REPOS.clear()
+        owner = "a"*32
+        api.register_repo(api.RegisterRequest(rootPath=str(self.root), leaseId=owner))
+        tasks = BackgroundTasks()
+        queued = api._enqueue_job(self.repo, False, tasks, lease_id=owner)["jobId"]
+        upgraded = api._enqueue_job(self.repo, True, tasks, lease_id=owner)["jobId"]
+        self.assertEqual(queued, upgraded)
+        self.assertEqual(api.get_job(queued)["mode"], "full")
+        api.release_repository(self.repo, api.RepositoryLeaseRequest(leaseId=owner))
+        self.assertEqual(api.get_job(queued)["state"], "cancelled")
+        with patch.object(api, "SnapshotStore") as store:
+            api._admit_index_job(queued)
+        store.assert_not_called()
 
     def test_failed_and_timed_out_jobs_are_failed_with_safe_errors_and_retry(self):
         for error in (RuntimeError("private-error"), TimeoutError("private-timeout")):

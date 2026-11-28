@@ -1,4 +1,5 @@
 """Semantic retrieval regression tests with isolated local vector storage."""
+import asyncio
 import hashlib
 import json
 import os
@@ -8,6 +9,9 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from time import monotonic
+
+import httpx
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -25,12 +29,7 @@ def model_reply(content, **fields):
     if isinstance(content, dict):
         content = json.dumps(content)
 
-    class Reply:
-        def __enter__(self): return self
-        def __exit__(self, *args): pass
-        def read(self, *args):
-            return json.dumps({'message': {'content': content}, **fields}).encode()
-    return Reply()
+    return {'message': {'content': content}, **fields}
 
 
 class SemanticTests(unittest.TestCase):
@@ -129,8 +128,8 @@ class SemanticTests(unittest.TestCase):
 
     def test_grounded_answer_and_local_model_failure_fallback(self):
         retrieval = self.search('Where is authentication checked?')
-        with patch('answers.urlopen', side_effect=OSError('offline')):
-            result = answer_question(str(self.root), 'Explain where authentication is checked', retrieval)
+        with patch('answers._request_source_ranking', side_effect=OSError('offline')):
+            result = answer_question(str(self.root), 'Explain how authentication is checked', retrieval)
         self.assertIn('auth.ts:', result['answer'])
         self.assertEqual(result['answerMode'], 'evidence')
         self.assertIn('Local source ranking', result['warning'])
@@ -141,15 +140,14 @@ class SemanticTests(unittest.TestCase):
         self.file.write_text('const api_key = "abcdefghijk-secret";\n')
         item = {'path': 'auth.ts', 'startLine': 1, 'endLine': 1,
                 'sourceHash': hashlib.sha256(self.file.read_bytes()).hexdigest(), 'reason': 'Exact match'}
-        with patch('answers.urlopen', return_value=model_reply({'sources': ['source-1']})) as model:
+        with patch('answers._request_source_ranking', return_value=model_reply({'sources': ['source-1']})) as model:
             result = answer_question(str(self.root), 'explain', {'results': [item], 'warning': None, 'mode': 'lexical'})
         self.assertEqual(result['answerMode'], 'evidence')
         self.assertEqual(result['evidenceSelection'], 'local-llm')
         sent = model.call_args.args[0]
-        self.assertEqual(sent.full_url, 'http://127.0.0.1:11434/api/chat')
-        self.assertNotIn('abcdefghijk-secret', sent.data.decode())
-        self.assertIn('[REDACTED]', sent.data.decode())
-        self.assertIn('format', json.loads(sent.data))
+        self.assertNotIn('abcdefghijk-secret', json.dumps(sent))
+        self.assertIn('[REDACTED]', json.dumps(sent))
+        self.assertIn('format', sent)
         self.assertIn('const api_key = "[REDACTED]";', result['answer'])
         self.assertEqual(result['citations'][0]['sourceHash'], item['sourceHash'])
 
@@ -157,7 +155,7 @@ class SemanticTests(unittest.TestCase):
         first = self.search('validateToken')['results'][0]
         second = {**first, 'startLine': 2, 'endLine': 2, 'name': 'login'}
         retrieval = {'results': [first, first.copy(), second], 'warning': None, 'mode': 'lexical'}
-        with patch('answers.urlopen', return_value=model_reply({'sources': ['source-2', 'source-1']})):
+        with patch('answers._request_source_ranking', return_value=model_reply({'sources': ['source-2', 'source-1']})):
             result = answer_question(str(self.root), 'explain', retrieval)
         self.assertEqual([item['id'] for item in result['citations']], [1, 2])
         self.assertEqual([item['startLine'] for item in result['citations']], [2, 1])
@@ -175,7 +173,7 @@ class SemanticTests(unittest.TestCase):
             ({'sources': ['source-1']}, {'done_reason': 'length'}),
         ):
             with self.subTest(content=content, fields=fields):
-                with patch('answers.urlopen', return_value=model_reply(content, **fields)):
+                with patch('answers._request_source_ranking', return_value=model_reply(content, **fields)):
                     result = answer_question(str(self.root), 'explain', retrieval)
                 self.assertEqual(result['answerMode'], 'evidence')
                 self.assertNotIn('evidenceSelection', result)
@@ -189,7 +187,7 @@ class SemanticTests(unittest.TestCase):
 
     def test_invalid_response_is_not_reported_as_offline(self):
         retrieval = self.search('validateToken')
-        with patch('answers.urlopen', return_value=model_reply(None)):
+        with patch('answers._request_source_ranking', return_value=model_reply(None)):
             result = answer_question(str(self.root), 'explain', retrieval)
         self.assertEqual(result['answerMode'], 'evidence')
         self.assertIn('invalid response', result['warning'])
@@ -197,17 +195,48 @@ class SemanticTests(unittest.TestCase):
 
     def test_timeout_message_identifies_the_actual_failure(self):
         retrieval = self.search('validateToken')
-        with patch('answers.urlopen', side_effect=TimeoutError('slow')):
+        with patch('answers._request_source_ranking', side_effect=TimeoutError('slow')):
             result = answer_question(str(self.root), 'explain', retrieval)
         self.assertIn('timed out', result['warning'])
         self.assertTrue(result['citations'])
+
+    def test_deadline_closes_a_model_response_that_keeps_sending_bytes(self):
+        packets = []
+        closed = []
+
+        class Trickle(httpx.AsyncByteStream):
+            async def __aiter__(self):
+                while True:
+                    packets.append(True)
+                    yield b' '
+                    await asyncio.sleep(0.01)
+
+            async def aclose(self):
+                closed.append(True)
+
+        def handle(request):
+            self.assertEqual(str(request.url), 'http://127.0.0.1:11434/api/chat')
+            self.assertEqual(request.method, 'POST')
+            return httpx.Response(200, stream=Trickle())
+
+        retrieval = self.search('validateToken')
+        client = httpx.AsyncClient(transport=httpx.MockTransport(handle))
+        with patch('answers.httpx.AsyncClient', return_value=client) as open_client:
+            start = monotonic()
+            result = answer_question(str(self.root), 'explain', retrieval, deadline=start + 0.15)
+        self.assertLess(monotonic() - start, 1)
+        self.assertGreaterEqual(len(packets), 2)
+        self.assertEqual(closed, [True])
+        self.assertTrue(result['citations'])
+        self.assertIn('timed out', result['warning'])
+        open_client.assert_called_once_with(trust_env=False, timeout=None)
 
     def test_source_change_during_generation_discards_answer_and_citations(self):
         retrieval = self.search('validateToken')
         def change_source(*args, **kwargs):
             self.file.write_text('export const changed = 1;\n')
             return model_reply('An outdated explanation.')
-        with patch('answers.urlopen', side_effect=change_source):
+        with patch('answers._request_source_ranking', side_effect=change_source):
             result = answer_question(str(self.root), 'explain', retrieval)
         self.assertEqual(result['results'], [])
         self.assertEqual(result['citations'], [])
@@ -215,7 +244,7 @@ class SemanticTests(unittest.TestCase):
 
     def test_evidence_only_answers_have_backend_citations_without_model_calls(self):
         retrieval = self.search('validateToken')
-        with patch.dict(os.environ, {'CODEMIND_LOCAL_MODEL': ''}), patch('answers.urlopen') as model:
+        with patch.dict(os.environ, {'CODEMIND_LOCAL_MODEL': ''}), patch('answers._request_source_ranking') as model:
             result = answer_question(str(self.root), 'explain', retrieval)
         model.assert_not_called()
         self.assertEqual(result['answerMode'], 'evidence')
@@ -239,7 +268,7 @@ class SemanticTests(unittest.TestCase):
             client = TestClient(api.app, base_url='http://127.0.0.1')
             self.assertEqual(client.post('/ask', json={'repoId': self.repo_id, 'query': 'auth'}).status_code, 401)
             self.assertEqual(client.post('/ask', headers={'X-Codemind-Session': 'test-token'}, json={'repoId': 'c'*24, 'query': 'auth'}).status_code, 404)
-            with patch('answers.urlopen', return_value=model_reply('Token validation checks the token length.')):
+            with patch('answers._request_source_ranking', return_value=model_reply('Token validation checks the token length.')):
                 reply = client.post('/ask', headers={'X-Codemind-Session': 'test-token'},
                                     json={'repoId': self.repo_id, 'query': 'explain auth.ts'})
             self.assertEqual(reply.status_code, 200)

@@ -96,7 +96,8 @@ def observe_sources(root):
                     if not stat.S_ISREG(before.st_mode): raise OSError('Source type changed during observation')
                     data = handle.read(DEFAULT_MAX_BYTES+1)
                     after = os.fstat(handle.fileno())
-                if (before.st_size,before.st_mtime_ns)!=(after.st_size,after.st_mtime_ns):
+                if ((before.st_size, before.st_mtime_ns, before.st_ctime_ns)
+                        != (after.st_size, after.st_mtime_ns, after.st_ctime_ns)):
                     raise OSError('Source changed during observation')
                 if len(data)>DEFAULT_MAX_BYTES: status,reason = 'skipped','too_large'
                 elif b'\0' in data[:8192]: status,reason = 'skipped','binary'
@@ -258,6 +259,29 @@ class SnapshotStore:
         _write_json(self.path/'sync_state.json',{'state':'failed','activeSnapshotId':previous['id'] if previous else None,
             'lastError':type(exc).__name__+': indexing failed; see engine log.','savedFilesOnly':True})
 
+    def status_view(self):
+        """Advisory status from the last publication. Evidence paths use view()."""
+        try:
+            state = _read_json(self.path/'sync_state.json') or {}
+            if not isinstance(state, dict):
+                raise ValueError('Invalid synchronization state')
+            identifier = state.get('activeSnapshotId')
+            if identifier is not None and not re.fullmatch(r'[a-f0-9]{32}', str(identifier)):
+                raise ValueError('Invalid active knowledge snapshot')
+            ready = state.get('state') in ('ready', 'partial')
+            if ready and (not identifier or not checked_path(
+                    self.data_for({'id': identifier})/self.repo_id/'metadata.db').is_file()):
+                raise ValueError('Snapshot storage is unavailable')
+            warning = state.get('graphWarning')
+            if state.get('state') == 'partial' and 'graphWarning' not in state:
+                warning = graph_coverage_warning((self.active() or {}).get('result', {}).get('graph', {}))
+            return {'snapshotId': identifier, 'fresh': ready, 'state': state.get('state', 'unmanaged'),
+                    'error': state.get('lastError'), 'savedFilesOnly': True, 'graphWarning': warning}
+        except (OSError, ValueError):
+            return {'snapshotId': None, 'fresh': False, 'state': 'failed', 'savedFilesOnly': True,
+                    'error': 'Knowledge snapshot metadata is invalid or unavailable; refresh is required.',
+                    'graphWarning': None}
+
     def view(self):
         try:
             manifest = self.active()
@@ -297,7 +321,7 @@ class SnapshotStore:
     def _record_current(self, identifier, graph):
         state = 'partial' if graph.get('syntax_issues') else 'ready'
         _write_json(self.path/'sync_state.json', {'state': state, 'activeSnapshotId': identifier,
-            'lastError': None, 'savedFilesOnly': True})
+            'lastError': None, 'savedFilesOnly': True, 'graphWarning': graph_coverage_warning(graph)})
 
     def _publish(self,*,client,collection,index_directory,build_graph,full=False,on_progress=None):
         self.storage.prepare()
@@ -338,6 +362,7 @@ class SnapshotStore:
             try:
                 from qdrant_client.models import Filter,FieldCondition,MatchValue,PointStruct,VectorParams,Distance
                 from knowledge_base.metadata import audit,validate_vector
+                from knowledge_base.vector_store import RepositoryVectors
                 old_data = self.data_for(previous)
                 old_database = old_data/self.repo_id/'metadata.db'
                 previous_files = previous['sources']['files'] if previous else {}
@@ -359,7 +384,9 @@ class SnapshotStore:
                 state_path = old_data/self.repo_id/'index_state.json'
                 if state_path.is_file(): _write_json(repo_dir/'index_state.json',_read_json(state_path))
                 old_collection = previous['collection'] if previous else collection
-                if client.collection_exists(old_collection):
+                if isinstance(client, RepositoryVectors) and old_database.is_file() and client.collection_exists(old_collection):
+                    client.reuse_backed_up_collection(old_collection, new_collection)
+                elif client.collection_exists(old_collection):
                     size = client.get_collection(old_collection).config.params.vectors.size
                     client.create_collection(collection_name=new_collection,vectors_config=VectorParams(size=size,distance=Distance.COSINE))
                     offset = None
@@ -383,16 +410,18 @@ class SnapshotStore:
                 # Prune orphan vectors even if a legacy state file was missing.
                 with closing(connect(database)) as db:
                     ids = {r[0] for r in db.execute('SELECT id FROM code_chunks WHERE repository_id=?',(self.repo_id,))}
-                offset,seen = None,set()
-                while True:
-                    points,offset = client.scroll(collection_name=new_collection,limit=1000,offset=offset)
-                    orphans = [p.id for p in points if str(p.id) not in ids]
-                    if orphans: client.delete(collection_name=new_collection,points_selector=orphans)
-                    for point in points:
-                        if str(point.id) in ids:
-                            validate_vector(database,self.repo_id,point,new_collection)
-                            seen.add(str(point.id))
-                    if offset is None: break
+                with closing(connect(database.resolve().as_uri()+'?mode=ro',uri=True)) as db:
+                    db.row_factory = sqlite3.Row
+                    offset,seen = None,set()
+                    while True:
+                        points,offset = client.scroll(collection_name=new_collection,limit=1000,offset=offset)
+                        orphans = [p.id for p in points if str(p.id) not in ids]
+                        if orphans: client.delete(collection_name=new_collection,points_selector=orphans)
+                        for point in points:
+                            if str(point.id) in ids:
+                                validate_vector(database,self.repo_id,point,new_collection,connection=db)
+                                seen.add(str(point.id))
+                        if offset is None: break
                 if seen!=ids: raise RuntimeError('Metadata/vector membership mismatch')
                 after = observe_sources(self.root)
                 if before!=after: raise RuntimeError('Repository changed while indexing; retrying is required')
@@ -404,9 +433,10 @@ class SnapshotStore:
                     'configuration':pipeline_identity(),
                     'collection':new_collection,'sources':after,'result':published,'savedFilesOnly':True,
                     'previousId':previous['id'] if previous else retained}
+                if isinstance(client, RepositoryVectors):
+                    client.seal(new_collection)
                 _write_json(repo_dir/'generation.json',manifest)
                 if self.storage.local:
-                    if hasattr(client, 'seal'): client.seal(new_collection)
                     with closing(connect(database.resolve().as_uri()+'?mode=ro',uri=True)) as db:
                         if db.execute('PRAGMA integrity_check').fetchone()[0] != 'ok':
                             raise RuntimeError('Snapshot integrity check failed')
@@ -430,85 +460,145 @@ class SnapshotStore:
 
 
 class _Events(FileSystemEventHandler):
-    def __init__(self,manager,repo_id):
-        self.manager,self.repo_id = manager,repo_id
+    def __init__(self, manager, repo_id, root, handle):
+        self.manager, self.repo_id, self.root, self.handle = manager, repo_id, root, handle
 
     def on_any_event(self,event):
         if event.event_type in ('created','deleted','modified','moved'):
-            root = Path(self.manager.entries[self.repo_id]['root']).resolve()
             for location in (event.src_path,getattr(event,'dest_path','')):
                 if not location: continue
-                try: parts = Path(location).relative_to(root).parts
+                try: parts = Path(location).relative_to(self.root).parts
                 except ValueError: continue
                 if '.git' in parts:
                     if not any(p in ('HEAD','index','refs','packed-refs','info','exclude') for p in parts): continue
                 elif any(p in EXCLUDED_DIRS or p.endswith('.egg-info') for p in parts): continue
-                self.manager.changed(self.repo_id)
+                self.manager.changed(self.repo_id, self.handle)
+                break
 
 
 class SyncManager:
-    def __init__(self,data_dir,request_sync,*,debounce=.6,audit_interval=5):
+    def __init__(self,data_dir,request_sync,*,debounce=.6,audit_interval=30):
         self.data_dir,self.request_sync = data_dir,request_sync
         self.debounce,self.audit_interval = debounce,audit_interval
         self.entries,self.lock,self.stop_event = {},threading.RLock(),threading.Event()
         self.thread = threading.Thread(target=self._loop,name='codemind-sync',daemon=True)
         self.thread.start()
 
-    def add(self,repo_id,root):
+    @staticmethod
+    def _watching(entry):
+        observer = entry.get('observer')
+        return bool(observer and observer.is_alive() and all(e.is_alive() for e in observer.emitters))
+
+    def _audit_delay(self, entry):
+        return self.audit_interval if self._watching(entry) else min(5, self.audit_interval)
+
+    def add(self, repo_id, root, *, owner=None):
         with self.lock:
-            if repo_id in self.entries: return
-            entry = {'root':str(Path(root).resolve()),'due':time.monotonic()+self.audit_interval,
-                     'auditDue':time.monotonic()+self.audit_interval,'observer':None,'watchError':None,'failures':0}
+            if repo_id in self.entries:
+                return
+            entry = {'root':str(Path(root).resolve()), 'due':None, 'auditDue':time.monotonic() + min(5, self.audit_interval),
+                     'observer':None, 'watchError':None, 'event':0, 'checked':0, 'owner':owner, 'handle':object()}
             self.entries[repo_id] = entry
             try:
                 observer = Observer()
-                observer.schedule(_Events(self,repo_id),entry['root'],recursive=True)
+                observer.schedule(_Events(self, repo_id, Path(entry['root']), entry['handle']), entry['root'], recursive=True)
                 observer.start()
                 entry['observer'] = observer
             except Exception:
                 entry['watchError'] = 'Native watcher unavailable; periodic hash reconciliation remains active.'
                 logger.exception('Repository watcher unavailable')
 
-    def changed(self,repo_id):
+    @staticmethod
+    def _stop_observer(entry):
+        observer = entry.get('observer') if entry else None
+        if observer:
+            observer.stop()
+            observer.join(timeout=5)
+
+    def remove(self, repo_id):
         with self.lock:
-            if repo_id in self.entries: self.entries[repo_id]['due'] = time.monotonic()+self.debounce
+            entry = self.entries.pop(repo_id, None)
+        self._stop_observer(entry)
+
+    def is_current(self, repo_id, handle):
+        with self.lock:
+            return self.entries.get(repo_id, {}).get('handle') is handle
+
+    def changed(self, repo_id, handle=None):
+        with self.lock:
+            entry = self.entries.get(repo_id)
+            if entry and (handle is None or entry['handle'] is handle):
+                entry['event'] += 1
+                entry['due'] = time.monotonic() + self.debounce
+
+    def revision(self, repo_id):
+        with self.lock:
+            entry = self.entries.get(repo_id)
+            return (entry['handle'], entry['event']) if entry else None
+
+    def completed(self, repo_id, revision):
+        with self.lock:
+            entry = self.entries.get(repo_id)
+            if entry is None or revision is None or entry['handle'] is not revision[0]:
+                return
+            if entry['event'] == revision[1]:
+                entry['checked'] = revision[1]
+                entry['due'] = None
+            elif entry['due'] is None:
+                # A newer event may have coalesced into the job just completed.
+                entry['due'] = time.monotonic() + self.debounce
 
     def status(self,repo_id):
         with self.lock:
             entry = self.entries.get(repo_id,{})
-            observer = entry.get('observer')
-            watching = bool(observer and observer.is_alive() and all(e.is_alive() for e in observer.emitters))
-            if observer and not watching:
+            watching = self._watching(entry)
+            if entry.get('observer') and not watching:
                 entry['watchError'] = 'Native watcher stopped; periodic hash reconciliation remains active.'
-            return {'watching':watching,'watchError':entry.get('watchError'),
-                    'hashAuditSeconds':self.audit_interval,'savedFilesOnly':True}
+                entry['auditDue'] = min(entry['auditDue'], time.monotonic() + self._audit_delay(entry))
+            return {'watching':watching, 'watchError':entry.get('watchError'),
+                    'hashAuditSeconds':self._audit_delay(entry), 'savedFilesOnly':True,
+                    'invalidated':entry.get('event') != entry.get('checked')}
 
     def _loop(self):
         while not self.stop_event.wait(.1):
+            now = time.monotonic()
+            work = []
             with self.lock:
-                due = [(rid,entry) for rid,entry in self.entries.items() if min(entry['due'],entry['auditDue'])<=time.monotonic()]
-                for _,entry in due: entry['due'] = entry['auditDue'] = time.monotonic()+self.audit_interval
-            for repo_id,entry in due:
+                for repo_id, entry in self.entries.items():
+                    changed = entry['due'] is not None and entry['due'] <= now
+                    audit = entry['auditDue'] <= now
+                    if changed or audit:
+                        work.append((repo_id, entry['root'], entry['owner'], (entry['handle'], entry['event']), changed))
+                    if changed:
+                        entry['due'] = None
+                    if audit:
+                        entry['auditDue'] = now + self._audit_delay(entry)
+            for repo_id, root, owner, revision, changed in work:
                 try:
-                    view = SnapshotStore(entry['root'],repo_id,self.data_dir).view()
-                    if not view['managed'] or not view['fresh']:
-                        self.request_sync(repo_id)
-                        entry['failures'] = entry['failures']+1 if view['state']=='failed' else 0
-                        entry['due'] = entry['auditDue'] = time.monotonic()+min(30,self.audit_interval*2**min(entry['failures'],3))
-                    else:
-                        entry['failures'] = 0
+                    if not self.is_current(repo_id, revision[0]):
+                        continue
+                    if not changed:
+                        view = SnapshotStore(root, repo_id, self.data_dir).view()
+                        if view['managed'] and view['fresh']:
+                            if self.revision(repo_id) == revision:
+                                self.completed(repo_id, revision)
+                            continue
+                    if self.is_current(repo_id, revision[0]):
+                        if owner is None:
+                            self.request_sync(repo_id)
+                        else:
+                            self.request_sync(repo_id, owner, revision[0])
                 except Exception:
-                    entry['failures'] += 1
-                    entry['due'] = entry['auditDue'] = time.monotonic()+min(30,self.audit_interval*2**min(entry['failures'],3))
-                    logger.exception('Hash reconciliation failed for %s',repo_id)
+                    logger.exception('Repository reconciliation failed for %s', repo_id)
 
     def close(self):
         self.stop_event.set()
         self.thread.join(timeout=5)
-        for entry in self.entries.values():
-            if entry['observer']:
-                entry['observer'].stop()
-                entry['observer'].join(timeout=5)
+        with self.lock:
+            entries = list(self.entries.values())
+            self.entries.clear()
+        for entry in entries:
+            self._stop_observer(entry)
 
 
 def repository_view(repo_id,data_dir):

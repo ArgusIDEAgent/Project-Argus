@@ -242,7 +242,7 @@ class SemanticEngineTests(unittest.TestCase):
         with SemanticSearchEngine.pinned(self.store, self.factory) as engine:
             before = hashlib.sha256(engine.database.read_bytes()).hexdigest()
             operation = self.operation(engine)
-            with patch("answers.urlopen", side_effect=AssertionError("No LLM allowed")), \
+            with patch("answers._request_source_ranking", side_effect=AssertionError("No LLM allowed")), \
                  patch("indexer.index_directory", side_effect=AssertionError("No reindex allowed")), \
                  patch("indexer.embed_texts", side_effect=AssertionError("Stored embeddings cannot rebuild")):
                 first = asyncio.run(engine.execute(operation, engine.context))

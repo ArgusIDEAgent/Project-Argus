@@ -127,35 +127,88 @@ VS Code extension (TypeScript) ──HTTP + session token──▶ FastAPI engin
 
 ## Quick Start *(living section — not covered by the lock)*
 
-**Prerequisites:** Python 3.10+, Docker, Node.js, VS Code ≥ 1.93, a free [OpenRouter](https://openrouter.ai/) API key.
+The current application runs a local Python engine and a VS Code extension.
+Each selected repository stores its index in `<repo>/.codemind/` using SQLite
+and FAISS. FastEmbed generates embeddings locally. Ollama is optional for
+model-assisted answers.
 
-```bash
-# 1. Install
-python -m venv venv && source venv/bin/activate      # Windows: venv\Scripts\activate
-pip install -r requirements.txt
+### 1. Install the engine and extension dependencies
 
-# 2. Qdrant — loopback only, API-key protected
-export QDRANT_API_KEY="$(python -c 'import secrets;print(secrets.token_urlsafe(32))')"
-docker run -d --name qdrant \
-  -p 127.0.0.1:6333:6333 -p 127.0.0.1:6334:6334 \
-  -e QDRANT__SERVICE__API_KEY="$QDRANT_API_KEY" \
-  -v qdrant_storage:/qdrant/storage qdrant/qdrant
+Use Python 3.14, Node.js 22 or newer with npm, Git, and VS Code 1.93 or newer.
+These commands use a macOS or Linux shell. Run them from the CodeMind checkout.
 
-# 3. Configure ai-engine/.env (see ai-engine/.env.example)
-#    OPENROUTER_API_KEY=...    QDRANT_API_KEY=<same value as above>
-
-# 4. Try the engine from the CLI
-cd ai-engine
-python indexer.py --dir ./sample_code            # add --full-reindex to rebuild
-python search.py --query "How does authentication work?"
-python graph_query.py --stats
-python rag_pipeline.py --query "Where is JWT authentication implemented?"
-
-# 5. Run the engine for the extension (127.0.0.1:8000)
-python api.py
+```sh
+python3.14 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+npm --prefix extension ci
 ```
 
-**Extension:** `cd extension && npm install && npm run compile`, open the repo root in VS Code, press **F5**, then run **CodeMind: Open Chat** in the Extension Development Host. Details: [`extension/README.md`](extension/README.md).
+Keep the virtual environment at `.venv`. The engine launcher and VS Code's
+development tools use that path.
+
+### 2. Set up Ollama for model-assisted answers
+
+On macOS, install and open the Ollama app. For a CLI-only installation, start
+`ollama serve` in a separate terminal. CodeMind connects to
+`127.0.0.1:11434`. [Ollama macOS setup](https://docs.ollama.com/macos) ·
+[Ollama CLI reference](https://docs.ollama.com/cli)
+
+```sh
+ollama pull llama3:latest
+ollama list
+```
+
+`llama3:latest` is the default. Set `CODEMIND_LOCAL_MODEL` to an installed local
+model to use another one. For evidence-only answers, start the engine with
+`CODEMIND_LOCAL_MODEL= .venv/bin/python start_codemind.py`.
+
+### 3. Start the CodeMind engine
+
+```sh
+.venv/bin/python start_codemind.py
+```
+
+Keep this terminal open. The engine listens on `127.0.0.1:8000` by default
+and creates a session token under `~/.codemind/data/`. The first index uses
+internet access to download FastEmbed's embedding model into that directory.
+Later indexes reuse the model files. The repository's SQLite/FAISS generations
+stay inside its own `.codemind/` directory. If you used an older Qdrant setup, remove
+`QDRANT_URL` from your environment and `ai-engine/.env` before starting.
+
+### 4. Build and install the VS Code extension
+
+In another terminal at the checkout root:
+
+```sh
+npm --prefix extension run package:vsix
+code --install-extension ./codemind-extension-0.4.1.vsix
+```
+
+If the `code` command is missing on macOS, use **Shell Command: Install 'code'
+command in PATH** in the VS Code Command Palette. You can also install the
+generated file via **Extensions: Install from VSIX...**. Reload VS Code if
+upgrading an installed copy. [VS Code CLI reference](https://code.visualstudio.com/docs/configure/command-line)
+
+### 5. Check the complete flow
+
+1. Open a trusted local repository in VS Code. To use the bundled demo,
+   run `code ai-engine/sample_code`. If VS Code shows **Restricted Mode**,
+   use **Manage** to trust the demo folder.
+2. Run **CodeMind: Check Connection** and look for **Python AI Engine connected**.
+   Then run **CodeMind: Open Chat**. A single open workspace folder is selected
+   automatically. Use **CodeMind: Select Repository** to choose another folder.
+   Wait for the repository status to show a file count and **semantic search**.
+3. In the demo, ask **Where is JWT authentication implemented?** Select **Open**
+   on the `verify_token` card to jump to `auth_service.py:21`. If you set up
+   Ollama, ask **How does JWT authentication work?** to try a model-assisted answer.
+4. Run **CodeMind: Show Repository Storage** to inspect the index path,
+   active snapshot and freshness. Saving source triggers an incremental refresh.
+
+For connection or indexing errors, open the **CodeMind** output channel and
+check the engine terminal. For a separate engine instance, export a distinct
+`CODEMIND_PORT` and a private absolute `CODEMIND_DATA_DIR` in the environments
+that start both the engine and VS Code. Use matching values in both processes.
+See [engine settings](ai-engine/.env.example) and [test commands](TESTING.md).
 
 ## Scope Change Log *(append-only)*
 
